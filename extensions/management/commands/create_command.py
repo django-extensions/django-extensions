@@ -10,7 +10,7 @@ class Command(AppCommand):
             help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
     )
     
-    help = ("Creates a Django managemnt command directory structure for the given app name"
+    help = ("Creates a Django management command directory structure for the given app name"
             " in the current directory.")
     args = "[appname]"
     label = 'application name'
