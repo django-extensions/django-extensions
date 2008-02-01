@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.admindocs.views import extract_views_from_urlpatterns, simplify_regex
-from extensions.management.commands.color import color_style
+from extensions.management.color import color_style
 
 class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."
