@@ -110,11 +110,20 @@ tail_template = """
 
 def generate_dot(app_labels, **kwargs):
     disable_fields = kwargs.get('disable_fields', False)
-
+    all_applications = kwargs.get('all_applications', False)
+    
     dot = head_template
 
+    apps = []
+    if all_applications:
+        apps = models.get_apps()
+    
     for app_label in app_labels:
         app = models.get_app(app_label)
+        if not app in apps:
+            apps.append(app)
+
+    for app in apps:
         graph = Context({
             'name': '"%s"' % app.__name__,
             'disable_fields': disable_fields,
