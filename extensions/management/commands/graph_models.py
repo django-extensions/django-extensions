@@ -7,7 +7,11 @@ class Command(BaseCommand):
         make_option('--disable-fields', '-d', action='store_false', dest='disable_fields', 
             help='Do not show the class member fields'),
         make_option('--all-applications', '-a', action='store_true', dest='all_applications',
-    	    help='Automatically include all applications from INSTALLED_APPS'),
+            help='Automaticly include all applications from INSTALLED_APPS'),
+        make_option('--output', '-o', action='store', dest='outputfile',
+            help='Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.'),
+        make_option('--layout', '-l', action='store', dest='layout', default='dot',
+            help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
     )
     
     help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")
@@ -20,5 +24,23 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if len(args) < 1 and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
-        print generate_dot(args, **options)
+
+        dotdata = generate_dot(args, **options)
+        if options['outputfile']:
+            self.render_output(dotdata, **options)
+        else:
+            self.print_output(dotdata)
+
+    def print_output(self, dotdata):
+        print dotdata
+    
+    def render_output(self, dotdata, **kwargs):
+        try:
+            from pygraphviz import AGraph
+        except ImportError, e:
+             raise CommandError("need pygraphviz python module ( apt-get install python-pygraphviz )")
         
+        graph = AGraph(' '.join(dotdata.split("\n")).strip())
+        graph.layout(prog=kwargs['layout'])
+        graph.draw(kwargs['outputfile'])
+
