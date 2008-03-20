@@ -6,6 +6,8 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--disable-fields', '-d', action='store_false', dest='disable_fields', 
             help='Do not show the class member fields'),
+        make_option('--group-models', '-g', action='store_true', dest='group_models',
+            help='Group models together respective to there application'),
         make_option('--all-applications', '-a', action='store_true', dest='all_applications',
             help='Automaticly include all applications from INSTALLED_APPS'),
         make_option('--output', '-o', action='store', dest='outputfile',

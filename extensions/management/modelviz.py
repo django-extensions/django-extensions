@@ -60,7 +60,7 @@ digraph name {
     fontsize = 8
     shape = "plaintext"
   ]
-   edge [
+  edge [
     fontname = "Helvetica"
     fontsize = 8
   ]
@@ -68,19 +68,18 @@ digraph name {
 """
 
 body_template = """
-  {% for model in models %}
-    {% for relation in model.relations %}
-    {{ relation.target }} [label=<
-        <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
-        <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
-        ><FONT FACE="Helvetica Bold" COLOR="white"
-        >{{ relation.target }}</FONT></TD></TR>
+{% if use_subgraph %}
+subgraph {{ cluster_app_name }} {
+  label=<
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+        <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER"
+        ><FONT FACE="Helvetica Bold" COLOR="Black" POINT-SIZE="12"
+        >{{ app_name }}</FONT></TD></TR>
         </TABLE>
-        >]
-    {{ model.name }} -> {{ relation.target }}
-    [label="{{ relation.name }}"] {{ relation.arrows }};
-    {% endfor %}
-  {% endfor %}
+        >
+  color=olivedrab4
+  style="rounded"
+{% endif %}
 
   {% for model in models %}
     {{ model.name }} [label=<
@@ -102,6 +101,28 @@ body_template = """
     </TABLE>
     >]
   {% endfor %}
+
+{% if use_subgraph %}
+}
+{% endif %}
+"""
+
+rel_template = """
+  {% for model in models %}
+    {% for relation in model.relations %}
+    {% if relation.needs_node %}
+    {{ relation.target }} [label=<
+        <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+        <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
+        ><FONT FACE="Helvetica Bold" COLOR="white"
+        >{{ relation.target }}</FONT></TD></TR>
+        </TABLE>
+        >]
+    {% endif %}
+    {{ model.name }} -> {{ relation.target }}
+    [label="{{ relation.name }}"] {{ relation.arrows }};
+    {% endfor %}
+  {% endfor %}
 """
 
 tail_template = """
@@ -111,6 +132,7 @@ tail_template = """
 def generate_dot(app_labels, **kwargs):
     disable_fields = kwargs.get('disable_fields', False)
     all_applications = kwargs.get('all_applications', False)
+    use_subgraph = kwargs.get('group_models', False)
     
     dot = head_template
 
@@ -123,10 +145,14 @@ def generate_dot(app_labels, **kwargs):
         if not app in apps:
             apps.append(app)
 
+    graphs = []
     for app in apps:
         graph = Context({
             'name': '"%s"' % app.__name__,
+            'app_name': "%s" % app.__name__.rsplit('.', 1)[0],
+            'cluster_app_name': "cluster_%s" % app.__name__.replace(".", "_"),
             'disable_fields': disable_fields,
+            'use_subgraph': use_subgraph,
             'models': []
             })
 
@@ -158,7 +184,8 @@ def generate_dot(app_labels, **kwargs):
                     'target': field.rel.to.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
-                    'arrows': extras
+                    'arrows': extras,
+                    'needs_node': True
                     }
                 if _rel not in model['relations']:
                     model['relations'].append(_rel)
@@ -177,8 +204,24 @@ def generate_dot(app_labels, **kwargs):
                         add_relation(
                             '[style="dotted"] [arrowhead=normal arrowtail=normal]')
             graph['models'].append(model)
+        graphs.append(graph)
 
+    nodes = []
+    for graph in graphs:
+        nodes.extend([e['name'] for e in graph['models']])
+
+    for graph in graphs:
+        # don't draw duplication nodes because of relations
+        for model in graph['models']:
+            for relation in model['relations']:
+                if relation['target'] in nodes:
+                    relation['needs_node'] = False
+        # render templates
         t = Template(body_template)
+        dot += '\n' + t.render(graph)
+
+    for graph in graphs:
+        t = Template(rel_template)
         dot += '\n' + t.render(graph)
 
     dot += '\n' + tail_template
