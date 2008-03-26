@@ -36,6 +36,8 @@ class Command(LabelCommand):
                 print "END TRACEBACK\n"
     
     def runjobs_by_dispatcher(self, when, options):
+        """ Run jobs from the dispatcher """
+        # Thanks for Ian Holsman for the idea and code
         from extensions.management import signals
         from django.db import models
         from django.dispatch import dispatcher
