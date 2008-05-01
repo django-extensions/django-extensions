@@ -9,7 +9,7 @@ FORMATS = [
     'google',
     'outlook',
     'linkedin',
-    #'vcard', # RED_FLAG: need to implement this one -DougN
+    'vcard',
 ]
 
 def full_name(first_name, last_name, username, **extra):
@@ -92,3 +92,23 @@ class Command(BaseCommand):
             csvf.writerow([ent['first_name'].encode(self.encoding), 
                            ent['last_name'].encode(self.encoding), 
                            ent['email'].encode(self.encoding)])
+
+    def vcard(self, qs, out):
+        try:
+            import vobject
+        except ImportError:
+            print self.style.ERROR_OUTPUT("Please install python-vobjects to use the vcard export format.")
+            import sys
+            sys.exit(1)
+        for ent in qs:
+            card = vobject.vCard()
+            card.add('fn').value = full_name(**ent)
+            if not ent['last_name'] and not ent['first_name']:
+                # fallback to fullname, if both first and lastname are not declared
+                card.add('n').value = vobject.vcard.Name(full_name(**ent))
+            else:
+                card.add('n').value = vobject.vcard.Name(ent['last_name'], ent['first_name'])
+            emailpart = card.add('email')
+            emailpart.value = ent['email']
+            emailpart.type_param = 'INTERNET'
+            out.write(card.serialize().encode(self.encoding))
