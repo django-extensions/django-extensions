@@ -50,7 +50,7 @@ class Command(NoArgsCommand):
 
             # We want to honor both $PYTHONSTARTUP and .pythonrc.py, so follow system
             # conventions and get $PYTHONSTARTUP first then import user.
-            if not use_plain: 
+            if not use_plain:
                 pythonrc = os.environ.get("PYTHONSTARTUP") 
                 if pythonrc and os.path.isfile(pythonrc): 
                     try: 
@@ -59,10 +59,10 @@ class Command(NoArgsCommand):
                         pass
                 # This will import .pythonrc.py as a side-effect
                 import user
-                for app_mod in get_apps():
-                    app_models = get_models(app_mod)
-                    model_labels = ", ".join([model.__name__ for model in app_models])
-                    print "From '%s' autoloaded: %s" % (app_mod.__name__.split('.')[-2], model_labels)
-                    for model in app_models:
-                        imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+            for app_mod in get_apps():
+                app_models = get_models(app_mod)
+                model_labels = ", ".join([model.__name__ for model in app_models])
+                print "From '%s' autoloaded: %s" % (app_mod.__name__.split('.')[-2], model_labels)
+                for model in app_models:
+                    imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
             code.interact(local=imported_objects)
