@@ -24,9 +24,12 @@ class Command(NoArgsCommand):
                 # Don't bother loading IPython, because the user wants plain Python.
                 raise ImportError
             import IPython
+            user_ns = {}
+            for model in loaded_models:
+                user_ns[model.__name__] = model
             # Explicitly pass an empty list as arguments, because otherwise IPython
             # would use sys.argv from this script.
-            shell = IPython.Shell.IPShell(argv=[])
+            shell = IPython.Shell.IPShell(argv=[], user_ns=user_ns)
             shell.mainloop()
         except ImportError:
             import code
