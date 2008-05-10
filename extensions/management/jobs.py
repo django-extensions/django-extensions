@@ -43,7 +43,7 @@ def my_import(name):
 def find_jobs(jobs_dir):
     try:
         return [f[:-3] for f in os.listdir(jobs_dir) \
-                    if not f.startswith('_') and f.endswith(".py")]
+                if not f.startswith('_') and f.endswith(".py")]
     except OSError:
         return []
 
@@ -63,7 +63,10 @@ def import_job(app_name, name, when=None):
     jobmodule = "%s.jobs.%s%s" % (app_name, when and "%s." % when or "", name)
     job_mod = my_import(jobmodule)
     # todo: more friendly message for AttributeError if job_mod does not exist
-    job = job_mod.Job
+    try:
+        job = job_mod.Job
+    except:
+        raise JobError("Job module %s does not contain class instance named 'Job'" % jobmodule)
     if when and not (job.when == when or job.when == None):
         raise JobError("Job %s is not a %s job." % (jobmodule, when))
     return job
