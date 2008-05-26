@@ -29,11 +29,16 @@ class Command(NoArgsCommand):
         imported_objects = {}
         for app_mod in get_apps():
             app_models = get_models(app_mod)
+            if not app_models:
+                continue
             model_labels = ", ".join([model.__name__ for model in app_models])
-            print "From '%s' autoloaded: %s" % (app_mod.__name__.split('.')[-2], model_labels)
+            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], model_labels))
             for model in app_models:
-                imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
-
+                try:
+                    imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+                except AttributeError, e:
+                    print self.style.ERROR_OUTPUT("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
+                    continue
         try:
             if use_plain:
                 # Don't bother loading IPython, because the user wants plain Python.
