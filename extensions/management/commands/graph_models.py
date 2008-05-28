@@ -38,11 +38,20 @@ class Command(BaseCommand):
     
     def render_output(self, dotdata, **kwargs):
         try:
-            from pygraphviz import AGraph
+            import pygraphviz
         except ImportError, e:
-             raise CommandError("need pygraphviz python module ( apt-get install python-pygraphviz )")
+            raise CommandError("need pygraphviz python module ( apt-get install python-pygraphviz )")
         
-        graph = AGraph(' '.join(dotdata.split("\n")).strip())
+        vizdata = ' '.join(dotdata.split("\n")).strip()
+        if [int(v) for v in pygraphviz.__version__.split('.')]<(0,36):
+            ##raise CommandError("need version 0.36 or higher of pygraphviz")
+            # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
+            import tempfile
+            tmpfile = tempfile.NamedTemporaryFile()
+            tmpfile.write(vizdata)
+            tmpfile.seek(0)
+            vizdata = tmpfile.name
+        graph = pygraphviz.AGraph(vizdata)
         graph.layout(prog=kwargs['layout'])
         graph.draw(kwargs['outputfile'])
 
