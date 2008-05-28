@@ -1,4 +1,5 @@
-from django.core.management.base import LabelCommand
+from django.core.management.base import LabelCommand, CommandError
+from django.utils.encoding import force_unicode
 
 class Command(LabelCommand):
     help = "Outputs the specified model as a form definition to the shell."
@@ -17,8 +18,11 @@ def describe_form(label, fields=None):
     Returns a string describing a form based on the model
     """
     from django.db.models.loading import get_model
-    app_name = label.split('.')[-2]
-    model = get_model(app_name, label.split('.')[-1])
+    try:
+        app_name, model_name = label.split('.')[-2:]
+    except (IndexError, ValueError):
+        raise CommandError("Need application and model name in the form: appname.model")
+    model = get_model(app_name, model_name)
 
     opts = model._meta
     field_list = []
@@ -41,9 +45,11 @@ def describe_form(label, fields=None):
                     continue
                 if k == 'widget':
                     attrs[k] = v.__class__
+                elif k == 'help_text':
+                    attrs[k] = force_unicode(v).strip()
                 else:
                     attrs[k] = v
-        
+                
         params = ', '.join(['%s=%r' % (k, v) for k, v in attrs.items()])
         field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % { 'field_name': f.name, 
                                                                                   'field_type': formfield.__class__.__name__, 
