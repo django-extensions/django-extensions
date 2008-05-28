@@ -53,6 +53,7 @@ def copy_template(template_name, copy_to):
                 path_new = os.path.join(copy_to, relative_dir, f)
                 if os.path.exists(path_new):
                     continue
+            path_new = path_new.rstrip(".tmpl")
             fp_old = open(path_old, 'r')
             fp_new = open(path_new, 'w')
             fp_new.write(fp_old.read())
