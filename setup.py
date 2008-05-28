@@ -48,15 +48,7 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
     elif filenames:
         data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
 
-#print packages
-#print data_files
-#import sys;sys.exit()
-# Dynamically calculate the version based on tagging.VERSION
-version_tuple = __import__('extensions').VERSION
-if version_tuple[2] is not None:
-    version = "%d.%d_%s" % version_tuple
-else:
-    version = "%d.%d" % version_tuple[:2]
+version = __import__('extensions').__version__
 
 setup(
     name = 'extensions',
