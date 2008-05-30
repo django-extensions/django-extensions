@@ -1,6 +1,12 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.contrib.admindocs.views import extract_views_from_urlpatterns, simplify_regex
+try:
+    # 2008-05-30 admindocs found in newforms-admin brand
+    from django.contrib.admindocs.views import extract_views_from_urlpatterns, simplify_regex
+except ImportError:
+    # fall back to trunk, pre-NFA merge
+    from django.contrib.admin.views.doc import extract_views_from_urlpatterns, simplify_regex
+        
 from extensions.management.color import color_style
 
 class Command(BaseCommand):
