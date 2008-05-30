@@ -50,18 +50,31 @@ class Command(BaseCommand):
             from django.conf import settings
 
             import hotshot, time, os
+            try:
+                import cProfile
+                HAS_CPROFILE = True
+            except ImportError:
+                HAS_CPROFILE = False
             prof_path = options.get('prof_path', '/tmp')
             def make_profiler_handler(inner_handler):
                 def handler(environ, start_response):
                     path_info = environ['PATH_INFO']
                     # normally /media/ is MEDIA_URL, but in case still check it in case it's differently
                     # should be hardly a penalty since it's an OR expression.
+                    # TODO: fix this to check the configuration settings and not make assumpsions about where media are on the url
                     if no_media and (path_info.startswith('/media') or path_info.startswith(settings.MEDIA_URL)):
                         return inner_handler(environ, start_response)
                     profname = "%s.%.3f.prof" % (path_info.strip("/").replace('/', '.'), time.time())
                     profname = os.path.join(prof_path, profname)
-                    prof = hotshot.Profile(profname)
-                    return prof.runcall(inner_handler, environ, start_response)
+                    if HAS_CPROFILE:
+                        prof = cProfile.Profile()
+                    else:
+                        prof = hotshot.Profile(profname)
+                    try:
+                        return prof.runcall(inner_handler, environ, start_response)
+                    finally:
+                        if HAS_CPROFILE:
+                            prof.dump_stats(profname)
                 return handler
 
             print "Validating models..."
