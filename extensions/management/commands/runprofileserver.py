@@ -13,6 +13,8 @@ class Command(BaseCommand):
             help='Specifies the directory which to save profile information in.'),
         make_option('--nomedia', action='store_true', dest='no_media', default=False,
             help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL'),
+        make_option('--use-cprofile', action='store_true', dest='use_cprofile', default=False,
+            help='Use cProfile if available, this is disabled per default because of incompatibilities.'),
     )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
@@ -50,11 +52,14 @@ class Command(BaseCommand):
             from django.conf import settings
 
             import hotshot, time, os
-            try:
-                import cProfile
-                HAS_CPROFILE = True
-            except ImportError:
-                HAS_CPROFILE = False
+            if options.get('use_cprofile', False):
+                try:
+                    import cProfile
+                    USE_CPROFILE = True
+                except ImportError:
+                    USE_CPROFILE = False
+            else:
+                USE_CPROFILE = False
             prof_path = options.get('prof_path', '/tmp')
             def make_profiler_handler(inner_handler):
                 def handler(environ, start_response):
@@ -64,16 +69,17 @@ class Command(BaseCommand):
                     # TODO: fix this to check the configuration settings and not make assumpsions about where media are on the url
                     if no_media and (path_info.startswith('/media') or path_info.startswith(settings.MEDIA_URL)):
                         return inner_handler(environ, start_response)
-                    profname = "%s.%.3f.prof" % (path_info.strip("/").replace('/', '.'), time.time())
+                    path_name = path_info.strip("/").replace('/', '.') or "root"
+                    profname = "%s.%.3f.prof" % (path_name, time.time())
                     profname = os.path.join(prof_path, profname)
-                    if HAS_CPROFILE:
+                    if USE_CPROFILE:
                         prof = cProfile.Profile()
                     else:
                         prof = hotshot.Profile(profname)
                     try:
                         return prof.runcall(inner_handler, environ, start_response)
                     finally:
-                        if HAS_CPROFILE:
+                        if USE_CPROFILE:
                             prof.dump_stats(profname)
                 return handler
 
