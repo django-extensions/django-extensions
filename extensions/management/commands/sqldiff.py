@@ -55,7 +55,11 @@ class Command(AppCommand):
         
         app_name = app.__name__.split('.')[-2]
         
-        django_tables = _sql.django_table_list(only_existing=options.get('only_existing', True))
+        try:
+            django_tables = _sql.django_table_names(only_existing=options.get('only_existing', True))
+        except AttributeError:
+            # backwards compatibility for before svn r7568 
+            django_tables = _sql.django_table_list(only_existing=options.get('only_existing', True))
         django_tables = [django_table for django_table in django_tables if django_table.startswith(app_name)]
         
         app_models = models.get_models(app)
