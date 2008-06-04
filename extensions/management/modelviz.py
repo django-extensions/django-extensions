@@ -42,6 +42,7 @@ __contributors__ = [
 import getopt, sys
 
 from django.core.management import setup_environ
+from django.utils.encoding import mark_safe
 
 try:
     import settings
@@ -220,7 +221,7 @@ def generate_dot(app_labels, **kwargs):
                     if isinstance(field, ManyToManyField):
                         add_relation('[arrowhead=normal arrowtail=normal]')
                     elif isinstance(field, GenericRelation):
-                        add_relation('[style="dotted"] [arrowhead=normal arrowtail=normal]')
+                        add_relation(mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
             graph['models'].append(model)
         graphs.append(graph)
 
