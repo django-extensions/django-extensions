@@ -94,7 +94,7 @@ subgraph {{ cluster_app_name }} {
 {% endif %}
 
   {% for model in models %}
-    {{ model.name }} [label=<
+    {{ model.app_name }}_{{ model.name }} [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
@@ -131,7 +131,7 @@ rel_template = """
         </TABLE>
         >]
     {% endif %}
-    {{ model.name }} -> {{ relation.target }}
+    {{ model.app_name }}_{{ model.name }} -> {{ relation.target_app }}_{{ relation.target }}
     [label="{{ relation.name }}"] {{ relation.arrows }};
     {% endfor %}
   {% endfor %}
@@ -171,6 +171,7 @@ def generate_dot(app_labels, **kwargs):
 
         for appmodel in get_models(app):
             model = {
+                'app_name': app.__name__.replace(".", "_"),
                 'name': appmodel.__name__,
                 'fields': [],
                 'relations': []
@@ -201,6 +202,7 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(extras=""):
                 _rel = {
+                    'target_app': field.rel.to.__module__.replace('.','_'),
                     'target': field.rel.to.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
