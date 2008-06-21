@@ -73,6 +73,10 @@ class Command(AppCommand):
             _constraints = None
             _meta = app_model._meta
             table_name = _meta.db_table
+            
+            table_indexes = introspection_module.get_indexes(cursor, table_name)
+
+            
             fieldmap = dict([(field.get_attname(), field) for field in _meta.fields])
             try:
                 table_description = introspection_module.get_table_description(cursor, table_name)
@@ -150,6 +154,10 @@ class Command(AppCommand):
                         continue
                 else:
                     diffs.append("field '%s' missing in model field" % att_name)
+            for field in _meta.fields:
+                if field.db_index:
+                    if not field.attname in table_indexes and not field.unique:
+                        diffs.append("field '%s' INDEX defined in model missing in database" % (field.attname))
             if fieldmap:
                 for att_name, field in fieldmap.items():
                     diffs.append("field '%s' missing in database" % att_name)
