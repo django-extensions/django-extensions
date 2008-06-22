@@ -54,7 +54,7 @@ setup(
     name = 'extensions',
     version = version,
     description = "Command Extensions for Django",
-    long_description = """django-command-extentions bundles several usefull
+    long_description = """django-command-extentions bundles several useful
 additional commands for Django projects. See the project page for more information:
   http://code.google.com/p/django-command-extensions/""",
     author = 'Michael Trier',
