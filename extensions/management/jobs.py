@@ -77,6 +77,15 @@ def get_jobs(when=None, only_scheduled=False):
     application class.
     """
     global _jobs
+    # FIXME: HACK: make sure the project dir is on the path when executed as ./manage.py
+    import sys
+    try:
+        cpath = os.path.dirname(os.path.realpath(sys.argv[0]))
+        ppath = os.path.dirname(cpath)
+        if ppath not in sys.path:
+            sys.path.append(ppath)
+    except:
+        pass
     if _jobs is None:
         _jobs = {}
         if True:
