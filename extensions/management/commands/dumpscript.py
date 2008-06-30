@@ -213,7 +213,13 @@ class InstanceCode(Code):
         if self.skip_me is not None:
             return self.skip_me
 
-        sub_objects = {}
+        try:
+            # Django trunk since r7722 uses CollectedObjects instead of dict
+            from django.db.models.query import CollectedObjects
+            sub_objects = CollectedObjects()
+        except ImportError:
+            # previous versions don't have CollectedObjects
+            sub_objects = {}
         self.instance._collect_sub_objects(sub_objects)
         if reduce(lambda x, y: x+y, [self.model in so._meta.parents for so in sub_objects.keys()]) == 1:
             pk_name = self.instance._meta.pk.name
