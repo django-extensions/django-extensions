@@ -1,4 +1,5 @@
 import os
+from imp import find_module
 from django.core.management.base import CommandError, AppCommand, _make_writeable
 from optparse import make_option
 
@@ -17,16 +18,20 @@ class Command(AppCommand):
     can_import_settings = True
 
     def handle_app(self, app, **options):
-        directory = os.getcwd()
-        app_name = app.__name__.split('.')[-2]
-        project_dir = os.path.join(directory, app_name)
-        if not os.path.exists(project_dir):
+        parts = app.__name__.split('.')[0:-1]
+        parts.reverse()
+        app_dir = None
+        while parts:
+            part = parts.pop()
+            f, app_dir, descr = find_module(part, app_dir and [app_dir] or None)
+        
+        if not os.path.exists(app_dir):
             try:
-                os.mkdir(project_dir)
+                os.mkdir(app_dir)
             except OSError, e:
                 raise CommandError(e)
         
-        copy_template('jobs_template', project_dir)
+        copy_template('jobs_template', app_dir)
             
 def copy_template(template_name, copy_to):
     """copies the specified template directory to the copy_to location"""

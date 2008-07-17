@@ -8,6 +8,8 @@ class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--template', '-t', action='store', dest='app_template', 
             help='The path to the app template'),
+        make_option('--parent_path', '-p', action='store', dest='parent_path', 
+            help='The parent path of the app to be created'),
     )
     
     help = ("Creates a Django application directory structure based on the specified template directory.")
@@ -22,7 +24,7 @@ class Command(LabelCommand):
         project_name = os.path.split(project_dir)[-1]
         app_name =label
         app_template = options.get('app_template') or os.path.join(extensions.__path__[0], 'conf', 'app_template')
-        app_dir = os.path.join(project_dir, app_name)
+        app_dir = os.path.join(options.get('parent_path') or project_dir, app_name)
                 
         if not os.path.exists(app_template):
             raise CommandError("The template path, %r, does not exist." % app_template)
@@ -30,7 +32,7 @@ class Command(LabelCommand):
         if not re.search(r'^\w+$', label):
             raise CommandError("%r is not a valid application name. Please use only numbers, letters and underscores." % label)
         try:
-            os.mkdir(app_dir)
+            os.makedirs(app_dir)
         except OSError, e:
             raise CommandError(e)
         
