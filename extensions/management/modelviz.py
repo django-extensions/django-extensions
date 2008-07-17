@@ -162,7 +162,7 @@ def generate_dot(app_labels, **kwargs):
     for app in apps:
         graph = Context({
             'name': '"%s"' % app.__name__,
-            'app_name': "%s" % app.__name__.rsplit('.', 1)[0],
+            'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
             'cluster_app_name': "cluster_%s" % app.__name__.replace(".", "_"),
             'disable_fields': disable_fields,
             'use_subgraph': use_subgraph,
