@@ -56,7 +56,7 @@ def describe_form(label, fields=None):
                                                                                   'params': params })
                                                                                
     return '''
-from django import newforms as forms
+from django import forms
 from %(app_name)s.models import %(object_name)s
     
 class %(object_name)sForm(forms.Form):
