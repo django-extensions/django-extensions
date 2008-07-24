@@ -42,7 +42,6 @@ __contributors__ = [
 import getopt, sys
 
 from django.core.management import setup_environ
-from django.utils.encoding import mark_safe
 
 try:
     import settings
@@ -51,6 +50,7 @@ except ImportError:
 else:
     setup_environ(settings)
 
+from django.utils.safestring import mark_safe
 from django.template import Template, Context
 from django.db import models
 from django.db.models import get_models
