@@ -37,7 +37,8 @@ class Command(BaseCommand):
                 continue
             view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
             for (func, regex) in view_functions:
-                views.append("%(url)s\t%(module)s.%(name)s" % {'name': style.MODULE_NAME(func.__name__),
+                func_name = hasattr(func, '__name__') and func.__name__ or repr(func)
+                views.append("%(url)s\t%(module)s.%(name)s" % {'name': style.MODULE_NAME(func_name),
                                        'module': style.MODULE(func.__module__),
                                        'url': style.URL(simplify_regex(regex))})
         
