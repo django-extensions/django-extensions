@@ -1,4 +1,5 @@
 import os
+import sys
 from imp import find_module
 from django.core.management.base import CommandError, AppCommand, _make_writeable
 from optparse import make_option
@@ -21,9 +22,23 @@ class Command(AppCommand):
         parts = app.__name__.split('.')[0:-1]
         parts.reverse()
         app_dir = None
+        original_parts = list(parts)
+        paths = list(sys.path)
         while parts:
             part = parts.pop()
-            f, app_dir, descr = find_module(part, app_dir and [app_dir] or None)
+            
+            # A part may be missing if namespace packages are being used.
+            # Try to import, and if it fails, boot the whole failing app_dir out 
+            # of our path search list. Reraise the import error if we run out of
+            # paths to try.
+            try:
+                f, app_dir, descr = find_module(part, app_dir and [app_dir] or paths)
+            except ImportError:
+                paths = [p for p in paths if not app_dir.startswith(p)]
+                if not paths:
+                    raise
+                app_dir = None
+                parts = list(original_parts)
         
         if not os.path.exists(app_dir):
             try:
