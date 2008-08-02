@@ -83,7 +83,7 @@ def get_models(app_labels):
 
 
 class Code(object):
-    """ A snippit of python script. 
+    """ A snippet of python script. 
         This keeps track of import statements and can be output to a string.
         In the future, other features such as custom indentation might be included
         in this class.
