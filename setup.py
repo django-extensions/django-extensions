@@ -51,10 +51,10 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 version = __import__('extensions').__version__
 
 setup(
-    name = 'extensions',
+    name = 'django-command-extensions',
     version = version,
     description = "Command Extensions for Django",
-    long_description = """django-command-extentions bundles several useful
+    long_description = """django-command-extensions bundles several useful
 additional commands for Django projects. See the project page for more information:
   http://code.google.com/p/django-command-extensions/""",
     author = 'Michael Trier',
