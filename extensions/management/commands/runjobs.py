@@ -35,8 +35,8 @@ class Command(LabelCommand):
                 traceback.print_exc()
                 print "END TRACEBACK\n"
 
-    def runjobs_by_dispatcher(self, when, options):
-        """ Run jobs from the dispatcher """
+    def runjobs_by_signals(self, when, options):
+        """ Run jobs from the signals """
         # Thanks for Ian Holsman for the idea and code
         from extensions.management import signals
         from django.db import models
@@ -51,7 +51,7 @@ class Command(LabelCommand):
         for app in models.get_apps():
             if options.get('verbose', False):
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
-                print "Dispatching %s job signal for: %s" % (when, app_name)
+                print "Sending %s job signal for: %s" % (when, app_name)
             if when == 'hourly':
                 signals.run_hourly_jobs.send(sender=app, app=app)
             elif when == 'daily':
@@ -79,4 +79,4 @@ class Command(LabelCommand):
                 self.usage_msg()
                 return
             self.runjobs(when, options)
-            self.runjobs_by_dispatcher(when, options)
+            self.runjobs_by_signals(when, options)
