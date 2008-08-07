@@ -12,12 +12,12 @@ class Command(LabelCommand):
     help = "Runs scheduled maintenance jobs."
     args = "[hourly daily weekly monthly]"
     label = ""
-    
+
     requires_model_validation = True
 
     def usage_msg(self):
         print "Run scheduled jobs. Please specify 'hourly', 'daily', 'weekly' or 'monthly'"
-    
+
     def runjobs(self, when, options):
         jobs = get_jobs(when, only_scheduled=True)
         list = jobs.keys()
@@ -34,15 +34,14 @@ class Command(LabelCommand):
                 print "START TRACEBACK:"
                 traceback.print_exc()
                 print "END TRACEBACK\n"
-    
+
     def runjobs_by_dispatcher(self, when, options):
         """ Run jobs from the dispatcher """
         # Thanks for Ian Holsman for the idea and code
         from extensions.management import signals
         from django.db import models
-        from django.dispatch import dispatcher
         from django.conf import settings
-    
+
         for app_name in settings.INSTALLED_APPS:
             try:
                 __import__(app_name + '.management', '', '', [''])
@@ -54,14 +53,14 @@ class Command(LabelCommand):
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print "Dispatching %s job signal for: %s" % (when, app_name)
             if when == 'hourly':
-                dispatcher.send(signal=signals.run_hourly_jobs, sender=app, app=app)
+                signals.run_hourly_jobs.send(sender=app, app=app)
             elif when == 'daily':
-                dispatcher.send(signal=signals.run_daily_jobs, sender=app, app=app)
+                signals.run_daily_jobs.send(sender=app, app=app)
             elif when == 'weekly':
-                dispatcher.send(signal=signals.run_weekly_jobs, sender=app, app=app)
+                signals.run_weekly_jobs.send(sender=app, app=app)
             elif when == 'monthly':
-                dispatcher.send(signal=signals.run_monthly_jobs, sender=app, app=app)
-    
+                signals.run_monthly_jobs.send(sender=app, app=app)
+
     def handle(self, *args, **options):
         when = None
         if len(args)>1:
@@ -81,4 +80,3 @@ class Command(LabelCommand):
                 return
             self.runjobs(when, options)
             self.runjobs_by_dispatcher(when, options)
-        
