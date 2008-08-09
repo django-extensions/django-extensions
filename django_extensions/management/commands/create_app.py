@@ -1,6 +1,6 @@
 import os
 import re
-import extensions
+import django_extensions
 from django.core.management.base import CommandError, LabelCommand, _make_writeable
 from optparse import make_option
 
@@ -23,7 +23,7 @@ class Command(LabelCommand):
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]
         app_name =label
-        app_template = options.get('app_template') or os.path.join(extensions.__path__[0], 'conf', 'app_template')
+        app_template = options.get('app_template') or os.path.join(django_extensions.__path__[0], 'conf', 'app_template')
         app_dir = os.path.join(options.get('parent_path') or project_dir, app_name)
                 
         if not os.path.exists(app_template):

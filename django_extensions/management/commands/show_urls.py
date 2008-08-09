@@ -7,7 +7,7 @@ except ImportError:
     # fall back to trunk, pre-NFA merge
     from django.contrib.admin.views.doc import extract_views_from_urlpatterns, simplify_regex
         
-from extensions.management.color import color_style
+from django_extensions.management.color import color_style
 
 class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."

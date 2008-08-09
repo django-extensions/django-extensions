@@ -34,11 +34,11 @@ class Command(AppCommand):
             
 def copy_template(template_name, copy_to, command_name, base_command):
     """copies the specified template directory to the copy_to location"""
-    import extensions
+    import django_extensions
     import re
     import shutil
     
-    template_dir = os.path.join(extensions.__path__[0], 'conf', template_name)
+    template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
 
     handle_method = "handle(self, *args, **options)"
     if base_command == 'AppCommand':

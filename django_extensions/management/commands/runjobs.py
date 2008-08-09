@@ -1,6 +1,6 @@
 from django.core.management.base import LabelCommand
 from optparse import make_option
-from extensions.management.jobs import get_jobs, print_jobs
+from django_extensions.management.jobs import get_jobs, print_jobs
 
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
@@ -38,7 +38,7 @@ class Command(LabelCommand):
     def runjobs_by_signals(self, when, options):
         """ Run jobs from the signals """
         # Thanks for Ian Holsman for the idea and code
-        from extensions.management import signals
+        from django_extensions.management import signals
         from django.db import models
         from django.conf import settings
 

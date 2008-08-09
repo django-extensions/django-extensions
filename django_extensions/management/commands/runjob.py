@@ -1,6 +1,6 @@
 from django.core.management.base import LabelCommand
 from optparse import make_option
-from extensions.management.jobs import get_job, print_jobs
+from django_extensions.management.jobs import get_job, print_jobs
 
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (

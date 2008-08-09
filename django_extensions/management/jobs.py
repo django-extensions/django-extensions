@@ -1,5 +1,5 @@
 """
-extensions.management.jobs
+django_extensions.management.jobs
 """
 
 import os

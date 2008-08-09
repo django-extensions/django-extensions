@@ -29,7 +29,7 @@ for scheme in INSTALL_SCHEMES.values():
 # an easy way to do this.
 packages, data_files = [], []
 root_dir = os.path.dirname(__file__)
-extensions_dir = os.path.join(root_dir, 'extensions')
+extensions_dir = os.path.join(root_dir, 'django_extensions')
 pieces = fullsplit(root_dir)
 if pieces[-1] == '':
     len_root_dir = len(pieces) - 1
@@ -48,14 +48,14 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
     elif filenames:
         data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
 
-version = __import__('extensions').__version__
+version = __import__('django_extensions').__version__
 
 setup(
-    name = 'django-command-extensions',
+    name = 'django-extensions',
     version = version,
-    description = "Command Extensions for Django",
-    long_description = """django-command-extensions bundles several useful
-additional commands for Django projects. See the project page for more information:
+    description = "Extensions for Django",
+    long_description = """django-extensions bundles several useful
+additions for Django projects. See the project page for more information:
   http://code.google.com/p/django-command-extensions/""",
     author = 'Michael Trier',
     author_email = 'mtrier@gmail.com',
