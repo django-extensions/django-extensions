@@ -11,34 +11,27 @@ except ImportError:
     from django_extensions.utils import uuid
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField """
+    """ CreationDateTimeField 
+    
+    By default, sets editable=False, blank=True, default=datetime.now
+    """
     
     def __init__(self, *args, **kwargs):
-	if not 'editable' in kwargs:
-	    kwargs['editable'] = False
-	if not 'blank' in kwargs:
-	    kwargs['blank'] = True
+        kwargs.setdefault('editable', False)
+        kwargs.setdefault('blank', True)
+        kwargs.setdefault('default', datetime.datetime.now)
 	DateTimeField.__init__(self, *args, **kwargs)
-    
-    def pre_save(self, model, add):
-	if add or getattr(model, self.attname) is None:
-	    value = datetime.datetime.now()
-	    setattr(model, self.attname, value)
-	    return value
-	return super(CreationDateTimeField, self).pre_save(model, add)
     
     def get_internal_type(self):
 	return "DateTimeField"
 
-class ModificationDateTimeField(DateTimeField):
-    """ CreationDateTimeField """
+class ModificationDateTimeField(CreationDateTimeField):
+    """ ModificationDateTimeField 
     
-    def __init__(self, *args, **kwargs):
-	if not 'editable' in kwargs:
-	    kwargs['editable'] = False
-	if not 'blank' in kwargs:
-	    kwargs['blank'] = True
-	DateTimeField.__init__(self, *args, **kwargs)
+    By default, sets editable=False, blank=True, default=datetime.now
+    
+    Sets value to datetime.now() on each save of the model.
+    """
     
     def pre_save(self, model, add):
 	value = datetime.datetime.now()
