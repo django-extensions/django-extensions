@@ -1,26 +1,46 @@
 """
-from http://www.djangosnippets.org/snippets/828/ by dnordberg
+originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 
 """
 
 
 from django.conf import settings
-from django.core.management.base import CommandError
-import logging
-from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
+import logging
+from optparse import make_option
         
 class Command(BaseCommand):
-    help = "Resets a database."
+    option_list = BaseCommand.option_list + (
+        make_option('--noinput', action='store_false',
+                    dest='interactive', default=True,
+                    help='Tells Django to NOT prompt the user for input of any kind.'),
+    )
+    help = "Resets the database for this project."
 
     def handle(self, *args, **options):
         """
-        Resets a database.
+        Resets the database for this project.
     
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-    
+
+        if options.get('interactive'):
+            confirm = raw_input("""
+You have requested a database reset.
+This will IRREVERSIBLY DESTROY
+ALL data in the database "%s".
+Are you sure you want to do this?
+
+Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
+        else:
+            confirm = 'yes'
+
+        if confirm != 'yes':
+            print "Reset cancelled."
+            return
+
         engine = settings.DATABASE_ENGINE
     
         if engine == 'sqlite3':
@@ -90,4 +110,4 @@ CREATE DATABASE %s
         else:
             raise CommandError, "Unknown database engine %s", engine
     
-        logging.info("Reset success")
+        print "Reset successful."
