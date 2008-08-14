@@ -386,7 +386,7 @@ def get_attribute_value(item, field, context):
 
     # Some databases (eg MySQL) might store boolean values as 0/1, this needs to be cast as a bool
     elif isinstance(field, models.BooleanField) and value is not None:
-        value = repr(bool(value))
+        return repr(bool(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, models.ForeignKey) and value is not None:
