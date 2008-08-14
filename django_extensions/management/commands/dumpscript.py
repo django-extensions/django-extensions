@@ -33,7 +33,7 @@ import sys
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
 
 class Command(BaseCommand):
@@ -387,6 +387,10 @@ def get_attribute_value(item, field, context):
     # Some databases (eg MySQL) might store boolean values as 0/1, this needs to be cast as a bool
     elif isinstance(field, models.BooleanField) and value is not None:
         return repr(bool(value))
+
+    # Post file-storage-refactor, repr() on File/ImageFields no longer returns the path
+    elif isinstance(field, models.FileField):
+        return repr(force_unicode(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, models.ForeignKey) and value is not None:
