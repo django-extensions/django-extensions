@@ -45,15 +45,19 @@ class UUIDVersionError(Exception):
     pass
 
 class UUIDField(CharField):
-    """ UUIDField for Django, supports all uuid versions which are natively
-        supported by the uuid python module.
+    """ UUIDField
+    
+    By default uses UUID version 1 (generate from host ID, sequence number and current time)
+    
+    The field support all uuid versions which are natively supported by the uuid python module.
+    For more information see: http://docs.python.org/lib/module-uuid.html
     """
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
         kwargs['maxlength'] = 36
         if auto:
             kwargs['blank'] = True
-            kwargs['editable'] = kwargs.get('editable', False)
+	    kwargs.setdefault('editable', False)
         self.version = version
         if version==1:
             self.node, self.clock_seq = node, clock_seq
