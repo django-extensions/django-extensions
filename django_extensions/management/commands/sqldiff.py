@@ -50,23 +50,32 @@ class Command(AppCommand):
     
     @transaction.commit_manually
     def handle_diff(self, app, **options):
-        from django.db import models, connection, get_introspection_module
+        from django.db import models, connection
         from django.core.management import sql as _sql
         
         app_name = app.__name__.split('.')[-2]
         
-        try:
-            django_tables = _sql.django_table_names(only_existing=options.get('only_existing', True))
-        except AttributeError:
-            # backwards compatibility for before svn r7568 
-            django_tables = _sql.django_table_list(only_existing=options.get('only_existing', True))
+	try:
+	    django_tables = connection.introspection.django_table_names(only_existing=options.get('only_existing', True))
+	except AttributeError:
+	    # backwards compatibility for before introspection refactoring (r8296)
+    	    try:
+        	django_tables = _sql.django_table_names(only_existing=options.get('only_existing', True))
+    	    except AttributeError:
+        	# backwards compatibility for before svn r7568 
+    	        django_tables = _sql.django_table_list(only_existing=options.get('only_existing', True))
         django_tables = [django_table for django_table in django_tables if django_table.startswith(app_name)]
         
         app_models = models.get_models(app)
         if not app_models:
             return
         
-        introspection_module = get_introspection_module()
+	try:
+	    from django.db import get_introspection_module
+            introspection_module = get_introspection_module()
+	except ImportError:
+	    introspection_module = connection.introspection
+	
         cursor = connection.cursor()
         model_diffs = []
         for app_model in app_models:
@@ -87,8 +96,16 @@ class Command(AppCommand):
             diffs = []
             for i, row in enumerate(table_description):
                 att_name = row[0].lower()
-                db_field_reverse_type = introspection_module.DATA_TYPES_REVERSE.get(row[1])
+		try:
+        	    db_field_reverse_type = introspection_module.data_types_reverse[row[1]]
+		except AttributeError:
+		    # backwards compatibility for before introspection refactoring (r8296)
+		    db_field_reverse_type = introspection_module.DATA_TYPES_REVERSE.get(row[1])
                 kwargs = {}
+		if isinstance(db_field_reverse_type, tuple):
+		    kwargs.update(db_field_reverse_type[1])
+		    db_field_reverse_type = db_field_reverse_type[0]
+                
                 if row[3]:
                     kwargs['max_length'] = row[3]
                 if row[4]:
@@ -98,7 +115,7 @@ class Command(AppCommand):
                 if row[6]:
                     kwargs['blank'] = True
                     if not db_field_reverse_type in ('TextField', 'CharField'):
-                        extra_params['null'] = True
+                        kwargs['null'] = True
                 if fieldmap.has_key(att_name):
                     field = fieldmap.pop(att_name)
                     # check type
