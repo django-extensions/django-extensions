@@ -10,6 +10,8 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noreload', action='store_false', dest='use_reloader', default=True,
             help='Tells Django to NOT use the auto-reloader.'),
+        make_option('--browser', action='store_true', dest='open_browser',
+            help='Tells Django to open a browser.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
             help='Specifies the directory from which to serve admin media.'),
     )
@@ -49,6 +51,7 @@ class Command(BaseCommand):
             raise CommandError("%r is not a valid port number." % port)
 
         use_reloader = options.get('use_reloader', True)
+        open_browser = options.get('open_browser', False)
         admin_media_path = options.get('admin_media_path', '')
         shutdown_message = options.get('shutdown_message', '')
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
@@ -63,6 +66,10 @@ class Command(BaseCommand):
             print "Quit the server with %s." % quit_command
             path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
             handler = AdminMediaHandler(WSGIHandler(), path)
+            if open_browser:
+                import webbrowser
+                url = "http://%s:%s/" % (addr, port)
+                webbrowser.open(url)
             run_simple(addr, int(port), DebuggedApplication(handler, True), 
                        use_reloader=use_reloader, use_debugger=True)            
         inner_run()
