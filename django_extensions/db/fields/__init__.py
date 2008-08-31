@@ -20,10 +20,10 @@ class CreationDateTimeField(DateTimeField):
         kwargs.setdefault('editable', False)
         kwargs.setdefault('blank', True)
         kwargs.setdefault('default', datetime.datetime.now)
-	DateTimeField.__init__(self, *args, **kwargs)
+        DateTimeField.__init__(self, *args, **kwargs)
     
     def get_internal_type(self):
-	return "DateTimeField"
+        return "DateTimeField"
 
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField 
@@ -34,12 +34,12 @@ class ModificationDateTimeField(CreationDateTimeField):
     """
     
     def pre_save(self, model, add):
-	value = datetime.datetime.now()
-	setattr(model, self.attname, value)
-	return value
+        value = datetime.datetime.now()
+        setattr(model, self.attname, value)
+        return value
     
     def get_internal_type(self):
-	return "DateTimeField"
+        return "DateTimeField"
 
 class UUIDVersionError(Exception):
     pass
@@ -57,7 +57,7 @@ class UUIDField(CharField):
         kwargs['maxlength'] = 36
         if auto:
             kwargs['blank'] = True
-	    kwargs.setdefault('editable', False)
+            kwargs.setdefault('editable', False)
         self.version = version
         if version==1:
             self.node, self.clock_seq = node, clock_seq
