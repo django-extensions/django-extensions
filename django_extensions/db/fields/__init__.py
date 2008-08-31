@@ -17,11 +17,20 @@ class AutoSlugField(SlugField):
 
     By default, sets editable=False, blank=True.
 
-    Use the 'populate_from' argument to specify which field the slug is
-    populated from. Optionally use the 'separator' argument to define the used
-    separator, defaults to '-'.
+    Required arguments:
+    
+    populate_from
+        Specifies which field the slug is populated from.
+    
+    Optional arguments:
+    
+    separator
+        Defines the used separator (default: '-')
 
-    Inspired by SmileyChris' Unique Slugify snippet at:
+    overwrite
+        If set to True, overwrites the slug on every save (default: False)
+
+    Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
     def __init__(self, *args, **kwargs):
@@ -34,6 +43,7 @@ class AutoSlugField(SlugField):
         else:
             self._populate_from = populate_from
         self.separator = kwargs.pop('separator',  u'-')
+        self.overwrite = kwargs.pop('overwrite', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -52,7 +62,7 @@ class AutoSlugField(SlugField):
         # get fields to populate from and slug field to set
         populate_field = model_instance._meta.get_field(self._populate_from)
         slug_field = model_instance._meta.get_field(self.attname)
-        if add:
+        if add or self.overwrite:
             # slugify the original field content and set next step to 2
             slug = slugify(getattr(model_instance, populate_field.attname))
             next = 2
