@@ -197,6 +197,7 @@ to check/debug ur models compared to the real database tables and columns."""
                     })
             if diffs:
                 model_diffs.append((app_model.__name__, diffs))
+	
         if model_diffs:
             NOTICE = self.style.NOTICE
             ERROR_OUTPUT = self.style.ERROR_OUTPUT
