@@ -56,29 +56,36 @@ class Command(BaseCommand):
 
 def get_models(app_labels):
     """ Gets a list of models for the given app labels, with some exceptions. 
+        TODO: If a required model is referenced, it should also be included.
+        Or at least discovered with a get_or_create() call.
     """
 
-    from django.db.models import get_app, get_apps
+    from django.db.models import get_app, get_apps, get_model
     from django.db.models import get_models as get_all_models
 
     # These models are not to be output, e.g. because they can be generated automatically
-    # TODO: This should also specify the app, in case model
-    EXCLUDED_MODELS = ('ContentType', )
+    # TODO: This should be "appname.modelname" string
+    from django.contrib.contenttypes.models import ContentType
+    EXCLUDED_MODELS = (ContentType, )
+
+    models = []
+
+    # If no app labels are given, return all
+    if not app_labels:
+        for app in get_apps():
+            models += [ m for m in get_all_models(app) if m not in EXCLUDED_MODELS ]
 
     # Get all relevant apps
-    if not app_labels:
-        app_list = get_apps()
-    else:
-        app_list = [ get_app(app_label) for app_label in app_labels ]
-
-    # Get a list of all the relevant models
-    models = []
-    for app in app_list:
-        # Get all models for each app, except any excluded ones
-        models += [ m for m in get_all_models(app) if m.__name__ not in EXCLUDED_MODELS ]
+    for app_label in app_labels:
+        # If a specific model is mentioned, get only that model
+        if "." in app_label:
+            app_label, model_name = app_label.split(".", 1)
+            models.append(get_model(app_label, model_name))
+        # Get all models for a given app
+        else:
+            models += [ m for m in get_all_models(get_app(app_label)) if m not in EXCLUDED_MODELS ]
 
     return models
-
 
 
 
@@ -173,9 +180,13 @@ class InstanceCode(Code):
         for field in self.model._meta.many_to_many:
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
-    def get_lines(self):
+    def get_lines(self, force=False):
         """ Returns a list of lists or strings, representing the code body. 
             Each list is a block, each string is a statement.
+            
+            force (True or False): if an attribute object cannot be included, 
+            it is usually skipped to be processed later. With 'force' set, there
+            will be no waiting: a get_or_create() call is written instead.
         """
         code_lines = []
 
@@ -192,12 +203,16 @@ class InstanceCode(Code):
         #      model_name_35.field_two = "text"
         code_lines += self.get_waiting_list()
 
+        if force:
+            # TODO: Check that M2M are not affected
+            code_lines += self.get_waiting_list(force=force)
+
         # Print the save command for our new object
         # e.g. model_name_35.save()
         if code_lines:
             code_lines.append("%s.save()\n" % (self.variable_name))
 
-        code_lines += self.get_many_to_many_lines()
+        code_lines += self.get_many_to_many_lines(force=force)
 
         return code_lines
     lines = property(get_lines)
@@ -248,7 +263,7 @@ class InstanceCode(Code):
         return code_lines
 
 
-    def get_waiting_list(self):
+    def get_waiting_list(self, force=False):
         " Add lines for any waiting fields that can be completed now. "
 
         code_lines = []
@@ -257,7 +272,7 @@ class InstanceCode(Code):
         for field in list(self.waiting_list):
             try:
                 # Find the value, add the line, remove from waiting list and move on
-                value = get_attribute_value(self.instance, field, self.context)
+                value = get_attribute_value(self.instance, field, self.context, force=force)
                 code_lines.append('%s.%s = %s' % (self.variable_name, field.name, value))
                 self.waiting_list.remove(field)
             except SkipValue, e:
@@ -271,7 +286,8 @@ class InstanceCode(Code):
 
         return code_lines
 
-    def get_many_to_many_lines(self):
+
+    def get_many_to_many_lines(self, force=False):
         """ Generates lines that define many to many relations for this instance. """
 
         lines = []
@@ -285,7 +301,10 @@ class InstanceCode(Code):
                     lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
                     self.many_to_many_waiting_list[field].remove(rel_item)
                 except KeyError:
-                    pass
+                    if force:
+                        value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
+                        lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
+                        self.many_to_many_waiting_list[field].remove(rel_item)
 
         if lines:
             lines.append("")
@@ -320,8 +339,8 @@ class Script(Code):
         for model in self.models:
             sys.stderr.write('Re-processing model: %s\n' % model.model.__name__)
             for instance in model.instances:
-                if instance.waiting_list:
-                    code.append(instance.lines)
+                if instance.waiting_list or instance.many_to_many_waiting_list:
+                    code.append(instance.get_lines(force=True))
 
         return code
 
@@ -371,7 +390,7 @@ def flatten_blocks(lines, num_indents=-1):
 
 
 
-def get_attribute_value(item, field, context):
+def get_attribute_value(item, field, context, force=False):
     """ Gets a string version of the given attribute's value, like repr() might. """
 
     # Find the value of the field, catching any database issues
@@ -414,6 +433,8 @@ def get_attribute_value(item, field, context):
                 raise SkipValue()
             # Return the variable name listed in the context 
             return "%s" % variable_name
+        elif force:
+            return "%s.objects.get(%s=%s)" % (value._meta.object_name, pk_name, getattr(value, pk_name))
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
