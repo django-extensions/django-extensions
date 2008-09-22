@@ -176,6 +176,11 @@ to check/debug ur models compared to the real database tables and columns."""
                         model_type = model_type.split("CHECK")[0].strip()
                     c_db_field_type = clean(db_field_type)
                     c_model_type = clean(model_type)
+
+                    if self.is_sqlite and (c_db_field_type=="varchar" and c_model_type=="char"):
+                        c_db_field_type = "char"
+                        db_field_type = db_field_type.lstrip("var")
+
                     if not cmp_or_serialcmp(c_model_type, c_db_field_type):
                         diffs.append({
                             'text' : "field '%s' not of same type: db=%s, model=%s" % (att_name, c_db_field_type, c_model_type),
