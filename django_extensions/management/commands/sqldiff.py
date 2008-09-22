@@ -6,7 +6,15 @@ TODO:
    writing backend specific code. (like the constrains check's)
  - general cleanup
  - better support for relations
- - test with other backends then postgresql.
+ 
+KNOWN ISSUES:
+ - MySQL has numerous problems with introspection. It's not recommanded to use
+   sqldiff in conjuction with MySQL. But if you do, expect to see a hole lot
+   of false positives. Mainly:
+   - Booleans are reported back as Integers, so there's know way to know if
+     there was a real change.
+   - Varchar sizes are reported back without unicode support so there size
+     may change in comparison to the real length of the varchar.   
 """
 
 from django.core.management.base import AppCommand
@@ -45,6 +53,7 @@ to check/debug ur models compared to the real database tables and columns."""
         from django.conf import settings
         self.is_pgsql = settings.DATABASE_ENGINE.startswith("postgresql")
         self.is_sqlite = settings.DATABASE_ENGINE.startswith("sqlite")
+        self.is_mysql = settings.DATABASE_ENGINE.startswith("mysql")
         self.handle_diff(app, **options)
     
     @transaction.commit_manually
@@ -81,10 +90,8 @@ to check/debug ur models compared to the real database tables and columns."""
             _constraints = None
             _meta = app_model._meta
             table_name = _meta.db_table
-            
             table_indexes = introspection_module.get_indexes(cursor, table_name)
-
-            
+	    
             fieldmap = dict([(field.get_attname(), field) for field in _meta.fields])
             try:
                 table_description = introspection_module.get_table_description(cursor, table_name)
@@ -104,17 +111,19 @@ to check/debug ur models compared to the real database tables and columns."""
 		if isinstance(db_field_reverse_type, tuple):
 		    kwargs.update(db_field_reverse_type[1])
 		    db_field_reverse_type = db_field_reverse_type[0]
-                
-                if row[3]:
+		
+                if db_field_reverse_type == "CharField" and row[3]:
                     kwargs['max_length'] = row[3]
-                if row[4]:
+		
+                if db_field_reverse_type == "DecimalField":
                     kwargs['max_digits'] = row[4]
-                if row[5]:
                     kwargs['decimal_places'] = row[5]
+		
                 if row[6]:
                     kwargs['blank'] = True
                     if not db_field_reverse_type in ('TextField', 'CharField'):
                         kwargs['null'] = True
+
                 if fieldmap.has_key(att_name):
                     field = fieldmap.pop(att_name)
                     # check type
@@ -135,6 +144,11 @@ to check/debug ur models compared to the real database tables and columns."""
                         return result
                     db_field_type = getattr(models, db_field_reverse_type)(**kwargs).db_type()
                     model_type = field.db_type()
+		    
+                    # remove mysql's auto_increment keyword
+                    if self.is_mysql and model_type.endswith("AUTO_INCREMENT"):
+                        model_type = model_type.rsplit(' ', 1)[0].strip()
+		    
                     # check if we can for constraints (only enabled on postgresql atm)
                     if self.is_pgsql:
                         if _constraints==None:
@@ -207,6 +221,18 @@ to check/debug ur models compared to the real database tables and columns."""
             SQL_KEYWORD = self.style.SQL_KEYWORD
             modify_command = self.is_pgsql and "TYPE" or "MODIFY"
             
+            if self.is_mysql:
+                print ERROR_OUTPUT("""\
+Using sqldiff in conjuction with MySQL has known problems.
+Please see the explanations about these problems in source
+code of sqldiff.py. 
+
+Use at your own risk, and but sure to tripple check every
+result. This program will continue in 5 seconds.		
+		""")
+                import time
+                time.sleep(5)
+	    
             if options.get('sql', False):
                 lines = ["", SQL_KEYWORD("BEGIN;")]
                 
