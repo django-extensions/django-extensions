@@ -45,7 +45,7 @@ def describe_form(label, fields=None):
                     continue
                 if k == 'widget':
                     attrs[k] = v.__class__
-                elif k == 'help_text':
+                elif k in ['help_text', 'label']:
                     attrs[k] = force_unicode(v).strip()
                 else:
                     attrs[k] = v
