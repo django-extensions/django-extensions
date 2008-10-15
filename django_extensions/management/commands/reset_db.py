@@ -15,6 +15,9 @@ class Command(BaseCommand):
         make_option('--noinput', action='store_false',
                     dest='interactive', default=True,
                     help='Tells Django to NOT prompt the user for input of any kind.'),
+        make_option('--no-utf8', action='store_true',
+                    dest='no_utf8_support', default=False,
+                    help='Tells Django to not create a UTF-8 charset database'),
     )
     help = "Resets the database for this project."
 
@@ -64,7 +67,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 kwargs['port'] = int(settings.DATABASE_PORT)
             connection = Database.connect(**kwargs)
             drop_query = 'DROP DATABASE IF EXISTS %s' % settings.DATABASE_NAME
-            create_query = 'CREATE DATABASE %s' % settings.DATABASE_NAME
+            utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
+            create_query = 'CREATE DATABASE %s %s' % (settings.DATABASE_NAME, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
