@@ -8,10 +8,6 @@ import os
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
-        #make_option('--optimize', '-o', '-O', action='store_true', dest='optimize', 
-        #    help='Compile optimized python bytecode files'),
-        make_option('--verbose', '-v', action='store_true', dest='verbose', 
-            help='Verbose operation'),
         make_option('--path', '-p', action='store', dest='path', 
             help='Specify path to recurse into'),
     )
@@ -23,7 +19,7 @@ class Command(NoArgsCommand):
 	project_root = options.get("path", None)
 	if not project_root:
     	    project_root = get_project_root()
-	verbose = options.get("verbose", False)
+	verbose = int(options.get("verbosity", 1))>1
 	
 	for root, dirs, files in os.walk(project_root):
 	    for file in files:
@@ -34,3 +30,11 @@ class Command(NoArgsCommand):
 			print "%sc" % full_path
 		    py_compile.compile(full_path)
 		    
+
+# Backwards compatibility for Django r9110
+if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+    Command.option_list += (
+	make_option('--verbosity', '-v', action="store", dest="verbosity",
+	    default='1', type='choice', choices=['0', '1', '2'],
+	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+    )

@@ -6,8 +6,6 @@ class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--list', '-l', action="store_true", dest="list_jobs",
             help="List all jobs with there description"),
-        make_option('--verbose', '-v', action="store_true", dest="verbose",
-            help="Verbose messages"),
     )
     help = "Run a single maintenance job."
     args = "[app_name] job_name"
@@ -16,7 +14,8 @@ class Command(LabelCommand):
     requires_model_validation = True
 
     def runjob(self, app_name, job_name, options):
-        if options.get('verbose', False):
+        verbosity = int(options.get('verbosity', 1))
+        if verbosity>1:
             print "Executing job: %s (app: %s)" % (job_name, app_name)
         try:
             job = get_job(app_name, job_name)
@@ -50,4 +49,11 @@ class Command(LabelCommand):
                 print "Run a single maintenance job. Please specify the name of the job."
                 return
             self.runjob(app_name, job_name, options)
-        
+
+# Backwards compatibility for Django r9110
+if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+    Command.option_list += (
+	make_option('--verbosity', '-v', action="store", dest="verbosity",
+	    default='1', type='choice', choices=['0', '1', '2'],
+	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+    )

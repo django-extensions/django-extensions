@@ -17,11 +17,6 @@ import os
 class Command(BaseCommand):
     """ syncdata command """
     
-    option_list = BaseCommand.option_list + (
-        make_option('--verbosity', action='store', dest='verbosity', default='1',
-            type='choice', choices=['0', '1', '2'],
-            help='Verbosity level; 0=minimal output, 1=normal output, 2=all output'),
-    )
     help = 'Makes the current database have the same data as the fixture(s), no more, no less.'
     args = "fixture [fixture ...]"
     
@@ -216,3 +211,11 @@ class Command(BaseCommand):
         # create tables, load data, and query, the query can return
         # incorrect results. See Django #7572, MySQL #37735.
         connection.close()
+
+# Backwards compatibility for Django r9110
+if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+    Command.option_list += (
+	make_option('--verbosity', '-v', action="store", dest="verbosity",
+	    default='1', type='choice', choices=['0', '1', '2'],
+	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+    )
