@@ -188,10 +188,11 @@ class Command(BaseCommand):
 
             # File is newer, let's process and upload
             content_type = mimetypes.guess_type(filename)[0]
+            headers['Content-Type'] = content_type
             file_obj = open(filename, 'rb')
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
-            if content_type in ('text/css', 'application/x-javascript'):
+            if content_type in ('text/css', 'application/javascript', 'application/x-javascript'):
                 if self.do_gzip:
                     # Gzipping only if file is large enough (>1K is recommended)
                     if file_size > 1024:
