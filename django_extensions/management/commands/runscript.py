@@ -11,9 +11,6 @@ except NameError:
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--verbosity', action='store', dest='verbosity', default='0',
-            type='choice', choices=['0', '1', '2'],
-            help='Verbosity level; 0=no output, 1=minimal output, 2=all output'),
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
             help='Only look in app.fixtures subdir'),
         make_option('--noscripts', action='store_true', dest='noscripts', default=False,
@@ -88,3 +85,11 @@ class Command(BaseCommand):
                 run_script(script)
 
 
+
+# Backwards compatibility for Django r9110
+if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+    Command.option_list += (
+	make_option('--verbosity', '-v', action="store", dest="verbosity",
+	    default='1', type='choice', choices=['0', '1', '2'],
+	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+    )
