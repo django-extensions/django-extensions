@@ -97,7 +97,7 @@ class Command(BaseCommand):
         try:
             import vobject
         except ImportError:
-            print self.style.ERROR_OUTPUT("Please install python-vobjects to use the vcard export format.")
+            print self.style.ERROR_OUTPUT("Please install python-vobject to use the vcard export format.")
             import sys
             sys.exit(1)
         for ent in qs:
