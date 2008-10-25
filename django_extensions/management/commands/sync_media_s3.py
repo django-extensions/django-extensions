@@ -188,7 +188,8 @@ class Command(BaseCommand):
 
             # File is newer, let's process and upload
             content_type = mimetypes.guess_type(filename)[0]
-            headers['Content-Type'] = content_type
+            if content_type:
+                headers['Content-Type'] = content_type
             file_obj = open(filename, 'rb')
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
