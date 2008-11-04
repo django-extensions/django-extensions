@@ -59,9 +59,6 @@ class Command(BaseCommand):
     skip_count = 0
 
     option_list = BaseCommand.option_list + (
-        optparse.make_option('-v', '--verbose',
-            dest='verbose', default=1, action='count',
-            help="Verbose mode. Multiple -v options increase the verbosity."),
         optparse.make_option('-p', '--prefix',
             dest='prefix', default='',
             help="The prefix to prepend to the path on S3."),
@@ -222,3 +219,11 @@ class Command(BaseCommand):
                     print " Done."
 
             file_obj.close()
+
+# Backwards compatibility for Django r9110
+if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+    Command.option_list += (
+        optparse.make_option('-v', '--verbose',
+            dest='verbose', default=1, action='count',
+            help="Verbose mode. Multiple -v options increase the verbosity."),
+    )
