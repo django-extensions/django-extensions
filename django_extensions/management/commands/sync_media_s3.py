@@ -13,8 +13,10 @@ This command can optionally do the following but it is off by default:
 Note: This script requires the Python boto library and valid Amazon Web
 Services API keys.
 
-Required argument:
-  bucket name           Uploads media into the specified bucket.
+Required settings.py variables:
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_BUCKET_NAME = ''
 
 Command options are:
   -p PREFIX, --prefix=PREFIX
@@ -23,7 +25,6 @@ Command options are:
   --expires             Enables setting a far future expires header.
   --force               Skip the file mtime check to force upload of all
                         files.
-
 
 TODO:
 * Make FILTER_LIST an optional argument
@@ -51,7 +52,7 @@ class Command(BaseCommand):
     # Extra variables to avoid passing these around
     AWS_ACCESS_KEY_ID = ''
     AWS_SECRET_ACCESS_KEY = ''
-    BUCKET_NAME = ''
+    AWS_BUCKET_NAME = ''
     DIRECTORY = ''
     FILTER_LIST = ['.DS_Store',]
 
@@ -79,13 +80,6 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def handle(self, *args, **options):
-        # Check for properly supplied arguments
-        if not args:
-            raise CommandError("The bucket name is required.")
-        if len(args) > 1:
-            raise CommandError("Extra arguments supplied.")
-        self.BUCKET_NAME = args[0]
-
         from django.conf import settings
 
         # Check for AWS keys in settings
@@ -96,6 +90,14 @@ class Command(BaseCommand):
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
+
+        if not hasattr(settings, 'AWS_BUCKET_NAME'):
+            raise CommandError('Missing bucket name from settings file. Please' +
+                ' add the AWS_BUCKET_NAME to your settings file.')
+        else:
+            if not settings.AWS_BUCKET_NAME:
+                raise CommandError('AWS_BUCKET_NAME cannot be empty.')
+        self.AWS_BUCKET_NAME = settings.AWS_BUCKET_NAME
 
         if not hasattr(settings, 'MEDIA_ROOT'):
             raise CommandError('MEDIA_ROOT must be set in your settings.')
@@ -123,7 +125,7 @@ class Command(BaseCommand):
         """
         bucket, key = self.open_s3()
         os.path.walk(self.DIRECTORY, self.upload_s3,
-            (bucket, key, self.BUCKET_NAME, self.DIRECTORY))
+            (bucket, key, self.AWS_BUCKET_NAME, self.DIRECTORY))
 
     def compress_string(self, s):
         """Gzip a given string."""
@@ -140,9 +142,9 @@ class Command(BaseCommand):
         """
         conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
         try:
-            bucket = conn.get_bucket(self.BUCKET_NAME)
+            bucket = conn.get_bucket(self.AWS_BUCKET_NAME)
         except boto.exception.S3ResponseError:
-            bucket = conn.create_bucket(self.BUCKET_NAME)
+            bucket = conn.create_bucket(self.AWS_BUCKET_NAME)
         return bucket, boto.s3.key.Key(bucket)
 
     def upload_s3(self, arg, dirname, names):
