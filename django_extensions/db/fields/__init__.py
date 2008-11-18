@@ -160,6 +160,7 @@ class UUIDField(CharField):
         if auto:
             kwargs['blank'] = True
             kwargs.setdefault('editable', False)
+        self.auto = auto
         self.version = version
         if version==1:
             self.node, self.clock_seq = node, clock_seq
