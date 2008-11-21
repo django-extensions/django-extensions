@@ -98,15 +98,15 @@ subgraph {{ cluster_app_name }} {
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
-     >{{ model.name }}</FONT></TD></TR>
+     >{{ model.name }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
 
     {% if not disable_fields %}
         {% for field in model.fields %}
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica Bold">{{ field.name }}</FONT
+        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% else %}Bold{% endif %}">{{ field.name }}</FONT
         ></TD>
         <TD ALIGN="LEFT"
-        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica Bold">{{ field.type }}</FONT
+        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% else %}Bold{% endif %}">{{ field.type }}</FONT
         ></TD></TR>
         {% endfor %}
     {% endif %}
@@ -170,9 +170,15 @@ def generate_dot(app_labels, **kwargs):
         })
 
         for appmodel in get_models(app):
+    	    abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
+    	    abstract_fields = []
+    	    for e in appmodel.__bases__:
+    		if hasattr(e, '_meta') and e._meta.abstract:
+    		    abstract_fields.extend(e._meta.fields)
             model = {
                 'app_name': app.__name__.replace(".", "_"),
                 'name': appmodel.__name__,
+                'abstracts': abstracts,
                 'fields': [],
                 'relations': []
             }
@@ -185,22 +191,23 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             # model attributes
-            def add_attributes():
+            def add_attributes(field):
                 model['fields'].append({
                     'name': field.name,
                     'type': type(field).__name__,
-                    'blank': field.blank
+                    'blank': field.blank,
+                    'abstract': field in abstract_fields,
                 })
 
             for field in appmodel._meta.fields:
-                add_attributes()
+                add_attributes(field)
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
-                    add_attributes()
+                    add_attributes(field)
 
             # relations
-            def add_relation(extras=""):
+            def add_relation(field, extras=""):
                 _rel = {
                     'target_app': field.rel.to.__module__.replace('.','_'),
                     'target': field.rel.to.__name__,
@@ -214,16 +221,16 @@ def generate_dot(app_labels, **kwargs):
 
             for field in appmodel._meta.fields:
                 if isinstance(field, ForeignKey):
-                    add_relation()
+                    add_relation(field)
                 elif isinstance(field, OneToOneField):
-                    add_relation('[arrowhead=none arrowtail=none]')
+                    add_relation(field, '[arrowhead=none arrowtail=none]')
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
                     if isinstance(field, ManyToManyField):
-                        add_relation('[arrowhead=normal arrowtail=normal]')
+                        add_relation(field, '[arrowhead=normal arrowtail=normal]')
                     elif isinstance(field, GenericRelation):
-                        add_relation(mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
+                        add_relation(field, mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
             graph['models'].append(model)
         graphs.append(graph)
 
