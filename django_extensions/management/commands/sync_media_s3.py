@@ -111,7 +111,7 @@ class Command(BaseCommand):
                 raise CommandError('MEDIA_ROOT must be set in your settings.')
         self.DIRECTORY = settings.MEDIA_ROOT
 
-        self.verbosity = int(options.get('verbose', 1))
+        self.verbosity = int(options.get('verbosity'))
         self.prefix = options.get('prefix')
         self.do_gzip = options.get('gzip')
         self.do_expires = options.get('expires')
@@ -230,7 +230,7 @@ class Command(BaseCommand):
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
     Command.option_list += (
-        optparse.make_option('-v', '--verbose',
-            dest='verbose', default=1, action='count',
+        optparse.make_option('-v', '--verbosity',
+            dest='verbosity', default=1, action='count',
             help="Verbose mode. Multiple -v options increase the verbosity."),
     )
