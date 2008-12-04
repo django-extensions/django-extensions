@@ -55,6 +55,11 @@ class Command(BaseCommand):
     AWS_BUCKET_NAME = ''
     DIRECTORY = ''
     FILTER_LIST = ['.DS_Store',]
+    GZIP_CONTENT_TYPES = (
+        'text/css',
+        'application/javascript',
+        'application/x-javascript'
+    )
 
     upload_count = 0
     skip_count = 0
@@ -192,16 +197,16 @@ class Command(BaseCommand):
             file_obj = open(filename, 'rb')
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
-            if content_type in ('text/css', 'application/javascript', 'application/x-javascript'):
-                if self.do_gzip:
-                    # Gzipping only if file is large enough (>1K is recommended)
-                    if file_size > 1024:
-                        filedata = self.compress_string(filedata)
-                        headers['Content-Encoding'] = 'gzip'
-                if self.do_expires:
-                    headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
-                        time.mktime((datetime.datetime.now() +
-                        datetime.timedelta(days=365*2)).timetuple())))
+            if self.do_gzip:
+                # Gzipping only if file is large enough (>1K is recommended) 
+                # and only if file is a common text type (not a binary file)
+                if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
+                    filedata = self.compress_string(filedata)
+                    headers['Content-Encoding'] = 'gzip'
+            if self.do_expires:
+                headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
+                    time.mktime((datetime.datetime.now() +
+                    datetime.timedelta(days=365*2)).timetuple())))
 
             if self.verbosity > 1:
                 print "Uploading %s..." % (file_key),
