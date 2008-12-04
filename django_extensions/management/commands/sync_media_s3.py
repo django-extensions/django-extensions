@@ -121,6 +121,7 @@ class Command(BaseCommand):
         # upload all files found.
         self.sync_s3()
 
+        print
         print "%d files uploaded." % (self.upload_count)
         print "%d files skipped." % (self.skip_count)
 
@@ -191,6 +192,9 @@ class Command(BaseCommand):
                         continue
 
             # File is newer, let's process and upload
+            if self.verbosity > 0:
+                print "Uploading %s..." % (file_key)
+
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
                 headers['Content-Type'] = content_type
@@ -203,13 +207,15 @@ class Command(BaseCommand):
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)
                     headers['Content-Encoding'] = 'gzip'
+                    if self.verbosity > 1:
+                        print "\tgzipped: %dk to %dk" % \
+                            (file_size/1024, len(filedata)/1024)
             if self.do_expires:
                 headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
                     time.mktime((datetime.datetime.now() +
                     datetime.timedelta(days=365*2)).timetuple())))
-
-            if self.verbosity > 1:
-                print "Uploading %s..." % (file_key),
+                if self.verbosity > 1:
+                    print "\texpires: %s" % (headers['Expires'])
 
             try:
                 key.name = file_key
@@ -222,8 +228,6 @@ class Command(BaseCommand):
                 raise
             else:
                 self.upload_count += 1
-                if self.verbosity > 1:
-                    print " Done."
 
             file_obj.close()
 
