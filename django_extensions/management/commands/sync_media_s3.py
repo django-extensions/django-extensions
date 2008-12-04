@@ -211,11 +211,15 @@ class Command(BaseCommand):
                         print "\tgzipped: %dk to %dk" % \
                             (file_size/1024, len(filedata)/1024)
             if self.do_expires:
+                # HTTP/1.0
                 headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
                     time.mktime((datetime.datetime.now() +
                     datetime.timedelta(days=365*2)).timetuple())))
+                # HTTP/1.1
+                headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
                 if self.verbosity > 1:
                     print "\texpires: %s" % (headers['Expires'])
+                    print "\tcache-control: %s" % (headers['Cache-Control'])
 
             try:
                 key.name = file_key
