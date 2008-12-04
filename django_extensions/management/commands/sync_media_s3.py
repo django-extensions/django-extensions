@@ -162,6 +162,11 @@ class Command(BaseCommand):
         if root_dir == dirname:
             return # We're in the root media folder
 
+        # Later we assume the MEDIA_ROOT ends with a trailing slash
+        # TODO: Check if we should check os.path.sep for Windows
+        if not root_dir.endswith('/'):
+            root_dir = root_dir + '/'
+
         for file in names:
             headers = {}
 
@@ -172,7 +177,7 @@ class Command(BaseCommand):
             if os.path.isdir(filename):
                 continue # Don't try to upload directories
 
-            file_key = filename[len(root_dir)+1:]
+            file_key = filename[len(root_dir):]
             if self.prefix:
                 file_key = '%s/%s' % (self.prefix, file_key)
 
