@@ -123,7 +123,7 @@ rel_template = """
   {% for model in models %}
     {% for relation in model.relations %}
     {% if relation.needs_node %}
-    {{ relation.target }} [label=<
+    {{ relation.target_app }}_{{ relation.target }} [label=<
         <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
         <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
         ><FONT FACE="Helvetica Bold" COLOR="white"
@@ -253,7 +253,6 @@ def generate_dot(app_labels, **kwargs):
         dot += '\n' + t.render(graph)
 
     dot += '\n' + tail_template
-
     return dot
 
 def main():
