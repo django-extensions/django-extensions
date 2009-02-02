@@ -68,7 +68,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             'name': name,
         }
         output.append(render_to_string(self.widget_template or (
-            'django_extensions/widgets/%s/%s/foreignkey_searchinput.html' % (app_label, opts.object_name.lower()),
+            'django_extensions/widgets/%s/%s/foreignkey_searchinput.html' % (app_label, model_name),
             'django_extensions/widgets/%s/foreignkey_searchinput.html' % app_label,
             'django_extensions/widgets/foreignkey_searchinput.html',
         ), context))
