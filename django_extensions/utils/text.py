@@ -6,7 +6,7 @@ def truncate_letters(s, num):
     s = force_unicode(s)
     length = int(num)
     if len(s)>length:
-    s = s[:length]
+        s = s[:length]
     if not s.endswith('...'):
         s += '...'
     return s
