@@ -1,0 +1,64 @@
+.ac_moreItems {
+    text-align: center;
+    background-color: InactiveCaption;
+    color: InactiveCaptionText;
+    margin: 0px;
+    padding: 0px 5px;
+    cursor: default;
+    display: block;
+    width: 100%;
+    font: bold menu 12px;
+    overflow: hidden;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+}
+
+form .aligned span.close {
+    cursor: pointer;
+    background: url(../img/delete.gif) no-repeat right center;
+    padding: 1px 11px 2px 0;
+}
+
+.acfb-input {
+    border: medium none;
+    margin: 0pt;
+    outline-color: -moz-use-text-color;
+    outline-style: none;
+    outline-width: 0pt;
+    padding: 3px 0px;
+}
+
+* html ul.acfb-holder,
+*:first-child+html ul.acfb-holder {
+    padding-bottom: 2px;
+}
+
+form .aligned ul.acfb-holder {
+    margin: 0;
+    padding: 1px 5px 0px;
+    border: 1px solid #ccc;
+    height: 1%;
+    overflow: hidden;
+    width: 42.5em;
+}
+
+ul.acfb-holder li {
+    float: left;
+    margin: 3px 5px 0 0;
+    list-style-type: none;
+}
+
+ul.acfb-holder li.acfb-data {
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border: 1px solid #CAD8F3;
+    padding: 1px 3px;
+    background: #dee7f8;
+}
+
+ul.acfb-holder input[type="text"] {
+    margin-top: 2px;
+    padding: 3px 0px 5px;
+    border: none;
+}

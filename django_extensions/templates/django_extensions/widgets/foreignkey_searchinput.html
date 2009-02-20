@@ -12,13 +12,15 @@ $(document).ready(function() {
         $('#lookup_{{ name }}').val('');
     };
     function lookup(query) {
-        $.get('{{ search_path }}', {
+        $.getJSON('{{ search_path }}', {
             'search_fields': '{{ search_fields }}',
             'app_label': '{{ app_label }}',
             'model_name': '{{ model_name }}',
             'object_pk': query,
         }, function(data){
-            $('#lookup_{{ name }}').val(data);
+            $.each(data.results, function(i,item){
+                $('#lookup_{{ name }}').val(item.label);
+            });
             {{ name }}_value = query;
         });
     };
@@ -31,15 +33,33 @@ $(document).ready(function() {
             };
         };
     });
+    var parseJSON = function(raw) {
+        var keywords = raw.results;
+        var parsed = [];
+        $.each(keywords, function(i, n) {
+            parsed.push({data: n, value: n, result: n});
+        });
+        return parsed
+    };
+    var formattedItem = function (row) {
+        return row.label;
+    };
+    var formattedResult = function (row) {
+        return row.pk;
+    };
     $('#lookup_{{ name }}').autocomplete('{{ search_path }}', {
+        dataType:"json",
+        parse: parseJSON,
+        formatItem: formattedItem,
+        formatResult: formattedResult,
         extraParams: {
             'search_fields': '{{ search_fields }}',
             'app_label': '{{ app_label }}',
             'model_name': '{{ model_name }}',
-        },
+        }
     }).result(function(event, data, formatted) {
         if (data) {
-            $('#id_{{ name }}').val(data[1]);
+            $('#id_{{ name }}').val(data.pk);
         }
     }).keyup(function(event){
         if (event.keyCode == 27) {

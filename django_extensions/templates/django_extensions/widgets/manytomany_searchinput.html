@@ -1,0 +1,105 @@
+{% load i18n %}
+<ul id="m2m_{{ name }}" class="acfb-holder">
+    {% for pk, label in labels %}
+    <li class="acfb-data"><span class="label" id="{{ pk }}">{{ label }}</span><span class="close"></span></li>
+    {% endfor %}
+    <input type="text" id="lookup_{{ name }}" value="{{ label }}" class="acfb-input" style="display:none;" />
+</ul>
+<a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);">
+  <img src="{{ admin_media_prefix }}img/admin/selector-search.gif" width="16" height="16" alt="{% trans "Lookup" %}" />
+</a>
+<script type="text/javascript">
+$(document).ready(function() {
+    // Show lookup input
+    function parseJSON(raw) {
+        var keywords = raw.results;
+        var parsed = [];
+        $.each(keywords, function(i, n) {
+            parsed.push({data: n, value: n, result: n});
+        });
+        return parsed
+    };
+    function formattedItem(row) {
+        return row.label;
+    };
+    function formattedResult(row) {
+        return row.pk;
+    };
+    function removeFindCallback(o) {
+        $('#id_{{ name }}').val({{ name }}_autocomplete.getData());
+    }
+    function reset() {
+        $('#id_{{ name }}').val('');
+        $('#lookup_{{ name }}').val('');
+    };
+    var {{ name }}_value = $('#id_{{ name }}').val();
+    $("#lookup_{{ name }}").show();
+    $('#id_{{ name }}').bind(($.browser.opera ? "keypress" : "keyup"), function(event) {
+        if ($(this).val()) {
+            if (event.keyCode == 27) {
+                reset();
+            } else {
+                lookup($(this).val());
+            };
+        };
+    });
+    {{ name }}_autocomplete = $('#lookup_{{ name }}').autocompletefb({
+            urlLookup: '{{ search_path }}',
+            removeCallback: removeFindCallback,
+            acOptions: {
+                dataType: "json",
+                parse: parseJSON,
+                formatItem: formattedItem,
+                formatResult: formattedResult,
+                multiple: true,
+                extraParams: {
+                    'search_fields': '{{ search_fields }}',
+                    'app_label': '{{ app_label }}',
+                    'model_name': '{{ model_name }}',
+                }
+            }
+    });
+    {{ name }}_autocomplete.input.keyup(function(event){
+        if (event.keyCode == 27) {
+            reset();
+            {{ name }}_autocomplete.clearData();
+        };
+    });
+    {{ name }}_autocomplete.autocomplete.result(function(event, data, formatted) {
+        if (data) {
+            $('#id_{{ name }}').val({{ name }}_autocomplete.getData());
+        }
+    });
+    function lookup(query) {
+        if (query[query.length-1] == ",") return
+        splitted = query.split(",");
+        splitted = $.grep(splitted, function (item) {
+            return item != "";
+        });
+        query = splitted[splitted.length-1];
+        $.getJSON('{{ search_path }}', {
+            'search_fields': '{{ search_fields }}',
+            'app_label': '{{ app_label }}',
+            'model_name': '{{ model_name }}',
+            'get_obj': 'true',
+            'q': query
+        }, function(data) {
+            $.each(parseJSON(data), function(i, n) {
+                {{ name }}_autocomplete.createItem({
+                    pk: n.data.pk,
+                    label: n.data.label
+                });
+            });
+        });
+    }
+    function check() {
+        {{ name }}_check = $('#id_{{ name }}').val();
+        if ({{ name }}_check) {
+            if ({{ name }}_check != {{ name }}_value) {
+                lookup({{ name }}_check);
+            }
+        }
+    }
+    //timeout = window.setInterval(check, 300);
+});
+</script>

@@ -16,10 +16,12 @@ from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
+from django.utils import simplejson
 
-from django_extensions.admin.widgets import ForeignKeySearchInput
+from django_extensions.admin.widgets import (ForeignKeySearchInput,
+                                             ManyToManySearchInput)
 
-class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
+class AutocompleteAdmin(admin.ModelAdmin):
     """Admin class for models using the autocomplete feature.
 
     There are two additional fields:
@@ -44,11 +46,11 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
     def __call__(self, request, url):
         if url is None:
             pass
-        elif url == 'foreignkey_autocomplete':
-            return self.foreignkey_autocomplete(request)
-        return super(ForeignKeyAutocompleteAdmin, self).__call__(request, url)
+        elif url in ('foreignkey_autocomplete', 'manytomany_autocomplete'):
+            return self.autocomplete_search(request)
+        return super(AutocompleteAdmin, self).__call__(request, url)
 
-    def foreignkey_autocomplete(self, request):
+    def autocomplete_search(self, request):
         """
         Searches in the fields of the given related model and returns the 
         result as a simple string to be used by the jQuery Autocomplete plugin
@@ -57,7 +59,7 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
         app_label = request.GET.get('app_label', None)
         model_name = request.GET.get('model_name', None)
         search_fields = request.GET.get('search_fields', None)
-        object_pk = request.GET.get('object_pk', None)
+        get_obj = request.GET.get('get_obj', False)
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
@@ -75,26 +77,29 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
                     return "%s__icontains" % field_name
             model = models.get_model(app_label, model_name)
             queryset = model._default_manager.all()
-            data = ''
+            data = {}
             if query:
-                for bit in query.split():
-                    or_queries = [models.Q(**{construct_search(
-                        smart_str(field_name)): smart_str(bit)})
-                            for field_name in search_fields.split(',')]
-                    other_qs = QuerySet(model)
-                    other_qs.dup_select_related(queryset)
-                    other_qs = other_qs.filter(reduce(operator.or_, or_queries))
-                    queryset = queryset & other_qs
-                data = ''.join([u'%s|%s\n' % (
-                    to_string_function(f), f.pk) for f in queryset])
-            elif object_pk:
-                try:
-                    obj = queryset.get(pk=object_pk)
-                except:
-                    pass
+                if not get_obj:
+                    for bit in query.split():
+                        or_queries = [models.Q(**{construct_search(
+                            smart_str(field_name)): smart_str(bit)})
+                                for field_name in search_fields.split(',')]
+                        other_qs = QuerySet(model)
+                        other_qs.dup_select_related(queryset)
+                        other_qs = other_qs.filter(reduce(operator.or_, or_queries))
+                        queryset = queryset & other_qs
+                    data = [{'pk': obj.pk, 'label': to_string_function(obj)}
+                            for obj in queryset]
                 else:
-                    data = to_string_function(obj)
-            return HttpResponse(data)
+                    try:
+                        obj = queryset.get(pk=query)
+                    except:
+                        pass
+                    else:
+                        print obj
+                        data = [{'pk': obj.pk, 'label': to_string_function(obj)}]
+            data = simplejson.dumps({'results': data})
+            return HttpResponse(data, mimetype='application/json')
         return HttpResponseNotFound()
 
     def get_help_text(self, field_name, model_name):
@@ -112,14 +117,21 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
         Overrides the default widget for Foreignkey fields if they are
         specified in the related_search_fields class attribute.
         """
-        if (isinstance(db_field, models.ForeignKey) and 
-            db_field.name in self.related_search_fields):
+        if (isinstance(db_field, (models.ForeignKey, models.ManyToManyField)) \
+            and db_field.name in self.related_search_fields):
             model_name = db_field.rel.to._meta.object_name
             help_text = self.get_help_text(db_field.name, model_name)
+            search_fields = self.related_search_fields[db_field.name]
             if kwargs.get('help_text'):
                 help_text = u'%s %s' % (kwargs['help_text'], help_text)
-            kwargs['widget'] = ForeignKeySearchInput(db_field.rel,
-                                    self.related_search_fields[db_field.name])
+            if isinstance(db_field, models.ForeignKey):
+                kwargs['widget'] = \
+                    ForeignKeySearchInput(db_field.rel, search_fields)
+            elif isinstance(db_field, models.ManyToManyField):
+                # If it uses an intermediary model, don't show field in admin.
+                if db_field.rel.through is not None:
+                    return None
+                kwargs['widget'] = \
+                    ManyToManySearchInput(db_field.rel, search_fields)
             kwargs['help_text'] = help_text
-        return super(ForeignKeyAutocompleteAdmin,
-            self).formfield_for_dbfield(db_field, **kwargs)
+        return super(AutocompleteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
