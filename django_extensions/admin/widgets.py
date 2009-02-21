@@ -95,7 +95,6 @@ class ManyToManySearchInput(ManyToManyRawIdWidget):
         js = (
             'django_extensions/js/jquery.js',
             'django_extensions/js/jquery.bgiframe.min.js',
-            'django_extensions/js/jquery.dimensions.js',
             'django_extensions/js/jquery.ajaxQueue.js',
             'django_extensions/js/jquery.autocomplete.js',
             'django_extensions/js/jquery.autocompletefb.js',
