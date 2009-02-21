@@ -139,6 +139,7 @@ class ManyToManySearchInput(ManyToManyRawIdWidget):
             'app_label': app_label,
             'labels': labels,
             'name': name,
+            'safe_name': name.replace('-', '_'),
         }
         output.append(render_to_string(self.widget_template or (
             'django_extensions/widgets/%s/%s/manytomany_searchinput.html' % (app_label, model_name),

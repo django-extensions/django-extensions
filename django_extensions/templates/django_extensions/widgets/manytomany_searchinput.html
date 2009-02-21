@@ -25,27 +25,27 @@ $(document).ready(function() {
     function formattedResult(row) {
         return row.pk;
     };
-    function removeFindCallback(o) {
-        $('#id_{{ name }}').val({{ name }}_autocomplete.getData());
+    function {{ safe_name }}_removeFindCallback(o) {
+        $('#id_{{ name }}').val({{ safe_name }}_autocomplete.getData());
     }
-    function reset() {
+    function {{ safe_name }}_reset() {
         $('#id_{{ name }}').val('');
         $('#lookup_{{ name }}').val('');
-    };
-    var {{ name }}_value = $('#id_{{ name }}').val();
+    }
+    var {{ safe_name }}_value = $('#id_{{ name }}').val();
     $("#lookup_{{ name }}").show();
     $('#id_{{ name }}').bind(($.browser.opera ? "keypress" : "keyup"), function(event) {
         if ($(this).val()) {
             if (event.keyCode == 27) {
-                reset();
+                {{ safe_name }}_reset();
             } else {
-                lookup($(this).val());
+                {{ safe_name }}_lookup($(this).val());
             };
         };
     });
-    {{ name }}_autocomplete = $('#lookup_{{ name }}').autocompletefb({
+    {{ safe_name }}_autocomplete = $('#lookup_{{ name }}').autocompletefb({
             urlLookup: '{{ search_path }}',
-            removeCallback: removeFindCallback,
+            removeCallback: {{ safe_name }}_removeFindCallback,
             acOptions: {
                 dataType: "json",
                 parse: parseJSON,
@@ -59,18 +59,19 @@ $(document).ready(function() {
                 }
             }
     });
-    {{ name }}_autocomplete.input.keyup(function(event){
+    {{ safe_name }}_autocomplete.input.keyup(function(event){
         if (event.keyCode == 27) {
-            reset();
-            {{ name }}_autocomplete.clearData();
+            {{ safe_name }}_reset();
+            {{ safe_name }}_autocomplete.clearData();
         };
     });
-    {{ name }}_autocomplete.autocomplete.result(function(event, data, formatted) {
+    {{ safe_name }}_autocomplete.autocomplete.result(function(event, data, formatted) {
         if (data) {
-            $('#id_{{ name }}').val({{ name }}_autocomplete.getData());
+            $('#id_{{ name }}').val({{ safe_name }}_autocomplete.getData());
         }
     });
-    function lookup(query) {
+    function {{ safe_name }}_lookup(query) {
+		console.log(query);
         if (query[query.length-1] == ",") return
         splitted = query.split(",");
         splitted = $.grep(splitted, function (item) {
@@ -85,18 +86,18 @@ $(document).ready(function() {
             'q': query
         }, function(data) {
             $.each(parseJSON(data), function(i, n) {
-                {{ name }}_autocomplete.createItem({
+                {{ safe_name }}_autocomplete.createItem({
                     pk: n.data.pk,
                     label: n.data.label
                 });
             });
         });
     }
-    function check() {
-        {{ name }}_check = $('#id_{{ name }}').val();
-        if ({{ name }}_check) {
-            if ({{ name }}_check != {{ name }}_value) {
-                lookup({{ name }}_check);
+    function {{ safe_name }}_check() {
+        {{ safe_name }}_check_val = $('#id_{{ name }}').val();
+        if ({{ safe_name }}_check_val) {
+            if ({{ safe_name }}_check_val != {{ safe_name }}_value) {
+                {{ safe_name }}_lookup({{ safe_name }}_check_val);
             }
         }
     }
