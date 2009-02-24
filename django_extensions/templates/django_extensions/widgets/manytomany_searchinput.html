@@ -1,9 +1,9 @@
 {% load i18n %}
 <ul id="m2m_{{ name }}" class="acfb-holder">
     {% for pk, label in labels %}
-    <li class="acfb-data"><span class="label" id="{{ pk }}">{{ label }}</span><span class="close"></span></li>
+    <li class="acfb-data {{ safe_name }}_acfb_data"><span class="label" id="{{ pk }}">{{ label }}</span><span class="close"></span></li>
     {% endfor %}
-    <input type="text" id="lookup_{{ name }}" value="{{ label }}" class="acfb-input" style="display:none;" />
+    <input type="text" id="lookup_{{ name }}" value="{{ label }}" class="acfb-input {{ safe_name }}_acfb_input" style="display:none;" />
 </ul>
 <a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);">
   <img src="{{ admin_media_prefix }}img/admin/selector-search.gif" width="16" height="16" alt="{% trans "Lookup" %}" />
@@ -46,6 +46,8 @@ $(document).ready(function() {
     {{ safe_name }}_autocomplete = $('#lookup_{{ name }}').autocompletefb({
             urlLookup: '{{ search_path }}',
             removeCallback: {{ safe_name }}_removeFindCallback,
+            foundClass: '.{{ safe_name }}_acfb_data',
+            inputClass: '.{{ safe_name }}_acfb_input',
             acOptions: {
                 dataType: "json",
                 parse: parseJSON,

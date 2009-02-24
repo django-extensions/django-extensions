@@ -52,8 +52,9 @@ $.Autocompleter.Facebook = function(input, settings) {
 		return input;
 	}
 	function createItem(data) {
-		var formatted = settings.foundClass.replace(/\./,'');
-		var row = '<li class="'+formatted+'"><span class="label" id="'+data.pk+'">'+data.label+'</span><span class="close" ></span></li>';
+		var row = '<li class="acfb-data ' + settings.foundClass.replace(/\./, '') + '">' +
+		          '<span class="label" id="' + data.pk + '">' + data.label + '</span>' +
+		          '<span class="close"></span></li>';
 		var inserted_row = $(input).before(row);
 		$('span.close', inserted_row[0].previousSibling).click(function(){
 			removeFind(this);
