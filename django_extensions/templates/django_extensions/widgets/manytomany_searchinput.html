@@ -71,7 +71,6 @@ $(document).ready(function() {
         }
     });
     function {{ safe_name }}_lookup(query) {
-		console.log(query);
         if (query[query.length-1] == ",") return
         splitted = query.split(",");
         splitted = $.grep(splitted, function (item) {
