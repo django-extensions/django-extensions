@@ -46,9 +46,9 @@ $.Autocompleter.Facebook = function(input, settings) {
 		return input;
 	}
 	function removeFind(o) {
+		settings.removeFindCallback(o);
 		$(o).unbind('click').parent().remove();
 		$(input).focus();
-		settings.removeFindCallback(o);
 		return input;
 	}
 	function createItem(data) {
