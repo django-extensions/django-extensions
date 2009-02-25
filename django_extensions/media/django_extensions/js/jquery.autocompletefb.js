@@ -60,7 +60,7 @@ $.Autocompleter.Facebook = function(input, settings) {
 			removeFind(this);
 		});
 	}
-	$(settings.foundClass+" span.close").click(function(){
+	$(settings.foundClass).find("span.close").click(function(){
 		removeFind(this);
 	});
 	autocomplete = $(input).autocomplete(
