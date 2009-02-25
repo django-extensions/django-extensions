@@ -25,8 +25,20 @@ $(document).ready(function() {
     function formattedResult(row) {
         return row.pk;
     };
+    function str_to_arr(s) {
+        return $.map(s.split(","), function(n) { return parseInt(n); });
+    }
+    function arr_to_str(a) {
+        return $.map(a, function(n) { return n.toString(); }).join(",");
+    }
     function {{ safe_name }}_removeFindCallback(o) {
-        $('#id_{{ name }}').val({{ safe_name }}_autocomplete.getData());
+        var haystack = str_to_arr($("#id_{{ name }}").val());
+        var needle = parseInt($(o).prev().attr('id'));
+        var i = $.inArray(needle, haystack);
+        if (i >= 0) {
+            haystack.splice(i, 1);
+            $("#id_{{ name }}").val(arr_to_str(haystack));
+        }
     }
     function {{ safe_name }}_reset() {
         $('#id_{{ name }}').val('');
@@ -45,7 +57,7 @@ $(document).ready(function() {
     });
     {{ safe_name }}_autocomplete = $('#lookup_{{ name }}').autocompletefb({
             urlLookup: '{{ search_path }}',
-            removeCallback: {{ safe_name }}_removeFindCallback,
+            removeFindCallback: {{ safe_name }}_removeFindCallback,
             foundClass: '.{{ safe_name }}_acfb_data',
             inputClass: '.{{ safe_name }}_acfb_input',
             acOptions: {
