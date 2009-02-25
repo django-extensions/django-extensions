@@ -18,13 +18,13 @@ $(document).ready(function() {
             parsed.push({data: n, value: n, result: n});
         });
         return parsed
-    };
+    }
     function formattedItem(row) {
         return row.label;
-    };
+    }
     function formattedResult(row) {
         return row.pk;
-    };
+    }
     function str_to_arr(s) {
         return $.map(s.split(","), function(n) { return parseInt(n); });
     }
