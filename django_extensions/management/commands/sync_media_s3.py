@@ -39,6 +39,8 @@ import optparse
 import os
 import sys
 import time
+
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 # Make sure boto is available
@@ -69,6 +71,9 @@ class Command(BaseCommand):
         optparse.make_option('-p', '--prefix',
             dest='prefix', default='',
             help="The prefix to prepend to the path on S3."),
+        optparse.make_option('-d', '--dir',
+            dest='dir', default=settings.MEDIA_ROOT,
+            help="The root directory to use instead of your MEDIA_ROOT"),
         optparse.make_option('--gzip',
             action='store_true', dest='gzip', default=False,
             help="Enables gzipping CSS and Javascript files."),
@@ -89,7 +94,6 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def handle(self, *args, **options):
-        from django.conf import settings
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
@@ -113,15 +117,14 @@ class Command(BaseCommand):
         else:
             if not settings.MEDIA_ROOT:
                 raise CommandError('MEDIA_ROOT must be set in your settings.')
-        
-        self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        self.DIRECTORY = settings.MEDIA_ROOT
 
         self.verbosity = int(options.get('verbosity'))
         self.prefix = options.get('prefix')
         self.do_gzip = options.get('gzip')
         self.do_expires = options.get('expires')
         self.do_force = options.get('force')
+        self.DIRECTORY = options.get('dir')
+        self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
         filter_list = options.get('filter_list').split(',')
         if filter_list:
             # command line option overrides default filter_list and
@@ -243,7 +246,7 @@ class Command(BaseCommand):
             try:
                 key.name = file_key
                 key.set_contents_from_string(filedata, headers, replace=True)
-                key.make_public()
+                key.set_acl('public-read')
             except boto.s3.connection.S3CreateError, e:
                 print "Failed: %s" % e
             except Exception, e:
