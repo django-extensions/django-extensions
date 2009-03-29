@@ -100,8 +100,11 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)
         if searchable_fields:
-            return _('Use the left field to do %(model_name)s lookups in the fields %(field_list)s') %
-                    {'model_name': model_name, 'field_list': get_text_list(searchable_fields, _('and'))}
+            help_kwargs = {
+                'model_name': model_name,
+                'field_list': get_text_list(searchable_fields, _('and')),
+            }
+            return _('Use the left field to do %(model_name)s lookups in the fields %(field_list)s.') % help_kwargs
         return ''
 
     def formfield_for_dbfield(self, db_field, **kwargs):
