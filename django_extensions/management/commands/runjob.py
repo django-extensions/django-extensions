@@ -5,7 +5,7 @@ from django_extensions.management.jobs import get_job, print_jobs
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--list', '-l', action="store_true", dest="list_jobs",
-            help="List all jobs with there description"),
+            help="List all jobs with their description"),
     )
     help = "Run a single maintenance job."
     args = "[app_name] job_name"
