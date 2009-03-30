@@ -240,6 +240,7 @@ result. This program will continue in 5 seconds.
 	    
             if options.get('sql', False):
                 lines = ["", SQL_KEYWORD("BEGIN;")]
+                qn = connection.ops.quote_name
                 
                 for model_name, diffs in model_diffs:
                     for diff in diffs:
@@ -250,13 +251,13 @@ result. This program will continue in 5 seconds.
                                 lines.append(NOTICE('-- %s' % diff['text']))
                                 lines.append(NOTICE('-- SQLite does not feature type alteration on columns'))
                                 continue
-                        lines.append('%s %s' % (SQL_KEYWORD('ALTER TABLE'), SQL_TABLE(diff['data'][0])) )
+                        lines.append("%s %s" % (SQL_KEYWORD('ALTER TABLE'), SQL_TABLE(qn(diff['data'][0]))) )
                         if diff['type'] == 'missing-in-db':
-                            lines.append('\t%s %s %s;' %  (SQL_KEYWORD('ADD'), SQL_FIELD(diff['data'][1]), SQL_COLTYPE(diff['data'][2]),) )
+                            lines.append("\t%s %s %s;" %  (SQL_KEYWORD('ADD'), SQL_FIELD(qn(diff['data'][1])), SQL_COLTYPE(diff['data'][2]),) )
                         if diff['type'] == 'missing-in-model':
-                            lines.append('\t%s %s;' % (SQL_KEYWORD('DROP COLUMN') , SQL_FIELD(diff['data'][1]) ))
+                            lines.append("\t%s %s;" % (SQL_KEYWORD('DROP COLUMN') , SQL_FIELD(qn(diff['data'][1])) ))
                         if diff['type'] in ['type', 'param']:
-                            lines.append('\t%s %s %s %s;' % (SQL_KEYWORD('ALTER'), SQL_FIELD(diff['data'][1]), SQL_KEYWORD(modify_command), SQL_COLTYPE(diff['data'][3])))                  
+                            lines.append("\t%s %s %s %s;" % (SQL_KEYWORD('ALTER'), SQL_FIELD(qn(diff['data'][1])), SQL_KEYWORD(modify_command), SQL_COLTYPE(diff['data'][3])))
                 lines.append(SQL_KEYWORD("COMMIT;"))
                 
                 print "\n".join(lines)
