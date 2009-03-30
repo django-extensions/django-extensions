@@ -19,8 +19,10 @@ KNOWN ISSUES:
 
 from django.core.management.base import AppCommand
 from django.db import transaction
+from django.db.models.fields import IntegerField
 from optparse import make_option
 
+ORDERING_FIELD = IntegerField('_order', null=True)
 
 class Command(AppCommand):
     option_list = AppCommand.option_list + (
@@ -93,6 +95,10 @@ to check/debug ur models compared to the real database tables and columns."""
             table_indexes = introspection_module.get_indexes(cursor, table_name)
 	    
             fieldmap = dict([(field.get_attname(), field) for field in _meta.fields])
+
+            if _meta.order_with_respect_to:
+                fieldmap['_order'] = ORDERING_FIELD
+
             try:
                 table_description = introspection_module.get_table_description(cursor, table_name)
             except Exception, e:
