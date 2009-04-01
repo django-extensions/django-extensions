@@ -37,7 +37,6 @@ import optparse
 import os
 import sys
 import time
-
 from django.core.management.base import BaseCommand, CommandError
 
 # Make sure boto is available
@@ -109,6 +108,8 @@ class Command(BaseCommand):
         else:
             if not settings.MEDIA_ROOT:
                 raise CommandError('MEDIA_ROOT must be set in your settings.')
+        
+        self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
         self.DIRECTORY = settings.MEDIA_ROOT
 
         self.verbosity = int(options.get('verbosity'))
