@@ -45,9 +45,10 @@ def addparentstofks(rels,fks):
         fks[son][2]=fks[son][2].replace("models.Model",parent)
         if parent not in fks[son][0]:
             fks[son][0].append(parent)
-            
+
 
 def dia2django(archivo):
+    models_txt = ''
     f=codecs.open(archivo,"rb")
     #dia files are gzipped
     data = gzip.GzipFile(fileobj=f).read()
@@ -145,7 +146,7 @@ def dia2django(archivo):
             for j in a:
                 if len(j.childNodes[0].data[1:-1]):
                    imports+=u"from %s.models import *" % j.childNodes[0].data[1:-1]
-                
+
     addparentstofks(herit,clases)
     #Ordering the appearance of classes
     #First we make a list of the classes each classs is related to.
@@ -156,7 +157,7 @@ def dia2django(archivo):
             if fk not in dependclasses:
                 clases[fk][3]+=1
         ordered.append([j]+k)
-        
+
     i=0
     while i<len(ordered):
         mark=i
@@ -179,10 +180,13 @@ def dia2django(archivo):
         if i==len(ordered)-1:
             break
     ordered.reverse()
-    if imports : print imports
+    if imports :
+        models_txt = str(imports)
     for i in ordered:
-        print i[3]
-    
+        models_txt += '%s\n' % str(i[3])
+
+    return models_txt
+
 if __name__ == '__main__':
 
         if len(sys.argv) == 2:

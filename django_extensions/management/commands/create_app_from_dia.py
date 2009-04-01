@@ -1,8 +1,10 @@
 import os, re, django_extensions
 from optparse import make_option
-from subprocess import Popen, PIPE
+from django.conf import settings
+from django.db import connection
 from django.core.management.base import CommandError, LabelCommand, \
     _make_writeable
+from django_extensions.utils.dia2django import dia2django
 
 EXTENSIONS_PATH = django_extensions.__path__[0]
 
@@ -43,6 +45,18 @@ class Command(LabelCommand):
         if not re.search(r'^\w+$', label):
             raise CommandError("%r is not a valid application name. "
                 "Please use only numbers, letters and underscores." % label)
+
+        if app_name in settings.INSTALLED_APPS:
+            raise CommandError("The application %s should not be defined in "
+                "the settings file. Please remove %s now, and add it after "
+                "using this command." % (app_name, app_name))
+
+        tables = [name for name in connection.introspection.table_names()
+            if name.startswith('%s_' % app_name)]
+        if tables:
+            raise CommandError("%r application has tables in the database. "
+                "Please delete them." % app_name)
+
         try:
             os.makedirs(app_path)
         except OSError, e:
@@ -50,7 +64,9 @@ class Command(LabelCommand):
 
         copy_template(app_template, app_path, project_name, app_name)
         generate_models_and_admin(dia_path, app_path, project_name, app_name)
-
+        print "Application %r created." % app_name
+        print "Please add now %r in settings.INSTALLED_APPS, and run " \
+            "'manage syncdb'" % app_name
 
 def copy_template(app_template, copy_to, project_name, app_name):
     """copies the specified template directory to the copy_to location"""
@@ -110,24 +126,16 @@ def generate_models_and_admin(dia_path, app_path, project_name, app_name):
                 string = '    %s' % string
         return retval
 
-    dia2django_path = os.path.join(EXTENSIONS_PATH, 'utils', 'dia2django.py')
     model_path = os.path.join(app_path, 'models.py')
     admin_path = os.path.join(app_path, 'admin.py')
 
-    # Call dia2django models generator
-    model_file = Popen([dia2django_path, dia_path], stdout=PIPE).\
-        communicate()[0]
-    classes = re.findall('class (\w+)', model_file)
+    models_txt = 'from django.db import models\n' + dia2django(dia_path)
+    open(model_path, 'w').write(models_txt)
 
-    # Generate the models and admin py files
-    model_fh = open(model_path, 'w')
-    model_fh.write('from django.db import models\n')
-    model_fh.write(model_file)
-    model_fh.close()
-    admin_fh = open(admin_path, 'w')
-    admin_fh.write('from django.contrib.admin import site, ModelAdmin\n')
-    admin_fh.write(format_text('from %s.%s.models import %s' %
-        (project_name, app_name, ', '.join(classes)), indent=True))
-    register_text = '\n'.join(map((lambda t: 'site.register(%s)' %t), classes))
-    admin_fh.write(format_text('\n\n%s' % register_text))
-    admin_fh.close()
+    classes = re.findall('class (\w+)', models_txt)
+    admin_txt = 'from django.contrib.admin import site, ModelAdmin\n' + \
+        format_text('from %s.%s.models import %s' %
+        (project_name, app_name, ', '.join(classes)), indent=True)
+    admin_txt += format_text('\n\n%s' %
+        '\n'.join(map((lambda t: 'site.register(%s)' %t), classes)))
+    open(admin_path, 'w').write(admin_txt)
