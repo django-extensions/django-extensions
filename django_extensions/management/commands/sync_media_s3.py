@@ -25,9 +25,11 @@ Command options are:
   --expires             Enables setting a far future expires header.
   --force               Skip the file mtime check to force upload of all
                         files.
+  --filter-list         Override default directory and file exclusion
+                        filters. (enter as comma seperated line)
 
 TODO:
-* Make FILTER_LIST an optional argument
+ * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
 
 """
 import datetime
@@ -75,7 +77,10 @@ class Command(BaseCommand):
             help="Enables setting a far future expires header."),
         optparse.make_option('--force',
             action='store_true', dest='force', default=False,
-            help="Skip the file mtime check to force upload of all files.")
+            help="Skip the file mtime check to force upload of all files."),
+        optparse.make_option('--filter-list', dest='filter_list',
+            action='store', default='',
+            help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
     )
 
     help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
@@ -117,6 +122,11 @@ class Command(BaseCommand):
         self.do_gzip = options.get('gzip')
         self.do_expires = options.get('expires')
         self.do_force = options.get('force')
+        filter_list = options.get('filter_list').split(',')
+        if filter_list:
+            # command line option overrides default filter_list and
+            # settings.filter_list
+            self.FILTER_LIST = filter_list
 
         # Now call the syncing method to walk the MEDIA_ROOT directory and
         # upload all files found.
@@ -162,6 +172,9 @@ class Command(BaseCommand):
 
         if root_dir == dirname:
             return # We're in the root media folder
+
+        if os.path.basename(dirname) in self.FILTER_NAMES:
+            return # Skip directories we don't want to sync
 
         # Later we assume the MEDIA_ROOT ends with a trailing slash
         # TODO: Check if we should check os.path.sep for Windows
