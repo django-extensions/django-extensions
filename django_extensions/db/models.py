@@ -29,3 +29,26 @@ class TitleSlugDescriptionModel(models.Model):
 
     class Meta:
         abstract = True
+
+class ActivatorModel(models.Model):
+    """ ActivatorModel
+    An abstract base class model that provide sactivate and deactivate fields.
+    """
+    STATUS_CHOICES = (
+        (0, _('Inactive')),
+        (1, _('Active')),
+    )
+    status = models.IntegerField(_('status'), choices=STATUS_CHOICES,
+        default=1)
+    activate_date = models.DateTimeField(blank=True, null=True,
+        help_text=_('keep empty for an immediate activation'))
+    deactivate_date = models.DateTimeField(blank=True, null=True,
+        help_text=_('keep empty for indefinite activation'))
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.activate_date:
+            self.activate_date = datetime.now()
+        super(ActivatorMixin, self).save(*args, **kwargs)
