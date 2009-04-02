@@ -1,0 +1,75 @@
+RunProfileServer
+================
+
+*First of all; we recommend that before you start profiling any language or
+framework you learn enough about it so that you feel comfortable with digging
+into it's internals.  Without sufficient knowledge it will not only be (very)
+hard but your likely to make wrong assumptions (and fixes). As a rule of thumb,
+clean well written code will help you a lot more then overzealous
+micro-optimizations will.*
+
+*This document is work in progress. If you feel you can help with
+better/clearer or additional information about profiling Django please leave a
+comment.*
+
+
+Introduction
+------------
+
+*runprofileserver* starts Django's runserver command with hotshot/profiling
+tools enabled. It will save .prof files containing the profiling information
+into the --prof-path directory. Note that for each request made one profile
+data file is saved.
+
+Per default the profile-data-files are saved in /tmp use the --prof-path option
+to specify your own target directory. Saving the data in a meaningful directory
+structure helps to keep your profile data organized and /tmp uncluttered. (Yes
+this is probably a bug on windows and other systems where /tmp does not exist)
+
+
+gather_profile_stats.py
+-----------------------
+
+Django comes packed with a tool to aggregate these different prof files into
+one aggregated profile file. This tool is called *gather_profile_stats.py* and
+is located inside the *bin* directory of your Django distribution.
+
+
+KCacheGrind
+-----------
+
+Recent versions of *runprofileserver* have an option to save the profile data
+into a KCacheGrind compatible format. So you can use the excellent KCacheGrind
+tool for analyzing the profile data.
+
+Example::
+
+  $ mkdir /tmp/my-profile-data
+  $ ./manage.py runprofileserver --kcachegrind --prof-path=/tmp/my-profile-data
+  Validating models...
+  0 errors found
+
+  Django version 1.0-post-release-SVN-SVN-unknown, using settings 'complete_project.settings'
+  Development server is running at http://127.0.0.1:8000/
+  Quit the server with CONTROL-C.
+  [13/Nov/2008 06:29:38] "GET / HTTP/1.1" 200 41107
+  [13/Nov/2008 06:29:39] "GET /site_media/base.css?743 HTTP/1.1" 200 17227
+  [13/Nov/2008 06:29:39] "GET /site_media/logo.png HTTP/1.1" 200 3474
+  [13/Nov/2008 06:29:39] "GET /site_media/jquery.js HTTP/1.1" 200 31033
+  [13/Nov/2008 06:29:39] "GET /site_media/heading.png HTTP/1.1" 200 247
+  [13/Nov/2008 06:29:39] "GET /site_media/base.js HTTP/1.1" 200 751
+  <ctrl-c>
+  $ kcachegrind /tmp/my-profile-data/root.12574391.592.prof
+
+Here is a screenshot of how the above commands might look in KCacheGrind:
+
+  http://trbs.net/media/misc/django-runprofileserver-kcachegrind-full.jpg
+
+Links
+-----
+
+* http://code.djangoproject.com/wiki/ProfilingDjango
+* http://www.rkblog.rk.edu.pl/w/p/django-profiling-hotshot-and-kcachegrind/
+* http://code.djangoproject.com/browser/django/trunk/django/bin/profiling/gather_profile_stats.py
+* http://www.oluyede.org/blog/2007/03/07/profiling-django/
+* http://simonwillison.net/2008/May/22/debugging/
