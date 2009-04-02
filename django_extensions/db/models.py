@@ -32,7 +32,7 @@ class TitleSlugDescriptionModel(models.Model):
 
 class ActivatorModel(models.Model):
     """ ActivatorModel
-    An abstract base class model that provide sactivate and deactivate fields.
+    An abstract base class model that provides activate and deactivate fields.
     """
     STATUS_CHOICES = (
         (0, _('Inactive')),
