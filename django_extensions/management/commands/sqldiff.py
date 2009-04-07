@@ -32,8 +32,8 @@ class Command(AppCommand):
                     help="Check all tables that exist in the database, not only tables that should exist based on models."),
         make_option('--dense-output', '-d', action='store_true', dest='dense_output',
                     help="Shows the output in dense format, normally output is spreaded over multiple lines."),
-        make_option('--output_sql', '-s', action='store_true', dest='sql',
-                    help="Outputs the differences as SQL when available"),
+        make_option('--output_text', '-t', action='store_false', dest='sql', default=True,
+                    help="Outputs the differences as descriptive text instead of SQL"),
     )
     
     help = """Prints the (approximated) difference between models and fields in the database for the given app name(s).

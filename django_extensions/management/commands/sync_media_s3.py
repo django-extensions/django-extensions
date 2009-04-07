@@ -55,7 +55,7 @@ class Command(BaseCommand):
     AWS_SECRET_ACCESS_KEY = ''
     AWS_BUCKET_NAME = ''
     DIRECTORY = ''
-    FILTER_LIST = ['.DS_Store',]
+    FILTER_LIST = ['.DS_Store', '.svn', '.hg', '.git', 'Thumbs.db']
     GZIP_CONTENT_TYPES = (
         'text/css',
         'application/javascript',

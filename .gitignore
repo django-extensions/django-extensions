@@ -2,3 +2,6 @@
 MANIFEST
 build
 dist
+docs/_build
+docs/_static
+
