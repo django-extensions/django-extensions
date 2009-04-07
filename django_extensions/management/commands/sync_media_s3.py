@@ -170,11 +170,11 @@ class Command(BaseCommand):
         """
         bucket, key, bucket_name, root_dir = arg # expand arg tuple
 
-        if root_dir == dirname:
-            return # We're in the root media folder
-
-        if os.path.basename(dirname) in self.FILTER_NAMES:
-            return # Skip directories we don't want to sync
+        # Skip directories we don't want to sync
+        if os.path.basename(dirname) in self.FILTER_LIST:
+            # prevent walk from processing subfiles/subdirs below the ignored one
+            del names[:]
+            return 
 
         # Later we assume the MEDIA_ROOT ends with a trailing slash
         if not root_dir.endswith(os.path.sep):
