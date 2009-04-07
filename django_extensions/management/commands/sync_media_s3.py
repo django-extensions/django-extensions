@@ -177,9 +177,8 @@ class Command(BaseCommand):
             return # Skip directories we don't want to sync
 
         # Later we assume the MEDIA_ROOT ends with a trailing slash
-        # TODO: Check if we should check os.path.sep for Windows
-        if not root_dir.endswith('/'):
-            root_dir = root_dir + '/'
+        if not root_dir.endswith(os.path.sep):
+            root_dir = root_dir + os.path.sep
 
         for file in names:
             headers = {}
