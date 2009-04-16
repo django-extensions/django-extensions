@@ -114,7 +114,6 @@ class SQLDiff(object):
             'field-parameter-differ': self.SQL_FIELD_PARAMETER_DIFFER,
         }
 
-
     def add_app_model_marker(self, app_label, model_name):
         self.differences.append((app_label, model_name, []))
         
@@ -191,8 +190,16 @@ class SQLDiff(object):
             kwargs['blank'] = True
             if not reverse_type in ('TextField', 'CharField'):
                 kwargs['null'] = True
-
-        field_db_type = getattr(models, reverse_type)(**kwargs).db_type()
+        
+        if '.' in reverse_type:
+            from django.utils import importlib
+            # TODO: when was importlib added to django.utils ? and do we
+            # need to add backwards compatibility code ?
+            module_path, package_name = reverse_type.rsplit('.', 1)
+            module = importlib.import_module(module_path)
+            field_db_type = getattr(module, package_name)(**kwargs).db_type()
+        else:
+            field_db_type = getattr(models, reverse_type)(**kwargs).db_type()
         return field_db_type
 
     def strip_parameters(self, field_type):
@@ -451,6 +458,9 @@ class PostgresqlSQLDiff(SQLDiff):
     DATA_TYPES_REVERSE_OVERRIDE = {
         20: 'IntegerField',
         1042: 'CharField',
+        # postgis types (TODO: support is very incomplete)
+        17506: 'django.contrib.gis.db.models.fields.PointField',
+        55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
     }
 
     # Hopefully in the future we can add constraint checking and other more
