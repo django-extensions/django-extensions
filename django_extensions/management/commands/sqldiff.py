@@ -473,6 +473,8 @@ class PostgresqlSQLDiff(SQLDiff):
 
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
+        if not db_type:
+            return
         if field:
             if field.primary_key and db_type=='integer':
                 db_type = 'serial'
