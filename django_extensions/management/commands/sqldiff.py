@@ -203,7 +203,7 @@ class SQLDiff(object):
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
         for field in meta.fields:
             if field.unique:
-                attname = field.attname
+                attname = field.db_column or field.attname
                 if attname in table_indexes and table_indexes[attname]['unique']:
                     continue
                 self.add_difference('unique-missing-in-db', table_name, attname)
@@ -211,7 +211,7 @@ class SQLDiff(object):
     def find_unique_missing_in_model(self, meta, table_indexes, table_name):
         # TODO: Postgresql does not list unique_togethers in table_indexes
         #       MySQL does
-        fields = dict([(field.name, field.unique) for field in meta.fields])
+        fields = dict([(field.db_column or field.name, field.unique) for field in meta.fields])
         for att_name, att_opts in table_indexes.iteritems():
             if att_opts['unique'] and att_name in fields and not fields[att_name]:
                 if att_name in flatten(meta.unique_together): continue
@@ -220,7 +220,7 @@ class SQLDiff(object):
     def find_index_missing_in_db(self, meta, table_indexes, table_name):
         for field in meta.fields:
             if field.db_index:
-                attname = field.attname
+                attname = field.db_column or field.attname
                 if not attname in table_indexes:
                     self.add_difference('index-missing-in-db', table_name, attname)
 
@@ -300,7 +300,7 @@ class SQLDiff(object):
                 continue
             
             table_indexes = self.introspection.get_indexes(self.cursor, table_name)
-            fieldmap = dict([(field.get_attname(), field) for field in meta.fields])
+            fieldmap = dict([(field.db_column or field.get_attname(), field) for field in meta.fields])
             
             # add ordering field if model uses order_with_respect_to
             if meta.order_with_respect_to:
