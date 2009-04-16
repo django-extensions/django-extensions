@@ -185,7 +185,7 @@ class SQLDiff(object):
 
         if reverse_type == "DecimalField":
             kwargs['max_digits'] = description[4]
-            kwargs['decimal_places'] = description[5]
+            kwargs['decimal_places'] = abs(description[5])
 
         if description[6]:
             kwargs['blank'] = True
