@@ -13,17 +13,17 @@ except ImportError:
     from django_extensions.utils import uuid
 
 class AutoSlugField(SlugField):
-    """ AutoSlugField 
+    """ AutoSlugField
 
     By default, sets editable=False, blank=True.
 
     Required arguments:
-    
+
     populate_from
         Specifies which field the slug is populated from.
-    
+
     Optional arguments:
-    
+
     separator
         Defines the used separator (default: '-')
 
@@ -60,11 +60,16 @@ class AutoSlugField(SlugField):
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
-        populate_field = model_instance._meta.get_field(self._populate_from)
+        if isinstance(self._populate_from, basestring):
+            populate_field = [model_instance._meta.get_field(self._populate_from)]
+        elif isinstance(self._populate_from, (tuple, list)):
+            populate_field = [model_instance._meta.get_field(f) for f in self._populate_from]
+        else:
+            raise FieldDoesNotExist('populate_from must either be a string with one field or a tuple or list of multiple fields')
         slug_field = model_instance._meta.get_field(self.attname)
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug = slugify(getattr(model_instance, populate_field.attname))
+            slug = self.separator.join(slugify(getattr(model_instance, field.attname)) for field in populate_field)
             next = 2
         else:
             # get slug from the current model instance and calculate next
@@ -113,33 +118,33 @@ class AutoSlugField(SlugField):
         return "SlugField"
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField 
-    
+    """ CreationDateTimeField
+
     By default, sets editable=False, blank=True, default=datetime.now
     """
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('editable', False)
         kwargs.setdefault('blank', True)
         kwargs.setdefault('default', datetime.datetime.now)
         DateTimeField.__init__(self, *args, **kwargs)
-    
+
     def get_internal_type(self):
         return "DateTimeField"
 
 class ModificationDateTimeField(CreationDateTimeField):
-    """ ModificationDateTimeField 
-    
+    """ ModificationDateTimeField
+
     By default, sets editable=False, blank=True, default=datetime.now
-    
+
     Sets value to datetime.now() on each save of the model.
     """
-    
+
     def pre_save(self, model, add):
         value = datetime.datetime.now()
         setattr(model, self.attname, value)
         return value
-    
+
     def get_internal_type(self):
         return "DateTimeField"
 
@@ -148,9 +153,9 @@ class UUIDVersionError(Exception):
 
 class UUIDField(CharField):
     """ UUIDField
-    
+
     By default uses UUID version 1 (generate from host ID, sequence number and current time)
-    
+
     The field support all uuid versions which are natively supported by the uuid python module.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
