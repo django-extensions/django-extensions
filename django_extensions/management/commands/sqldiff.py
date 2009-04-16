@@ -42,6 +42,9 @@ def flatten(l, ltypes=(list, tuple)):
     return ltype(l)
 
 class SQLDiff(object):
+    DATA_TYPES_REVERSE_OVERRIDE = {
+    }
+    
     DIFF_TYPES = [
         'comment',
         'table-missing-in-db',
@@ -77,7 +80,7 @@ class SQLDiff(object):
     SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP'), style.SQL_KEYWORD('CONSTRAINT'), style.SQL_TABLE(qn("%s_key" % ('_'.join(args[:2])))))
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args:  "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args:  "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
-    SQL_COMMENT = lambda self, style, qn, args: 'comment: %s' % style.NOTICE(args[0])
+    SQL_COMMENT = lambda self, style, qn, args: style.NOTICE('-- Comment: %s' % style.SQL_TABLE(args[0]))
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
 
     def __init__(self, app_models, options):
@@ -95,7 +98,8 @@ class SQLDiff(object):
         self.django_tables = self.get_django_tables(options.get('only_existing', True))
         self.db_tables = self.introspection.get_table_list(self.cursor)
         self.differences = []
-
+        self.unknown_db_fields = {}
+        
         self.DIFF_SQL = {
             'comment': self.SQL_COMMENT,
             'table-missing-in-db': self.SQL_TABLE_MISSING_IN_DB,
@@ -153,11 +157,23 @@ class SQLDiff(object):
         # DB-API cursor.description
         #(name, type_code, display_size, internal_size, precision, scale, null_ok) = description
         type_code = description[1]
-        try:
-            reverse_type = self.introspection.data_types_reverse[type_code]
-        except AttributeError:
-            # backwards compatibility for before introspection refactoring (r8296)
-            reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
+        if type_code in self.DATA_TYPES_REVERSE_OVERRIDE:
+            reverse_type = self.DATA_TYPES_REVERSE_OVERRIDE[type_code]
+        else:
+            try:
+                try:
+                    reverse_type = self.introspection.data_types_reverse[type_code]
+                except AttributeError:
+                    # backwards compatibility for before introspection refactoring (r8296)
+                    reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
+            except KeyError:
+                # type_code not found in data_types_reverse map
+                key = (self.differences[-1][:2], description[:2])
+                if key not in self.unknown_db_fields:
+                    self.unknown_db_fields[key] = 1
+                    self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
+                return None
+        
         kwargs = {}
         if isinstance(reverse_type, tuple):
             kwargs.update(reverse_type[1])
@@ -179,7 +195,9 @@ class SQLDiff(object):
         return field_db_type
 
     def strip_parameters(self, field_type):
-        return field_type.split(" ")[0].split("(")[0]
+        if field_type:
+            return field_type.split(" ")[0].split("(")[0]
+        return field_type
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
         for field in meta.fields:
@@ -317,6 +335,7 @@ class SQLDiff(object):
             self.find_field_parameter_differ(meta, table_description, table_name)
 
     def print_diff(self, style=no_style()):
+        """ print differences to stdout """
         if self.options.get('sql', True):
             self.print_diff_sql(style)
         else:
@@ -359,6 +378,8 @@ class SQLDiff(object):
                 print text
         print style.SQL_KEYWORD("COMMIT;")
         
+class GenericSQLDiff(SQLDiff):
+    pass
 
 class MySQLDiff(SQLDiff):
     # All the MySQL hacks together create something of a problem
@@ -420,6 +441,11 @@ class SqliteSQLDiff(SQLDiff):
         return db_type
 
 class PostgresqlSQLDiff(SQLDiff):
+    DATA_TYPES_REVERSE_OVERRIDE = {
+        20: 'IntegerField',
+        1042: 'CharField',
+    }
+
     # Hopefully in the future we can add constraint checking and other more
     # advanced checks based on this database.
     SQL_LOAD_CONSTRAINTS = """
