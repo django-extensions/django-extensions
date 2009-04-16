@@ -19,6 +19,7 @@ KNOWN ISSUES:
 
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
+from django.core.management import CommandError
 from django.core.management.color import no_style
 from django.db import transaction, connection
 from django.db.models.fields import IntegerField
@@ -554,7 +555,7 @@ to check/debug ur models compared to the real database tables and columns."""
                 raise CommandError('Enter at least one appname.')
             try:
                 app_list = [models.get_app(app_label) for app_label in app_labels]
-            except (ImproperlyConfigured, ImportError), e:
+            except (models.ImproperlyConfigured, ImportError), e:
                 raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
 
             app_models = []
