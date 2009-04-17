@@ -14,30 +14,30 @@ except ImportError:
     from django_extensions.utils import uuid
 
 class AutoSlugField(SlugField):
-    """ AutoSlugField
-
+    """ AutoSlugField 
+    
     By default, sets editable=False, blank=True.
-
+    
     Required arguments:
 
     populate_from
-        Specifies which field the slug is populated from.
-
+        Specifies which field or list of fields the slug is populated from.
+    
     Optional arguments:
 
     separator
         Defines the used separator (default: '-')
-
+    
     overwrite
         If set to True, overwrites the slug on every save (default: False)
-
+    
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
-
+        
         populate_from = kwargs.pop('populate_from', None)
         if populate_from is None:
             raise ValueError("missing 'populate_from' argument")
@@ -46,21 +46,23 @@ class AutoSlugField(SlugField):
         self.separator = kwargs.pop('separator',  u'-')
         self.overwrite = kwargs.pop('overwrite', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
-
+    
     def _slug_strip(self, value):
         """
         Cleans up a slug by removing slug separator characters that occur at
         the beginning or end of a slug.
-
+        
         If an alternate separator is used, it will also replace any instances
         of the default '-' separator with the new separator.
         """
         re_sep = '(?:-|%s)' % re.escape(self.separator)
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
-
+    
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
+        if not isinstance(self._populate_from, (list, tuple)):
+            self._populate_from = (self._populate_from, )
         if isinstance(self._populate_from, basestring):
             populate_field = [model_instance._meta.get_field(self._populate_from)]
         elif isinstance(self._populate_from, (tuple, list)):
@@ -68,9 +70,11 @@ class AutoSlugField(SlugField):
         else:
             raise FieldDoesNotExist('populate_from must either be a string with one field or a tuple or list of multiple fields')
         slug_field = model_instance._meta.get_field(self.attname)
+        
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug = self.separator.join(slugify(getattr(model_instance, field.attname)) for field in populate_field)
+            slug = self.separator.join([slugify(getattr(model_instance, field)) \
+                                            for field in self._populate_from])
             next = 2
         else:
             # get slug from the current model instance and calculate next
@@ -82,7 +86,7 @@ class AutoSlugField(SlugField):
                 next = int(next)
             else:
                 next = 2
-
+        
         # strip slug depending on max_length attribute of the slug field
         # and clean-up
         slug_len = slug_field.max_length
@@ -90,16 +94,24 @@ class AutoSlugField(SlugField):
             slug = slug[:slug_len]
         slug = self._slug_strip(slug)
         original_slug = slug
-
+        
         # exclude the current model instance from the queryset used in finding
         # the next valid slug
         queryset = model_instance.__class__._default_manager.all()
         if model_instance.pk:
             queryset = queryset.exclude(pk=model_instance.pk)
-
+        
+        # form a kwarg dict used to impliment any unique_together contraints
+        kwargs = {}
+        for params in model_instance._meta.unique_together:
+            if self.attname in params:
+                for param in params:
+                    kwargs[param] = getattr(model_instance, param, None)
+        kwargs[self.attname] = slug
+        
         # increases the number while searching for the next valid slug
         # depending on the given slug, clean-up
-        while not slug or queryset.filter(**{self.attname: slug}):
+        while not slug or queryset.filter(**kwargs):
             slug = original_slug
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
@@ -107,14 +119,15 @@ class AutoSlugField(SlugField):
                 slug = slug[:slug_len-end_len]
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
+            kwargs[self.attname] = slug
             next += 1
         return slug
-
+    
     def pre_save(self, model_instance, add):
         value = unicode(self.create_slug(model_instance, add))
         setattr(model_instance, self.attname, value)
         return value
-
+    
     def get_internal_type(self):
         return "SlugField"
 
@@ -148,7 +161,7 @@ class ModificationDateTimeField(CreationDateTimeField):
 
     def get_internal_type(self):
         return "DateTimeField"
-
+ 
 class UUIDVersionError(Exception):
     pass
 
@@ -160,7 +173,7 @@ class UUIDField(CharField):
     The field support all uuid versions which are natively supported by the uuid python module.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
-
+    
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
         kwargs['max_length'] = 36
         if auto:
@@ -173,10 +186,10 @@ class UUIDField(CharField):
         elif version==3 or version==5:
             self.namespace, self.name = namespace, name
         CharField.__init__(self, verbose_name, name, **kwargs)
-
+    
     def get_internal_type(self):
         return CharField.__name__
-
+    
     def create_uuid(self):
         if not self.version or self.version==4:
             return uuid.uuid4()
@@ -190,7 +203,7 @@ class UUIDField(CharField):
             return uuid.uuid5(self.namespace, self.name)
         else:
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
-
+    
     def pre_save(self, model_instance, add):
         if self.auto and add:
             value = unicode(self.create_uuid())
@@ -202,4 +215,3 @@ class UUIDField(CharField):
                 value = unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
-
