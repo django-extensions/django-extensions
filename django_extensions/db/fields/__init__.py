@@ -4,6 +4,7 @@ Django Extensions additional model fields
 
 from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
+from django.db.models.fields import FieldDoesNotExist
 import datetime
 import re
 
