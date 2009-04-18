@@ -5,6 +5,9 @@ TODO:
  - better support for relations
  - better support for constraints (mainly postgresql?)
  - support for table spaces with postgresql
+ - when a table is not managed (meta.managed==False) then only do a one-way
+   sqldiff ? show differences from db->table but not the other way around since
+   it's not managed.
  
 KNOWN ISSUES:
  - MySQL has by far the most problems with introspection. Please be
@@ -575,6 +578,9 @@ to check/debug ur models compared to the real database tables and columns."""
             app_models = []
             for app in app_list:
                 app_models.extend(models.get_models(app))
+
+        ## remove all models that are not managed by Django
+        #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')
