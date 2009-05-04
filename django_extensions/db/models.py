@@ -24,7 +24,7 @@ class TitleSlugDescriptionModel(models.Model):
     and a self-managed "slug" field that populates from the title.
     """
     title = models.CharField(_('title'), max_length=255)
-    slug = AutoSlugField(_('description'), populate_from='title')
+    slug = AutoSlugField(_('slug'), populate_from='title')
     description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
