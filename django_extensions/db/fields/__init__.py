@@ -58,6 +58,9 @@ class AutoSlugField(SlugField):
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
+    def slugify_func(self, content):
+        return slugify(content)
+
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
         if not isinstance(self._populate_from, (list, tuple)):
@@ -66,7 +69,7 @@ class AutoSlugField(SlugField):
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug_for_field = lambda field: slugify(getattr(model_instance, field))
+            slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             next = 2
         else:
