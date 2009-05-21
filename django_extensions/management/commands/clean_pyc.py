@@ -19,7 +19,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         project_root = options.get("path", None)
         if not project_root:
-                project_root = get_project_root()
+            project_root = get_project_root()
         exts = options.get("optimize", False) and [".pyc", ".pyo"] or [".pyc"]
         verbose = int(options.get("verbosity", 1))>1
 

@@ -20,7 +20,7 @@ class Command(NoArgsCommand):
         if not project_root:
                 project_root = get_project_root()
         verbose = int(options.get("verbosity", 1))>1
-        
+
         for root, dirs, files in os.walk(project_root):
             for file in files:
                 ext = os.path.splitext(file)[1]
@@ -29,7 +29,6 @@ class Command(NoArgsCommand):
                     if verbose:
                         print "%sc" % full_path
                     py_compile.compile(full_path)
-                    
 
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:

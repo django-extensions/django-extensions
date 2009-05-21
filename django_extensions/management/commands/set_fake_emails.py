@@ -48,29 +48,28 @@ class Command(NoArgsCommand):
         
         users = User.objects.all()
         if no_admin:
-                users = users.exclude(is_superuser=True)
-            if no_staff:
-                users = users.exclude(is_staff=True)
+            users = users.exclude(is_superuser=True)
+        if no_staff:
+            users = users.exclude(is_staff=True)
         if exclude_groups:
-                groups = Group.objects.filter(name__in=exclude_groups.split(","))
-                if groups:
-                    users = users.exclude(groups__in=groups)
-                else:
+            groups = Group.objects.filter(name__in=exclude_groups.split(","))
+            if groups:
+                users = users.exclude(groups__in=groups)
+            else:
                 raise CommandError("No group matches filter: %s" % exclude_groups)
-            if include_groups:
-                groups = Group.objects.filter(name__in=include_groups.split(","))
-                if groups:
-                    users = users.filter(groups__in=groups)
-                else:
+        if include_groups:
+            groups = Group.objects.filter(name__in=include_groups.split(","))
+            if groups:
+                users = users.filter(groups__in=groups)
+            else:
                 raise CommandError("No groups matches filter: %s" % include_groups)
-            if exclude_regexp:
-                users = users.exclude(username__regex=exclude_regexp)
-            if include_regexp:
-                users = users.filter(username__regex=include_regexp)
+        if exclude_regexp:
+            users = users.exclude(username__regex=exclude_regexp)
+        if include_regexp:
+            users = users.filter(username__regex=include_regexp)
         for user in users:
             user.email = email % {'username': user.username,
                                   'first_name': user.first_name,
                                   'last_name': user.last_name}
             user.save()
-            
         print 'Changed %d emails' % users.count()
