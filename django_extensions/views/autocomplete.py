@@ -3,20 +3,21 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.http import HttpResponse, HttpResponseNotFound
+from django.conf import settings
 
 def foreignkey_autocomplete(request, related_string_functions=None):
     """
     Searches in the fields of the given related model and returns the 
     result as a simple string to be used by the jQuery Autocomplete plugin
     """
+    if related_string_functions is None:
+        related_string_functions = getattr(settings,
+            'DJANGO_EXTENSIONS_FOREIGNKEY_AUTOCOMPLETE_STRING_FUNCTIONS', {})
     query = request.GET.get('q', None)
     app_label = request.GET.get('app_label', None)
     model_name = request.GET.get('model_name', None)
     search_fields = request.GET.get('search_fields', None)
     object_pk = request.GET.get('object_pk', None)
-    if related_string_functions is None:
-        related_string_functions = getattr(settings,
-            'DJANGO_EXTENSIONS_AUTOCOMPLETE_RELATED_STRING_FUNCTIONS', {})
     try:
         to_string_function = related_string_functions[model_name]
     except KeyError:

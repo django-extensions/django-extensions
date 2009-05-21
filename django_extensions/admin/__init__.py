@@ -12,8 +12,9 @@ from django.contrib import admin
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
+from django.conf import settings
 
-from django_extensions.admin.widgets import ForeignKeySearchInput
+from django_extensions.admin.widgets import AdminForeignKeySearchInput
 from django_extensions.views.autocomplete import foreignkey_autocomplete
 
 class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
@@ -39,17 +40,10 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
          }
     """
 
-    related_search_fields = {}
-    related_string_functions = {}
-
-    def __init__(self, *args, **kwargs):
-        if not self.related_string_functions:
-            self.related_string_functions = getattr(settings,
-                'DJANGO_EXTENSIONS_FOREIGNKEY_AUTOCOMPLETE_RELATED_STRING_FUNCTIONS', {})
-        if not self.related_search_fields:
-            self.related_search_fields = getattr(settings,
-                'DJANGO_EXTENSIONS_FOREIGNKEY_AUTOCOMPLETE_RELATED_SEARCH_FIELDS', {})
-        super(ForeignKeyAutocompleteAdmin, self).__init__(*args, **kwargs)
+    related_search_fields = getattr(settings,
+        'DJANGO_EXTENSIONS_FOREIGNKEY_AUTOCOMPLETE_SEARCH_FIELDS', {})
+    related_string_functions = getattr(settings,
+        'DJANGO_EXTENSIONS_FOREIGNKEY_AUTOCOMPLETE_STRING_FUNCTIONS', {})
 
     def __call__(self, request, url):
         if url is None:
@@ -65,7 +59,8 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
                 'model_name': model_name,
                 'field_list': get_text_list(searchable_fields, _('and')),
             }
-            return _('Use the left field to do %(model_name)s lookups in the fields %(field_list)s.') % help_kwargs
+            return _('Use the left field to do %(model_name)s lookups '
+                     'in the fields %(field_list)s.') % help_kwargs
         return ''
 
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -74,12 +69,12 @@ class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
         specified in the related_search_fields class attribute.
         """
         if (isinstance(db_field, models.ForeignKey) and 
-            db_field.name in self.related_search_fields):
+                db_field.name in self.related_search_fields):
             model_name = db_field.rel.to._meta.object_name
             help_text = self.get_help_text(db_field.name, model_name)
             if kwargs.get('help_text'):
                 help_text = u'%s %s' % (kwargs['help_text'], help_text)
-            kwargs['widget'] = ForeignKeySearchInput(db_field.rel,
+            kwargs['widget'] = AdminForeignKeySearchInput(db_field.rel,
                                     self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
         return super(ForeignKeyAutocompleteAdmin,

@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.core import urlresolvers
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 from django.utils.text import truncate_words
@@ -10,10 +10,27 @@ from django_extensions.forms.widgets import ForeignKeySearchInput
 
 class AdminForeignKeySearchInput(ForeignKeySearchInput, ForeignKeyRawIdWidget):
     """
-    A Widget for displaying ForeignKeys in an autocomplete search input 
+    A Widget for displaying ForeignKeys in an autocomplete search input
     instead in a <select> box.
     """
     search_path = '../foreignkey_autocomplete/'
+
+    def __init__(self, rel, search_fields, attrs=None):
+        ForeignKeyRawIdWidget.__init__(self, rel, attrs)
+        self.search_fields = search_fields
+        if self.search_path is None:
+            try:
+                self.search_path = reverse('foreignkey_autocomplete')
+            except NoReverseMatch:
+                raise ImproperlyConfigured(
+                    "The foreignkey autocomplete URL couldn't be "
+                    "auto-detected. Make sure you include "
+                    "'django_extensions.urls.autocomplete' in your URLconf.")
+
+    def label_for_value(self, value):
+        key = self.rel.get_related_field().name
+        obj = self.rel.to._default_manager.get(**{key: value})
+        return truncate_words(obj, 14)
 
     def render(self, name, value, attrs=None):
         if attrs is None:
