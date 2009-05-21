@@ -1,12 +1,14 @@
 {% load i18n %}
 <input type="text" id="lookup_{{ name }}" value="{{ label }}" style="display:none;" />
+<span id="selection_{{ name }}"></span>
 <script type="text/javascript">
 $(document).ready(function() {
-    // Show lookup input
     $("#lookup_{{ name }}").show();
+    $("#id_{{ name }}").hide();
     function reset() {
         $('#id_{{ name }}').val('');
         $('#lookup_{{ name }}').val('');
+        $('#selection_{{ name }}').text('');
     };
     function lookup(query) {
         $.get('{{ search_path }}', {
@@ -16,33 +18,57 @@ $(document).ready(function() {
             'object_pk': query,
         }, function(data){
             $('#lookup_{{ name }}').val(data);
+            $('#selection_{{ name }}').text(data);
             {{ name }}_value = query;
         });
     };
-    $('#id_{{ name }}').bind(($.browser.opera ? "keypress" : "keyup"), function(event) {
-        if ($(this).val()) {
-            if (event.keyCode == 27) {
-                reset();
+    $('#id_{{ name }}').keyup(
+        function(event) {
+            if ($(this).val()) {
+                if (event.keyCode == 27) {
+                    reset();
+                } else {
+                    lookup($(this).val());
+                };
             } else {
-                lookup($(this).val());
+                reset();
             };
-        };
-    });
-    $('#lookup_{{ name }}').autocomplete('{{ search_path }}', {
-        extraParams: {
-            'search_fields': '{{ search_fields }}',
-            'app_label': '{{ app_label }}',
-            'model_name': '{{ model_name }}',
-        },
-    }).result(function(event, data, formatted) {
-        if (data) {
-            $('#id_{{ name }}').val(data[1]);
         }
-    }).keyup(function(event){
-        if (event.keyCode == 27) {
-            reset();
-        };
-    });
+    ).blur(
+        function(event){
+            if (!$(this).val()) {
+                reset();
+            }
+        }
+    );
+    $('#lookup_{{ name }}').autocomplete(
+        '{{ search_path }}', {
+            extraParams: {
+                'search_fields': '{{ search_fields }}',
+                'app_label': '{{ app_label }}',
+                'model_name': '{{ model_name }}',
+            }
+        }
+    ).result(
+        function(event, data, formatted) {
+            if (data) {
+                $('#id_{{ name }}').val(data[1]);
+                $('#selection_{{ name }}').text(data[0]);
+            }
+        }
+    ).keyup(
+        function(event) {
+            if ((event.keyCode==27)|(!$(this).val())) {
+                reset();
+            }
+        }
+    ).blur(
+        function(event){
+            if (!$(this).val()) {
+                reset();
+            }
+        }
+    );
     var {{ name }}_value = $('#id_{{ name }}').val();
     function check() {
         {{ name }}_check = $('#id_{{ name }}').val();

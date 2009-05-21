@@ -22,30 +22,46 @@ $(document).ready(function() {
             {{ name }}_value = query;
         });
     };
-    $('#id_{{ name }}').bind(($.browser.opera ? "keypress" : "keyup"), function(event) {
-        if ($(this).val()) {
-            if (event.keyCode == 27) {
-                reset();
+    $('#id_{{ name }}').keyup(
+        function(event) {
+            if ($(this).val()) {
+                if (event.keyCode == 27) {
+                    reset();
+                } else {
+                    lookup($(this).val());
+                };
             } else {
-                lookup($(this).val());
+                reset();
             };
-        };
-    });
-    $('#lookup_{{ name }}').autocomplete('{{ search_path }}', {
-        extraParams: {
-            'search_fields': '{{ search_fields }}',
-            'app_label': '{{ app_label }}',
-            'model_name': '{{ model_name }}',
-        },
-    }).result(function(event, data, formatted) {
-        if (data) {
-            $('#id_{{ name }}').val(data[1]);
         }
-    }).keyup(function(event){
-        if (event.keyCode == 27) {
-            reset();
-        };
-    });
+    ).blur(
+        function(event){
+            if (!$(this).val()) {
+                reset();
+            }
+        }
+    );
+    $('#lookup_{{ name }}').autocomplete(
+        '{{ search_path }}', {
+            extraParams: {
+                'search_fields': '{{ search_fields }}',
+                'app_label': '{{ app_label }}',
+                'model_name': '{{ model_name }}',
+            }
+        }
+    ).result(
+        function(event, data, formatted) {
+            if (data) {
+                $('#id_{{ name }}').val(data[1]);
+            }
+        }
+    ).keyup(
+        function(event) {
+            if ((event.keyCode==27)|(!$(this).val())) {
+                reset();
+            }
+        }
+    );
     var {{ name }}_value = $('#id_{{ name }}').val();
     function check() {
         {{ name }}_check = $('#id_{{ name }}').val();
