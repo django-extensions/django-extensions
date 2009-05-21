@@ -18,7 +18,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         project_root = options.get("path", None)
         if not project_root:
-                project_root = get_project_root()
+            project_root = get_project_root()
         verbose = int(options.get("verbosity", 1))>1
 
         for root, dirs, files in os.walk(project_root):
