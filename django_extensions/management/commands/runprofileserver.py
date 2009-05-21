@@ -152,7 +152,7 @@ class Command(BaseCommand):
                     print "cProfile disabled, module cannot be imported!"
                     USE_CPROFILE = False
             if USE_LSPROF and not USE_CPROFILE:
-        	raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
+                raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
             prof_path = options.get('prof_path', '/tmp')
             def make_profiler_handler(inner_handler):
                 def handler(environ, start_response):

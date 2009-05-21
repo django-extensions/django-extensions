@@ -20,7 +20,7 @@ class Command(BaseCommand):
         
         style = color_style()
         
-    	if settings.ADMIN_FOR:
+            if settings.ADMIN_FOR:
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
         else:
             settings_modules = [settings]
