@@ -37,13 +37,15 @@ __author__ = 'Will Larson <lethain@gmail.com>'
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
+from django.core.exceptions import ImproperlyConfigured
 
 try :
     from pygments import highlight
     from pygments.formatters import HtmlFormatter
     from pygments.lexers import get_lexer_by_name,guess_lexer,ClassNotFound
 except ImportError:
-    raise Exception('Please, install \'pygments\' library to use syntax_color.')
+    raise ImproperlyConfigured(
+        "Please install 'pygments' library to use syntax_color.")
 
 register = template.Library()
 
