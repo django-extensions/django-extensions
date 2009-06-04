@@ -78,6 +78,7 @@ additions for Django projects. See the project page for more information:
     license = 'New BSD License',
     platforms = ['any'],
     packages = packages,
+    cmdclass = cmdclasses,
     data_files = data_files,
     classifiers = ['Development Status :: 4 - Beta',
                    'Environment :: Web Environment',
