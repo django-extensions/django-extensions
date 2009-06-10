@@ -10,4 +10,5 @@ def color_style():
     style.URL = termcolors.make_style(fg='green', opts=('bold',))
     style.MODULE = termcolors.make_style(fg='yellow')
     style.MODULE_NAME = termcolors.make_style(opts=('bold',))
+    style.URL_NAME = termcolors.make_style(fg='red')
     return style
