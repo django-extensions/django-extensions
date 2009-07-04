@@ -1,7 +1,7 @@
 """
 Django Extensions abstract base model classes.
 """
-
+import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (ModificationDateTimeField,
@@ -50,5 +50,5 @@ class ActivatorModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.activate_date:
-            self.activate_date = datetime.now()
-        super(ActivatorMixin, self).save(*args, **kwargs)
+            self.activate_date = datetime.datetime.now()
+        super(ActivatorModel, self).save(*args, **kwargs)
