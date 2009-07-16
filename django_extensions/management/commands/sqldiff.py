@@ -399,7 +399,7 @@ class MySQLDiff(SQLDiff):
         if not db_type:
             return
         if field:
-            if field.primary_key and db_type=='integer':
+            if field.primary_key and (db_type=='integer' or db_type=='bigint'):
                 db_type += ' AUTO_INCREMENT'
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
