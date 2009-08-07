@@ -11,6 +11,7 @@ Credits for kcachegrind support taken from lsprofcalltree.py go to:
 
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
+from datetime import datetime
 import os
 import sys
 
@@ -163,20 +164,27 @@ class Command(BaseCommand):
                     if no_media and (path_info.startswith('/media') or path_info.startswith(settings.MEDIA_URL)):
                         return inner_handler(environ, start_response)
                     path_name = path_info.strip("/").replace('/', '.') or "root"
-                    profname = "%s.%.3f.prof" % (path_name, time.time())
+                    profname = "%s.%s.prof" % (path_name, datetime.now().isoformat())
                     profname = os.path.join(prof_path, profname)
                     if USE_CPROFILE:
                         prof = cProfile.Profile()
                     else:
                         prof = hotshot.Profile(profname)
+                    start = datetime.now()
                     try:
                         return prof.runcall(inner_handler, environ, start_response)
                     finally:
+                        # seeing how long the request took is important!
+                        elap = datetime.now() - start
+                        elapms = elap.seconds * 1000.0 + elap.microseconds / 1000.0
                         if USE_LSPROF:
                             kg = KCacheGrind(prof)
                             kg.output(file(profname, 'w'))
                         elif USE_CPROFILE:
                             prof.dump_stats(profname)
+                        profname2 = "%s.%06dms.%s.prof" % (path_name, elapms, datetime.now().isoformat())
+                        profname2 = os.path.join(prof_path, profname2)
+                        os.rename(profname, profname2)
                 return handler
 
             print "Validating models..."
