@@ -431,7 +431,7 @@ class SqliteSQLDiff(SQLDiff):
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
         for field in meta.local_fields:
             if field.unique:
-                attname = field.attname
+                attname = field.db_column or field.attname
                 if attname in table_indexes and table_indexes[attname]['unique']:
                     continue
                 if table_indexes[attname]['primary_key']:
