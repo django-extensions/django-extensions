@@ -13,17 +13,17 @@ except ImportError:
     from django_extensions.utils import uuid
 
 class AutoSlugField(SlugField):
-    """ AutoSlugField 
+    """ AutoSlugField
 
     By default, sets editable=False, blank=True.
 
     Required arguments:
-    
+
     populate_from
-        Specifies which field the slug is populated from.
-    
+        Specifies which field or list of fields the slug is populated from.
+
     Optional arguments:
-    
+
     separator
         Defines the used separator (default: '-')
 
@@ -58,13 +58,19 @@ class AutoSlugField(SlugField):
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
+    def slugify_func(self, content):
+        return slugify(content)
+
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
-        populate_field = model_instance._meta.get_field(self._populate_from)
+        if not isinstance(self._populate_from, (list, tuple)):
+            self._populate_from = (self._populate_from, )
         slug_field = model_instance._meta.get_field(self.attname)
+
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug = slugify(getattr(model_instance, populate_field.attname))
+            slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
+            slug = self.separator.join(map(slug_for_field, self._populate_from))
             next = 2
         else:
             # get slug from the current model instance and calculate next
@@ -91,9 +97,17 @@ class AutoSlugField(SlugField):
         if model_instance.pk:
             queryset = queryset.exclude(pk=model_instance.pk)
 
+        # form a kwarg dict used to impliment any unique_together contraints
+        kwargs = {}
+        for params in model_instance._meta.unique_together:
+            if self.attname in params:
+                for param in params:
+                    kwargs[param] = getattr(model_instance, param, None)
+        kwargs[self.attname] = slug
+
         # increases the number while searching for the next valid slug
         # depending on the given slug, clean-up
-        while not slug or queryset.filter(**{self.attname: slug}):
+        while not slug or queryset.filter(**kwargs):
             slug = original_slug
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
@@ -101,6 +115,7 @@ class AutoSlugField(SlugField):
                 slug = slug[:slug_len-end_len]
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
+            kwargs[self.attname] = slug
             next += 1
         return slug
 
@@ -113,33 +128,33 @@ class AutoSlugField(SlugField):
         return "SlugField"
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField 
-    
+    """ CreationDateTimeField
+
     By default, sets editable=False, blank=True, default=datetime.now
     """
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('editable', False)
         kwargs.setdefault('blank', True)
         kwargs.setdefault('default', datetime.datetime.now)
         DateTimeField.__init__(self, *args, **kwargs)
-    
+
     def get_internal_type(self):
         return "DateTimeField"
 
 class ModificationDateTimeField(CreationDateTimeField):
-    """ ModificationDateTimeField 
-    
+    """ ModificationDateTimeField
+
     By default, sets editable=False, blank=True, default=datetime.now
-    
+
     Sets value to datetime.now() on each save of the model.
     """
-    
+
     def pre_save(self, model, add):
         value = datetime.datetime.now()
         setattr(model, self.attname, value)
         return value
-    
+
     def get_internal_type(self):
         return "DateTimeField"
 
@@ -148,9 +163,9 @@ class UUIDVersionError(Exception):
 
 class UUIDField(CharField):
     """ UUIDField
-    
+
     By default uses UUID version 1 (generate from host ID, sequence number and current time)
-    
+
     The field support all uuid versions which are natively supported by the uuid python module.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
@@ -196,4 +211,3 @@ class UUIDField(CharField):
                 value = unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
-

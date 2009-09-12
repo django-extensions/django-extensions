@@ -215,7 +215,7 @@ class Command(BaseCommand):
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
     Command.option_list += (
-	make_option('--verbosity', '-v', action="store", dest="verbosity",
-	    default='1', type='choice', choices=['0', '1', '2'],
-	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+        make_option('--verbosity', '-v', action="store", dest="verbosity",
+            default='1', type='choice', choices=['0', '1', '2'],
+            help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
     )

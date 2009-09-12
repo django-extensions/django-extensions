@@ -37,18 +37,29 @@ __author__ = 'Will Larson <lethain@gmail.com>'
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
-from pygments import highlight
-from pygments.formatters import HtmlFormatter
-from pygments.lexers import get_lexer_by_name,guess_lexer,ClassNotFound
+from django.core.exceptions import ImproperlyConfigured
+
+try :
+    from pygments import highlight
+    from pygments.formatters import HtmlFormatter
+    from pygments.lexers import get_lexer_by_name,guess_lexer,ClassNotFound
+except ImportError:
+    raise ImproperlyConfigured(
+        "Please install 'pygments' library to use syntax_color.")
 
 register = template.Library()
+
+@register.simple_tag
+def pygments_css():
+    return HtmlFormatter().get_style_defs('.highlight')
+
 
 def generate_pygments_css(path=None):
     if path is None:
         import os
         path = os.path.join(os.getcwd(),'pygments.css')
     f = open(path,'w')
-    f.write(HtmlFormatter().get_style_defs('.highlight'))
+    f.write(pygments_css())
     f.close()
 
 
@@ -74,4 +85,12 @@ def colorize_table(value,arg=None):
     except ClassNotFound:
         return value
 
-    
+
+@register.filter(name='colorize_noclasses')
+@stringfilter
+def colorize_noclasses(value,arg=None):
+    try:
+        return mark_safe(highlight(value,get_lexer(value,arg),HtmlFormatter(noclasses=True)))
+    except ClassNotFound:
+        return value
+

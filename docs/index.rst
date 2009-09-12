@@ -32,7 +32,10 @@ Contents:
 Indices and tables
 ==================
 
+<<<<<<< HEAD:docs/index.rst
 * :ref:`genindex`
 * :ref:`modindex`
+=======
+>>>>>>> upstream/master:docs/index.rst
 * :ref:`search`
 

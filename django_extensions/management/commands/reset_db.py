@@ -1,6 +1,5 @@
 """
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
-
 """
 
 
@@ -9,7 +8,7 @@ from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
 import logging
 from optparse import make_option
-        
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noinput', action='store_false',
@@ -78,12 +77,14 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 import psycopg as Database
             elif engine == 'postgresql_psycopg2':
                 import psycopg2 as Database
-    
+            
             if settings.DATABASE_NAME == '':
                 from django.core.exceptions import ImproperlyConfigured
                 raise ImproperlyConfigured, "You need to specify DATABASE_NAME in your Django settings file."
+            
+            conn_string = "dbname=%s" % settings.DATABASE_NAME
             if settings.DATABASE_USER:
-                conn_string = "user=%s" % (settings.DATABASE_USER)
+                conn_string += " user=%s" % settings.DATABASE_USER
             if settings.DATABASE_PASSWORD:
                 conn_string += " password='%s'" % settings.DATABASE_PASSWORD
             if settings.DATABASE_HOST:

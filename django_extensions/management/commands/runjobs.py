@@ -8,13 +8,13 @@ class Command(LabelCommand):
             help="List all jobs with their description"),
     )
     help = "Runs scheduled maintenance jobs."
-    args = "[hourly daily weekly monthly]"
+    args = "[hourly daily weekly monthly yearly]"
     label = ""
 
     requires_model_validation = True
 
     def usage_msg(self):
-        print "Run scheduled jobs. Please specify 'hourly', 'daily', 'weekly' or 'monthly'"
+        print "Run scheduled jobs. Please specify 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'"
 
     def runjobs(self, when, options):
         verbosity = int(options.get('verbosity', 1))
@@ -60,6 +60,8 @@ class Command(LabelCommand):
                 signals.run_weekly_jobs.send(sender=app, app=app)
             elif when == 'monthly':
                 signals.run_monthly_jobs.send(sender=app, app=app)
+            elif when == 'yearly':
+                signals.run_yearly_jobs.send(sender=app, app=app)
 
     def handle(self, *args, **options):
         when = None
@@ -67,7 +69,7 @@ class Command(LabelCommand):
             self.usage_msg()
             return
         elif len(args)==1:
-            if not args[0] in ['hourly', 'daily', 'weekly', 'monthly']:
+            if not args[0] in ['hourly', 'daily', 'weekly', 'monthly', 'yearly']:
                 self.usage_msg()
                 return
             else:
@@ -84,7 +86,7 @@ class Command(LabelCommand):
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
     Command.option_list += (
-	make_option('--verbosity', '-v', action="store", dest="verbosity",
-	    default='1', type='choice', choices=['0', '1', '2'],
-	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+        make_option('--verbosity', '-v', action="store", dest="verbosity",
+            default='1', type='choice', choices=['0', '1', '2'],
+            help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
     )

@@ -15,12 +15,21 @@ class Command(BaseCommand):
             help='Only look in app.fixtures subdir'),
         make_option('--noscripts', action='store_true', dest='noscripts', default=False,
             help='Look in app.scripts subdir'),
+        make_option('-s', '--silent', action='store_true', dest='silent', default=False,
+            help='Run silently, do not show errors and tracebacks'),
+        make_option('--no-traceback', action='store_true', dest='no_traceback', default=False,
+            help='Do not show tracebacks'),
     )
     help = 'Runs a script in django context.'
     args = "script [script ...]"
 
     def handle(self, *scripts, **options):
         from django.db.models import get_apps
+        
+        NOTICE = self.style.SQL_TABLE
+        NOTICE2 = self.style.SQL_FIELD
+        ERROR = self.style.ERROR_OUTPUT
+        ERROR2 = self.style.NOTICE
 
         subdirs = []
 
@@ -29,67 +38,97 @@ class Command(BaseCommand):
         if options.get('infixtures'):
             subdirs.append('fixtures')
         verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', False)
+        show_traceback = options.get('traceback', True)
+        if show_traceback is None:
+            # XXX: traceback is set to None from Django ?
+            show_traceback = True
+        no_traceback = options.get('no_traceback', False)
+        if no_traceback:
+            show_traceback = False
+        silent = options.get('silent', False)
+        if silent:
+            verbosity = 0
 
         if len(subdirs) < 1:
-            print "No subdirs to run left."
+            print NOTICE("No subdirs to run left.")
             return
 
         if len(scripts) < 1:
-            print "Script name required."
+            print ERROR("Script name required.")
             return
 
-        def run_script(name):
-            if verbosity > 1:
-                print "check for %s" % name
+        def run_script(mod):
+            # TODO: add arguments to run
             try:
-                t = __import__(name, [], [], [" "])
-
+                mod.run()
+            except Exception, e:
+                if silent:
+                    return
                 if verbosity > 0:
-                    print "Found script %s ..." %name
+                    print ERROR("Exception while running run() in '%s'" % mod.__name__)
+                if show_traceback:
+                    raise
+        
+        def my_import(mod):
+            if verbosity > 1:
+                print NOTICE("Check for %s" % mod)
+            try:
+                t = __import__(mod, [], [], [" "])
+                #if verbosity > 1:
+                #    print NOTICE("Found script %s ..." % mod)
                 if hasattr(t, "run"):
                     if verbosity > 1:
-                        print "found run() in %s. executing..." % name
-                    # TODO: add arguments to run
-                    try:
-                        t.run()
-                    except Exception, e:
-                        if verbosity > 0:
-                            print "Exception while running run() in %s" %name
-                        if show_traceback:
-                            raise
+                        print NOTICE2("Found script '%s' ..." % mod)
+                    #if verbosity > 1:
+                    #    print NOTICE("found run() in %s. executing..." % mod)
+                    return t
                 else:
                     if verbosity > 1:
-                        print "no run() function found."
-                    
+                        print ERROR2("Find script '%s' but no run() function found." % mod)
             except ImportError:
-                pass
+                return False
+        
+        def find_modules_for_script(script):
+            """ find script module which contains 'run' attribute """
+            modules = []
+            # first look in apps
+            for app in get_apps():
+                app_name = app.__name__.split(".")[:-1] # + ['fixtures']
+                for subdir in subdirs:
+                    mod = my_import(".".join(app_name + [subdir, script]))
+                    if mod:
+                        modules.append(mod)
 
-
-        for app in get_apps():
-            app_name = app.__name__.split(".")[:-1] # + ['fixtures']
-
-            for subdir in subdirs:
-                for script in scripts:
-                    run_script(".".join(app_name + [subdir, script]))
-
-        # try app.DIR.script import
-        for script in scripts:
+            # try app.DIR.script import
             sa = script.split(".")
             for subdir in subdirs:
                 nn = ".".join(sa[:-1] + [subdir, sa[-1]])
-                run_script(nn)
+                mod = my_import(nn)
+                if mod:
+                    modules.append(mod)
 
             # try direct import
             if script.find(".") != -1:
-                run_script(script)
-
-
+                mod = my_import(script)
+                if mod:
+                    modules.append(mod)
+            
+            return modules
+        
+        for script in scripts:
+            modules = find_modules_for_script(script)
+            if not modules:
+                if verbosity>0 and not silent:
+                    print ERROR("No module for script '%s' found" % script)
+            for mod in modules:
+                if verbosity>1:
+                    print NOTICE2("Running script '%s' ..." % mod.__name__)
+                run_script(mod)
 
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
     Command.option_list += (
-	make_option('--verbosity', '-v', action="store", dest="verbosity",
-	    default='1', type='choice', choices=['0', '1', '2'],
-	    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+        make_option('--verbosity', '-v', action="store", dest="verbosity",
+                    default='1', type='choice', choices=['0', '1', '2'],
+                    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
     )

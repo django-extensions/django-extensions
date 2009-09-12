@@ -170,11 +170,11 @@ def generate_dot(app_labels, **kwargs):
         })
 
         for appmodel in get_models(app):
-    	    abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
-    	    abstract_fields = []
-    	    for e in appmodel.__bases__:
-    		if hasattr(e, '_meta') and e._meta.abstract:
-    		    abstract_fields.extend(e._meta.fields)
+            abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
+            abstract_fields = []
+            for e in appmodel.__bases__:
+                if hasattr(e, '_meta') and e._meta.abstract:
+                    abstract_fields.extend(e._meta.fields)
             model = {
                 'app_name': app.__name__.replace(".", "_"),
                 'name': appmodel.__name__,
