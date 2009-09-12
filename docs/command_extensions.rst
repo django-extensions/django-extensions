@@ -4,7 +4,7 @@ Current Command Extensions
 :synopsis: Current Command Extensions
 
 
-* *create_app* - Creates an application directory structure for the specified
+* `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
   can indicate a template directory structure to use as your default.
 

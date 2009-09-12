@@ -14,6 +14,7 @@ Contents:
    admin_extensions
    command_extension_ideas
    command_extensions
+   create_app
    dumpscript
    export_emails
    field_extensions
