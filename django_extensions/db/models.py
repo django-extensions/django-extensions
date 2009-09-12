@@ -1,7 +1,7 @@
 """
 Django Extensions abstract base model classes.
 """
-
+import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (ModificationDateTimeField,
@@ -32,7 +32,7 @@ class TitleSlugDescriptionModel(models.Model):
 
 class ActivatorModel(models.Model):
     """ ActivatorModel
-    An abstract base class model that provide sactivate and deactivate fields.
+    An abstract base class model that provides activate and deactivate fields.
     """
     STATUS_CHOICES = (
         (0, _('Inactive')),
@@ -50,5 +50,5 @@ class ActivatorModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.activate_date:
-            self.activate_date = datetime.now()
-        super(ActivatorMixin, self).save(*args, **kwargs)
+            self.activate_date = datetime.datetime.now()
+        super(ActivatorModel, self).save(*args, **kwargs)

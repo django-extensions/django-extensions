@@ -7,7 +7,7 @@ def truncate_letters(s, num):
     length = int(num)
     if len(s)>length:
         s = s[:length]
-    if not s.endswith('...'):
-        s += '...'
+        if not s.endswith('...'):
+            s += '...'
     return s
 truncate_letters = allow_lazy(truncate_letters, unicode)

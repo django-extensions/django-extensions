@@ -32,6 +32,9 @@ class WeeklyJob(BaseJob):
 class MonthlyJob(BaseJob):
     when = "monthly"
 
+class YearlyJob(BaseJob):
+    when = "yearly"
+    
 def my_import(name):
     imp = __import__(name)
     mods = name.split('.')
@@ -91,7 +94,7 @@ def get_jobs(when=None, only_scheduled=False):
         if True:
             from django.conf import settings
             for app_name in settings.INSTALLED_APPS:
-                scandirs = (None, 'hourly', 'daily', 'weekly', 'monthly')
+                scandirs = (None, 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
                 if when:
                     scandirs = None, when
                 for subdir in scandirs:

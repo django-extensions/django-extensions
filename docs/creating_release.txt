@@ -1,0 +1,41 @@
+Creating a release
+==================
+
+:synopsis: Creating a django-extensions release
+
+
+How to make a new release
+-------------------------
+
+Get a fresh copy
+
+ $ git clone git@github.com:django-extensions/django-extensions.git
+ $ cd django-extensions
+
+Change version number in django_extensions/__init__.py
+
+ $ vi django_extension/__init__.py
+ $ git commit -a -m v0.4.1
+
+Tag it
+
+ $ git tag 0.4.1
+
+Prepare the release tarball
+
+ $ python ./setup.py sdist
+
+Upload release to pypi
+
+ $ python ./setup.py register
+ $ python ./setup.py sdist upload -s
+
+Bumb version number to new in-development pre version
+
+ $ vi django_extensions/__init__.py
+ $ git ci -a -m 'bumped version number'
+
+Push changes back to github
+
+ $ git push --tags
+
