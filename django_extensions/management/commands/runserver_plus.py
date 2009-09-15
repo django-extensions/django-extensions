@@ -27,6 +27,8 @@ class Command(BaseCommand):
         from django.core.handlers.wsgi import WSGIHandler
         try:
             from werkzeug import run_simple, DebuggedApplication
+        except ImportError, e:
+            raise e
         except:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/download")
 
