@@ -4,8 +4,10 @@ from optparse import make_option
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
+        make_option('--ipython', action='store_true', dest='ipython',
+            help='Tells Django to use IPython, not BPython.'),
         make_option('--plain', action='store_true', dest='plain',
-            help='Tells Django to use plain Python, not IPython.'),
+            help='Tells Django to use plain Python, not BPython nor IPython.'),
         make_option('--no-pythonrc', action='store_true', dest='no_pythonrc',
             help='Tells Django to use plain Python, not IPython.'),
     )
@@ -20,6 +22,7 @@ class Command(NoArgsCommand):
         from django.db.models.loading import get_models, get_apps
         loaded_models = get_models()
 
+        use_ipython = options.get('ipython', False)
         use_plain = options.get('plain', False)
         use_pythonrc = not options.get('no_pythonrc', True)
 
@@ -42,13 +45,20 @@ class Command(NoArgsCommand):
                     continue
         try:
             if use_plain:
-                # Don't bother loading IPython, because the user wants plain Python.
+                # Don't bother loading B/IPython, because the user wants plain Python.
                 raise ImportError
-            import IPython
-            # Explicitly pass an empty list as arguments, because otherwise IPython
-            # would use sys.argv from this script.
-            shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
-            shell.mainloop()
+            try:
+                if use_ipython:
+                    # User wants IPython
+                    raise ImportError
+                from bpython import embed
+                embed(imported_objects)
+            except ImportError:
+                import IPython
+                # Explicitly pass an empty list as arguments, because otherwise IPython
+                # would use sys.argv from this script.
+                shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
+                shell.mainloop()
         except ImportError:
             # Using normal Python shell
             import code
