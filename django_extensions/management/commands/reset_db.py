@@ -17,6 +17,15 @@ class Command(BaseCommand):
         make_option('--no-utf8', action='store_true',
                     dest='no_utf8_support', default=False,
                     help='Tells Django to not create a UTF-8 charset database'),
+        make_option('-U', '--user', action='store',
+                    dest='user', default=None,
+                    help='Use another user for the database then defined in settings.py'),
+        make_option('-P', '--password', action='store',
+                    dest='password', default=None,
+                    help='Use another password for the database then defined in settings.py'),
+        make_option('-D', '--dbname', action='store',
+                    dest='dbname', default=None,
+                    help='Use another database name then defined in settings.py (For PostgreSQL this defaults to "template1")'),
     )
     help = "Resets the database for this project."
 
@@ -44,7 +53,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             return
 
         engine = settings.DATABASE_ENGINE
-    
+        user = options.get('user', settings.DATABASE_USER)
+        password = options.get('password', settings.DATABASE_PASSWORD)
+        
         if engine == 'sqlite3':
             import os
             try:
@@ -55,8 +66,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
         elif engine == 'mysql':
             import MySQLdb as Database
             kwargs = {
-                'user': settings.DATABASE_USER,
-                'passwd': settings.DATABASE_PASSWORD,
+                'user': user,
+                'passwd': password,
             }
             if settings.DATABASE_HOST.startswith('/'):
                 kwargs['unix_socket'] = settings.DATABASE_HOST
@@ -82,11 +93,12 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 from django.core.exceptions import ImproperlyConfigured
                 raise ImproperlyConfigured, "You need to specify DATABASE_NAME in your Django settings file."
             
-            conn_string = "dbname=%s" % settings.DATABASE_NAME
+            database_name = options.get('dbname', 'template1')
+            conn_string = "dbname=%s" % database_name
             if settings.DATABASE_USER:
-                conn_string += " user=%s" % settings.DATABASE_USER
+                conn_string += " user=%s" % user
             if settings.DATABASE_PASSWORD:
-                conn_string += " password='%s'" % settings.DATABASE_PASSWORD
+                conn_string += " password='%s'" % password
             if settings.DATABASE_HOST:
                 conn_string += " host=%s" % settings.DATABASE_HOST
             if settings.DATABASE_PORT:
