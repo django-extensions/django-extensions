@@ -9,6 +9,22 @@ try:
 except NameError:
     from sets import Set as set   # Python 2.3 fallback
 
+def vararg_callback(option, opt_str, opt_value, parser):
+    parser.rargs.insert(0, opt_value)
+    value = []
+    for arg in parser.rargs:
+        # stop on --foo like options
+        if arg[:2] == "--" and len(arg) > 2:
+            break
+        # stop on -a like options
+        if arg[:1] == "-": 
+            break
+        value.append(arg)
+            
+    del parser.rargs[:len(value)]
+    setattr(parser.values, option.dest, value)
+
+                                                                                                                       
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
@@ -19,6 +35,9 @@ class Command(BaseCommand):
             help='Run silently, do not show errors and tracebacks'),
         make_option('--no-traceback', action='store_true', dest='no_traceback', default=False,
             help='Do not show tracebacks'),
+        make_option('--script-args', action='callback', callback=vararg_callback, type='string',
+            help='Space-separated argument list to be passed to the scripts. Note that the '
+                 'same arguments will be passed to all named scripts.'),
     )
     help = 'Runs a script in django context.'
     args = "script [script ...]"
@@ -57,10 +76,9 @@ class Command(BaseCommand):
             print ERROR("Script name required.")
             return
 
-        def run_script(mod):
-            # TODO: add arguments to run
+        def run_script(mod, *script_args):
             try:
-                mod.run()
+                mod.run(*script_args)
             except Exception, e:
                 if silent:
                     return
@@ -114,7 +132,11 @@ class Command(BaseCommand):
                     modules.append(mod)
             
             return modules
-        
+
+        if options.get('script_args'):
+            script_args = options['script_args']
+        else:
+            script_args = []
         for script in scripts:
             modules = find_modules_for_script(script)
             if not modules:
@@ -123,7 +145,8 @@ class Command(BaseCommand):
             for mod in modules:
                 if verbosity>1:
                     print NOTICE2("Running script '%s' ..." % mod.__name__)
-                run_script(mod)
+                run_script(mod, *script_args)
+
 
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
