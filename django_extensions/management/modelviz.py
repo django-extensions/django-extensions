@@ -176,7 +176,7 @@ def generate_dot(app_labels, **kwargs):
                 if hasattr(e, '_meta') and e._meta.abstract:
                     abstract_fields.extend(e._meta.fields)
             model = {
-                'app_name': app.__name__.replace(".", "_"),
+                'app_name': appmodel.__module__.replace(".", "_"),
                 'name': appmodel.__name__,
                 'abstracts': abstracts,
                 'fields': [],
