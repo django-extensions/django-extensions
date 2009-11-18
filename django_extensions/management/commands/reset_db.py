@@ -54,7 +54,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
 
         engine = settings.DATABASE_ENGINE
         user = options.get('user', settings.DATABASE_USER)
+        if user==None:
+            user = settings.DATABASE_USER
         password = options.get('password', settings.DATABASE_PASSWORD)
+        if password==None:
+            password = settings.DATABASE_PASSWORD
         
         if engine == 'sqlite3':
             import os
@@ -119,8 +123,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
 CREATE DATABASE %s
     WITH OWNER = %s
         ENCODING = 'UTF8'
-        TABLESPACE = pg_default;
-""" % (settings.DATABASE_NAME, settings.DATABASE_USER))
+        TABLESPACE = %s;
+""" % (settings.DATABASE_NAME, settings.DATABASE_USER, settings.DEFAULT_TABLESPACE))
             logging.info('Executing... "' + create_query + '"')
             cursor.execute(create_query)
     
