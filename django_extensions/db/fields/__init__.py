@@ -127,6 +127,15 @@ class AutoSlugField(SlugField):
     def get_internal_type(self):
         return "SlugField"
 
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.SlugField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
+
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
 
@@ -141,6 +150,14 @@ class CreationDateTimeField(DateTimeField):
 
     def get_internal_type(self):
         return "DateTimeField"
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect ourselves, since we inherit.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.DateTimeField"
+        args, kwargs = introspector(self)
+        return (field_class, args, kwargs)
 
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField
@@ -157,6 +174,14 @@ class ModificationDateTimeField(CreationDateTimeField):
 
     def get_internal_type(self):
         return "DateTimeField"
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect ourselves, since we inherit.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.DateTimeField"
+        args, kwargs = introspector(self)
+        return (field_class, args, kwargs)
 
 class UUIDVersionError(Exception):
     pass
@@ -211,3 +236,12 @@ class UUIDField(CharField):
                 value = unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.CharField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
