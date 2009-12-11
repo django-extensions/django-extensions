@@ -10,7 +10,6 @@
 #
 import operator
 from django.http import HttpResponse, HttpResponseNotFound
-from django.contrib import admin
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
@@ -20,7 +19,13 @@ from django.utils.functional import update_wrapper
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
-class ForeignKeyAutocompleteAdmin(admin.ModelAdmin):
+from django.conf import settings
+if 'reversion' in settings.INSTALLED_APPS:
+    from reversion.admin import VersionAdmin as ModelAdmin
+else:
+    from django.contrib.admin import ModelAdmin
+
+class ForeignKeyAutocompleteAdmin(ModelAdmin):
     """Admin class for models using the autocomplete feature.
 
     There are two additional fields:
