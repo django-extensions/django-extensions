@@ -78,8 +78,9 @@ def copy_template(app_template, copy_to, project_name, app_name):
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(app_template):
         relative_dir = d[len(app_template)+1:]
-        if relative_dir and not os.path.exists(os.path.join(copy_to, relative_dir)):
-            os.mkdir(os.path.join(copy_to, relative_dir))
+        d_new = os.path.join(copy_to, relative_dir).replace('app_name', app_name)
+        if relative_dir and not os.path.exists(d_new):
+            os.mkdir(d_new)
         for i, subdir in enumerate(subdirs):
             if subdir.startswith('.'):
                 del subdirs[i]
@@ -87,9 +88,9 @@ def copy_template(app_template, copy_to, project_name, app_name):
             if f.endswith('.pyc') or f.startswith('.DS_Store'):
                 continue
             path_old = os.path.join(d, f)
-            path_new = os.path.join(copy_to, relative_dir, f.replace('app_name', app_name))
+            path_new = os.path.join(d_new, f.replace('app_name', app_name))
             if os.path.exists(path_new):
-                path_new = os.path.join(copy_to, relative_dir, f)
+                path_new = os.path.join(d_new, f)
                 if os.path.exists(path_new):
                     continue
             path_new = path_new.rstrip(".tmpl")
