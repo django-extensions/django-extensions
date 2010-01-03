@@ -73,7 +73,8 @@ class Command(LabelCommand):
 def copy_template(app_template, copy_to, project_name, app_name):
     """copies the specified template directory to the copy_to location"""
     import shutil
-
+    
+    app_template = os.path.normpath(app_template)
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(app_template):
         relative_dir = d[len(app_template)+1:]
