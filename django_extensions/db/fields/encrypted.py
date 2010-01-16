@@ -2,14 +2,18 @@ from django.db import models
 from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
-from keyczar import keyczar
+
+try:
+    from keyczar import keyczar
+except ImportError:
+    raise ImportError('Using an encrypted field requires the Keyczar module.  You can obtain Keyczar from http://www.keyczar.org/.')
 
 class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
     def __init__(self, *args, **kwargs):
-        if not hasattr(settings, 'ENCRYPTED_FIELD_KEY_DIR'):
-            raise ImproperlyConfigured('You must set settings.ENCRYPTED_FIELD_KEY_DIR to your Keyczar keys directory.')
-        self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEY_DIR)
+        if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
+            raise ImproperlyConfigured('You must set settings.ENCRYPTED_FIELD_KEYS_DIR to your Keyczar keys directory.')
+        self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
     
     def to_python(self, value):
