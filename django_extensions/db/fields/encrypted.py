@@ -7,9 +7,9 @@ from keyczar import keyczar
 class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
     def __init__(self, *args, **kwargs):
-        if not hasattr(settings, 'KEYS_DIR'):
-            raise ImproperlyConfigured('You must set settings.KEYS_DIR to your Keyczar keys directory.')
-        self.crypt = keyczar.Crypter.Read(settings.KEYS_DIR)
+        if not hasattr(settings, 'ENCRYPTED_FIELD_KEY_DIR'):
+            raise ImproperlyConfigured('You must set settings.ENCRYPTED_FIELD_KEY_DIR to your Keyczar keys directory.')
+        self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEY_DIR)
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
     
     def to_python(self, value):
@@ -45,7 +45,6 @@ class EncryptedCharField(BaseEncryptedField):
         
         super(EncryptedCharField, self).__init__(max_length=max_length, *args, **kwargs)
         
-
     def get_internal_type(self):
         return "CharField"
     
