@@ -12,7 +12,7 @@ from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedC
 class EncryptedFieldsTestCase(unittest.TestCase):
     
     def __init__(self, *args, **kwargs):
-        self.crypt = keyczar.Crypter.Read(settings.KEYS_DIR)
+        self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
         
         super(EncryptedFieldsTestCase, self).__init__(*args, **kwargs)
         
