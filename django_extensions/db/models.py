@@ -30,6 +30,18 @@ class TitleSlugDescriptionModel(models.Model):
     class Meta:
         abstract = True
 
+class ActivatorModelManager(models.Manager):
+    """ ActivatorModelManager
+    Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
+    """
+    def active(self):
+        """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
+        return super(ActivatorModelManager, self).get_query_set().filter(status=1)
+
+    def inactive(self):
+        """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
+        return super(ActivatorModelManager, self).get_query_set().filter(status=0)
+
 class ActivatorModel(models.Model):
     """ ActivatorModel
     An abstract base class model that provides activate and deactivate fields.
@@ -44,6 +56,7 @@ class ActivatorModel(models.Model):
         help_text=_('keep empty for an immediate activation'))
     deactivate_date = models.DateTimeField(blank=True, null=True,
         help_text=_('keep empty for indefinite activation'))
+    objects = ActivatorModelManager()
 
     class Meta:
         abstract = True
