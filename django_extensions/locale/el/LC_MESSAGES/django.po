@@ -2,8 +2,7 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -18,59 +17,59 @@ msgstr ""
 
 #: admin/__init__.py:121
 msgid "and"
-msgstr ""
+msgstr "και"
 
 #: admin/__init__.py:123
 #, python-format
-msgid ""
-"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr ""
+msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr "Χρησιμοποίησε το αριστερό πεδίο για να κάνεις αναζήτηση του %(model_name)s με βάσει τα πεδία %(field_list)s."
 
 #: db/models.py:15
 msgid "created"
-msgstr ""
+msgstr "δημιουργήθηκε"
 
 #: db/models.py:16
 msgid "modified"
-msgstr ""
+msgstr "τροποποιήθηκε"
 
 #: db/models.py:26
 msgid "title"
-msgstr ""
+msgstr "τίτλος"
 
 #: db/models.py:27
+#, fuzzy
 msgid "slug"
-msgstr ""
+msgstr "slug"
 
 #: db/models.py:28
 msgid "description"
-msgstr ""
+msgstr "περιγραφή"
 
 #: db/models.py:50
 msgid "Inactive"
-msgstr ""
+msgstr "ανενεργό"
 
 #: db/models.py:51
 msgid "Active"
-msgstr ""
+msgstr "Ενεργό"
 
 #: db/models.py:53
 msgid "status"
-msgstr ""
+msgstr "κατάσταση"
 
 #: db/models.py:56
 msgid "keep empty for an immediate activation"
-msgstr ""
+msgstr "αφήστε άδειο για άμεση ενεργοποίηση"
 
 #: db/models.py:58
 msgid "keep empty for indefinite activation"
-msgstr ""
+msgstr "αφήστε άδειο για αόριστη ενεργοποίηση"
 
 #: management/commands/show_urls.py:33
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
-msgstr ""
+msgstr "% s δεν φαίνεται να είναι ένα αντικείμενο urlpattern"
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
-msgstr ""
+msgstr "Αναζήτηση"
