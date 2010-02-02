@@ -41,7 +41,7 @@ class Command(NoArgsCommand):
                 try:
                     imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
                 except AttributeError, e:
-                    print self.style.ERROR_OUTPUT("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
+                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
                     continue
         try:
             if use_plain:

@@ -28,7 +28,7 @@ class Command(BaseCommand):
         
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
-        ERROR = self.style.ERROR_OUTPUT
+        ERROR = self.style.ERROR
         ERROR2 = self.style.NOTICE
 
         subdirs = []

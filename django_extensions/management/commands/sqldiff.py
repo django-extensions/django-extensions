@@ -364,7 +364,7 @@ class SQLDiff(object):
             for diff in diffs:
                 diff_type, diff_args = diff
                 text = self.DIFF_TEXTS[diff_type] % dict((str(i), style.SQL_TABLE(e)) for i, e in enumerate(diff_args))
-                text = "'".join(i%2==0 and style.ERROR_OUTPUT(e) or e for i, e in enumerate(text.split("'")))
+                text = "'".join(i%2==0 and style.ERROR(e) or e for i, e in enumerate(text.split("'")))
                 if not self.dense:
                     print style.NOTICE("|--+"), text
                 else:
