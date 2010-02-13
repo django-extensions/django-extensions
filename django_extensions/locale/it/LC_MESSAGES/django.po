@@ -37,7 +37,6 @@ msgid "title"
 msgstr "titolo"
 
 #: db/models.py:27
-#, fuzzy
 msgid "slug"
 msgstr "slug"
 
@@ -66,11 +65,10 @@ msgid "keep empty for indefinite activation"
 msgstr "lasciare vuoti per attivazione indefinita"
 
 #: management/commands/show_urls.py:33
-#, python-format, fuzzy
+#, python-format
 msgid "%s does not appear to be a urlpattern object"
 msgstr "% s non sembra essere un oggetto urlPattern"
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
-#, fuzzy
 msgid "Lookup"
 msgstr "Ricerca"
