@@ -37,9 +37,8 @@ msgid "title"
 msgstr "τίτλος"
 
 #: db/models.py:27
-#, fuzzy
 msgid "slug"
-msgstr "slug"
+msgstr "μίνι-όνομα"
 
 #: db/models.py:28
 msgid "description"
