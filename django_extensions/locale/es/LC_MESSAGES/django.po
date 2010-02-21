@@ -38,7 +38,7 @@ msgstr "titulo"
 
 #: db/models.py:27
 msgid "slug"
-msgstr ""
+msgstr "slug"
 
 #: db/models.py:28
 msgid "description"
