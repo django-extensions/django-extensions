@@ -17,7 +17,7 @@ msgstr ""
 
 #: admin/__init__.py:121
 msgid "and"
-msgstr ""
+msgstr "と"
 
 #: admin/__init__.py:123
 #, python-format
