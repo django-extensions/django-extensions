@@ -2,8 +2,7 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -22,8 +21,7 @@ msgstr ""
 
 #: admin/__init__.py:123
 #, python-format
-msgid ""
-"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
 msgstr ""
 
 #: db/models.py:15
@@ -35,28 +33,31 @@ msgid "modified"
 msgstr ""
 
 #: db/models.py:26
+#, fuzzy
 msgid "title"
-msgstr ""
+msgstr "タイトル"
 
 #: db/models.py:27
 msgid "slug"
 msgstr ""
 
 #: db/models.py:28
+#, fuzzy
 msgid "description"
-msgstr ""
+msgstr "説明"
 
 #: db/models.py:50
 msgid "Inactive"
 msgstr ""
 
 #: db/models.py:51
+#, fuzzy
 msgid "Active"
-msgstr ""
+msgstr "アクティブ"
 
 #: db/models.py:53
 msgid "status"
-msgstr ""
+msgstr "ステータス"
 
 #: db/models.py:56
 msgid "keep empty for an immediate activation"
