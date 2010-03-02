@@ -22,7 +22,7 @@ msgstr "と"
 #: admin/__init__.py:123
 #, python-format
 msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr ""
+msgstr "%(field_list)s フィールドの内容から %(model_name)s を検索するには左のフィールドを使用して下さい。"
 
 #: db/models.py:15
 msgid "created"
