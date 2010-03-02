@@ -71,4 +71,4 @@ msgstr ""
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
-msgstr ""
+msgstr "検索"
