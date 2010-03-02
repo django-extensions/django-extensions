@@ -26,32 +26,29 @@ msgstr ""
 
 #: db/models.py:15
 msgid "created"
-msgstr ""
+msgstr "作成日時"
 
 #: db/models.py:16
 msgid "modified"
-msgstr ""
+msgstr "変更日時"
 
 #: db/models.py:26
-#, fuzzy
 msgid "title"
 msgstr "タイトル"
 
 #: db/models.py:27
 msgid "slug"
-msgstr ""
+msgstr "スラグ"
 
 #: db/models.py:28
-#, fuzzy
 msgid "description"
 msgstr "説明"
 
 #: db/models.py:50
 msgid "Inactive"
-msgstr ""
+msgstr "非アクティブ"
 
 #: db/models.py:51
-#, fuzzy
 msgid "Active"
 msgstr "アクティブ"
 
