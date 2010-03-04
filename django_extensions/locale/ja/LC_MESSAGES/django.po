@@ -58,11 +58,11 @@ msgstr "ステータス"
 
 #: db/models.py:56
 msgid "keep empty for an immediate activation"
-msgstr ""
+msgstr "すぐに有効化する場合は空白のままにして下さい"
 
 #: db/models.py:58
 msgid "keep empty for indefinite activation"
-msgstr ""
+msgstr "無期限に有効化しておく場合は空白のままにして下さい"
 
 #: management/commands/show_urls.py:33
 #, python-format
