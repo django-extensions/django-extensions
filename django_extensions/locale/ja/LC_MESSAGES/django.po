@@ -67,7 +67,7 @@ msgstr ""
 #: management/commands/show_urls.py:33
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
-msgstr ""
+msgstr "%s は urlpattern オブジェクトではないようです"
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
