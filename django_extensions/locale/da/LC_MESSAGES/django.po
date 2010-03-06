@@ -1,14 +1,15 @@
-# SOME DESCRIPTIVE TITLE.
+# django_extentions in Danish.
+# django_extensions på Dansk.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Michael Lind Mortensen <illio@cs.au.dk>, 2009.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-01 18:10+0200\n"
+"POT-Creation-Date: 2010-03-06 14:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,33 +19,35 @@ msgstr ""
 
 #: admin/__init__.py:121
 msgid "and"
-msgstr ""
+msgstr "og"
 
 #: admin/__init__.py:123
 #, python-format
 msgid ""
 "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
 msgstr ""
+"Brug feltet til venstre til at lave %(model_name)s lookups i felterne %"
+"(field_list)s."
 
 #: db/models.py:15
 msgid "created"
-msgstr ""
+msgstr "skabt"
 
 #: db/models.py:16
 msgid "modified"
-msgstr ""
+msgstr "ændret"
 
 #: db/models.py:26
 msgid "title"
-msgstr ""
+msgstr "titel"
 
 #: db/models.py:27
 msgid "slug"
-msgstr ""
+msgstr "slug"
 
 #: db/models.py:28
 msgid "description"
-msgstr ""
+msgstr "beskrivelse"
 
 #: db/models.py:50
 msgid "Inactive"
@@ -73,4 +76,4 @@ msgstr ""
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
-msgstr ""
+msgstr "Lookup"
