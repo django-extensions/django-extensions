@@ -2,8 +2,7 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -18,59 +17,61 @@ msgstr ""
 
 #: admin/__init__.py:121
 msgid "and"
-msgstr ""
+msgstr "et"
 
 #: admin/__init__.py:123
-#, python-format
-msgid ""
-"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr ""
+#, python-format, fuzzy
+msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr "Utilisez le champ de gauche pour faire des recheres de %(MODEL_NAME)s  dans les champs %(field_list)s."
 
 #: db/models.py:15
 msgid "created"
-msgstr ""
+msgstr "créé"
 
 #: db/models.py:16
 msgid "modified"
-msgstr ""
+msgstr "mise à jour"
 
 #: db/models.py:26
 msgid "title"
-msgstr ""
+msgstr "titre"
 
 #: db/models.py:27
 msgid "slug"
-msgstr ""
+msgstr "slug"
 
 #: db/models.py:28
 msgid "description"
-msgstr ""
+msgstr "description"
 
 #: db/models.py:50
 msgid "Inactive"
-msgstr ""
+msgstr "inactif"
 
 #: db/models.py:51
 msgid "Active"
-msgstr ""
+msgstr "active"
 
 #: db/models.py:53
 msgid "status"
-msgstr ""
+msgstr "état"
 
 #: db/models.py:56
+#, fuzzy
 msgid "keep empty for an immediate activation"
-msgstr ""
+msgstr "garder vide pour l'activation immédiate"
 
 #: db/models.py:58
+#, fuzzy
 msgid "keep empty for indefinite activation"
-msgstr ""
+msgstr "garder vide pour l'activation de durée indéterminée"
 
 #: management/commands/show_urls.py:33
-#, python-format
+#, python-format, fuzzy
 msgid "%s does not appear to be a urlpattern object"
-msgstr ""
+msgstr "%s ne semble pas être un objet urlpattern"
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
+#, fuzzy
 msgid "Lookup"
-msgstr ""
+msgstr "Recherche"
