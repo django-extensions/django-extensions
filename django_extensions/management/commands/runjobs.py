@@ -8,13 +8,13 @@ class Command(LabelCommand):
             help="List all jobs with their description"),
     )
     help = "Runs scheduled maintenance jobs."
-    args = "[hourly daily weekly monthly yearly]"
+    args = "[minutely hourly daily weekly monthly yearly]"
     label = ""
 
     requires_model_validation = True
 
     def usage_msg(self):
-        print "Run scheduled jobs. Please specify 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'"
+        print "Run scheduled jobs. Please specify 'minutely', 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'"
 
     def runjobs(self, when, options):
         verbosity = int(options.get('verbosity', 1))
@@ -52,7 +52,9 @@ class Command(LabelCommand):
             if verbosity>1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print "Sending %s job signal for: %s" % (when, app_name)
-            if when == 'hourly':
+            if when == 'minutely':
+                signals.run_minutely_jobs.send(sender=app, app=app)
+            elif when == 'hourly':
                 signals.run_hourly_jobs.send(sender=app, app=app)
             elif when == 'daily':
                 signals.run_daily_jobs.send(sender=app, app=app)
@@ -69,7 +71,7 @@ class Command(LabelCommand):
             self.usage_msg()
             return
         elif len(args)==1:
-            if not args[0] in ['hourly', 'daily', 'weekly', 'monthly', 'yearly']:
+            if not args[0] in ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']:
                 self.usage_msg()
                 return
             else:

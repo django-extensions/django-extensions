@@ -20,6 +20,9 @@ class BaseJob(object):
     def execute(self):
         raise NotImplementedError("Job needs to implement the execute method")
 
+class MinutelyJob(BaseJob):
+    when = "minutely"
+
 class HourlyJob(BaseJob):
     when = "hourly"
 
@@ -94,7 +97,7 @@ def get_jobs(when=None, only_scheduled=False):
         if True:
             from django.conf import settings
             for app_name in settings.INSTALLED_APPS:
-                scandirs = (None, 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
+                scandirs = (None, 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
                 if when:
                     scandirs = None, when
                 for subdir in scandirs:
