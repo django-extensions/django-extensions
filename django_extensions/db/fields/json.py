@@ -75,3 +75,12 @@ class JSONField(models.TextField):
             return super(JSONField, self).get_db_prep_save("")
         else:
             return super(JSONField, self).get_db_prep_save(dumps(value))
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.TextField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
