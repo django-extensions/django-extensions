@@ -6,6 +6,7 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
+import django
 import logging
 from optparse import make_option
 
@@ -36,6 +37,10 @@ class Command(BaseCommand):
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
+        
+        if django.get_version()>="1.2":
+            raise CommandError, "reset_db is currently not compatible with Django 1.2 or higher"
+        
 
         if options.get('interactive'):
             confirm = raw_input("""
