@@ -134,6 +134,6 @@ CREATE DATABASE %s
             cursor.execute(create_query)
     
         else:
-            raise CommandError, "Unknown database engine %s", engine
+            raise CommandError, "Unknown database engine %s" % engine
     
         print "Reset successful."
