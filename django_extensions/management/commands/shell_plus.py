@@ -54,10 +54,14 @@ class Command(NoArgsCommand):
                 from bpython import embed
                 embed(imported_objects)
             except ImportError:
-                import IPython
                 # Explicitly pass an empty list as arguments, because otherwise IPython
                 # would use sys.argv from this script.
-                shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
+                try:
+                    from IPython.core.iplib import InteractiveShell
+                    shell = InteractiveShell(user_ns=imported_objects)
+                except ImportError:
+                    import IPython
+                    shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
                 shell.mainloop()
         except ImportError:
             # Using normal Python shell
