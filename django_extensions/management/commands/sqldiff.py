@@ -45,6 +45,12 @@ def flatten(l, ltypes=(list, tuple)):
         i += 1
     return ltype(l)
 
+def all_local_fields(meta):
+    all_fields = meta.local_fields[:]
+    for parent in meta.parents:
+        all_fields.extend(all_local_fields(parent._meta))
+    return all_fields
+
 class SQLDiff(object):
     DATA_TYPES_REVERSE_OVERRIDE = {
     }
@@ -211,7 +217,7 @@ class SQLDiff(object):
         return field_type
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
-        for field in meta.local_fields:
+        for field in all_local_fields(meta):
             if field.unique:
                 attname = field.db_column or field.attname
                 if attname in table_indexes and table_indexes[attname]['unique']:
@@ -221,21 +227,21 @@ class SQLDiff(object):
     def find_unique_missing_in_model(self, meta, table_indexes, table_name):
         # TODO: Postgresql does not list unique_togethers in table_indexes
         #       MySQL does
-        fields = dict([(field.db_column or field.name, field.unique) for field in meta.local_fields])
+        fields = dict([(field.db_column or field.name, field.unique) for field in all_local_fields(meta)])
         for att_name, att_opts in table_indexes.iteritems():
             if att_opts['unique'] and att_name in fields and not fields[att_name]:
                 if att_name in flatten(meta.unique_together): continue
                 self.add_difference('unique-missing-in-model', table_name, att_name)
 
     def find_index_missing_in_db(self, meta, table_indexes, table_name):
-        for field in meta.local_fields:
+        for field in all_local_fields(meta):
             if field.db_index:
                 attname = field.db_column or field.attname
                 if not attname in table_indexes:
                     self.add_difference('index-missing-in-db', table_name, attname)
 
     def find_index_missing_in_model(self, meta, table_indexes, table_name):
-        fields = dict([(field.name, field) for field in meta.local_fields])
+        fields = dict([(field.name, field) for field in all_local_fields(meta)])
         for att_name, att_opts in table_indexes.iteritems():
             if att_name in fields:
                 field = fields[att_name]
@@ -258,7 +264,7 @@ class SQLDiff(object):
 
     def find_field_type_differ(self, meta, table_description, table_name, func=None):
         db_fields = dict([(row[0], row) for row in table_description])
-        for field in meta.local_fields:
+        for field in all_local_fields(meta):
             if field.name not in db_fields: continue
             description = db_fields[field.name]
 
@@ -274,7 +280,7 @@ class SQLDiff(object):
 
     def find_field_parameter_differ(self, meta, table_description, table_name, func=None):
         db_fields = dict([(row[0], row) for row in table_description])
-        for field in meta.local_fields:
+        for field in all_local_fields(meta):
             if field.name not in db_fields: continue
             description = db_fields[field.name]
 
@@ -310,7 +316,7 @@ class SQLDiff(object):
                 continue
             
             table_indexes = self.introspection.get_indexes(self.cursor, table_name)
-            fieldmap = dict([(field.db_column or field.get_attname(), field) for field in meta.local_fields])
+            fieldmap = dict([(field.db_column or field.get_attname(), field) for field in all_local_fields(meta)])
             
             # add ordering field if model uses order_with_respect_to
             if meta.order_with_respect_to:
@@ -429,7 +435,7 @@ class SqliteSQLDiff(SQLDiff):
     # if this is more generic among databases this might be usefull
     # to add to the superclass's find_unique_missing_in_db method
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
-        for field in meta.local_fields:
+        for field in all_local_fields(meta):
             if field.unique:
                 attname = field.db_column or field.attname
                 if attname in table_indexes and table_indexes[attname]['unique']:
