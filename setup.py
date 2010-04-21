@@ -74,6 +74,8 @@ additions for Django projects. See the project page for more information:
   http://code.google.com/p/django-command-extensions/""",
     author = 'Michael Trier',
     author_email = 'mtrier@gmail.com',
+    maintainer = 'Bas van Oostveen',
+    maintainer_email = 'v.oostveen@gmail.com',
     url = 'http://code.google.com/p/django-command-extensions/',
     license = 'New BSD License',
     platforms = ['any'],
