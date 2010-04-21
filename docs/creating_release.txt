@@ -12,9 +12,10 @@ Get a fresh copy
  $ git clone git@github.com:django-extensions/django-extensions.git
  $ cd django-extensions
 
-Change version number in django_extensions/__init__.py
+Change version numbers in django_extensions/__init__.py and docs/conf.py
 
- $ vi django_extension/__init__.py
+ $ vi django_extension/__init__.py              (1 occurance)
+ $ vi docs/conf.py                              (2 occurances)
  $ git commit -a -m v0.4.1
 
 Tag it
