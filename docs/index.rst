@@ -27,6 +27,7 @@ Contents:
    runprofileserver
    runserver_plus
    sync_media_s3
+   sqldiff
 
 
 Indices and tables
