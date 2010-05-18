@@ -39,7 +39,7 @@ class Command(BaseCommand):
         """
         
         if django.get_version()>="1.2":
-            raise CommandError, "reset_db is currently not compatible with Django 1.2 or higher"
+            raise CommandError("reset_db is currently not compatible with Django 1.2 or higher")
         
 
         if options.get('interactive'):
@@ -100,7 +100,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             
             if settings.DATABASE_NAME == '':
                 from django.core.exceptions import ImproperlyConfigured
-                raise ImproperlyConfigured, "You need to specify DATABASE_NAME in your Django settings file."
+                raise ImproperlyConfigured("You need to specify DATABASE_NAME in your Django settings file.")
             
             database_name = options.get('dbname', 'template1')
             conn_string = "dbname=%s" % database_name
@@ -134,6 +134,6 @@ CREATE DATABASE %s
             cursor.execute(create_query)
     
         else:
-            raise CommandError, "Unknown database engine %s" % engine
+            raise CommandError("Unknown database engine %s" % engine)
     
         print "Reset successful."
