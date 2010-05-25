@@ -220,10 +220,10 @@ def generate_dot(app_labels, **kwargs):
                     model['relations'].append(_rel)
 
             for field in appmodel._meta.fields:
-                if isinstance(field, ForeignKey):
-                    add_relation(field)
-                elif isinstance(field, OneToOneField):
+                if isinstance(field, OneToOneField):
                     add_relation(field, '[arrowhead=none arrowtail=none]')
+                elif isinstance(field, ForeignKey):
+                    add_relation(field)
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
