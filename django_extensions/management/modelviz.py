@@ -24,6 +24,9 @@ options:
 
     -i, --include_models=User,Person,Car
     only include selected models in graph.
+
+    -n, --verbose_names
+    use verbose_name for field and models.
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -98,12 +101,12 @@ subgraph {{ cluster_app_name }} {
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
-     >{{ model.name }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
+     >{{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
 
     {% if not disable_fields %}
         {% for field in model.fields %}
         <TR><TD ALIGN="LEFT" BORDER="0"
-        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% else %}Bold{% endif %}">{{ field.name }}</FONT
+        ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% else %}Bold{% endif %}">{{ field.label }}</FONT
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT {% if field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% else %}Bold{% endif %}">{{ field.type }}</FONT
@@ -132,7 +135,7 @@ rel_template = """
         >]
     {% endif %}
     {{ model.app_name }}_{{ model.name }} -> {{ relation.target_app }}_{{ relation.target }}
-    [label="{{ relation.name }}"] {{ relation.arrows }};
+    [label="{{ relation.label }}"] {{ relation.arrows }};
     {% endfor %}
   {% endfor %}
 """
@@ -146,6 +149,7 @@ def generate_dot(app_labels, **kwargs):
     include_models = kwargs.get('include_models', [])
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
+    verbose_names = kwargs.get('verbose_names', False)
 
     dot = head_template
 
@@ -190,14 +194,26 @@ def generate_dot(app_labels, **kwargs):
             if not consider(appmodel._meta.object_name):
                 continue
 
+            if verbose_names and appmodel._meta.verbose_name:
+                model['label'] = appmodel._meta.verbose_name
+            else:
+                model['label'] = model['name']                
+            
             # model attributes
             def add_attributes(field):
+                if verbose_names and field.verbose_name:
+                    label = field.verbose_name
+                else:
+                    label = field.name
+                    
                 model['fields'].append({
                     'name': field.name,
+                    'label': label,
                     'type': type(field).__name__,
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
+                    
 
             for field in appmodel._meta.fields:
                 add_attributes(field)
@@ -208,11 +224,17 @@ def generate_dot(app_labels, **kwargs):
 
             # relations
             def add_relation(field, extras=""):
+                if verbose_names and field.verbose_name:
+                    label = field.verbose_name
+                else:
+                    label = field.name
+                    
                 _rel = {
                     'target_app': field.rel.to.__module__.replace('.','_'),
                     'target': field.rel.to.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
+                    'label': label,
                     'arrows': extras,
                     'needs_node': True
                 }
@@ -258,7 +280,7 @@ def generate_dot(app_labels, **kwargs):
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hadgi:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models="])
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names"])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
@@ -276,6 +298,9 @@ def main():
             kwargs['group_models'] = True
         if opt in ("-i", "--include_models"):
             kwargs['include_models'] = arg.split(',')
+        if opt in ("-n", "--verbose-names"):
+            kwargs['verbose_names'] = True
+
 
     if not args and not kwargs.get('all_applications', False):
         print __doc__

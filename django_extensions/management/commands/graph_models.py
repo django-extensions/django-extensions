@@ -14,6 +14,8 @@ class Command(BaseCommand):
             help='Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.'),
         make_option('--layout', '-l', action='store', dest='layout', default='dot',
             help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
+        make_option('--verbose-names', '-n', action='store_true', dest='verbose_names',
+            help='Use verbose_name of models and fields'),
     )
 
     help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")
@@ -34,7 +36,7 @@ class Command(BaseCommand):
             self.print_output(dotdata)
 
     def print_output(self, dotdata):
-        print dotdata
+        print dotdata.encode('utf-8')
 
     def render_output(self, dotdata, **kwargs):
         try:
@@ -42,7 +44,7 @@ class Command(BaseCommand):
         except ImportError, e:
             raise CommandError("need pygraphviz python module ( apt-get install python-pygraphviz )")
 
-        vizdata = ' '.join(dotdata.split("\n")).strip()
+        vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
         version = pygraphviz.__version__.rstrip("-svn")
         try:
             if [int(v) for v in version.split('.')]<(0,36):
