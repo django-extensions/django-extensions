@@ -27,8 +27,31 @@ class Command(BaseCommand):
         make_option('-D', '--dbname', action='store',
                     dest='dbname', default=None,
                     help='Use another database name then defined in settings.py (For PostgreSQL this defaults to "template1")'),
+        make_option('-R', '--router', action='store',
+                    dest='router', default=None,
+                    help='Use this router-database other then defined in settings.py'),
     )
     help = "Resets the database for this project."
+
+    def set_db_settings(self, *args, **options ):
+        if django.get_version()>="1.2":
+            router = options.get('router')
+            print router
+            if router==None:
+                return False
+        
+            # retrieve this with the 'using' argument
+            dbinfo = settings.DATABASES.get( router )
+            settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
+            settings.DATABASE_USER = dbinfo.get('USER')
+            settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
+            settings.DATABASE_NAME = dbinfo.get('NAME')
+            settings.DATABASE_HOST = dbinfo.get('HOST')
+            settings.DATABASE_PORT = dbinfo.get('PORT')
+            return True
+        else:
+            # settings are set for django < 1.2 no modification needed
+            return True
 
     def handle(self, *args, **options):
         """
@@ -39,7 +62,10 @@ class Command(BaseCommand):
         """
         
         if django.get_version()>="1.2":
-            raise CommandError("reset_db is currently not compatible with Django 1.2 or higher")
+            got_db_settings = self.set_db_settings(*args, **options)
+            if not got_db_settings:
+                raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
+                return
         
 
         if options.get('interactive'):
