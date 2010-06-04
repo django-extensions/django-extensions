@@ -36,7 +36,6 @@ class Command(BaseCommand):
     def set_db_settings(self, *args, **options ):
         if django.get_version()>="1.2":
             router = options.get('router')
-            print router
             if router==None:
                 return False
         
