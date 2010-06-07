@@ -107,14 +107,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 kwargs['unix_socket'] = settings.DATABASE_HOST
             else:
                 kwargs['host'] = settings.DATABASE_HOST
-            if settings.DATABASE_USER:
-                kwargs['user'] = settings.DATABASE_USER
-            if settings.DATABASE_PASSWORD:
-                kwargs['password'] = settings_dict.DATABASE_PASSWORD
-            if settings_dict['DATABASE_HOST']:
-                kwargs['host'] = settings_dict.DATABASE_HOST
             if settings.DATABASE_PORT:
                 kwargs['port'] = int(settings.DATABASE_PORT)
+
             connection = Database.connect(**kwargs)
             drop_query = 'DROP DATABASE IF EXISTS %s' % settings.DATABASE_NAME
             utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
@@ -133,7 +128,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 from django.core.exceptions import ImproperlyConfigured
                 raise ImproperlyConfigured("You need to specify DATABASE_NAME in your Django settings file.")
             
-            database_name = options.get('dbname', 'template1')
+            database_name = options.get('dbname', 'template1') 
+            if options.get('dbname') == None:
+                database_name = 'template1'
             conn_string = "dbname=%s" % database_name
             if settings.DATABASE_USER:
                 conn_string += " user=%s" % user
@@ -143,6 +140,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 conn_string += " host=%s" % settings.DATABASE_HOST
             if settings.DATABASE_PORT:
                 conn_string += " port=%s" % settings.DATABASE_PORT
+            #print conn_string
             connection = Database.connect(conn_string)
             connection.set_isolation_level(0) #autocommit false
             cursor = connection.cursor()
@@ -155,12 +153,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 logging.info("Error: "+str(e))
     
             # Encoding should be SQL_ASCII (7-bit postgres default) or prefered UTF8 (8-bit)
-            create_query = ("""
-CREATE DATABASE %s
-    WITH OWNER = %s
-        ENCODING = 'UTF8'
-        TABLESPACE = %s;
-""" % (settings.DATABASE_NAME, settings.DATABASE_USER, settings.DEFAULT_TABLESPACE))
+            create_query = """CREATE DATABASE %s WITH OWNER = %s ENCODING = 'UTF8' """ % (settings.DATABASE_NAME, settings.DATABASE_USER)
+            if settings.DEFAULT_TABLESPACE:
+                create_query+= 'TABLESPACE = %s;' % (settings.DEFAULT_TABLESPACE)
+            else:
+                create_query+= ';'
             logging.info('Executing... "' + create_query + '"')
             cursor.execute(create_query)
     
