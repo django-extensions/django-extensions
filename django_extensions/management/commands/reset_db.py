@@ -107,6 +107,12 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 kwargs['unix_socket'] = settings.DATABASE_HOST
             else:
                 kwargs['host'] = settings.DATABASE_HOST
+			if settings.DATABASE_USER:
+				kwargs['user'] = settings.DATABASE_USER
+			if settings.DATABASE_PASSWORD:
+				kwargs['password'] = settings_dict.DATABASE_PASSWORD
+			if settings_dict['DATABASE_HOST']:
+				kwargs['host'] = settings_dict.DATABASE_HOST
             if settings.DATABASE_PORT:
                 kwargs['port'] = int(settings.DATABASE_PORT)
             connection = Database.connect(**kwargs)
