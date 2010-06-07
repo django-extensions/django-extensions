@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
                 return
         
-
+        verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
             confirm = raw_input("""
 You have requested a database reset.
@@ -140,7 +140,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 conn_string += " host=%s" % settings.DATABASE_HOST
             if settings.DATABASE_PORT:
                 conn_string += " port=%s" % settings.DATABASE_PORT
-            #print conn_string
+
             connection = Database.connect(conn_string)
             connection.set_isolation_level(0) #autocommit false
             cursor = connection.cursor()
@@ -163,5 +163,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
     
         else:
             raise CommandError("Unknown database engine %s" % engine)
-    
-        print "Reset successful."
+
+        if verbosity >= 2 or options.get('interactive'):
+            print "Reset successful."
