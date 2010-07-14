@@ -125,11 +125,11 @@ class Command(BaseCommand):
         self.do_force = options.get('force')
         self.DIRECTORY = options.get('dir')
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        filter_list = options.get('filter_list').split(',')
+        filter_list = options.get('filter_list')
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
-            self.FILTER_LIST = filter_list
+            self.FILTER_LIST = filter_list.split(',')
 
         # Now call the syncing method to walk the MEDIA_ROOT directory and
         # upload all files found.
