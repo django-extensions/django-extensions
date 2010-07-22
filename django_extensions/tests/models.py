@@ -6,11 +6,11 @@ except ImportError:
 
     class EncryptedCharField():
          def __init__(self, **kwargs):
-             pass;
+             pass
 
     class EncryptedTextField():
          def __init__(self, **kwargs):
-             pass;
+             pass
 
 
 class Secret(models.Model):
