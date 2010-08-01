@@ -141,7 +141,7 @@ class ModelCode(Code):
         """
         code = []
 
-        for counter, item in enumerate(self.model.objects.all()):
+        for counter, item in enumerate(self.model._default_manager.all()):
             instance = InstanceCode(instance=item, id=counter+1, context=self.context)
             self.instances.append(instance)
             if instance.waiting_list:
