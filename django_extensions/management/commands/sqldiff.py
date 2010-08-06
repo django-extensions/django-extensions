@@ -440,7 +440,7 @@ class SqliteSQLDiff(SQLDiff):
                 attname = field.db_column or field.attname
                 if attname in table_indexes and table_indexes[attname]['unique']:
                     continue
-                if table_indexes[attname]['primary_key']:
+                if attname in table_indexes and table_indexes[attname]['primary_key']:
                     continue
                 self.add_difference('unique-missing-in-db', table_name, attname)
 
