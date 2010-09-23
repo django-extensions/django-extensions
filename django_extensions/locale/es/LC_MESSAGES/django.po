@@ -20,9 +20,9 @@ msgid "and"
 msgstr "y"
 
 #: admin/__init__.py:123
-#, python-format, fuzzy
+#, python-format
 msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr "Utilice el campo de la izquierda para hacer búsquedas de de %(model_name)s en los campos %(field_list)s  ."
+msgstr "Utilice el campo de la izquierda para hacer búsquedas en los campos %(field_list)s de %(model_name)s."
 
 #: db/models.py:15
 msgid "created"
@@ -61,9 +61,8 @@ msgid "keep empty for an immediate activation"
 msgstr "mantener vacío para una activación inmediata"
 
 #: db/models.py:58
-#, fuzzy
 msgid "keep empty for indefinite activation"
-msgstr "vacío para mantener indefinidamente la activación"
+msgstr "deje vacío para mantener la activación indefinida"
 
 #: management/commands/show_urls.py:33
 #, python-format
