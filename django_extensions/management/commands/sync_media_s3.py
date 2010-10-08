@@ -69,7 +69,8 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         optparse.make_option('-p', '--prefix',
-            dest='prefix', default='',
+            dest='prefix',
+            default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
             help="The prefix to prepend to the path on S3."),
         optparse.make_option('-d', '--dir',
             dest='dir', default=settings.MEDIA_ROOT,
