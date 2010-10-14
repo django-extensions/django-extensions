@@ -69,7 +69,11 @@ class AutoSlugField(SlugField):
         slug_field = model_instance._meta.get_field(self.attname)
 
         current = getattr(model_instance, self.attname)
-        if add or self.overwrite or (not self.null and current is None) or (not self.empty and current == ''):
+        if (self.null and current is None) or (self.empty and current == ''):
+            # If null or empty values are allowed, and the current value is one of those,
+            # simply return the current value
+            return current
+        elif add or self.overwrite or (not self.null and current is None) or (not self.empty and current == ''):
             # slugify the original field content and set next step to 2
             slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
@@ -122,7 +126,9 @@ class AutoSlugField(SlugField):
         return slug
 
     def pre_save(self, model_instance, add):
-        value = unicode(self.create_slug(model_instance, add))
+        value = self.create_slug(model_instance, add)
+        if value is not None:
+            value = unicode(value)
         setattr(model_instance, self.attname, value)
         return value
 
@@ -135,7 +141,12 @@ class AutoSlugField(SlugField):
         from south.modelsinspector import introspector
         field_class = '%s.AutoSlugField' % self.__module__
         args, kwargs = introspector(self)
-        kwargs.update({'populate_from': self._populate_from})
+        kwargs.update({
+            'populate_from': self._populate_from,
+            'empty': self.empty,
+            'separator': repr(self.separator),
+            'overwrite': self.overwrite
+        })
         # That's our definition!
         return (field_class, args, kwargs)
 
