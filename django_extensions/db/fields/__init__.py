@@ -37,6 +37,7 @@ class AutoSlugField(SlugField):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
 
+        self.empty = kwargs.pop('empty', False)
         populate_from = kwargs.pop('populate_from', None)
         if populate_from is None:
             raise ValueError("missing 'populate_from' argument")
@@ -67,7 +68,8 @@ class AutoSlugField(SlugField):
             self._populate_from = (self._populate_from, )
         slug_field = model_instance._meta.get_field(self.attname)
 
-        if add or self.overwrite:
+        current = getattr(model_instance, self.attname)
+        if add or self.overwrite or (not self.null and current is None) or (not self.empty and current == ''):
             # slugify the original field content and set next step to 2
             slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
@@ -75,7 +77,7 @@ class AutoSlugField(SlugField):
         else:
             # get slug from the current model instance and calculate next
             # step from its number, clean-up
-            slug = self._slug_strip(getattr(model_instance, self.attname))
+            slug = self._slug_strip(current)
             next = slug.split(self.separator)[-1]
             if next.isdigit():
                 slug = self.separator.join(slug.split(self.separator)[:-1])
@@ -131,8 +133,9 @@ class AutoSlugField(SlugField):
         "Returns a suitable description of this field for South."
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.SlugField"
+        field_class = '%s.AutoSlugField' % self.__module__
         args, kwargs = introspector(self)
+        kwargs.update({'populate_from': self._populate_from})
         # That's our definition!
         return (field_class, args, kwargs)
 
