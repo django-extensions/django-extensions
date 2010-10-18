@@ -8,6 +8,7 @@ from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
 import django
 import logging
+import re
 from optparse import make_option
 
 class Command(BaseCommand):
@@ -82,6 +83,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             print "Reset cancelled."
             return
 
+        postgis = re.compile('.*postgis')
         engine = settings.DATABASE_ENGINE
         user = options.get('user', settings.DATABASE_USER)
         if user==None:
@@ -118,10 +120,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
             connection.query(create_query)
-        elif engine == 'postgresql' or engine == 'postgresql_psycopg2':
+       
+        elif engine == 'postgresql' or engine == 'postgresql_psycopg2' or postgis.match(engine):
             if engine == 'postgresql':
                 import psycopg as Database
-            elif engine == 'postgresql_psycopg2':
+            elif engine == 'postgresql_psycopg2' or postgis.match(engine):
                 import psycopg2 as Database
             
             if settings.DATABASE_NAME == '':
@@ -154,6 +157,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
     
             # Encoding should be SQL_ASCII (7-bit postgres default) or prefered UTF8 (8-bit)
             create_query = """CREATE DATABASE %s WITH OWNER = %s ENCODING = 'UTF8' """ % (settings.DATABASE_NAME, settings.DATABASE_USER)
+
+            if postgis.match(engine):
+                create_query+= 'TEMPLATE = template_postgis '
             if settings.DEFAULT_TABLESPACE:
                 create_query+= 'TABLESPACE = %s;' % (settings.DEFAULT_TABLESPACE)
             else:
