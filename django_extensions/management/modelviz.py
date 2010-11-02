@@ -27,6 +27,9 @@ options:
 
     -n, --verbose_names
     use verbose_name for field and models.
+    
+    -e, --inheritance
+    show inheritance arrows.
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -40,6 +43,7 @@ __contributors__ = [
    "Justin Findlay <jfindlay@gmail.com>",
    "Alexander Houben <alexander@houben.ch>",
    "Bas van Oostveen <v.oostveen@gmail.com>",
+   "Joern Hees <gitdev@joernhees.de>"
 ]
 
 import getopt, sys
@@ -150,6 +154,7 @@ def generate_dot(app_labels, **kwargs):
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
+    inheritance = kwargs.get('inheritance', False)
 
     dot = head_template
 
@@ -253,6 +258,29 @@ def generate_dot(app_labels, **kwargs):
                         add_relation(field, '[arrowhead=normal arrowtail=normal]')
                     elif isinstance(field, GenericRelation):
                         add_relation(field, mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
+            
+            if inheritance:
+                # add inheritance arrows
+                for parent in appmodel.__bases__:
+                    if hasattr(parent, "_meta"): # parent is a model
+                        l = "multi-table"
+                        if parent._meta.abstract:
+                            l = "abstract"
+                        if appmodel._meta.proxy:
+                            l = "proxy"
+                        l += " inheritance"
+                        _rel = {
+                            'target_app': parent.__module__.replace(".", "_"),
+                            'target': parent.__name__,
+                            'type': "inheritance",
+                            'name': "inheritance",
+                            'label': l,
+                            'arrows': '[arrowhead=empty arrowtail=normal]',
+                            'needs_node': True
+                        }
+                        if _rel not in model['relations'] and consider(_rel['target']):
+                            model['relations'].append(_rel)
+            
             graph['models'].append(model)
         graphs.append(graph)
 
@@ -298,6 +326,8 @@ def main():
             kwargs['group_models'] = True
         if opt in ("-i", "--include_models"):
             kwargs['include_models'] = arg.split(',')
+        if opt in ("-e", "--inheritance"):
+            kwargs['inheritance'] = True
         if opt in ("-n", "--verbose-names"):
             kwargs['verbose_names'] = True
 

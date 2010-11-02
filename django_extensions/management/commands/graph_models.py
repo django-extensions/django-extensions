@@ -16,6 +16,8 @@ class Command(BaseCommand):
             help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
         make_option('--verbose-names', '-n', action='store_true', dest='verbose_names',
             help='Use verbose_name of models and fields'),
+        make_option('--inheritance', '-e', action='store_true', dest='inheritance',
+            help='Include inheritance arrows'),
     )
 
     help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")
