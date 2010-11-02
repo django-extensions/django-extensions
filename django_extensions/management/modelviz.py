@@ -182,10 +182,17 @@ def generate_dot(app_labels, **kwargs):
 
         for appmodel in get_models(app):
             abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
-            abstract_fields = []
-            for e in appmodel.__bases__:
-                if hasattr(e, '_meta') and e._meta.abstract:
-                    abstract_fields.extend(e._meta.fields)
+            
+            # collect all attribs of abstract superclasses
+            def getBasesAbstractFields(c):
+                _abstract_fields = []
+                for e in c.__bases__:
+                    if hasattr(e, '_meta') and e._meta.abstract:
+                        _abstract_fields.extend(e._meta.fields)
+                        _abstract_fields.extend(getBasesAbstractFields(e))
+                return _abstract_fields
+            abstract_fields = getBasesAbstractFields(appmodel)
+            
             model = {
                 'app_name': appmodel.__module__.replace(".", "_"),
                 'name': appmodel.__name__,
