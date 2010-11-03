@@ -82,6 +82,7 @@ digraph name {
   edge [
     fontname = "Helvetica"
     fontsize = 8
+    labelangle = 0
   ]
 
 """
@@ -217,19 +218,29 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+                
+                t = type(field).__name__
+                if isinstance(field, (OneToOneField, ForeignKey)):
+                    t += " ({0})".format(field.rel.field_name)
+                # TODO: ManyToManyField, GenericRelation
+                
                 model['fields'].append({
                     'name': field.name,
                     'label': label,
-                    'type': type(field).__name__,
+                    'type': t,
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
                     
-
+            # find primary key and print it first, ignoring implicit id if other pk exists
+            pk = appmodel._meta.pk
+            if pk: 
+                add_attributes(pk)
             for field in appmodel._meta.fields:
-                add_attributes(field)
-
+                if not field.primary_key:
+                    add_attributes(field)
+            
+            # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
                     add_attributes(field)
@@ -255,16 +266,15 @@ def generate_dot(app_labels, **kwargs):
 
             for field in appmodel._meta.fields:
                 if isinstance(field, OneToOneField):
-                    add_relation(field, '[arrowhead=none arrowtail=none]')
+                    add_relation(field, '[arrowhead=none, arrowtail=none]')
                 elif isinstance(field, ForeignKey):
                     add_relation(field)
 
-            if appmodel._meta.many_to_many:
-                for field in appmodel._meta.many_to_many:
-                    if isinstance(field, ManyToManyField) and getattr(field, 'creates_table', False):
-                        add_relation(field, '[arrowhead=normal arrowtail=normal]')
-                    elif isinstance(field, GenericRelation):
-                        add_relation(field, mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
+            for field in appmodel._meta.many_to_many:
+                if isinstance(field, ManyToManyField): # ???: caused this to never happen: and getattr(field, 'creates_table', False):
+                    add_relation(field, '[arrowhead=normal, arrowtail=normal, dir=both]')
+                elif isinstance(field, GenericRelation):
+                    add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
             
             if inheritance:
                 # add inheritance arrows
@@ -275,16 +285,17 @@ def generate_dot(app_labels, **kwargs):
                             l = "abstract"
                         if appmodel._meta.proxy:
                             l = "proxy"
-                        l += " inheritance"
+                        l += r"\ninheritance"
                         _rel = {
                             'target_app': parent.__module__.replace(".", "_"),
                             'target': parent.__name__,
                             'type': "inheritance",
                             'name': "inheritance",
                             'label': l,
-                            'arrows': '[arrowhead=empty arrowtail=normal]',
+                            'arrows': '[arrowhead=empty, arrowtail=none]',
                             'needs_node': True
                         }
+                        # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
                         if _rel not in model['relations'] and consider(_rel['target']):
                             model['relations'].append(_rel)
             
@@ -314,8 +325,8 @@ def generate_dot(app_labels, **kwargs):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names"])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:en",
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "inheritance", "verbose_names"])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
