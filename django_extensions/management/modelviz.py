@@ -249,8 +249,10 @@ def generate_dot(app_labels, **kwargs):
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
-                    if isinstance(field, ManyToManyField) and getattr(field, 'creates_table', False):
-                        add_relation(field, '[arrowhead=normal arrowtail=normal]')
+                    if isinstance(field, ManyToManyField):
+                        if (getattr(field, 'creates_table', False) or  # django 1.1.
+                            (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
+                            add_relation(field, '[arrowhead=normal arrowtail=normal]')
                     elif isinstance(field, GenericRelation):
                         add_relation(field, mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
             graph['models'].append(model)
