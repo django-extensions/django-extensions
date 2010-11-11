@@ -35,10 +35,9 @@ class Command(NoArgsCommand):
                 raise CommandError('You must enter a valid password')
         else:
             passwd = options.get('default_passwd', DEFAULT_FAKE_PASSWORD)
-        
-        users = User.objects.all()
-        for user in users:
-            user.set_password(passwd)
-            user.save()
-            
-        print 'Reset %d passwords' % users.count()
+
+        user = User()
+        user.set_password(passwd)
+        count = User.objects.all().update(password=user.password)
+
+        print 'Reset %d passwords' % count
