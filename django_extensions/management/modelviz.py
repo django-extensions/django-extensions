@@ -6,7 +6,7 @@ Make sure your DJANGO_SETTINGS_MODULE is set to your project or
 place this script in the same directory of the project and call
 the script like this:
 
-$ python modelviz.py [-h] [-a] [-d] [-g] [-i <model_names>] <app_label> ... <app_label> > <filename>.dot
+$ python modelviz.py [-h] [-a] [-d] [-g] [-n] [-L <language> ] [-i <model_names>] <app_label> ... <app_label> > <filename>.dot
 $ dot <filename>.dot -Tpng -o <filename>.png
 
 options:
@@ -27,6 +27,9 @@ options:
 
     -n, --verbose_names
     use verbose_name for field and models.
+
+    -L, --language
+    specify language used for verrbose_name localization
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -53,6 +56,7 @@ except ImportError:
 else:
     setup_environ(settings)
 
+from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe
 from django.template import Template, Context
 from django.db import models
@@ -150,6 +154,9 @@ def generate_dot(app_labels, **kwargs):
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
+    language = kwargs.get('language', None)
+    if language is not None:
+        activate_language( language )
 
     dot = head_template
 
@@ -281,8 +288,8 @@ def generate_dot(app_labels, **kwargs):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names"])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:",
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language="])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
@@ -302,7 +309,8 @@ def main():
             kwargs['include_models'] = arg.split(',')
         if opt in ("-n", "--verbose-names"):
             kwargs['verbose_names'] = True
-
+        if opt in ("-L", "--language"):
+            kwargs['language'] = arg
 
     if not args and not kwargs.get('all_applications', False):
         print __doc__
