@@ -6,7 +6,7 @@ Make sure your DJANGO_SETTINGS_MODULE is set to your project or
 place this script in the same directory of the project and call
 the script like this:
 
-$ python modelviz.py [-h] [-a] [-d] [-g] [-n] [-L <language> ] [-i <model_names>] <app_label> ... <app_label> > <filename>.dot
+$ python modelviz.py [-h] [-a] [-d] [-g] [-n] [-L <language>] [-i <model_names>] <app_label> ... <app_label> > <filename>.dot
 $ dot <filename>.dot -Tpng -o <filename>.png
 
 options:
