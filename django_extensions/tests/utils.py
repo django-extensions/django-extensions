@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-UTILS_TESTS = """
+UTILS_TRUNCATE_LETTERS_TESTS = """
 >>> from django_extensions.utils.text import truncate_letters
 >>> truncate_letters("hello tests", 100)
 u'hello tests'
@@ -21,7 +21,9 @@ u'hello...'
 >>> truncate_letters("峠 (とうげ tōge - mountain pass)", 10)
 u'\u5ce0 (\u3068\u3046\u3052 t\u014dg...'
 
+"""
 
+UTILS_UUID_TESTS = """
 >>> from django_extensions.utils import uuid
 
 # make a UUID using an MD5 hash of a namespace UUID and a name
