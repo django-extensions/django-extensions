@@ -71,24 +71,27 @@ setup(
     description = "Extensions for Django",
     long_description = """django-extensions bundles several useful
 additions for Django projects. See the project page for more information:
-  http://code.google.com/p/django-command-extensions/""",
+  http://github.com/django-extensions/django-extensions""",
     author = 'Michael Trier',
     author_email = 'mtrier@gmail.com',
     maintainer = 'Bas van Oostveen',
     maintainer_email = 'v.oostveen@gmail.com',
-    url = 'http://code.google.com/p/django-command-extensions/',
+    url = 'http://github.com/django-extensions/django-extensions',
     license = 'New BSD License',
     platforms = ['any'],
     packages = packages,
     cmdclass = cmdclasses,
     data_files = data_files,
-    classifiers = ['Development Status :: 4 - Beta',
-                   'Environment :: Web Environment',
-                   'Framework :: Django',
-                   'Intended Audience :: Developers',
-                   'License :: OSI Approved :: BSD License',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Topic :: Utilities'],
+    classifiers = [
+        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Utilities'
+    ],
 )
 
