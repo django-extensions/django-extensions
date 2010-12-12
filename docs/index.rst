@@ -6,7 +6,28 @@
 Welcome to django-extensions's documentation!
 =============================================
 
-Contents:
+Django Extensions is a collection of custom extensions for the Django Framework.
+
+These include management commands, additional database field, admin extensions and
+much more.
+
+Getting it
+==========
+
+You can get Django Extensions by using pip or easy_install::
+
+ $ pip install django-extensions
+ or
+ $ easy_install django-extensions
+
+If you want to install it from source, grab the git repository and run setup.py::
+
+ $ git clone git://github.com/django-extensions/django-extensions.git
+ $ cd django-extensions
+ $ python setup.py install
+
+Contents
+========
 
 .. toctree::
    :maxdepth: 3
