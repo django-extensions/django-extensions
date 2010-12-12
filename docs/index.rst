@@ -11,6 +11,11 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 These include management commands, additional database field, admin extensions and
 much more.
 
+Getting Started
+===============
+
+The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__. In a couple minutes Eric walks you through a half a dozen command extensions.
+
 Getting it
 ==========
 
@@ -25,6 +30,8 @@ If you want to install it from source, grab the git repository and run setup.py:
  $ git clone git://github.com/django-extensions/django-extensions.git
  $ cd django-extensions
  $ python setup.py install
+
+For more detailed instructions check out our :doc:`installation_instructions`. Enjoy.
 
 Contents
 ========
@@ -56,3 +63,4 @@ Indices and tables
 
 * :ref:`search`
 
+__ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
