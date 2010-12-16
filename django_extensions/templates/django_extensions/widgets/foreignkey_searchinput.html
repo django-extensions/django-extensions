@@ -40,7 +40,15 @@ $(document).ready(function() {
     }).result(function(event, data, formatted) {
         if (data) {
             $('#id_{{ name }}').val(data[1]);
+            if (typeof $('#id_{{ name }}').data('result_callbacks') != 'undefined')
+            {
+                $.each($('#id_{{ name }}').data('result_callbacks'), function () {
+                    this()
+                })
+			}
+			return false
         }
+        return false
     }).keyup(function(event){
         if (event.keyCode == 27) {
             reset();
