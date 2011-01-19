@@ -277,7 +277,8 @@ class InstanceCode(Code):
             sub_objects = sum(collector.data.values(), [])
 
             for batch in collector.batches.values():
-                sub_objects += sum(batch.values(), [])
+                # batch.values can be sets, which must be converted to lists
+                sub_objects += sum([list(i) for i in batch.values()], [])
 
         sub_objects_parents = [so._meta.parents for so in sub_objects]
         if [self.model in p for p in sub_objects_parents].count(True) == 1:
