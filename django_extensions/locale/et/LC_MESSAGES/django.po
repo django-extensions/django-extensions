@@ -2,12 +2,12 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-01 18:11+0200\n"
+"POT-Creation-Date: 2011-02-02 11:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,8 @@ msgstr "ja"
 
 #: admin/__init__.py:123
 #, python-format
-msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgid ""
+"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
 msgstr ""
 
 #: db/models.py:15
@@ -64,7 +65,7 @@ msgstr ""
 msgid "keep empty for indefinite activation"
 msgstr ""
 
-#: management/commands/show_urls.py:33
+#: management/commands/show_urls.py:34
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
 msgstr ""
