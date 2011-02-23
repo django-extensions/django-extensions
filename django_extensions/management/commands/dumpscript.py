@@ -274,7 +274,7 @@ class InstanceCode(Code):
             # only need collector.data, but using the batches is needed
             # to perfectly emulate the old behaviour
             # TODO: check if batches are really needed. If not, remove them.
-            sub_objects = sum(collector.data.values(), [])
+            sub_objects = sum([list(i) for i in collector.data.values()], [])
 
             for batch in collector.batches.values():
                 # batch.values can be sets, which must be converted to lists
