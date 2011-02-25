@@ -30,6 +30,12 @@ options:
 
     -L, --language
     specify language used for verrbose_name localization
+    
+    -x, --exclude_columns
+    exclude specific column(s) from the graph.
+
+    -X, --exclude_models
+    exclude specific model(s) from the graph.
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -156,7 +162,18 @@ def generate_dot(app_labels, **kwargs):
     verbose_names = kwargs.get('verbose_names', False)
     language = kwargs.get('language', None)
     if language is not None:
-        activate_language( language )
+        activate_language(language)
+    exclude_columns = kwargs.get('exclude_columns', None)
+    exclude_models = kwargs.get('exclude_models', None)
+
+    def skip_field(field):
+        if exclude_columns:
+            if verbose_names and field.verbose_name:
+                if field.verbose_name in exclude_columns:
+                    return True
+            if field.name in exclude_columns:
+                return True
+        return False
 
     dot = head_template
 
@@ -203,6 +220,8 @@ def generate_dot(app_labels, **kwargs):
 
             # consider given model name ?
             def consider(model_name):
+                if exclude_models and model_name in exclude_models:
+                    return False
                 return not include_models or model_name in include_models
 
             if not consider(appmodel._meta.object_name):
@@ -211,7 +230,7 @@ def generate_dot(app_labels, **kwargs):
             if verbose_names and appmodel._meta.verbose_name:
                 model['label'] = appmodel._meta.verbose_name
             else:
-                model['label'] = model['name']                
+                model['label'] = model['name']
             
             # model attributes
             def add_attributes(field):
@@ -219,7 +238,7 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+            
                 model['fields'].append({
                     'name': field.name,
                     'label': label,
@@ -227,13 +246,17 @@ def generate_dot(app_labels, **kwargs):
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
-                    
+            
 
             for field in appmodel._meta.fields:
+                if skip_field(field):
+                    continue
                 add_attributes(field)
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
+                    if skip_field(field):
+                        continue
                     add_attributes(field)
 
             # relations
@@ -242,7 +265,7 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+                
                 _rel = {
                     'target_app': field.rel.to.__module__.replace('.','_'),
                     'target': field.rel.to.__name__,
@@ -256,6 +279,8 @@ def generate_dot(app_labels, **kwargs):
                     model['relations'].append(_rel)
 
             for field in appmodel._meta.fields:
+                if skip_field(field):
+                    continue
                 if isinstance(field, OneToOneField):
                     add_relation(field, '[arrowhead=none arrowtail=none]')
                 elif isinstance(field, ForeignKey):
@@ -263,6 +288,8 @@ def generate_dot(app_labels, **kwargs):
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
+                    if skip_field(field):
+                        continue
                     if isinstance(field, ManyToManyField):
                         if (getattr(field, 'creates_table', False) or  # django 1.1.
                             (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
@@ -295,8 +322,8 @@ def generate_dot(app_labels, **kwargs):
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language="])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:",
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
@@ -318,6 +345,10 @@ def main():
             kwargs['verbose_names'] = True
         if opt in ("-L", "--language"):
             kwargs['language'] = arg
+        if opt in ("-x", "--exclude_columns"):
+            kwargs['exclude_columns'] = arg.split(',')
+        if opt in ("-X", "--exclude_models"):
+            kwargs['exclude_models'] = arg.split(',')
 
     if not args and not kwargs.get('all_applications', False):
         print __doc__

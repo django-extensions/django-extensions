@@ -18,6 +18,10 @@ class Command(BaseCommand):
             help='Use verbose_name of models and fields'),
         make_option('--language', '-L', action='store', dest='language',
             help='Specify language used for verbose_name localization'),
+        make_option('--exclude-columns', '-x', action='store', dest='exclude_columns',
+            help='Exclude specific column(s) from the graph'),
+        make_option('--exclude-models', '-X', action='store', dest='exclude_models',
+            help='Exclude specific model(s) from the graph'),
     )
 
     help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")
