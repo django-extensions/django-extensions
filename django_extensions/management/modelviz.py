@@ -51,7 +51,9 @@ __contributors__ = [
    "Bas van Oostveen <v.oostveen@gmail.com>",
 ]
 
-import getopt, sys
+import os
+import sys
+import getopt
 
 from django.core.management import setup_environ
 
@@ -105,14 +107,12 @@ subgraph {{ cluster_app_name }} {
   color=olivedrab4
   style="rounded"
 {% endif %}
-
-  {% for model in models %}
+{% for model in models %}
     {{ model.app_name }}_{{ model.name }} [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
      >{{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
-
     {% if not disable_fields %}
         {% for field in model.fields %}
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -125,8 +125,7 @@ subgraph {{ cluster_app_name }} {
     {% endif %}
     </TABLE>
     >]
-  {% endfor %}
-
+{% endfor %}
 {% if use_subgraph %}
 }
 {% endif %}
@@ -154,17 +153,24 @@ tail_template = """
 }
 """
 
+def parse_file_or_list(arg):
+    if not arg:
+        return []
+    if not ',' in arg and os.path.isfile(arg):
+        return [e.strip() for e in open(arg).readlines()]
+    return arg.split(',')
+
 def generate_dot(app_labels, **kwargs):
     disable_fields = kwargs.get('disable_fields', False)
-    include_models = kwargs.get('include_models', [])
+    include_models = parse_file_or_list(kwargs.get('include_models', ""))
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
     language = kwargs.get('language', None)
     if language is not None:
         activate_language(language)
-    exclude_columns = kwargs.get('exclude_columns', None)
-    exclude_models = kwargs.get('exclude_models', None)
+    exclude_columns = parse_file_or_list(kwargs.get('exclude_columns', ""))
+    exclude_models = parse_file_or_list(kwargs.get('exclude_models', ""))
 
     def skip_field(field):
         if exclude_columns:
@@ -247,7 +253,6 @@ def generate_dot(app_labels, **kwargs):
                     'abstract': field in abstract_fields,
                 })
             
-
             for field in appmodel._meta.fields:
                 if skip_field(field):
                     continue
@@ -340,15 +345,15 @@ def main():
         if opt in ("-g", "--group_models"):
             kwargs['group_models'] = True
         if opt in ("-i", "--include_models"):
-            kwargs['include_models'] = arg.split(',')
+            kwargs['include_models'] = arg
         if opt in ("-n", "--verbose-names"):
             kwargs['verbose_names'] = True
         if opt in ("-L", "--language"):
             kwargs['language'] = arg
         if opt in ("-x", "--exclude_columns"):
-            kwargs['exclude_columns'] = arg.split(',')
+            kwargs['exclude_columns'] = arg
         if opt in ("-X", "--exclude_models"):
-            kwargs['exclude_models'] = arg.split(',')
+            kwargs['exclude_models'] = arg
 
     if not args and not kwargs.get('all_applications', False):
         print __doc__
