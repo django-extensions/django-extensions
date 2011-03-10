@@ -2,6 +2,7 @@ from django.core.management.base import LabelCommand
 from optparse import make_option
 from django_extensions.management.jobs import get_jobs, print_jobs
 
+
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--list', '-l', action="store_true", dest="list_jobs",
@@ -23,7 +24,7 @@ class Command(LabelCommand):
         list.sort()
         for app_name, job_name in list:
             job = jobs[(app_name, job_name)]
-            if verbosity>1:
+            if verbosity > 1:
                 print "Executing %s job: %s (app: %s)" % (when, job_name, app_name)
             try:
                 job().execute()
@@ -49,7 +50,7 @@ class Command(LabelCommand):
                 pass
 
         for app in models.get_apps():
-            if verbosity>1:
+            if verbosity > 1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print "Sending %s job signal for: %s" % (when, app_name)
             if when == 'minutely':
@@ -67,10 +68,10 @@ class Command(LabelCommand):
 
     def handle(self, *args, **options):
         when = None
-        if len(args)>1:
+        if len(args) > 1:
             self.usage_msg()
             return
-        elif len(args)==1:
+        elif len(args) == 1:
             if not args[0] in ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']:
                 self.usage_msg()
                 return
@@ -86,7 +87,7 @@ class Command(LabelCommand):
             self.runjobs_by_signals(when, options)
 
 # Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
             default='1', type='choice', choices=['0', '1', '2'],

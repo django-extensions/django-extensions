@@ -1,7 +1,7 @@
 """
-set_fake_emails.py 
+set_fake_emails.py
 
-    Give all users a new email account. Useful for testing in a 
+    Give all users a new email account. Useful for testing in a
     development environment. As such, this command is only available when
     setting.DEBUG is True.
 
@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import NoArgsCommand, CommandError
 
 DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
+
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -36,7 +37,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
-            
+
         from django.contrib.auth.models import User, Group
         email = options.get('default_email', DEFAULT_FAKE_EMAIL)
         include_regexp = options.get('include_regexp', None)
@@ -45,7 +46,7 @@ class Command(NoArgsCommand):
         exclude_groups = options.get('exclude_groups', None)
         no_admin = options.get('no_admin', False)
         no_staff = options.get('no_staff', False)
-        
+
         users = User.objects.all()
         if no_admin:
             users = users.exclude(is_superuser=True)

@@ -5,6 +5,7 @@ import re
 
 SESSION_RE = re.compile("^[0-9a-f]{20,40}$")
 
+
 class Command(BaseCommand):
     help = ("print the user information for the provided session key. "
             "this is very helpful when trying to track down the person who "
@@ -43,7 +44,4 @@ class Command(BaseCommand):
             print "No user associated with that id."
             return
         for key in ['username', 'email', 'first_name', 'last_name']:
-            print key+': ' + getattr(user, key)
-
-
-
+            print key + ': ' + getattr(user, key)

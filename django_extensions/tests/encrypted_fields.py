@@ -16,26 +16,26 @@ try:
 except ImportError:
     keyczar_active = False
 
+
 class EncryptedFieldsTestCase(unittest.TestCase):
-    
+
     def __init__(self, *args, **kwargs):
         if keyczar_active:
             self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
-        
         super(EncryptedFieldsTestCase, self).__init__(*args, **kwargs)
-        
+
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
         settings.INSTALLED_APPS.append('django_extensions.tests')
         loading.cache.loaded = False
         call_command('syncdb', verbosity=0)
-    
+
     def tearDown(self):
         settings.INSTALLED_APPS = self.old_installed_apps
-    
+
     def testCharFieldCreate(self):
         if not keyczar_active:
-            return    
+            return
         test_val = "Test Secret"
         secret = Secret.objects.create(name=test_val)
         cursor = connection.cursor()
@@ -44,18 +44,18 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         db_val, = cursor.fetchone()
         decrypted_val = self.crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
         self.assertEqual(test_val, decrypted_val)
-        
+
     def testCharFieldRead(self):
         if not keyczar_active:
-            return    
+            return
         test_val = "Test Secret"
         secret = Secret.objects.create(name=test_val)
         retrieved_secret = Secret.objects.get(id=secret.id)
         self.assertEqual(test_val, retrieved_secret.name)
-        
+
     def testTextFieldCreate(self):
         if not keyczar_active:
-            return    
+            return
         test_val = "Test Secret"
         secret = Secret.objects.create(text=test_val)
         cursor = connection.cursor()
@@ -64,10 +64,10 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         db_val, = cursor.fetchone()
         decrypted_val = self.crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
         self.assertEqual(test_val, decrypted_val)
-        
+
     def testTextFieldRead(self):
         if not keyczar_active:
-            return    
+            return
         test_val = "Test Secret"
         secret = Secret.objects.create(text=test_val)
         retrieved_secret = Secret.objects.get(id=secret.id)

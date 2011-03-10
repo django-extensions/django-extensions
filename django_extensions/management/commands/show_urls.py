@@ -8,11 +8,12 @@ except ImportError:
     # fall back to trunk, pre-NFA merge
     from django.contrib.admin.views.doc import simplify_regex
 import re
-        
+
 from django_extensions.management.color import color_style
 
+
 def extract_views_from_urlpatterns(urlpatterns, base=''):
-    """ 
+    """
     Return a list of views from a list of urlpatterns.
 
     Each object in the returned list is a two-tuple: (view_func, regex)
@@ -34,11 +35,12 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
             raise TypeError, _("%s does not appear to be a urlpattern object") % p
     return views
 
+
 class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."
-    
+
     requires_model_validation = True
-    
+
     def handle(self, *args, **options):
         if args:
             appname, = args
