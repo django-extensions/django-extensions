@@ -155,7 +155,7 @@ class Command(BaseCommand):
             from cStringIO import StringIO
         except ImportError:
             from StringIO import StringIO
-        zbuf = cStringIO.StringIO()
+        zbuf = StringIO()
         zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
         zfile.write(s)
         zfile.close()
