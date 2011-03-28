@@ -16,7 +16,10 @@ from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
-from django.utils.functional import update_wrapper
+try:
+    from functools import update_wrapper
+except ImportError:
+    from django.utils.functional import update_wrapper
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
