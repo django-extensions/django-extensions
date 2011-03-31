@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 from django_extensions.management.modelviz import generate_dot
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--disable-fields', '-d', action='store_true', dest='disable_fields',
@@ -53,7 +54,7 @@ class Command(BaseCommand):
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
         version = pygraphviz.__version__.rstrip("-svn")
         try:
-            if [int(v) for v in version.split('.')]<(0,36):
+            if [int(v) for v in version.split('.')] < (0, 36):
                 # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
                 import tempfile
                 tmpfile = tempfile.NamedTemporaryFile()

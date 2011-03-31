@@ -1,15 +1,16 @@
 from django.core.management.base import LabelCommand, CommandError
 from django.utils.encoding import force_unicode
 
+
 class Command(LabelCommand):
     help = "Outputs the specified model as a form definition to the shell."
     args = "[app.model]"
     label = 'application name and model name'
-    
+
     requires_model_validation = True
     can_import_settings = True
 
-    def handle_label(self, label, **options):    
+    def handle_label(self, label, **options):
         return describe_form(label)
 
 
@@ -36,7 +37,7 @@ def describe_form(label, fields=None):
             continue
         attrs = {}
         valid_fields = ['required', 'initial', 'max_length', 'min_length', 'max_value', 'min_value', 'max_digits', 'decimal_places', 'choices', 'help_text', 'label']
-        for k,v in formfield.__dict__.items():
+        for k, v in formfield.__dict__.items():
             if k in valid_fields and v != None:
                 # ignore defaults, to minimize verbosity
                 if k == 'required' and v:
@@ -49,16 +50,15 @@ def describe_form(label, fields=None):
                     attrs[k] = force_unicode(v).strip()
                 else:
                     attrs[k] = v
-                
+
         params = ', '.join(['%s=%r' % (k, v) for k, v in attrs.items()])
-        field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % { 'field_name': f.name, 
-                                                                                  'field_type': formfield.__class__.__name__, 
-                                                                                  'params': params })
-                                                                               
+        field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % {'field_name': f.name,
+                                                                                  'field_type': formfield.__class__.__name__,
+                                                                                  'params': params})
     return '''
 from django import forms
 from %(app_name)s.models import %(object_name)s
-    
+
 class %(object_name)sForm(forms.Form):
 %(field_list)s
-''' % { 'app_name': app_name, 'object_name': opts.object_name,  'field_list': '\n'.join(field_list) }
+''' % {'app_name': app_name, 'object_name': opts.object_name, 'field_list': '\n'.join(field_list)}

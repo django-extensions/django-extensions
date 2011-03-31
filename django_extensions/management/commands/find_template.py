@@ -3,12 +3,14 @@ from django.template.loader import find_template
 from django.template import TemplateDoesNotExist
 import sys
 
+
 def get_template_path(path):
     try:
         template = find_template(path)
         return template[1].name
     except TemplateDoesNotExist:
         return None
+
 
 class Command(LabelCommand):
     help = "Finds the location of the given template by resolving its path"

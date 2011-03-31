@@ -3,8 +3,10 @@ from optparse import make_option
 import os
 import sys
 
+
 def null_technical_500_response(request, exc_type, exc_value, tb):
     raise exc_type, exc_value, tb
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -72,6 +74,6 @@ class Command(BaseCommand):
                 import webbrowser
                 url = "http://%s:%s/" % (addr, port)
                 webbrowser.open(url)
-            run_simple(addr, int(port), DebuggedApplication(handler, True), 
-                       use_reloader=use_reloader, use_debugger=True)            
+            run_simple(addr, int(port), DebuggedApplication(handler, True),
+                       use_reloader=use_reloader, use_debugger=True)
         inner_run()

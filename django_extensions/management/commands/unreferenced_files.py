@@ -5,6 +5,7 @@ from django.core.management.base import NoArgsCommand
 from django.db import models
 from django.db.models.loading import cache
 
+
 class Command(NoArgsCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
@@ -13,7 +14,7 @@ class Command(NoArgsCommand):
         if settings.MEDIA_ROOT == '':
             print "MEDIA_ROOT is not set, nothing to do"
             return
-        
+
         # Get a list of all files under MEDIA_ROOT
         media = []
         for root, dirs, files in os.walk(settings.MEDIA_ROOT):

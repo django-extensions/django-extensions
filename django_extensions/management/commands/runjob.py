@@ -2,6 +2,7 @@ from django.core.management.base import LabelCommand
 from optparse import make_option
 from django_extensions.management.jobs import get_job, print_jobs
 
+
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--list', '-l', action="store_true", dest="list_jobs",
@@ -10,12 +11,12 @@ class Command(LabelCommand):
     help = "Run a single maintenance job."
     args = "[app_name] job_name"
     label = ""
-    
+
     requires_model_validation = True
 
     def runjob(self, app_name, job_name, options):
         verbosity = int(options.get('verbosity', 1))
-        if verbosity>1:
+        if verbosity > 1:
             print "Executing job: %s (app: %s)" % (job_name, app_name)
         try:
             job = get_job(app_name, job_name)
@@ -34,13 +35,13 @@ class Command(LabelCommand):
             print "START TRACEBACK:"
             traceback.print_exc()
             print "END TRACEBACK\n"
-    
+
     def handle(self, *args, **options):
         app_name = None
         job_name = None
-        if len(args)==1:
+        if len(args) == 1:
             job_name = args[0]
-        elif len(args)==2:
+        elif len(args) == 2:
             app_name, job_name = args
         if options.get('list_jobs'):
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)
@@ -51,7 +52,7 @@ class Command(LabelCommand):
             self.runjob(app_name, job_name, options)
 
 # Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
             default='1', type='choice', choices=['0', '1', '2'],

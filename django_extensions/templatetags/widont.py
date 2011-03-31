@@ -3,8 +3,10 @@ from django.utils.encoding import force_unicode
 import re
 
 register = Library()
-
 re_widont = re.compile(r'\s+(\S+\s*)$')
+re_widont_html = re.compile(r'([^<>\s])\s+([^<>\s]+\s*)(</?(?:address|blockquote|br|dd|div|dt|fieldset|form|h[1-6]|li|noscript|p|td|th)[^>]*>|$)', re.IGNORECASE)
+
+
 def widont(value, count=1):
     """
     Adds an HTML non-breaking space between the final two words of the string to
@@ -27,7 +29,7 @@ def widont(value, count=1):
         value = re_widont.sub(replace, force_unicode(value))
     return value
 
-re_widont_html = re.compile(r'([^<>\s])\s+([^<>\s]+\s*)(</?(?:address|blockquote|br|dd|div|dt|fieldset|form|h[1-6]|li|noscript|p|td|th)[^>]*>|$)', re.IGNORECASE)
+
 def widont_html(value):
     """
     Adds an HTML non-breaking space between the final two words at the end of
@@ -52,11 +54,8 @@ def widont_html(value):
 register.filter(widont)
 register.filter(widont_html)
 
-def _test():
-    import doctest
-    doctest.testmod()
-
 if __name__ == "__main__":
+    def _test():
+        import doctest
+        doctest.testmod()
     _test()
-
-

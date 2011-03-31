@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (ModificationDateTimeField,
                                          CreationDateTimeField, AutoSlugField)
 
+
 class TimeStampedModel(models.Model):
     """ TimeStampedModel
     An abstract base class model that provides self-managed "created" and
@@ -17,6 +18,7 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+
 
 class TitleSlugDescriptionModel(models.Model):
     """ TitleSlugDescriptionModel
@@ -30,6 +32,7 @@ class TitleSlugDescriptionModel(models.Model):
     class Meta:
         abstract = True
 
+
 class ActivatorModelManager(models.Manager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
@@ -41,6 +44,7 @@ class ActivatorModelManager(models.Manager):
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
         return super(ActivatorModelManager, self).get_query_set().filter(status=0)
+
 
 class ActivatorModel(models.Model):
     """ ActivatorModel

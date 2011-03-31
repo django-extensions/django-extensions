@@ -30,7 +30,7 @@ options:
 
     -L, --language
     specify language used for verrbose_name localization
-    
+
     -x, --exclude_columns
     exclude specific column(s) from the graph.
 
@@ -153,12 +153,14 @@ tail_template = """
 }
 """
 
+
 def parse_file_or_list(arg):
     if not arg:
         return []
     if not ',' in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
     return arg.split(',')
+
 
 def generate_dot(app_labels, **kwargs):
     disable_fields = kwargs.get('disable_fields', False)
@@ -205,7 +207,7 @@ def generate_dot(app_labels, **kwargs):
 
         for appmodel in get_models(app):
             abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
-            
+
             # collect all attribs of abstract superclasses
             def getBasesAbstractFields(c):
                 _abstract_fields = []
@@ -215,7 +217,7 @@ def generate_dot(app_labels, **kwargs):
                         _abstract_fields.extend(getBasesAbstractFields(e))
                 return _abstract_fields
             abstract_fields = getBasesAbstractFields(appmodel)
-            
+
             model = {
                 'app_name': appmodel.__module__.replace(".", "_"),
                 'name': appmodel.__name__,
@@ -237,14 +239,14 @@ def generate_dot(app_labels, **kwargs):
                 model['label'] = appmodel._meta.verbose_name
             else:
                 model['label'] = model['name']
-            
+
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
                     label = field.verbose_name
                 else:
                     label = field.name
-            
+
                 model['fields'].append({
                     'name': field.name,
                     'label': label,
@@ -252,7 +254,7 @@ def generate_dot(app_labels, **kwargs):
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
-            
+
             for field in appmodel._meta.fields:
                 if skip_field(field):
                     continue
@@ -270,9 +272,9 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                
+
                 _rel = {
-                    'target_app': field.rel.to.__module__.replace('.','_'),
+                    'target_app': field.rel.to.__module__.replace('.', '_'),
                     'target': field.rel.to.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
@@ -325,6 +327,7 @@ def generate_dot(app_labels, **kwargs):
     dot += '\n' + tail_template
     return dot
 
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:",
@@ -332,7 +335,7 @@ def main():
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
-    
+
     kwargs = {}
     for opt, arg in opts:
         if opt in ("-h", "--help"):
