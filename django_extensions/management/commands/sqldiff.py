@@ -161,7 +161,7 @@ class SQLDiff(object):
         return result
 
     def get_field_model_type(self, field):
-        return field.db_type()
+        return field.db_type(connection=connection)
 
     def get_field_db_type(self, description, field=None, table_name=None):
         from django.db import models
@@ -208,13 +208,13 @@ class SQLDiff(object):
             # need to add backwards compatibility code ?
             module_path, package_name = reverse_type.rsplit('.', 1)
             module = importlib.import_module(module_path)
-            field_db_type = getattr(module, package_name)(**kwargs).db_type()
+            field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
         else:
-            field_db_type = getattr(models, reverse_type)(**kwargs).db_type()
+            field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
         return field_db_type
 
     def strip_parameters(self, field_type):
-        if field_type:
+        if field_type and field_type != 'double precision':
             return field_type.split(" ")[0].split("(")[0]
         return field_type
 
@@ -267,7 +267,8 @@ class SQLDiff(object):
         db_fields = [row[0] for row in table_description]
         for field_name, field in fieldmap.iteritems():
             if field_name not in db_fields:
-                self.add_difference('field-missing-in-db', table_name, field_name, field.db_type())
+                self.add_difference('field-missing-in-db', table_name, field_name, 
+                                                           field.db_type(connection=connection))
 
     def find_field_type_differ(self, meta, table_description, table_name, func=None):
         db_fields = dict([(row[0], row) for row in table_description])
@@ -337,7 +338,8 @@ class SQLDiff(object):
                 model_diffs.append((app_model.__name__, [str(e).strip()]))
                 transaction.rollback()  # reset transaction
                 continue
-
+            else:
+                transaction.commit()
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
             self.find_unique_missing_in_model(meta, table_indexes, table_name)
@@ -480,7 +482,6 @@ class SqliteSQLDiff(SQLDiff):
 
 class PostgresqlSQLDiff(SQLDiff):
     DATA_TYPES_REVERSE_OVERRIDE = {
-        20: 'IntegerField',
         1042: 'CharField',
         # postgis types (TODO: support is very incomplete)
         17506: 'django.contrib.gis.db.models.fields.PointField',
@@ -607,7 +608,10 @@ to check/debug ur models compared to the real database tables and columns."""
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')
 
-        cls = DATABASE_SQLDIFF_CLASSES.get(settings.DATABASE_ENGINE, GenericSQLDiff)
+        engine = settings.DATABASE_ENGINE
+        if not engine:
+            engine = connection.__module__.split('.')[-2]
+        cls = DATABASE_SQLDIFF_CLASSES.get(engine, GenericSQLDiff)
         sqldiff_instance = cls(app_models, options)
         sqldiff_instance.find_differences()
         sqldiff_instance.print_diff(self.style)
