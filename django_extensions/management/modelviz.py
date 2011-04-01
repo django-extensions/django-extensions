@@ -313,7 +313,7 @@ def generate_dot(app_labels, **kwargs):
                 if isinstance(field, OneToOneField):
                     add_relation(field, '[arrowhead=none, arrowtail=none]')
                 elif isinstance(field, ForeignKey):
-                    add_relation(field)
+                    add_relation(field, '[arrowhead=none, arrowtail=dot]')
 
             for field in appmodel._meta.many_to_many:
                 if skip_field(field):
@@ -321,7 +321,7 @@ def generate_dot(app_labels, **kwargs):
                 if isinstance(field, ManyToManyField):
                     if (getattr(field, 'creates_table', False) or  # django 1.1.
                         (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
-                        add_relation(field, '[arrowhead=normal arrowtail=normal, dir=both]')
+                        add_relation(field, '[arrowhead=dot arrowtail=dot, dir=both]')
                     elif isinstance(field, GenericRelation):
                         add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
             
