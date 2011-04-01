@@ -12,7 +12,7 @@ class Command(BaseCommand):
         make_option('--all-applications', '-a', action='store_true', dest='all_applications',
             help='Automatically include all applications from INSTALLED_APPS'),
         make_option('--output', '-o', action='store', dest='outputfile',
-            help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),
+            help='Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.'),
         make_option('--layout', '-l', action='store', dest='layout', default='dot',
             help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
         make_option('--verbose-names', '-n', action='store_true', dest='verbose_names',
@@ -23,6 +23,8 @@ class Command(BaseCommand):
             help='Exclude specific column(s) from the graph. Can also load exclude list from file.'),
         make_option('--exclude-models', '-X', action='store', dest='exclude_models',
             help='Exclude specific model(s) from the graph. Can also load exclude list from file.'),
+        make_option('--inheritance', '-e', action='store_true', dest='inheritance',
+            help='Include inheritance arrows'),
     )
 
     help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")

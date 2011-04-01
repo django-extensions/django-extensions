@@ -36,6 +36,9 @@ options:
 
     -X, --exclude_models
     exclude specific model(s) from the graph.
+    
+    -e, --inheritance
+    show inheritance arrows.
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -49,6 +52,7 @@ __contributors__ = [
    "Justin Findlay <jfindlay@gmail.com>",
    "Alexander Houben <alexander@houben.ch>",
    "Bas van Oostveen <v.oostveen@gmail.com>",
+   "Joern Hees <gitdev@joernhees.de>"
 ]
 
 import os
@@ -90,6 +94,7 @@ digraph name {
   edge [
     fontname = "Helvetica"
     fontsize = 8
+    labelangle = 0
   ]
 
 """
@@ -168,6 +173,7 @@ def generate_dot(app_labels, **kwargs):
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
+    inheritance = kwargs.get('inheritance', False)
     language = kwargs.get('language', None)
     if language is not None:
         activate_language(language)
@@ -247,19 +253,30 @@ def generate_dot(app_labels, **kwargs):
                 else:
                     label = field.name
 
+                t = type(field).__name__
+                if isinstance(field, (OneToOneField, ForeignKey)):
+                    t += " ({0})".format(field.rel.field_name)
+                # TODO: ManyToManyField, GenericRelation
+
                 model['fields'].append({
                     'name': field.name,
                     'label': label,
-                    'type': type(field).__name__,
+                    'type': t,
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
-
+                    
+            # find primary key and print it first, ignoring implicit id if other pk exists
+            pk = appmodel._meta.pk
+            if pk: 
+                add_attributes(pk)
             for field in appmodel._meta.fields:
                 if skip_field(field):
                     continue
-                add_attributes(field)
-
+                if not field.primary_key:
+                    add_attributes(field)
+            
+            # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
                     if skip_field(field):
@@ -289,20 +306,43 @@ def generate_dot(app_labels, **kwargs):
                 if skip_field(field):
                     continue
                 if isinstance(field, OneToOneField):
-                    add_relation(field, '[arrowhead=none arrowtail=none]')
+                    add_relation(field, '[arrowhead=none, arrowtail=none]')
                 elif isinstance(field, ForeignKey):
                     add_relation(field)
 
-            if appmodel._meta.many_to_many:
-                for field in appmodel._meta.many_to_many:
-                    if skip_field(field):
-                        continue
-                    if isinstance(field, ManyToManyField):
-                        if (getattr(field, 'creates_table', False) or  # django 1.1.
-                            (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
-                            add_relation(field, '[arrowhead=normal arrowtail=normal]')
+            for field in appmodel._meta.many_to_many:
+                if skip_field(field):
+                    continue
+                if isinstance(field, ManyToManyField):
+                    if (getattr(field, 'creates_table', False) or  # django 1.1.
+                        (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
+                        add_relation(field, '[arrowhead=normal arrowtail=normal, dir=both]')
                     elif isinstance(field, GenericRelation):
-                        add_relation(field, mark_safe('[style="dotted"] [arrowhead=normal arrowtail=normal]'))
+                        add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
+            
+            if inheritance:
+                # add inheritance arrows
+                for parent in appmodel.__bases__:
+                    if hasattr(parent, "_meta"): # parent is a model
+                        l = "multi-table"
+                        if parent._meta.abstract:
+                            l = "abstract"
+                        if appmodel._meta.proxy:
+                            l = "proxy"
+                        l += r"\ninheritance"
+                        _rel = {
+                            'target_app': parent.__module__.replace(".", "_"),
+                            'target': parent.__name__,
+                            'type': "inheritance",
+                            'name': "inheritance",
+                            'label': l,
+                            'arrows': '[arrowhead=empty, arrowtail=none]',
+                            'needs_node': True
+                        }
+                        # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
+                        if _rel not in model['relations'] and consider(_rel['target']):
+                            model['relations'].append(_rel)
+            
             graph['models'].append(model)
         graphs.append(graph)
 
@@ -327,11 +367,10 @@ def generate_dot(app_labels, **kwargs):
     dot += '\n' + tail_template
     return dot
 
-
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:en",
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "inheritance", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
@@ -349,6 +388,8 @@ def main():
             kwargs['group_models'] = True
         if opt in ("-i", "--include_models"):
             kwargs['include_models'] = arg
+        if opt in ("-e", "--inheritance"):
+            kwargs['inheritance'] = True
         if opt in ("-n", "--verbose-names"):
             kwargs['verbose_names'] = True
         if opt in ("-L", "--language"):
