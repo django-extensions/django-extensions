@@ -74,7 +74,7 @@ from django.template import Template, Context
 from django.db import models
 from django.db.models import get_models
 from django.db.models.fields.related import \
-    ForeignKey, OneToOneField, ManyToManyField
+    ForeignKey, OneToOneField, ManyToManyField, RelatedField
 
 try:
     from django.db.models.fields.generic import GenericRelation
@@ -265,12 +265,15 @@ def generate_dot(app_labels, **kwargs):
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
-                    
+
+            # Find all the real attributes. Relations are depicted as graph edges instead
+            attributes = [field for field in appmodel._meta.local_fields if not isinstance(field, RelatedField)]
+
             # find primary key and print it first, ignoring implicit id if other pk exists
             pk = appmodel._meta.pk
-            if pk: 
+            if pk in attributes:
                 add_attributes(pk)
-            for field in appmodel._meta.fields:
+            for field in attributes:
                 if skip_field(field):
                     continue
                 if not field.primary_key:
@@ -302,7 +305,9 @@ def generate_dot(app_labels, **kwargs):
                 if _rel not in model['relations'] and consider(_rel['target']):
                     model['relations'].append(_rel)
 
-            for field in appmodel._meta.fields:
+            for field in appmodel._meta.local_fields:
+                if field.attname.endswith('_ptr_id'): # excluding field redundant with inheritance relation
+                    continue
                 if skip_field(field):
                     continue
                 if isinstance(field, OneToOneField):
