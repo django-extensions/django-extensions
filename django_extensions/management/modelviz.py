@@ -280,11 +280,11 @@ def generate_dot(app_labels, **kwargs):
                     add_attributes(field)
             
             # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
-            if appmodel._meta.many_to_many:
-                for field in appmodel._meta.many_to_many:
-                    if skip_field(field):
-                        continue
-                    add_attributes(field)
+            #if appmodel._meta.many_to_many:
+            #    for field in appmodel._meta.many_to_many:
+            #        if skip_field(field):
+            #            continue
+            #        add_attributes(field)
 
             # relations
             def add_relation(field, extras=""):
