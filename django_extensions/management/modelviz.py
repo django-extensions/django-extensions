@@ -83,6 +83,8 @@ except ImportError:
 
 head_template = """
 digraph name {
+  rankdir=BT
+  labelloc="b"
   fontname = "Helvetica"
   fontsize = 8
 
@@ -118,6 +120,7 @@ subgraph {{ cluster_app_name }} {
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
      >{{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
+
     {% if not disable_fields %}
         {% for field in model.fields %}
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -131,6 +134,7 @@ subgraph {{ cluster_app_name }} {
     </TABLE>
     >]
 {% endfor %}
+
 {% if use_subgraph %}
 }
 {% endif %}
