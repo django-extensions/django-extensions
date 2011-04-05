@@ -1,4 +1,4 @@
-""" 
+"""
 SyncData
 ========
 
@@ -14,12 +14,13 @@ from optparse import make_option
 import sys
 import os
 
+
 class Command(BaseCommand):
     """ syncdata command """
-    
+
     help = 'Makes the current database have the same data as the fixture(s), no more, no less.'
     args = "fixture [fixture ...]"
-    
+
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
         Deletes all the objects in the database that are not in objects_to_keep.
@@ -27,19 +28,17 @@ class Command(BaseCommand):
          set of the objects of that class we should keep.
         """
         for class_ in objects_to_keep.keys():
-
             current = class_.objects.all()
-            current_ids = set( [x.id for x in current] )
-            keep_ids = set( [x.id for x in objects_to_keep[class_]] )
+            current_ids = set([x.id for x in current])
+            keep_ids = set([x.id for x in objects_to_keep[class_]])
 
             remove_these_ones = current_ids.difference(keep_ids)
             if remove_these_ones:
-
                 for obj in current:
                     if obj.id in remove_these_ones:
                         obj.delete()
                         if verbosity >= 2:
-                            print "Deleted object: "+ unicode(obj)
+                            print "Deleted object: %s" % unicode(obj)
 
             if verbosity > 0 and remove_these_ones:
                 num_deleted = len(remove_these_ones)
@@ -48,7 +47,7 @@ class Command(BaseCommand):
                 else:
                     type_deleted = unicode(class_._meta.verbose_name)
 
-                print "Deleted "+ str(num_deleted) +" "+ type_deleted
+                print "Deleted %s %s" % (str(num_deleted), type_deleted)
 
     def handle(self, *fixture_labels, **options):
         """ Main method of a Django command """
@@ -61,7 +60,7 @@ class Command(BaseCommand):
 
         verbosity = int(options.get('verbosity', 1))
         show_traceback = options.get('traceback', False)
-        
+
         # Keep a count of the installed objects and fixtures
         fixture_count = 0
         object_count = 0
@@ -100,7 +99,7 @@ class Command(BaseCommand):
                     print "Loading '%s' fixtures..." % fixture_name
             else:
                 sys.stderr.write(
-                    self.style.ERROR("Problem installing fixture '%s': %s is not a known "+ \
+                    self.style.ERROR("Problem installing fixture '%s': %s is not a known " + \
                                      "serialization format." % (fixture_name, format))
                     )
                 transaction.rollback()
@@ -149,7 +148,7 @@ class Command(BaseCommand):
                                     if not class_ in objects_to_keep:
                                         objects_to_keep[class_] = set()
                                     objects_to_keep[class_].add(obj.object)
-                                    
+
                                     models.add(class_)
                                     obj.save()
 
@@ -176,7 +175,7 @@ class Command(BaseCommand):
                             print "No %s fixture '%s' in %s." % \
                                 (format, fixture_name, humanize(fixture_dir))
 
-        # If any of the fixtures we loaded contain 0 objects, assume that an 
+        # If any of the fixtures we loaded contain 0 objects, assume that an
         # error was encountered during fixture loading.
         if 0 in objects_per_fixture:
             sys.stderr.write(
@@ -185,8 +184,8 @@ class Command(BaseCommand):
             transaction.rollback()
             transaction.leave_transaction_management()
             return
-            
-        # If we found even one object in a fixture, we need to reset the 
+
+        # If we found even one object in a fixture, we need to reset the
         # database sequences.
         if object_count > 0:
             sequence_sql = connection.ops.sequence_reset_sql(self.style, models)
@@ -195,7 +194,7 @@ class Command(BaseCommand):
                     print "Resetting sequences"
                 for line in sequence_sql:
                     cursor.execute(line)
-            
+
         transaction.commit()
         transaction.leave_transaction_management()
 
@@ -205,7 +204,7 @@ class Command(BaseCommand):
         else:
             if verbosity > 0:
                 print "Installed %d object(s) from %d fixture(s)" % (object_count, fixture_count)
-                
+
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
         # create tables, load data, and query, the query can return
@@ -213,7 +212,7 @@ class Command(BaseCommand):
         connection.close()
 
 # Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
             default='1', type='choice', choices=['0', '1', '2'],

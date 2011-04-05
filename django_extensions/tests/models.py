@@ -3,14 +3,13 @@ from django.db import models
 try:
     from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField
 except ImportError:
-
     class EncryptedCharField():
-         def __init__(self, **kwargs):
-             pass
+        def __init__(self, **kwargs):
+            pass
 
     class EncryptedTextField():
-         def __init__(self, **kwargs):
-             pass
+        def __init__(self, **kwargs):
+            pass
 
 
 class Secret(models.Model):

@@ -12,6 +12,7 @@ try:
 except ImportError:
     from django_extensions.utils import uuid
 
+
 class AutoSlugField(SlugField):
     """ AutoSlugField
 
@@ -42,7 +43,7 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
-        self.separator = kwargs.pop('separator',  u'-')
+        self.separator = kwargs.pop('separator', u'-')
         self.overwrite = kwargs.pop('overwrite', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
@@ -111,8 +112,8 @@ class AutoSlugField(SlugField):
             slug = original_slug
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
-            if slug_len and len(slug)+end_len > slug_len:
-                slug = slug[:slug_len-end_len]
+            if slug_len and len(slug) + end_len > slug_len:
+                slug = slug[:slug_len - end_len]
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
             kwargs[self.attname] = slug
@@ -136,6 +137,7 @@ class AutoSlugField(SlugField):
         # That's our definition!
         return (field_class, args, kwargs)
 
+
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
 
@@ -158,6 +160,7 @@ class CreationDateTimeField(DateTimeField):
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
         return (field_class, args, kwargs)
+
 
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField
@@ -183,8 +186,10 @@ class ModificationDateTimeField(CreationDateTimeField):
         args, kwargs = introspector(self)
         return (field_class, args, kwargs)
 
+
 class UUIDVersionError(Exception):
     pass
+
 
 class UUIDField(CharField):
     """ UUIDField
@@ -202,9 +207,9 @@ class UUIDField(CharField):
             kwargs.setdefault('editable', False)
         self.auto = auto
         self.version = version
-        if version==1:
+        if version == 1:
             self.node, self.clock_seq = node, clock_seq
-        elif version==3 or version==5:
+        elif version == 3 or version == 5:
             self.namespace, self.name = namespace, name
         CharField.__init__(self, verbose_name, name, **kwargs)
 
@@ -212,8 +217,10 @@ class UUIDField(CharField):
         return CharField.__name__
 
     def contribute_to_class(self, cls, name):
-        if self.primary_key: 
-            assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (self,cls,name,cls._meta.auto_field)
+        if self.primary_key:
+            assert not cls._meta.has_auto_field, \
+              "A model can't have more than one AutoField: %s %s %s; have %s" % \
+               (self, cls, name, cls._meta.auto_field)
             super(UUIDField, self).contribute_to_class(cls, name)
             cls._meta.has_auto_field = True
             cls._meta.auto_field = self
@@ -221,15 +228,15 @@ class UUIDField(CharField):
             super(UUIDField, self).contribute_to_class(cls, name)
 
     def create_uuid(self):
-        if not self.version or self.version==4:
+        if not self.version or self.version == 4:
             return uuid.uuid4()
-        elif self.version==1:
+        elif self.version == 1:
             return uuid.uuid1(self.node, self.clock_seq)
-        elif self.version==2:
+        elif self.version == 2:
             raise UUIDVersionError("UUID version 2 is not supported.")
-        elif self.version==3:
+        elif self.version == 3:
             return uuid.uuid3(self.namespace, self.name)
-        elif self.version==5:
+        elif self.version == 5:
             return uuid.uuid5(self.namespace, self.name)
         else:
             raise UUIDVersionError("UUID version %s is not valid." % self.version)

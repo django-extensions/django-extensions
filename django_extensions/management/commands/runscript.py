@@ -9,6 +9,7 @@ try:
 except NameError:
     from sets import Set as set   # Python 2.3 fallback
 
+
 def vararg_callback(option, opt_str, opt_value, parser):
     parser.rargs.insert(0, opt_value)
     value = []
@@ -17,14 +18,14 @@ def vararg_callback(option, opt_str, opt_value, parser):
         if arg[:2] == "--" and len(arg) > 2:
             break
         # stop on -a like options
-        if arg[:1] == "-": 
+        if arg[:1] == "-":
             break
         value.append(arg)
-            
+
     del parser.rargs[:len(value)]
     setattr(parser.values, option.dest, value)
 
-                                                                                                                       
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
@@ -44,7 +45,7 @@ class Command(BaseCommand):
 
     def handle(self, *scripts, **options):
         from django.db.models import get_apps
-        
+
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
@@ -86,7 +87,7 @@ class Command(BaseCommand):
                     print ERROR("Exception while running run() in '%s'" % mod.__name__)
                 if show_traceback:
                     raise
-        
+
         def my_import(mod):
             if verbosity > 1:
                 print NOTICE("Check for %s" % mod)
@@ -105,13 +106,13 @@ class Command(BaseCommand):
                         print ERROR2("Find script '%s' but no run() function found." % mod)
             except ImportError:
                 return False
-        
+
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
             modules = []
             # first look in apps
             for app in get_apps():
-                app_name = app.__name__.split(".")[:-1] # + ['fixtures']
+                app_name = app.__name__.split(".")[:-1]  # + ['fixtures']
                 for subdir in subdirs:
                     mod = my_import(".".join(app_name + [subdir, script]))
                     if mod:
@@ -130,7 +131,7 @@ class Command(BaseCommand):
                 mod = my_import(script)
                 if mod:
                     modules.append(mod)
-            
+
             return modules
 
         if options.get('script_args'):
@@ -140,16 +141,16 @@ class Command(BaseCommand):
         for script in scripts:
             modules = find_modules_for_script(script)
             if not modules:
-                if verbosity>0 and not silent:
+                if verbosity > 0 and not silent:
                     print ERROR("No module for script '%s' found" % script)
             for mod in modules:
-                if verbosity>1:
+                if verbosity > 1:
                     print NOTICE2("Running script '%s' ..." % mod.__name__)
                 run_script(mod, *script_args)
 
 
 # Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
                     default='1', type='choice', choices=['0', '1', '2'],

@@ -30,6 +30,12 @@ options:
 
     -L, --language
     specify language used for verrbose_name localization
+
+    -x, --exclude_columns
+    exclude specific column(s) from the graph.
+
+    -X, --exclude_models
+    exclude specific model(s) from the graph.
 """
 __version__ = "0.9"
 __svnid__ = "$Id$"
@@ -45,7 +51,9 @@ __contributors__ = [
    "Bas van Oostveen <v.oostveen@gmail.com>",
 ]
 
-import getopt, sys
+import os
+import sys
+import getopt
 
 from django.core.management import setup_environ
 
@@ -99,14 +107,12 @@ subgraph {{ cluster_app_name }} {
   color=olivedrab4
   style="rounded"
 {% endif %}
-
-  {% for model in models %}
+{% for model in models %}
     {{ model.app_name }}_{{ model.name }} [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
      <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4"
      ><FONT FACE="Helvetica Bold" COLOR="white"
      >{{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}</FONT></TD></TR>
-
     {% if not disable_fields %}
         {% for field in model.fields %}
         <TR><TD ALIGN="LEFT" BORDER="0"
@@ -119,8 +125,7 @@ subgraph {{ cluster_app_name }} {
     {% endif %}
     </TABLE>
     >]
-  {% endfor %}
-
+{% endfor %}
 {% if use_subgraph %}
 }
 {% endif %}
@@ -148,15 +153,35 @@ tail_template = """
 }
 """
 
+
+def parse_file_or_list(arg):
+    if not arg:
+        return []
+    if not ',' in arg and os.path.isfile(arg):
+        return [e.strip() for e in open(arg).readlines()]
+    return arg.split(',')
+
+
 def generate_dot(app_labels, **kwargs):
     disable_fields = kwargs.get('disable_fields', False)
-    include_models = kwargs.get('include_models', [])
+    include_models = parse_file_or_list(kwargs.get('include_models', ""))
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
     language = kwargs.get('language', None)
     if language is not None:
-        activate_language( language )
+        activate_language(language)
+    exclude_columns = parse_file_or_list(kwargs.get('exclude_columns', ""))
+    exclude_models = parse_file_or_list(kwargs.get('exclude_models', ""))
+
+    def skip_field(field):
+        if exclude_columns:
+            if verbose_names and field.verbose_name:
+                if field.verbose_name in exclude_columns:
+                    return True
+            if field.name in exclude_columns:
+                return True
+        return False
 
     dot = head_template
 
@@ -182,7 +207,7 @@ def generate_dot(app_labels, **kwargs):
 
         for appmodel in get_models(app):
             abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
-            
+
             # collect all attribs of abstract superclasses
             def getBasesAbstractFields(c):
                 _abstract_fields = []
@@ -192,7 +217,7 @@ def generate_dot(app_labels, **kwargs):
                         _abstract_fields.extend(getBasesAbstractFields(e))
                 return _abstract_fields
             abstract_fields = getBasesAbstractFields(appmodel)
-            
+
             model = {
                 'app_name': appmodel.__module__.replace(".", "_"),
                 'name': appmodel.__name__,
@@ -203,6 +228,8 @@ def generate_dot(app_labels, **kwargs):
 
             # consider given model name ?
             def consider(model_name):
+                if exclude_models and model_name in exclude_models:
+                    return False
                 return not include_models or model_name in include_models
 
             if not consider(appmodel._meta.object_name):
@@ -211,15 +238,15 @@ def generate_dot(app_labels, **kwargs):
             if verbose_names and appmodel._meta.verbose_name:
                 model['label'] = appmodel._meta.verbose_name
             else:
-                model['label'] = model['name']                
-            
+                model['label'] = model['name']
+
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+
                 model['fields'].append({
                     'name': field.name,
                     'label': label,
@@ -227,13 +254,16 @@ def generate_dot(app_labels, **kwargs):
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
                 })
-                    
 
             for field in appmodel._meta.fields:
+                if skip_field(field):
+                    continue
                 add_attributes(field)
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
+                    if skip_field(field):
+                        continue
                     add_attributes(field)
 
             # relations
@@ -242,9 +272,9 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+
                 _rel = {
-                    'target_app': field.rel.to.__module__.replace('.','_'),
+                    'target_app': field.rel.to.__module__.replace('.', '_'),
                     'target': field.rel.to.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
@@ -256,6 +286,8 @@ def generate_dot(app_labels, **kwargs):
                     model['relations'].append(_rel)
 
             for field in appmodel._meta.fields:
+                if skip_field(field):
+                    continue
                 if isinstance(field, OneToOneField):
                     add_relation(field, '[arrowhead=none arrowtail=none]')
                 elif isinstance(field, ForeignKey):
@@ -263,6 +295,8 @@ def generate_dot(app_labels, **kwargs):
 
             if appmodel._meta.many_to_many:
                 for field in appmodel._meta.many_to_many:
+                    if skip_field(field):
+                        continue
                     if isinstance(field, ManyToManyField):
                         if (getattr(field, 'creates_table', False) or  # django 1.1.
                             (field.rel.through and field.rel.through._meta.auto_created)):  # django 1.2
@@ -293,14 +327,15 @@ def generate_dot(app_labels, **kwargs):
     dot += '\n' + tail_template
     return dot
 
+
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language="])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:",
+                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)
-    
+
     kwargs = {}
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -313,11 +348,15 @@ def main():
         if opt in ("-g", "--group_models"):
             kwargs['group_models'] = True
         if opt in ("-i", "--include_models"):
-            kwargs['include_models'] = arg.split(',')
+            kwargs['include_models'] = arg
         if opt in ("-n", "--verbose-names"):
             kwargs['verbose_names'] = True
         if opt in ("-L", "--language"):
             kwargs['language'] = arg
+        if opt in ("-x", "--exclude_columns"):
+            kwargs['exclude_columns'] = arg
+        if opt in ("-X", "--exclude_models"):
+            kwargs['exclude_models'] = arg
 
     if not args and not kwargs.get('all_applications', False):
         print __doc__

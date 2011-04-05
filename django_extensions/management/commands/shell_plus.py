@@ -2,6 +2,7 @@ import os
 from django.core.management.base import NoArgsCommand
 from optparse import make_option
 
+
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--ipython', action='store_true', dest='ipython',
@@ -90,7 +91,8 @@ class Command(NoArgsCommand):
         except ImportError:
             # Using normal Python shell
             import code
-            try: # Try activating rlcompleter, because it's handy.
+            try:
+                # Try activating rlcompleter, because it's handy.
                 import readline
             except ImportError:
                 pass

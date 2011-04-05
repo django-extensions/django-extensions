@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-01 18:07+0200\n"
+"POT-Creation-Date: 2011-02-02 11:43+0100\n"
 "PO-Revision-Date: 2010-11-15 22:06-0300\n"
 "Last-Translator: Fernando Silva <fernand at liquuid dot net>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,8 +21,11 @@ msgstr "e"
 
 #: admin/__init__.py:123
 #, python-format
-msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr "Use o campo esquerdo para fazer com que o modelo %(model_name) procure nos campos %(field_list)."
+msgid ""
+"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr ""
+"Use o campo esquerdo para fazer com que o modelo %(model_name)s procure nos "
+"campos %(field_list)s."
 
 #: db/models.py:15
 msgid "created"
@@ -64,7 +67,7 @@ msgstr "deixe vazio para ativação imediata"
 msgid "keep empty for indefinite activation"
 msgstr "deixe vazio para ativação por tempo indeterminado"
 
-#: management/commands/show_urls.py:33
+#: management/commands/show_urls.py:34
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
 msgstr "%s não parece ser um objeto urlpattern"
@@ -72,4 +75,3 @@ msgstr "%s não parece ser um objeto urlpattern"
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
 msgstr "Busca"
-

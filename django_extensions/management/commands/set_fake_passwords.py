@@ -1,7 +1,7 @@
 """
-set_fake_passwords.py 
+set_fake_passwords.py
 
-    Reset all user passwords to a common value. Useful for testing in a 
+    Reset all user passwords to a common value. Useful for testing in a
     development environment. As such, this command is only available when
     setting.DEBUG is True.
 
@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import NoArgsCommand, CommandError
 
 DEFAULT_FAKE_PASSWORD = 'password'
+
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -26,7 +27,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
-            
+
         from django.contrib.auth.models import User
         if options.get('prompt_passwd', False):
             from getpass import getpass

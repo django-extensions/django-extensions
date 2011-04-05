@@ -2,27 +2,32 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: django-extensions\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-01 18:10+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2011-02-02 11:43+0100\n"
+"PO-Revision-Date: 2011-02-02 10:38+0000\n"
+"Last-Translator: Jannis <jannis@leidel.info>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #: admin/__init__.py:121
 msgid "and"
 msgstr "et"
 
 #: admin/__init__.py:123
-#, python-format, fuzzy
-msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr "Utilisez le champ de gauche pour faire des recheres de %(MODEL_NAME)s  dans les champs %(field_list)s."
+#, fuzzy, python-format
+msgid ""
+"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr ""
+"Utilisez le champ de gauche pour faire des recheres de %(MODEL_NAME)s  dans "
+"les champs %(field_list)s."
 
 #: db/models.py:15
 msgid "created"
@@ -66,8 +71,8 @@ msgstr "garder vide pour l'activation immédiate"
 msgid "keep empty for indefinite activation"
 msgstr "garder vide pour l'activation de durée indéterminée"
 
-#: management/commands/show_urls.py:33
-#, python-format, fuzzy
+#: management/commands/show_urls.py:34
+#, fuzzy, python-format
 msgid "%s does not appear to be a urlpattern object"
 msgstr "%s ne semble pas être un objet urlpattern"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-01 18:07+0200\n"
+"POT-Creation-Date: 2011-02-02 11:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,8 @@ msgstr "és"
 msgid ""
 "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
 msgstr ""
-"Használd a baloldali mezőt hogy keress a %(model_name)s %(field_list)s. mezőiben"
+"Használd a baloldali mezőt hogy keress a %(model_name)s %(field_list)s. "
+"mezőiben"
 
 #: db/models.py:15
 msgid "created"
@@ -66,7 +67,7 @@ msgstr "Üresen hagyni azonnali aktiváláshoz"
 msgid "keep empty for indefinite activation"
 msgstr "Üresen hagyni korlátlan aktiváláshoz"
 
-#: management/commands/show_urls.py:33
+#: management/commands/show_urls.py:34
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
 msgstr "Úgy néz ki hogy %s nem egy urlpattern objektum"
