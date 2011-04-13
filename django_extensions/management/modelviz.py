@@ -270,7 +270,7 @@ def generate_dot(app_labels, **kwargs):
                     'abstract': field in abstract_fields,
                 })
 
-            # Find all the real attributes. Relations are depicted as graph edges instead
+            # Find all the real attributes. Relations are depicted as graph edges instead of attributes
             attributes = [field for field in appmodel._meta.local_fields if not isinstance(field, RelatedField)]
 
             # find primary key and print it first, ignoring implicit id if other pk exists
@@ -319,7 +319,7 @@ def generate_dot(app_labels, **kwargs):
                 elif isinstance(field, ForeignKey):
                     add_relation(field, '[arrowhead=none, arrowtail=dot]')
 
-            for field in appmodel._meta.many_to_many:
+            for field in appmodel._meta.local_many_to_many:
                 if skip_field(field):
                     continue
                 if isinstance(field, ManyToManyField):
