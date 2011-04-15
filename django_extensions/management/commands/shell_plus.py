@@ -56,18 +56,42 @@ class Command(NoArgsCommand):
         # See ticket 5082.
         from django.conf import settings
         imported_objects = {'settings': settings}
+        shell_plus_settings = getattr(settings, 'SHELL_PLUS', {})
+        dont_load = shell_plus_settings.get('dont_load', [])
+        model_aliases = shell_plus_settings.get('model_aliases', {})
+
         for app_mod in get_apps():
             app_models = get_models(app_mod)
             if not app_models:
                 continue
-            model_labels = ", ".join([model.__name__ for model in app_models])
-            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], model_labels))
+
+            app_name = app_mod.__name__.split('.')[-2]
+            if app_name in dont_load:
+                continue
+
+            app_aliases = model_aliases.get(app_name, {})
+            model_labels = []
+
             for model in app_models:
                 try:
-                    imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+                    imported_object = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+                    model_name = model.__name__
+
+                    if "%s.%s" % (app_name, model_name) in dont_load:
+                        continue
+
+                    alias = app_aliases.get(model_name, model_name)
+                    imported_objects[alias] = imported_object
+                    if model_name == alias:
+                        model_labels.append(model_name)
+                    else:
+                        model_labels.append("%s (as %s)" % (model_name, alias))
+
                 except AttributeError, e:
-                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
+                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e)))
                     continue
+            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels)))
+
         try:
             if use_plain:
                 # Don't bother loading B/IPython, because the user wants plain Python.
