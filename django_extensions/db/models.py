@@ -41,23 +41,24 @@ class ActivatorModelManager(models.Manager):
     """
     def active(self):
         """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
-        return super(ActivatorModelManager, self).get_query_set().filter(status=1)
+        return super(ActivatorModelManager, self).get_query_set().filter(status=ActivatorModel.ACTIVE_STATUS)
 
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
-        return super(ActivatorModelManager, self).get_query_set().filter(status=0)
+        return super(ActivatorModelManager, self).get_query_set().filter(status=ActivatorModel.INACTIVE_STATUS)
 
 
 class ActivatorModel(models.Model):
     """ ActivatorModel
     An abstract base class model that provides activate and deactivate fields.
     """
+    INACTIVE_STATUS, ACTIVE_STATUS = range(2)
     STATUS_CHOICES = (
-        (0, _('Inactive')),
-        (1, _('Active')),
+        (INACTIVE_STATUS, _('Inactive')),
+        (ACTIVE_STATUS, _('Active')),
     )
     status = models.IntegerField(_('status'), choices=STATUS_CHOICES,
-        default=1)
+        default=ACTIVE_STATUS)
     activate_date = models.DateTimeField(blank=True, null=True,
         help_text=_('keep empty for an immediate activation'))
     deactivate_date = models.DateTimeField(blank=True, null=True,
