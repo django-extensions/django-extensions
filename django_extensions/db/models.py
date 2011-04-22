@@ -65,6 +65,7 @@ class ActivatorModel(models.Model):
     objects = ActivatorModelManager()
 
     class Meta:
+        ordering = ('status', '-activate_date',)
         abstract = True
 
     def save(self, *args, **kwargs):
