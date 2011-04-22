@@ -41,11 +41,11 @@ class ActivatorModelManager(models.Manager):
     """
     def active(self):
         """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
-        return super(ActivatorModelManager, self).get_query_set().filter(status=ActivatorModel.ACTIVE_STATUS)
+        return self.get_query_set().filter(status=ActivatorModel.ACTIVE_STATUS)
 
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
-        return super(ActivatorModelManager, self).get_query_set().filter(status=ActivatorModel.INACTIVE_STATUS)
+        return self.get_query_set().filter(status=ActivatorModel.INACTIVE_STATUS)
 
 
 class ActivatorModel(models.Model):
