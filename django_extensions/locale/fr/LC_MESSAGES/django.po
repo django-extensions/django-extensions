@@ -1,0 +1,82 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-extensions\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-02-02 11:43+0100\n"
+"PO-Revision-Date: 2011-02-02 10:38+0000\n"
+"Last-Translator: Jannis <jannis@leidel.info>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+
+#: admin/__init__.py:121
+msgid "and"
+msgstr "et"
+
+#: admin/__init__.py:123
+#, fuzzy, python-format
+msgid ""
+"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr ""
+"Utilisez le champ de gauche pour faire des recheres de %(MODEL_NAME)s  dans "
+"les champs %(field_list)s."
+
+#: db/models.py:15
+msgid "created"
+msgstr "créé"
+
+#: db/models.py:16
+msgid "modified"
+msgstr "mise à jour"
+
+#: db/models.py:26
+msgid "title"
+msgstr "titre"
+
+#: db/models.py:27
+msgid "slug"
+msgstr "slug"
+
+#: db/models.py:28
+msgid "description"
+msgstr "description"
+
+#: db/models.py:50
+msgid "Inactive"
+msgstr "inactif"
+
+#: db/models.py:51
+msgid "Active"
+msgstr "active"
+
+#: db/models.py:53
+msgid "status"
+msgstr "état"
+
+#: db/models.py:56
+#, fuzzy
+msgid "keep empty for an immediate activation"
+msgstr "garder vide pour l'activation immédiate"
+
+#: db/models.py:58
+#, fuzzy
+msgid "keep empty for indefinite activation"
+msgstr "garder vide pour l'activation de durée indéterminée"
+
+#: management/commands/show_urls.py:34
+#, fuzzy, python-format
+msgid "%s does not appear to be a urlpattern object"
+msgstr "%s ne semble pas être un objet urlpattern"
+
+#: templates/django_extensions/widgets/foreignkey_searchinput.html:4
+#, fuzzy
+msgid "Lookup"
+msgstr "Recherche"

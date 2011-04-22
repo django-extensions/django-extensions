@@ -7,11 +7,13 @@ try:
 except ImportError:
     # fall back to trunk, pre-NFA merge
     from django.contrib.admin.views.doc import simplify_regex
-        
+import re
+
 from django_extensions.management.color import color_style
 
+
 def extract_views_from_urlpatterns(urlpatterns, base=''):
-    """ 
+    """
     Return a list of views from a list of urlpatterns.
 
     Each object in the returned list is a two-tuple: (view_func, regex)
@@ -33,11 +35,12 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
             raise TypeError, _("%s does not appear to be a urlpattern object") % p
     return views
 
+
 class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."
-    
+
     requires_model_validation = True
-    
+
     def handle(self, *args, **options):
         if args:
             appname, = args
@@ -61,7 +64,12 @@ class Command(BaseCommand):
                 continue
             view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
             for (func, regex, url_name) in view_functions:
-                func_name = hasattr(func, '__name__') and func.__name__ or repr(func)
+                if hasattr(func, '__name__'):
+                    func_name = func.__name__
+                elif hasattr(func, '__class__'):
+                    func_name = '%s()' % func.__class__.__name__
+                else:
+                    func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
                 views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s" % {'name': style.MODULE_NAME(func_name),
                                        'module': style.MODULE(func.__module__),
                                        'url_name': style.URL_NAME(url_name or ''),

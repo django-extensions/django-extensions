@@ -1,13 +1,14 @@
 #
-#    Autocomplete feature for admin panel
+# Autocomplete feature for admin panel
 #
-#    Most of the code has been written by Jannis Leidel and was updated a bit
-#    for django_extensions.
-#    http://jannisleidel.com/2008/11/autocomplete-form-widget-foreignkey-model-fields/
+# Most of the code has been written by Jannis Leidel and was updated a bit
+# for django_extensions.
+# http://jannisleidel.com/2008/11/autocomplete-form-widget-foreignkey-model-fields/
 #
-#    to_string_function, Satchmo adaptation and some comments added by emes
-#    (Michal Salaban)
+# to_string_function, Satchmo adaptation and some comments added by emes
+# (Michal Salaban)
 #
+
 import operator
 from django.http import HttpResponse, HttpResponseNotFound
 from django.db import models
@@ -20,10 +21,12 @@ from django.utils.functional import update_wrapper
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
 from django.conf import settings
+
 if 'reversion' in settings.INSTALLED_APPS:
     from reversion.admin import VersionAdmin as ModelAdmin
 else:
     from django.contrib.admin import ModelAdmin
+
 
 class ForeignKeyAutocompleteAdmin(ModelAdmin):
     """Admin class for models using the autocomplete feature.
@@ -139,4 +142,3 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
             kwargs['help_text'] = help_text
         return super(ForeignKeyAutocompleteAdmin,
             self).formfield_for_dbfield(db_field, **kwargs)
-

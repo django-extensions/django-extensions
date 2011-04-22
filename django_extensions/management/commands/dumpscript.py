@@ -8,7 +8,7 @@
       Usage: python manage.py dumpscript appname > scripts/scriptname.py
   $Revision: 217 $
 
-Description: 
+Description:
     Generates a Python script that will repopulate the database using objects.
     The advantage of this approach is that it is easy to understand, and more
     flexible than directly populating the database, or using XML.
@@ -36,6 +36,7 @@ from django.core.management.base import BaseCommand
 from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
 
+
 class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
@@ -55,7 +56,7 @@ class Command(BaseCommand):
 
 
 def get_models(app_labels):
-    """ Gets a list of models for the given app labels, with some exceptions. 
+    """ Gets a list of models for the given app labels, with some exceptions.
         TODO: If a required model is referenced, it should also be included.
         Or at least discovered with a get_or_create() call.
     """
@@ -73,7 +74,7 @@ def get_models(app_labels):
     # If no app labels are given, return all
     if not app_labels:
         for app in get_apps():
-            models += [ m for m in get_all_models(app) if m not in EXCLUDED_MODELS ]
+            models += [m for m in get_all_models(app) if m not in EXCLUDED_MODELS]
 
     # Get all relevant apps
     for app_label in app_labels:
@@ -83,14 +84,13 @@ def get_models(app_labels):
             models.append(get_model(app_label, model_name))
         # Get all models for a given app
         else:
-            models += [ m for m in get_all_models(get_app(app_label)) if m not in EXCLUDED_MODELS ]
+            models += [m for m in get_all_models(get_app(app_label)) if m not in EXCLUDED_MODELS]
 
     return models
 
 
-
 class Code(object):
-    """ A snippet of python script. 
+    """ A snippet of python script.
         This keeps track of import statements and can be output to a string.
         In the future, other features such as custom indentation might be included
         in this class.
@@ -98,10 +98,10 @@ class Code(object):
 
     def __init__(self):
         self.imports = {}
-        self.indent = -1 
+        self.indent = -1
 
     def __str__(self):
-        """ Returns a string representation of this script. 
+        """ Returns a string representation of this script.
         """
         if self.imports:
             sys.stderr.write(repr(self.import_lines))
@@ -113,7 +113,7 @@ class Code(object):
         """ Takes the stored imports and converts them to lines
         """
         if self.imports:
-            return [ "from %s import %s" % (value, key) for key, value in self.imports.items() ]
+            return ["from %s import %s" % (value, key) for key, value in self.imports.items()]
         else:
             return []
     import_lines = property(get_import_lines)
@@ -130,23 +130,23 @@ class ModelCode(Code):
 
     def get_imports(self):
         """ Returns a dictionary of import statements, with the variable being
-            defined as the key. 
+            defined as the key.
         """
-        return { self.model.__name__: smart_unicode(self.model.__module__) }
+        return {self.model.__name__: smart_unicode(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
-        """ Returns a list of lists or strings, representing the code body. 
+        """ Returns a list of lists or strings, representing the code body.
             Each list is a block, each string is a statement.
         """
         code = []
 
-        for counter, item in enumerate(self.model.objects.all()):
-            instance = InstanceCode(instance=item, id=counter+1, context=self.context)
+        for counter, item in enumerate(self.model._default_manager.all()):
+            instance = InstanceCode(instance=item, id=counter + 1, context=self.context)
             self.instances.append(instance)
             if instance.waiting_list:
                 code += instance.lines
- 
+
         # After each instance has been processed, try again.
         # This allows self referencing fields to work.
         for instance in self.instances:
@@ -171,20 +171,20 @@ class InstanceCode(Code):
         self.skip_me = None
         self.instantiated = False
 
-        self.indent  = 0 
+        self.indent = 0
         self.imports = {}
 
         self.waiting_list = list(self.model._meta.fields)
 
-        self.many_to_many_waiting_list = {} 
+        self.many_to_many_waiting_list = {}
         for field in self.model._meta.many_to_many:
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
     def get_lines(self, force=False):
-        """ Returns a list of lists or strings, representing the code body. 
+        """ Returns a list of lists or strings, representing the code body.
             Each list is a block, each string is a statement.
-            
-            force (True or False): if an attribute object cannot be included, 
+
+            force (True or False): if an attribute object cannot be included,
             it is usually skipped to be processed later. With 'force' set, there
             will be no waiting: a get_or_create() call is written instead.
         """
@@ -236,7 +236,7 @@ class InstanceCode(Code):
             # previous versions don't have CollectedObjects
             sub_objects = {}
         self.instance._collect_sub_objects(sub_objects)
-        if reduce(lambda x, y: x+y, [self.model in so._meta.parents for so in sub_objects.keys()]) == 1:
+        if reduce(lambda x, y: x + y, [self.model in so._meta.parents for so in sub_objects.keys()]) == 1:
             pk_name = self.instance._meta.pk.name
             key = '%s_%s' % (self.model.__name__, getattr(self.instance, pk_name))
             self.context[key] = None
@@ -262,7 +262,6 @@ class InstanceCode(Code):
 
         return code_lines
 
-
     def get_waiting_list(self, force=False):
         " Add lines for any waiting fields that can be completed now. "
 
@@ -283,9 +282,7 @@ class InstanceCode(Code):
                 # Move on, maybe next time
                 continue
 
-
         return code_lines
-
 
     def get_many_to_many_lines(self, force=False):
         """ Generates lines that define many to many relations for this instance. """
@@ -319,14 +316,14 @@ class Script(Code):
         self.models = models
         self.context = context
 
-        self.indent = -1 
+        self.indent = -1
         self.imports = {}
 
     def get_lines(self):
-        """ Returns a list of lists or strings, representing the code body. 
+        """ Returns a list of lists or strings, representing the code body.
             Each list is a block, each string is a statement.
         """
-        code = [ self.FILE_HEADER.strip() ]
+        code = [self.FILE_HEADER.strip()]
 
         # Queue and process the required models
         for model_class in queue_models(self.models, context=self.context):
@@ -365,13 +362,12 @@ def run():
 """ % " ".join(sys.argv)
 
 
-
 # HELPER FUNCTIONS
 #-------------------------------------------------------------------------------
 
 def flatten_blocks(lines, num_indents=-1):
     """ Takes a list (block) or string (statement) and flattens it into a string
-        with indentation. 
+        with indentation.
     """
 
     # The standard indent is four spaces
@@ -385,9 +381,7 @@ def flatten_blocks(lines, num_indents=-1):
         return INDENTATION * num_indents + lines
 
     # If this is not a string, join the lines and recurse
-    return "\n".join([ flatten_blocks(line, num_indents+1) for line in lines ])
-
-
+    return "\n".join([flatten_blocks(line, num_indents + 1) for line in lines])
 
 
 def get_attribute_value(item, field, context, force=False):
@@ -415,7 +409,7 @@ def get_attribute_value(item, field, context, force=False):
     elif isinstance(field, models.ForeignKey) and value is not None:
 
         # Special case for contenttype foreign keys: no need to output any
-        # content types in this script, as they can be generated again 
+        # content types in this script, as they can be generated again
         # automatically.
         # NB: Not sure if "is" will always work
         if field.rel.to is ContentType:
@@ -431,21 +425,21 @@ def get_attribute_value(item, field, context, force=False):
             # This identifies models that have been skipped (inheritance)
             if variable_name is None:
                 raise SkipValue()
-            # Return the variable name listed in the context 
+            # Return the variable name listed in the context
             return "%s" % variable_name
         elif force:
             return "%s.objects.get(%s=%s)" % (value._meta.object_name, pk_name, getattr(value, pk_name))
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
-
     # A normal field (e.g. a python built-in)
     else:
         return repr(value)
 
+
 def queue_models(models, context):
     """ Works an an appropriate ordering for the models.
-        This isn't essential, but makes the script look nicer because 
+        This isn't essential, but makes the script look nicer because
         more instances can be defined on their first try.
     """
 
@@ -460,7 +454,7 @@ def queue_models(models, context):
         previous_number_remaining_models = number_remaining_models
 
         model = models.pop(0)
-        
+
         # If the model is ready to be processed, add it to the list
         if check_dependencies(model, model_queue):
             model_class = ModelCode(model=model, context=context)
@@ -470,7 +464,7 @@ def queue_models(models, context):
         else:
             models.append(model)
 
-        # Check for infinite loops. 
+        # Check for infinite loops.
         # This means there is a cyclic foreign key structure
         # That cannot be resolved by re-ordering
         number_remaining_models = len(models)
@@ -478,9 +472,9 @@ def queue_models(models, context):
             allowed_cycles -= 1
             if allowed_cycles <= 0:
                 # Add the remaining models, but do not remove them from the model list
-                missing_models = [ ModelCode(model=m, context=context) for m in models ]
+                missing_models = [ModelCode(model=m, context=context) for m in models]
                 model_queue += missing_models
-                # Replace the models with the model class objects 
+                # Replace the models with the model class objects
                 # (sure, this is a little bit of hackery)
                 models[:] = missing_models
                 break
@@ -494,7 +488,7 @@ def check_dependencies(model, model_queue):
     " Check that all the depenedencies for this model are already in the queue. "
 
     # A list of allowed links: existing fields, itself and the special case ContentType
-    allowed_links = [ m.model.__name__ for m in model_queue ] + [model.__name__, 'ContentType']
+    allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
 
     # For each ForeignKey or ManyToMany field, check that a link is possible
     for field in model._meta.fields + model._meta.many_to_many:
@@ -504,12 +498,12 @@ def check_dependencies(model, model_queue):
     return True
 
 
-
 # EXCEPTIONS
 #-------------------------------------------------------------------------------
 
 class SkipValue(Exception):
     """ Value could not be parsed or should simply be skipped. """
+
 
 class DoLater(Exception):
     """ Value could not be parsed or should simply be skipped. """

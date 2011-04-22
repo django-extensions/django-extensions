@@ -3,6 +3,7 @@ import sys
 import smtpd
 import asyncore
 
+
 class Command(BaseCommand):
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
@@ -32,10 +33,10 @@ class Command(BaseCommand):
 
         def inner_run():
             print "Now accepting mail at %s:%s" % (addr, port)
-            server = smtpd.DebuggingServer((addr,port), None)
+            server = smtpd.DebuggingServer((addr, port), None)
             asyncore.loop()
 
-        try: 
+        try:
             inner_run()
         except KeyboardInterrupt:
             pass

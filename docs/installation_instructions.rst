@@ -84,7 +84,7 @@ You can verify that the application is available on your PYTHONPATH by opening a
 
   >>> import django_extensions
   >>> django_extensions.VERSION
-  (0, 2, 'pre')
+  (0, 6)
 
 Keep in mind that the current code in SVN trunk may be different from the
 packaged release, and may contain bugs and backwards-incompatible changes, as

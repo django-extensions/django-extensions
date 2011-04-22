@@ -5,9 +5,10 @@ from django.utils.text import truncate_words
 from django.template.loader import render_to_string
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 
+
 class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     """
-    A Widget for displaying ForeignKeys in an autocomplete search input 
+    A Widget for displaying ForeignKeys in an autocomplete search input
     instead in a <select> box.
     """
     # Set in subclass to render the widget with a different template
@@ -48,7 +49,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
         else:
             url = ''
-        if not attrs.has_key('class'):
+        if not 'class' in attrs:
             attrs['class'] = 'vForeignKeyRawIdAdminField'
         # Call the TextInput render method directly to have more control
         output = [forms.TextInput.render(self, name, value, attrs)]

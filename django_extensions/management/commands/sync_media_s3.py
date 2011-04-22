@@ -50,8 +50,8 @@ try:
 except ImportError:
     raise ImportError, "The boto Python library is not installed."
 
-class Command(BaseCommand):
 
+class Command(BaseCommand):
     # Extra variables to avoid passing these around
     AWS_ACCESS_KEY_ID = ''
     AWS_SECRET_ACCESS_KEY = ''
@@ -69,7 +69,8 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         optparse.make_option('-p', '--prefix',
-            dest='prefix', default='',
+            dest='prefix',
+            default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
             help="The prefix to prepend to the path on S3."),
         optparse.make_option('-d', '--dir',
             dest='dir', default=settings.MEDIA_ROOT,
@@ -97,9 +98,9 @@ class Command(BaseCommand):
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-           not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
-           raise CommandError('Missing AWS keys from settings file.  Please' +
-                     'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
+            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+            raise CommandError('Missing AWS keys from settings file.  Please' +
+                                'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
@@ -125,11 +126,11 @@ class Command(BaseCommand):
         self.do_force = options.get('force')
         self.DIRECTORY = options.get('dir')
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        filter_list = options.get('filter_list').split(',')
+        filter_list = options.get('filter_list')
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
-            self.FILTER_LIST = filter_list
+            self.FILTER_LIST = filter_list.split(',')
 
         # Now call the syncing method to walk the MEDIA_ROOT directory and
         # upload all files found.
@@ -149,8 +150,12 @@ class Command(BaseCommand):
 
     def compress_string(self, s):
         """Gzip a given string."""
-        import cStringIO, gzip
-        zbuf = cStringIO.StringIO()
+        import gzip
+        try:
+            from cStringIO import StringIO
+        except ImportError:
+            from StringIO import StringIO
+        zbuf = StringIO()
         zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
         zfile.write(s)
         zfile.close()
@@ -171,13 +176,13 @@ class Command(BaseCommand):
         """
         This is the callback to os.path.walk and where much of the work happens
         """
-        bucket, key, bucket_name, root_dir = arg # expand arg tuple
+        bucket, key, bucket_name, root_dir = arg
 
         # Skip directories we don't want to sync
         if os.path.basename(dirname) in self.FILTER_LIST:
             # prevent walk from processing subfiles/subdirs below the ignored one
             del names[:]
-            return 
+            return
 
         # Later we assume the MEDIA_ROOT ends with a trailing slash
         if not root_dir.endswith(os.path.sep):
@@ -187,11 +192,11 @@ class Command(BaseCommand):
             headers = {}
 
             if file in self.FILTER_LIST:
-                continue # Skip files we don't want to sync
+                continue  # Skip files we don't want to sync
 
             filename = os.path.join(dirname, file)
             if os.path.isdir(filename):
-                continue # Don't try to upload directories
+                continue  # Don't try to upload directories
 
             file_key = filename[len(root_dir):]
             if self.prefix:
@@ -223,19 +228,19 @@ class Command(BaseCommand):
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
             if self.do_gzip:
-                # Gzipping only if file is large enough (>1K is recommended) 
+                # Gzipping only if file is large enough (>1K is recommended)
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
                         print "\tgzipped: %dk to %dk" % \
-                            (file_size/1024, len(filedata)/1024)
+                            (file_size / 1024, len(filedata) / 1024)
             if self.do_expires:
                 # HTTP/1.0
                 headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
                     time.mktime((datetime.datetime.now() +
-                    datetime.timedelta(days=365*2)).timetuple())))
+                    datetime.timedelta(days=365 * 2)).timetuple())))
                 # HTTP/1.1
                 headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
                 if self.verbosity > 1:
@@ -257,7 +262,7 @@ class Command(BaseCommand):
             file_obj.close()
 
 # Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest=='verbosity']:
+if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         optparse.make_option('-v', '--verbosity',
             dest='verbosity', default=1, action='count',

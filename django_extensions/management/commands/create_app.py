@@ -7,6 +7,7 @@ from django.core.management.base import CommandError, LabelCommand, _make_writea
 from django_extensions.utils.dia2django import dia2django
 from optparse import make_option
 
+
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--template', '-t', action='store', dest='app_template',
@@ -30,7 +31,7 @@ class Command(LabelCommand):
     def handle_label(self, label, **options):
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]
-        app_name =label
+        app_name = label
         app_template = options.get('app_template') or os.path.join(django_extensions.__path__[0], 'conf', 'app_template')
         app_dir = os.path.join(options.get('parent_path') or project_dir, app_name)
         dia_path = options.get('dia_path') or os.path.join(project_dir, '%s.dia' % app_name)
@@ -73,11 +74,11 @@ class Command(LabelCommand):
 def copy_template(app_template, copy_to, project_name, app_name):
     """copies the specified template directory to the copy_to location"""
     import shutil
-    
+
     app_template = os.path.normpath(app_template)
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(app_template):
-        relative_dir = d[len(app_template)+1:]
+        relative_dir = d[len(app_template) + 1:]
         d_new = os.path.join(copy_to, relative_dir).replace('app_name', app_name)
         if relative_dir and not os.path.exists(d_new):
             os.mkdir(d_new)
@@ -116,9 +117,9 @@ def generate_models_and_admin(dia_path, app_dir, project_name, app_name):
         while string:
             line = string[:77]
             last_space = line.rfind(' ')
-            if last_space != -1 and len(string)>77:
+            if last_space != -1 and len(string) > 77:
                 retval += "%s \\\n" % string[:last_space]
-                string = string[last_space+1:]
+                string = string[last_space + 1:]
             else:
                 retval += "%s\n" % string
                 string = ''
@@ -137,5 +138,5 @@ def generate_models_and_admin(dia_path, app_dir, project_name, app_name):
         format_text('from %s.%s.models import %s' %
         (project_name, app_name, ', '.join(classes)), indent=True)
     admin_txt += format_text('\n\n%s' %
-        '\n'.join(map((lambda t: 'site.register(%s)' %t), classes)))
+        '\n'.join(map((lambda t: 'site.register(%s)' % t), classes)))
     open(admin_path, 'w').write(admin_txt)

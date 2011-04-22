@@ -12,9 +12,10 @@ Get a fresh copy
  $ git clone git@github.com:django-extensions/django-extensions.git
  $ cd django-extensions
 
-Change version number in django_extensions/__init__.py
+Change version numbers in django_extensions/__init__.py and docs/conf.py
 
- $ vi django_extension/__init__.py
+ $ vi django_extension/__init__.py              (1 occurance)
+ $ vi docs/conf.py                              (2 occurances)
  $ git commit -a -m v0.4.1
 
 Tag it
@@ -29,6 +30,17 @@ Upload release to pypi
 
  $ python ./setup.py register
  $ python ./setup.py sdist upload -s
+
+Upload new documentation to pypi
+
+ $ cd docs
+ $ make html
+ $ cd _build/html
+ $ zip -r9v ../django_extensions_docs.zip *
+
+Now goto http://pypi.python.org, login and edit the django_extensions package.
+At the bottom of the page your can upload documentation. Click browse, select
+the zip file and hit "Upload Documentation".
 
 Bumb version number to new in-development pre version
 

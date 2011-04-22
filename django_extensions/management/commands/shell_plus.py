@@ -2,6 +2,7 @@ import os
 from django.core.management.base import NoArgsCommand
 from optparse import make_option
 
+
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--ipython', action='store_true', dest='ipython',
@@ -10,6 +11,8 @@ class Command(NoArgsCommand):
             help='Tells Django to use plain Python, not BPython nor IPython.'),
         make_option('--no-pythonrc', action='store_true', dest='no_pythonrc',
             help='Tells Django to use plain Python, not IPython.'),
+        make_option('--print-sql', action='store_true', default=False,
+            help="Print SQL queries as they're executed"),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -26,6 +29,28 @@ class Command(NoArgsCommand):
         use_plain = options.get('plain', False)
         use_pythonrc = not options.get('no_pythonrc', True)
 
+        if options.get("print_sql", False):
+            # Code from http://gist.github.com/118990
+            from django.db.backends import util
+            try:
+                import sqlparse
+            except ImportError:
+                sqlparse = None
+
+            class PrintQueryWrapper(util.CursorDebugWrapper):
+                def execute(self, sql, params=()):
+                    try:
+                        return self.cursor.execute(sql, params)
+                    finally:
+                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+                        if sqlparse:
+                            print sqlparse.format(raw_sql, reindent=True)
+                        else:
+                            print raw_sql
+                        print
+
+            util.CursorDebugWrapper = PrintQueryWrapper
+
         # Set up a dictionary to serve as the environment for the shell, so
         # that tab completion works on objects that are imported at runtime.
         # See ticket 5082.
@@ -41,7 +66,7 @@ class Command(NoArgsCommand):
                 try:
                     imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
                 except AttributeError, e:
-                    print self.style.ERROR_OUTPUT("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
+                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
                     continue
         try:
             if use_plain:
@@ -54,15 +79,20 @@ class Command(NoArgsCommand):
                 from bpython import embed
                 embed(imported_objects)
             except ImportError:
-                import IPython
                 # Explicitly pass an empty list as arguments, because otherwise IPython
                 # would use sys.argv from this script.
-                shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
+                try:
+                    from IPython.core.iplib import InteractiveShell
+                    shell = InteractiveShell(user_ns=imported_objects)
+                except ImportError:
+                    import IPython
+                    shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
                 shell.mainloop()
         except ImportError:
             # Using normal Python shell
             import code
-            try: # Try activating rlcompleter, because it's handy.
+            try:
+                # Try activating rlcompleter, because it's handy.
                 import readline
             except ImportError:
                 pass
@@ -76,11 +106,11 @@ class Command(NoArgsCommand):
             # We want to honor both $PYTHONSTARTUP and .pythonrc.py, so follow system
             # conventions and get $PYTHONSTARTUP first then import user.
             if use_pythonrc:
-                pythonrc = os.environ.get("PYTHONSTARTUP") 
-                if pythonrc and os.path.isfile(pythonrc): 
-                    try: 
-                        execfile(pythonrc) 
-                    except NameError: 
+                pythonrc = os.environ.get("PYTHONSTARTUP")
+                if pythonrc and os.path.isfile(pythonrc):
+                    try:
+                        execfile(pythonrc)
+                    except NameError:
                         pass
                 # This will import .pythonrc.py as a side-effect
                 import user

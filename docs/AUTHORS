@@ -13,3 +13,5 @@ David Krauth (dakrauth)
 Will Larson (lethain) - For syntax_color template filters.
 Patrick Altman (paltman) - Patched sync_media_s3
 Chris Beaven (smileychris) - widont filter
+qMax - various graph_model patches
+Tyson Clugg (tclugg) - Patched sqldiff

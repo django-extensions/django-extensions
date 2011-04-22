@@ -1,0 +1,8 @@
+[django-extensions.master]
+file_filter = django_extensions/locale/<lang>/LC_MESSAGES/django.po
+source_file = django_extensions/locale/en/LC_MESSAGES/django.po
+source_lang = en
+
+[main]
+host = https://www.transifex.net
+

@@ -21,7 +21,7 @@ Example:
  </style>
 
  <h2>check out this code</h2>
- 
+
  {% highlight 'python' 'Excerpt: blah.py' %}
  def need_food(self):
      print "Love is <colder> than &death&"
@@ -40,11 +40,13 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+
 @register.filter
 @stringfilter
 def parse_template(value):
     return mark_safe(Template(value).render(Context()))
 parse_template.is_safe = True
+
 
 class CodeNode(Node):
     def __init__(self, language, nodelist, name=''):
@@ -65,16 +67,17 @@ class CodeNode(Node):
             html = '<div class="predesc"><span>%s</span></div>' % (name)
         return html + pyghighlight(code, lexer, formatter)
 
+
 @register.tag
 def highlight(parser, token):
     """
     Allows you to put a highlighted source code <pre> block in your code.
     This takes two arguments, the language and a little explaination message
     that will be generated before the code.  The second argument is optional.
-    
+
     Your code will be fed through pygments so you can use any language it
     supports.
-    
+
     {% load highlighting %}
     {% highlight 'python' 'Excerpt: blah.py' %}
     def need_food(self):

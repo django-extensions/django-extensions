@@ -12,10 +12,13 @@ FORMATS = [
     'vcard',
 ]
 
+
 def full_name(first_name, last_name, username, **extra):
     name = u" ".join(n for n in [first_name, last_name] if n)
-    if not name: return username
+    if not name:
+        return username
     return name
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -31,15 +34,16 @@ class Command(BaseCommand):
 
     requires_model_validation = True
     can_import_settings = True
-    encoding = 'utf-8' # RED_FLAG: add as an option -DougN
+    encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("extra arguments supplied")
         group = options['group']
-        if group and not Group.objects.filter(name=group).count()==1:
+        if group and not Group.objects.filter(name=group).count() == 1:
             names = u"', '".join(g['name'] for g in Group.objects.values('name')).encode('utf-8')
-            if names: names = "'" + names + "'."
+            if names:
+                names = "'" + names + "'."
             raise CommandError("Unknown group '" + group + "'. Valid group names are: " + names)
         if len(args) and args[0] != '-':
             outfile = file(args[0], 'w')
@@ -47,7 +51,8 @@ class Command(BaseCommand):
             outfile = stdout
 
         qs = User.objects.all().order_by('last_name', 'first_name', 'username', 'email')
-        if group: qs = qs.filter(group__name=group).distinct()
+        if group:
+            qs = qs.filter(group__name=group).distinct()
         qs = qs.values('last_name', 'first_name', 'username', 'email')
         getattr(self, options['format'])(qs, outfile)
 
@@ -55,7 +60,7 @@ class Command(BaseCommand):
         """simple single entry per line in the format of:
             "full name" <my@address.com>;
         """
-        out.write(u"\n".join(u'"%s" <%s>;' % (full_name(**ent), ent['email']) 
+        out.write(u"\n".join(u'"%s" <%s>;' % (full_name(**ent), ent['email'])
                              for ent in qs).encode(self.encoding))
         out.write("\n")
 
@@ -65,21 +70,21 @@ class Command(BaseCommand):
         csvf = writer(out)
         csvf.writerow(['Name', 'Email'])
         for ent in qs:
-            csvf.writerow([full_name(**ent).encode(self.encoding), 
+            csvf.writerow([full_name(**ent).encode(self.encoding),
                            ent['email'].encode(self.encoding)])
 
     def outlook(self, qs, out):
         """CSV format suitable for importing into outlook
         """
         csvf = writer(out)
-        columns = ['Name','E-mail Address','Notes','E-mail 2 Address','E-mail 3 Address',
-                   'Mobile Phone','Pager','Company','Job Title','Home Phone','Home Phone 2',
-                   'Home Fax','Home Address','Business Phone','Business Phone 2',
-                   'Business Fax','Business Address','Other Phone','Other Fax','Other Address']
+        columns = ['Name', 'E-mail Address', 'Notes', 'E-mail 2 Address', 'E-mail 3 Address',
+                   'Mobile Phone', 'Pager', 'Company', 'Job Title', 'Home Phone', 'Home Phone 2',
+                   'Home Fax', 'Home Address', 'Business Phone', 'Business Phone 2',
+                   'Business Fax', 'Business Address', 'Other Phone', 'Other Fax', 'Other Address']
         csvf.writerow(columns)
         empty = [''] * (len(columns) - 2)
         for ent in qs:
-            csvf.writerow([full_name(**ent).encode(self.encoding), 
+            csvf.writerow([full_name(**ent).encode(self.encoding),
                            ent['email'].encode(self.encoding)] + empty)
 
     def linkedin(self, qs, out):
@@ -89,15 +94,15 @@ class Command(BaseCommand):
         csvf = writer(out)
         csvf.writerow(['First Name', 'Last Name', 'Email'])
         for ent in qs:
-            csvf.writerow([ent['first_name'].encode(self.encoding), 
-                           ent['last_name'].encode(self.encoding), 
+            csvf.writerow([ent['first_name'].encode(self.encoding),
+                           ent['last_name'].encode(self.encoding),
                            ent['email'].encode(self.encoding)])
 
     def vcard(self, qs, out):
         try:
             import vobject
         except ImportError:
-            print self.style.ERROR_OUTPUT("Please install python-vobject to use the vcard export format.")
+            print self.style.ERROR("Please install python-vobject to use the vcard export format.")
             import sys
             sys.exit(1)
         for ent in qs:

@@ -15,6 +15,7 @@ from datetime import datetime
 import os
 import sys
 
+
 def label(code):
     if isinstance(code, str):
         return ('~', 0, code)    # built-in functions ('~' sorts at the end)
@@ -22,6 +23,7 @@ def label(code):
         return '%s %s:%d' % (code.co_name,
                              code.co_filename,
                              code.co_firstlineno)
+
 
 class KCacheGrind(object):
     def __init__(self, profiler):
@@ -90,6 +92,7 @@ class KCacheGrind(object):
         totaltime = int(subentry.totaltime * 1000)
         print >> out_file, '%d %d' % (lineno, totaltime)
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noreload', action='store_false', dest='use_reloader', default=True,
@@ -140,11 +143,13 @@ class Command(BaseCommand):
         def inner_run():
             from django.conf import settings
 
-            import hotshot, time, os
+            import os
+            import time
+            import hotshot
             USE_CPROFILE = options.get('use_cprofile', False)
             USE_LSPROF = options.get('use_lsprof', False)
             if USE_LSPROF:
-               USE_CPROFILE = True
+                USE_CPROFILE = True
             if USE_CPROFILE:
                 try:
                     import cProfile
