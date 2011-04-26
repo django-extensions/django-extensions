@@ -30,15 +30,6 @@ class BaseEncryptedField(models.Field):
             value = self.prefix + self.crypt.Encrypt(value)
         return value
     
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.BaseEncryptedField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return (field_class, args, kwargs)
-    
 
 class EncryptedTextField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
@@ -50,6 +41,15 @@ class EncryptedTextField(BaseEncryptedField):
         defaults = {'widget': forms.Textarea}
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.EncryptedTextField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
 
 
 class EncryptedCharField(BaseEncryptedField):
@@ -68,3 +68,12 @@ class EncryptedCharField(BaseEncryptedField):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.EncryptedCharField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
