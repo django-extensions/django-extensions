@@ -29,7 +29,16 @@ class BaseEncryptedField(models.Field):
         if not value.startswith(self.prefix):
             value = self.prefix + self.crypt.Encrypt(value)
         return value
-
+    
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.BaseEncryptedField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
+    
 
 class EncryptedTextField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
