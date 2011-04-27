@@ -320,6 +320,8 @@ def generate_dot(app_labels, **kwargs):
             for field in appmodel._meta.local_fields:
                 if field.attname.endswith('_ptr_id'): # excluding field redundant with inheritance relation
                     continue
+                if field in abstract_fields: # excluding fields inherited from abstract classes. they too show as local_fields
+                    continue
                 if skip_field(field):
                     continue
                 if isinstance(field, OneToOneField):
