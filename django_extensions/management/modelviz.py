@@ -215,8 +215,16 @@ def generate_dot(app_labels, **kwargs):
             'models': []
         })
 
-        for appmodel in get_models(app):
-            abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
+        appmodels = get_models(app)
+        abstract_models = []
+        for appmodel in appmodels:
+            abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
+        abstract_models = list(set(abstract_models)) # remove duplicates
+        appmodels = abstract_models + appmodels
+        
+
+        for appmodel in appmodels:
+            appmodel_abstracts = [abstract_model.__name__ for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
 
             # collect all attribs of abstract superclasses
             def getBasesAbstractFields(c):
@@ -231,7 +239,7 @@ def generate_dot(app_labels, **kwargs):
             model = {
                 'app_name': appmodel.__module__.replace(".", "_"),
                 'name': appmodel.__name__,
-                'abstracts': abstracts,
+                'abstracts': appmodel_abstracts,
                 'fields': [],
                 'relations': []
             }
