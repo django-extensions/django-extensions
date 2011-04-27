@@ -42,7 +42,15 @@ class EncryptedTextField(BaseEncryptedField):
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
 
-
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.TextField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
+            
 class EncryptedCharField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
 
@@ -59,3 +67,12 @@ class EncryptedCharField(BaseEncryptedField):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.CharField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
