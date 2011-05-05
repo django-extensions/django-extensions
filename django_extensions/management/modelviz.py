@@ -178,10 +178,6 @@ def generate_dot(app_labels, **kwargs):
             else:
                 model['label'] = model['name']
 
-            # show reverse relation names
-            if hasattr(field, 'related_query_name'):
-                label += ' (%s)' % field.related_query_name()
-
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
@@ -216,6 +212,10 @@ def generate_dot(app_labels, **kwargs):
                     label = field.name
                     
                 # show related field name
+                if hasattr(field, 'related_query_name'):
+                    label += ' (%s)' % field.related_query_name()
+
+                # show reverse relation names
                 if hasattr(field, 'related_query_name'):
                     label += ' (%s)' % field.related_query_name()
 
