@@ -26,7 +26,7 @@ class BaseEncryptedField(models.Field):
         return retval
 
     def get_db_prep_value(self, value):
-        if not value.startswith(self.prefix):
+        if value and not value.startswith(self.prefix):
             value = self.prefix + self.crypt.Encrypt(value)
         return value
 
