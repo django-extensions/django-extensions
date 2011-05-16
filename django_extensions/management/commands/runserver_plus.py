@@ -16,6 +16,8 @@ class Command(BaseCommand):
             help='Tells Django to open a browser.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
             help='Specifies the directory from which to serve admin media.'),
+        make_option('--threaded', action='store_true', dest='threaded',
+            help='Run in multithreaded mode.'),
     )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
@@ -54,6 +56,7 @@ class Command(BaseCommand):
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % port)
 
+        threaded = options.get('threaded', False)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
         admin_media_path = options.get('admin_media_path', '')
@@ -75,5 +78,5 @@ class Command(BaseCommand):
                 url = "http://%s:%s/" % (addr, port)
                 webbrowser.open(url)
             run_simple(addr, int(port), DebuggedApplication(handler, True),
-                       use_reloader=use_reloader, use_debugger=True)
+                       use_reloader=use_reloader, use_debugger=True, threaded=threaded)
         inner_run()
