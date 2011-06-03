@@ -93,7 +93,7 @@ def import_job(app_name, name, when=None):
 
 def get_jobs(when=None, only_scheduled=False):
     """
-    Returns a dictionary mapping of job names together with there respective
+    Returns a dictionary mapping of job names together with their respective
     application class.
     """
     global _jobs
