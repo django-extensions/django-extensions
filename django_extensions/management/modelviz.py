@@ -206,6 +206,10 @@ def generate_dot(app_labels, **kwargs):
         })
 
         for appmodel in get_models(app):
+            # skip proxy classes drawing.
+            if hasattr(appmodel, '_meta') and appmodel._meta.proxy:
+                continue
+
             abstracts = [e.__name__ for e in appmodel.__bases__ if hasattr(e, '_meta') and e._meta.abstract]
 
             # collect all attribs of abstract superclasses
