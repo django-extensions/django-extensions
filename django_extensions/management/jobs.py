@@ -96,7 +96,6 @@ def get_jobs(when=None, only_scheduled=False):
     Returns a dictionary mapping of job names together with their respective
     application class.
     """
-    global _jobs
     # FIXME: HACK: make sure the project dir is on the path when executed as ./manage.py
     import sys
     try:
@@ -106,31 +105,30 @@ def get_jobs(when=None, only_scheduled=False):
             sys.path.append(ppath)
     except:
         pass
-    if _jobs is None:
-        _jobs = {}
-        if True:
-            from django.conf import settings
-            for app_name in settings.INSTALLED_APPS:
-                scandirs = (None, 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
-                if when:
-                    scandirs = None, when
-                for subdir in scandirs:
-                    try:
-                        path = find_job_module(app_name, subdir)
-                        for name in find_jobs(path):
-                            if (app_name, name) in _jobs:
-                                raise JobError("Duplicate job %s" % name)
-                            job = import_job(app_name, name, subdir)
-                            if only_scheduled and job.when == None:
-                                # only include jobs which are scheduled
-                                continue
-                            if when and job.when != when:
-                                # generic job not in same schedule
-                                continue
-                            _jobs[(app_name, name)] = job
-                    except ImportError:
-                        # No job module -- continue scanning
-                        pass
+    _jobs = {}
+    if True:
+        from django.conf import settings
+        for app_name in settings.INSTALLED_APPS:
+            scandirs = (None, 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
+            if when:
+                scandirs = None, when
+            for subdir in scandirs:
+                try:
+                    path = find_job_module(app_name, subdir)
+                    for name in find_jobs(path):
+                        if (app_name, name) in _jobs:
+                            raise JobError("Duplicate job %s" % name)
+                        job = import_job(app_name, name, subdir)
+                        if only_scheduled and job.when == None:
+                            # only include jobs which are scheduled
+                            continue
+                        if when and job.when != when:
+                            # generic job not in same schedule
+                            continue
+                        _jobs[(app_name, name)] = job
+                except ImportError:
+                    # No job module -- continue scanning
+                    pass
     return _jobs
 
 
