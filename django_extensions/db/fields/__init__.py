@@ -45,6 +45,7 @@ class AutoSlugField(SlugField):
             self._populate_from = populate_from
         self.separator = kwargs.pop('separator', u'-')
         self.overwrite = kwargs.pop('overwrite', False)
+        self.allow_duplicates = kwargs.pop('allow_duplicates', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -80,7 +81,7 @@ class AutoSlugField(SlugField):
             # step from its number, clean-up
             slug = self._slug_strip(getattr(model_instance, self.attname))
             next = slug.split(self.separator)[-1]
-            if next.isdigit():
+            if next.isdigit() and not self.allow_duplicates:
                 slug = self.separator.join(slug.split(self.separator)[:-1])
                 next = int(next)
             else:
@@ -93,6 +94,9 @@ class AutoSlugField(SlugField):
             slug = slug[:slug_len]
         slug = self._slug_strip(slug)
         original_slug = slug
+
+        if self.allow_duplicates:
+            return slug
 
         # exclude the current model instance from the queryset used in finding
         # the next valid slug
