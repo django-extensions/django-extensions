@@ -87,8 +87,7 @@ class Command(BaseCommand):
             if StaticFilesHandler is not None:
                 use_static_handler = options.get('use_static_handler', True)
                 insecure_serving = options.get('insecure_serving', False)
-                if (settings.DEBUG and use_static_handler or
-                        (use_static_handler and insecure_serving)):
+                if use_static_handler and (settings.DEBUG or insecure_serving) and 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
                     handler = StaticFilesHandler(handler)
             if open_browser:
                 import webbrowser
