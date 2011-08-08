@@ -202,6 +202,10 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
+                    
+                # show related field name
+                if hasattr(field, 'related_query_name'):
+                    label += ' (%s)' % field.related_query_name()
 
                 _rel = {
                     'target_app': field.rel.to.__module__.replace('.', '_'),
