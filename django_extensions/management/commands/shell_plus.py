@@ -108,15 +108,28 @@ class Command(NoArgsCommand):
                 from bpython import embed
                 embed(imported_objects)
             except ImportError:
-                # Explicitly pass an empty list as arguments, because otherwise IPython
-                # would use sys.argv from this script.
                 try:
-                    from IPython import embed
-                    embed(user_ns=imported_objects)
-                except ImportError:
-                    from IPython import Shell
-                    shell = Shell.IPShell(argv=[], user_ns=imported_objects)
+                    from IPython.core.iplib import InteractiveShell
+                    shell = InteractiveShell(user_ns=imported_objects)
                     shell.mainloop()
+                except ImportError:
+                    import IPython
+                    try:
+                        from IPython.frontend.terminal.embed import TerminalInteractiveShell
+                        shell = TerminalInteractiveShell()
+                        shell.mainloop()
+                    except ImportError:
+                        # IPython < 0.11
+                        # Explicitly pass an empty list as arguments, because otherwise
+                        # IPython would use sys.argv from this script.
+                        try:
+                            from IPython.Shell import IPShell
+                            shell = IPShell(argv=[])
+                            shell.mainloop()
+                        except ImportError:
+                            # IPython not found at all, raise ImportError
+                            raise
+
         except ImportError:
             # Using normal Python shell
             import code
