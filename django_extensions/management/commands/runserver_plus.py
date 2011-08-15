@@ -3,6 +3,10 @@ from optparse import make_option
 import os
 import sys
 
+try:
+    from django.contrib.staticfiles.handlers import StaticFilesHandler
+except ImportError, e:
+    StaticFilesHandler = None
 
 def null_technical_500_response(request, exc_type, exc_value, tb):
     raise exc_type, exc_value, tb
@@ -19,6 +23,13 @@ class Command(BaseCommand):
         make_option('--threaded', action='store_true', dest='threaded',
             help='Run in multithreaded mode.'),
     )
+    if StaticFilesHandler is not None:
+        option_list += (
+            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
+                help='Allows serving static files even if DEBUG is False.'),
+        )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
 
@@ -73,6 +84,12 @@ class Command(BaseCommand):
             print "Quit the server with %s." % quit_command
             path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
             handler = AdminMediaHandler(WSGIHandler(), path)
+            if StaticFilesHandler is not None:
+                use_static_handler = options.get('use_static_handler', True)
+                insecure_serving = options.get('insecure_serving', False)
+                if (settings.DEBUG and use_static_handler or
+                        (use_static_handler and insecure_serving)):
+                    handler = StaticFilesHandler(handler)
             if open_browser:
                 import webbrowser
                 url = "http://%s:%s/" % (addr, port)
