@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 import os
@@ -5,8 +6,9 @@ import sys
 
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
+    USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 except ImportError, e:
-    StaticFilesHandler = None
+    USE_STATICFILES = False
 
 def null_technical_500_response(request, exc_type, exc_value, tb):
     raise exc_type, exc_value, tb
@@ -23,7 +25,7 @@ class Command(BaseCommand):
         make_option('--threaded', action='store_true', dest='threaded',
             help='Run in multithreaded mode.'),
     )
-    if StaticFilesHandler is not None:
+    if USE_STATICFILES:
         option_list += (
             make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
                 help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
@@ -75,7 +77,6 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
-            from django.conf import settings
             print "Validating models..."
             self.validate(display_num_errors=True)
             print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
@@ -84,7 +85,7 @@ class Command(BaseCommand):
             print "Quit the server with %s." % quit_command
             path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
             handler = AdminMediaHandler(WSGIHandler(), path)
-            if StaticFilesHandler is not None:
+            if USE_STATICFILES:
                 use_static_handler = options.get('use_static_handler', True)
                 insecure_serving = options.get('insecure_serving', False)
                 if use_static_handler and (settings.DEBUG or insecure_serving) and 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
