@@ -61,7 +61,8 @@ class Command(BaseCommand):
     GZIP_CONTENT_TYPES = (
         'text/css',
         'application/javascript',
-        'application/x-javascript'
+        'application/x-javascript',
+        'text/javascript'
     )
 
     upload_count = 0
@@ -251,7 +252,7 @@ class Command(BaseCommand):
                 key.name = file_key
                 key.set_contents_from_string(filedata, headers, replace=True)
                 key.set_acl('public-read')
-            except boto.s3.connection.S3CreateError, e:
+            except boto.exception.S3CreateError, e:
                 print "Failed: %s" % e
             except Exception, e:
                 print e

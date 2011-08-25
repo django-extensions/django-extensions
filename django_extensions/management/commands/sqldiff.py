@@ -14,7 +14,7 @@ KNOWN ISSUES:
    carefull when using MySQL with sqldiff.
    - Booleans are reported back as Integers, so there's know way to know if
      there was a real change.
-   - Varchar sizes are reported back without unicode support so there size
+   - Varchar sizes are reported back without unicode support so their size
      may change in comparison to the real length of the varchar.
    - Some of the 'fixes' to counter these problems might create false
      positives or false negatives.
