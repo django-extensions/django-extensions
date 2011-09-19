@@ -51,13 +51,14 @@ class Command(BaseCommand):
                 del options[k]
         return options
 
-    def getConnection(self,*args,**options):
+    def getConnection(self, *args, **options):
         from django.db.utils import ConnectionHandler, DEFAULT_DB_ALIAS
         if not settings.DATABASES:
             if settings.DATABASE_ENGINE:
                 import warnings
                 warnings.warn(
-                    "settings.DATABASE_* is deprecated; use settings.DATABASES instead.",
+                    "settings.DATABASE_* is deprecated; use \
+                        settings.DATABASES instead.",
                     DeprecationWarning
                 )
 
@@ -73,7 +74,7 @@ class Command(BaseCommand):
                 'TEST_COLLATION': settings.TEST_DATABASE_COLLATION,
                 'TEST_NAME': settings.TEST_DATABASE_NAME,
             }
-        router = options.get('router',DEFAULT_DB_ALIAS)
+        router = options.get('router', DEFAULT_DB_ALIAS)
 
         connections = ConnectionHandler(settings.DATABASES)
         connection = connections[router]
@@ -104,23 +105,28 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             return
 
         if django.get_version() >= "1.2":
-            self.handle_gt_12(*args,**options)
+            self.handle_gt_12(*args, **options)
         else:
-            self.handle_lg_12(*args,**options)
+            self.handle_lg_12(*args, **options)
         if verbosity >= 2 or options.get('interactive'):
             print "Reset successful."
 
     def handle_gt_12(self, *args, **options):
-        connection = self.getConnection(*args,**options)
+        connection = self.getConnection(*args, **options)
         d_only = options['django_only']
-        drop_commands = sql.sql_flush( self.style, connection, only_django=d_only )
+        drop_commands = sql.sql_flush(
+            self.style,
+            connection,
+            only_django=d_only
+        )
         create_commands = []
         apps = get_apps()
         for app in apps:
-            create_commands.extend( sql.sql_create( app, self.style,connection ) )
-        connection.cursor().executemany( drop_commands , [] )
-        connection.cursor().executemany( create_commands , [] )
-        
+            create_commands.extend(
+                sql.sql_create(app, self.style, connection)
+            )
+        connection.cursor().executemany(drop_commands, [])
+        connection.cursor().executemany(create_commands, [])
 
     def handle_lt_12(self, *args, **options):
         """
@@ -218,4 +224,3 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
 
         else:
             raise CommandError("Unknown database engine %s" % engine)
-
