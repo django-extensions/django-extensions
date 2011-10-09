@@ -106,12 +106,12 @@ class Command(NoArgsCommand):
                 # Explicitly pass an empty list as arguments, because otherwise IPython
                 # would use sys.argv from this script.
                 try:
-                    from IPython.core.iplib import InteractiveShell
-                    shell = InteractiveShell(user_ns=imported_objects)
+                    from IPython import embed
+                    embed(user_ns=imported_objects)
                 except ImportError:
-                    import IPython
-                    shell = IPython.Shell.IPShell(argv=[], user_ns=imported_objects)
-                shell.mainloop()
+                    from IPython import Shell
+                    shell = Shell.IPShell(argv=[], user_ns=imported_objects)
+                    shell.mainloop()
         except ImportError:
             # Using normal Python shell
             import code

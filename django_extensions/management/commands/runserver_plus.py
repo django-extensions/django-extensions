@@ -1,8 +1,14 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 import os
 import sys
 
+try:
+    from django.contrib.staticfiles.handlers import StaticFilesHandler
+    USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
+except ImportError, e:
+    USE_STATICFILES = False
 
 def null_technical_500_response(request, exc_type, exc_value, tb):
     raise exc_type, exc_value, tb
@@ -16,7 +22,16 @@ class Command(BaseCommand):
             help='Tells Django to open a browser.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
             help='Specifies the directory from which to serve admin media.'),
+        make_option('--threaded', action='store_true', dest='threaded',
+            help='Run in multithreaded mode.'),
     )
+    if USE_STATICFILES:
+        option_list += (
+            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
+                help='Allows serving static files even if DEBUG is False.'),
+        )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
 
@@ -29,9 +44,7 @@ class Command(BaseCommand):
         from django.core.handlers.wsgi import WSGIHandler
         try:
             from werkzeug import run_simple, DebuggedApplication
-        except ImportError, e:
-            raise e
-        except:
+        except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/download")
 
         # usurp django's handler
@@ -54,6 +67,7 @@ class Command(BaseCommand):
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % port)
 
+        threaded = options.get('threaded', False)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
         admin_media_path = options.get('admin_media_path', '')
@@ -61,7 +75,6 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
-            from django.conf import settings
             print "Validating models..."
             self.validate(display_num_errors=True)
             print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
@@ -70,10 +83,15 @@ class Command(BaseCommand):
             print "Quit the server with %s." % quit_command
             path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
             handler = AdminMediaHandler(WSGIHandler(), path)
+            if USE_STATICFILES:
+                use_static_handler = options.get('use_static_handler', True)
+                insecure_serving = options.get('insecure_serving', False)
+                if use_static_handler and (settings.DEBUG or insecure_serving) and 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
+                    handler = StaticFilesHandler(handler)
             if open_browser:
                 import webbrowser
                 url = "http://%s:%s/" % (addr, port)
                 webbrowser.open(url)
             run_simple(addr, int(port), DebuggedApplication(handler, True),
-                       use_reloader=use_reloader, use_debugger=True)
+                       use_reloader=use_reloader, use_debugger=True, threaded=threaded)
         inner_run()
