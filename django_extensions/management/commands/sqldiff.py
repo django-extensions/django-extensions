@@ -386,7 +386,7 @@ class SQLDiff(object):
                 if not self.dense:
                     print style.NOTICE("|--+"), text
                 else:
-                    print style.NOTICE("App"), style.SQL_TABLE(app_name), style.NOTICE('Model'), style.SQL_TABLE(model_name), text
+                    print style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text
 
     def print_diff_sql(self, style):
         cur_app_label = None
