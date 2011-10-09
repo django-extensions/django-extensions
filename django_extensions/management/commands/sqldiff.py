@@ -395,22 +395,27 @@ class SQLDiff(object):
     def print_diff_sql(self, style):
         cur_app_label = None
         qn = connection.ops.quote_name
-        print style.SQL_KEYWORD("BEGIN;")
-        for app_label, model_name, diffs in self.differences:
-            if not diffs:
-                continue
-            if not self.dense and cur_app_label != app_label:
-                print style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label))
-                cur_app_label = app_label
+        has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
+        if not has_differences:
             if not self.dense:
-                print style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name))
-            for diff in diffs:
-                diff_type, diff_args = diff
-                text = self.DIFF_SQL[diff_type](style, qn, diff_args)
-                if self.dense:
-                    text = text.replace("\n\t", " ")
-                print text
-        print style.SQL_KEYWORD("COMMIT;")
+                print style.SQL_KEYWORD("-- No differences")
+        else:
+            print style.SQL_KEYWORD("BEGIN;")
+            for app_label, model_name, diffs in self.differences:
+                if not diffs:
+                    continue
+                if not self.dense and cur_app_label != app_label:
+                    print style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label))
+                    cur_app_label = app_label
+                if not self.dense:
+                    print style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name))
+                for diff in diffs:
+                    diff_type, diff_args = diff
+                    text = self.DIFF_SQL[diff_type](style, qn, diff_args)
+                    if self.dense:
+                        text = text.replace("\n\t", " ")
+                    print text
+            print style.SQL_KEYWORD("COMMIT;")
 
 
 class GenericSQLDiff(SQLDiff):
