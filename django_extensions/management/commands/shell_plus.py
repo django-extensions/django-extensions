@@ -13,6 +13,8 @@ class Command(NoArgsCommand):
             help='Tells Django to use plain Python, not IPython.'),
         make_option('--print-sql', action='store_true', default=False,
             help="Print SQL queries as they're executed"),
+        make_option('--dont-load', action='append', dest='dont_load', default=[],
+            help='Ignore autoloading of some apps/models. Can be used several times.'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -56,9 +58,12 @@ class Command(NoArgsCommand):
         # See ticket 5082.
         from django.conf import settings
         imported_objects = {'settings': settings}
-        shell_plus_settings = getattr(settings, 'SHELL_PLUS', {})
-        dont_load = shell_plus_settings.get('dont_load', [])
-        model_aliases = shell_plus_settings.get('model_aliases', {})
+
+        dont_load_cli = options.get('dont_load') # optparse will set this to [] if it doensnt exists
+        dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
+        dont_load = dont_load_cli + dont_load_conf
+
+        model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
 
         for app_mod in get_apps():
             app_models = get_models(app_mod)
