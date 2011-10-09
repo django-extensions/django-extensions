@@ -58,6 +58,7 @@ class SQLDiff(object):
     DATA_TYPES_REVERSE_OVERRIDE = {}
 
     DIFF_TYPES = [
+        'error',
         'comment',
         'table-missing-in-db',
         'field-missing-in-db',
@@ -70,6 +71,7 @@ class SQLDiff(object):
         'field-parameter-differ',
     ]
     DIFF_TEXTS = {
+        'error': 'error: %(0)s',
         'comment': 'comment: %(0)s',
         'table-missing-in-db': "table '%(0)s' missing in database",
         'field-missing-in-db': "field '%(1)s' defined in model but missing in database",
@@ -92,6 +94,7 @@ class SQLDiff(object):
     SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP'), style.SQL_KEYWORD('CONSTRAINT'), style.SQL_TABLE(qn("%s_key" % ('_'.join(args[:2])))))
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
+    SQL_ERROR = lambda self, style, qn, args: style.NOTICE('-- Error: %s' % style.ERROR(args[0]))
     SQL_COMMENT = lambda self, style, qn, args: style.NOTICE('-- Comment: %s' % style.SQL_TABLE(args[0]))
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
 
@@ -113,6 +116,7 @@ class SQLDiff(object):
         self.unknown_db_fields = {}
 
         self.DIFF_SQL = {
+            'error': self.SQL_ERROR,
             'comment': self.SQL_COMMENT,
             'table-missing-in-db': self.SQL_TABLE_MISSING_IN_DB,
             'field-missing-in-db': self.SQL_FIELD_MISSING_IN_DB,
@@ -335,7 +339,7 @@ class SQLDiff(object):
             try:
                 table_description = self.introspection.get_table_description(self.cursor, table_name)
             except Exception, e:
-                model_diffs.append((app_model.__name__, [str(e).strip()]))
+                self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
             else:
