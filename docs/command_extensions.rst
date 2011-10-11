@@ -71,9 +71,12 @@ Current Command Extensions
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
 
-* *sqldiff* - Prints the (approximated) difference between an apps models and
+* :doc:`sqldiff` - Prints the (approximated) difference between an apps models and
   what is in the database.  This is very nice, but also very experimental at
   the moment.  It can not catch everything but it's a great sanity check.
+
+* :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
+  in settings.py.
 
 * `sync_media_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the

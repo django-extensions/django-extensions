@@ -55,13 +55,11 @@ The envisioned use case is something like this:
             print "CREATE DATABASE %s;" % dbname
             print "GRANT ALL PRIVILEGES ON %s.* to '%s'@'%s' identified by '%s';" % (
                     dbname, dbuser, dbhost, dbpass)
-            
         elif engine == 'postgresql_psycopg2':
             print "CREATE USER %s WITH password '%s';" % (dbuser, dbpass)
-            print "CREATE DATABASE %s;" % dbname
-            
-            
+            print "CREATE DATABASE %s WITH OWNER %s;" % (dbname, dbuser)
+            #print "GRANT ALL PRIVILEGES ON DATABASE %s TO %s" % (dbname, dbuser)
         else:
-            raise CommandError, "I don't know how to handle %s", engine
-        
-        
+            # fallback on SQL92
+            print "CREATE DATABASE %s;" % dbname
+            print "GRANT ALL PRIVILEGES ON DATABASE %s to %s" % (dbname, dbuser)

@@ -56,6 +56,7 @@ Contents
    runserver_plus
    sync_media_s3
    sqldiff
+   sqlcreate
 
 
 Indices and tables
