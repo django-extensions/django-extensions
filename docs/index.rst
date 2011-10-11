@@ -39,10 +39,10 @@ Contents
 .. toctree::
    :maxdepth: 3
 
-   shell_plus
    admin_extensions
    command_extension_ideas
    command_extensions
+   shell_plus
    create_app
    dumpscript
    export_emails

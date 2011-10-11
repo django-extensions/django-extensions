@@ -3,6 +3,7 @@ Current Command Extensions
 
 :synopsis: Current Command Extensions
 
+* :doc:`shell_plus` - Django shell with autoloading of the apps database models
 
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
