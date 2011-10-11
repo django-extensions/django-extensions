@@ -39,6 +39,7 @@ Contents
 .. toctree::
    :maxdepth: 3
 
+   shell_plus
    admin_extensions
    command_extension_ideas
    command_extensions
@@ -49,7 +50,6 @@ Contents
    graph_models
    installation_instructions
    jobs_scheduling
-   mercurial_gateway
    model_extensions
    namespace_proposal
    runprofileserver
