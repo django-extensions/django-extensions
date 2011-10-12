@@ -3,6 +3,7 @@ from django.core.management.color import no_style
 from optparse import make_option
 import sys
 import os
+import imp
 
 try:
     set
@@ -91,21 +92,29 @@ class Command(BaseCommand):
         def my_import(mod):
             if verbosity > 1:
                 print NOTICE("Check for %s" % mod)
+            # check if module exists before importing
             try:
-                t = __import__(mod, [], [], [" "])
-                #if verbosity > 1:
-                #    print NOTICE("Found script %s ..." % mod)
-                if hasattr(t, "run"):
-                    if verbosity > 1:
-                        print NOTICE2("Found script '%s' ..." % mod)
-                    #if verbosity > 1:
-                    #    print NOTICE("found run() in %s. executing..." % mod)
-                    return t
-                else:
-                    if verbosity > 1:
-                        print ERROR2("Find script '%s' but no run() function found." % mod)
-            except ImportError:
+                path = None
+                full_path = mod.split('.')
+                for package in mod.split('.')[:-1]:
+                    module_tuple = imp.find_module(package, path)
+                    path = imp.load_module(package, *module_tuple).__path__
+                imp.find_module(mod.split('.')[-1], path)
+            except (ImportError, AttributeError):
                 return False
+
+            t = __import__(mod, [], [], [" "])
+            #if verbosity > 1:
+            #    print NOTICE("Found script %s ..." % mod)
+            if hasattr(t, "run"):
+                if verbosity > 1:
+                    print NOTICE2("Found script '%s' ..." % mod)
+                #if verbosity > 1:
+                #    print NOTICE("found run() in %s. executing..." % mod)
+                return t
+            else:
+                if verbosity > 1:
+                    print ERROR2("Find script '%s' but no run() function found." % mod)
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
