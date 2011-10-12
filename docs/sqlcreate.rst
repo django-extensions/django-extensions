@@ -38,8 +38,8 @@ MySQL
 Known Issues
 ------------
 
- * Falls back to what SQL standard if not MySQL or PostgreSQL but does not create
-   user or set password in that case. It does try to do a GRANT to the database user.
- * Missing option to create all database in a multi-db setup automatically
- * Missing options for encodings, tablespaces, etc.
+ * CREATE DATABASE is not SQL standard so might not work everywhere.
+ * When using fallback user is not created and password is not set.
+   But it does try to do a GRANT to the database user.
+ * Missing options for tablespaces, etc.
 
