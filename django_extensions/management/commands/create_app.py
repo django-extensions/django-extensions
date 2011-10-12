@@ -4,6 +4,8 @@ import django_extensions
 from django.conf import settings
 from django.db import connection
 from django.core.management.base import CommandError, LabelCommand, _make_writeable
+from django.template import Template, Context
+from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
 from optparse import make_option
 
@@ -85,6 +87,8 @@ def copy_template(app_template, copy_to, project_name, app_name):
         for i, subdir in enumerate(subdirs):
             if subdir.startswith('.'):
                 del subdirs[i]
+        replacements = {'app_name': app_name, 'project_name': project_name}
+        replacements.update(REPLACEMENTS)
         for f in files:
             if f.endswith('.pyc') or f.startswith('.DS_Store'):
                 continue
@@ -98,7 +102,7 @@ def copy_template(app_template, copy_to, project_name, app_name):
                 path_new = path_new[:-5]
             fp_old = open(path_old, 'r')
             fp_new = open(path_new, 'w')
-            fp_new.write(fp_old.read().replace('{{ app_name }}', app_name).replace('{{ project_name }}', project_name))
+            fp_new.write(Template(fp_old.read()).render(Context(replacements)))
             fp_old.close()
             fp_new.close()
             try:
