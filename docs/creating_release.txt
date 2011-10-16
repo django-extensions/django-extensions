@@ -14,7 +14,7 @@ Get a fresh copy
 
 Change version numbers in django_extensions/__init__.py and docs/conf.py
 
- $ vi django_extension/__init__.py              (1 occurance)
+ $ vi django_extensions/__init__.py              (1 occurance)
  $ vi docs/conf.py                              (2 occurances)
  $ git commit -a -m v0.4.1
 
