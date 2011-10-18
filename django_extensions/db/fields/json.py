@@ -86,10 +86,10 @@ class JSONField(models.TextField):
     def get_db_prep_save(self, value, connection):
         """Convert our JSON object to a string before we save"""
         if not isinstance(value, (list, dict)):
-            return super(JSONField, self).get_db_prep_save("", connection)
+            return super(JSONField, self).get_db_prep_save("", connection=connection)
         else:
             return super(JSONField, self).get_db_prep_save(dumps(value),
-                                                           connection)
+                                                           connection=connection)
 
     def south_field_triple(self):
         "Returns a suitable description of this field for South."
