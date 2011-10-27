@@ -37,7 +37,9 @@ class Command(NoArgsCommand):
             all = model.objects.all().iterator()
             for object in all:
                 for field in model_dict[model]:
-                    referenced.append(os.path.abspath(getattr(object, field.name).path))
+                    target_file = getattr(object, field.name)
+                    if target_file:
+                        referenced.append(os.path.abspath(target_file.path))
 
         # Print each file in MEDIA_ROOT that is not referenced in the database
         for m in media:
