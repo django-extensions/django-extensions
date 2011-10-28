@@ -16,8 +16,11 @@ class TestModel_field(models.Model):
 class TestModel_pk(models.Model):
     uuid_field = UUIDField(primary_key=True)
 
-class AgregateModel(models.Model):
+class TestAgregateModel(TestModel_pk):
     a = models.IntegerField()
+
+class TestManyToManyModel(TestModel_pk):
+    many = models.ManyToManyField(TestModel_field)
 
 class UUIDFieldTest(unittest.TestCase):
 
@@ -40,5 +43,10 @@ class UUIDFieldTest(unittest.TestCase):
         self.assertEquals(j.pk, u'550e8400-e29b-41d4-a716-446655440000')
 
     def testUUIDField_pkAgregateCreate(self):
-        j = AgregateModel.objects.create(a=6)
+        j = TestAgregateModel.objects.create(a=6)
+
+    def testUUIDFieldManyToManyCreate(self):
+        j = TestManyToManyModel.objects.create(uuid_field=u'550e8400-e29b-41d4-a716-446655440010')
+        self.assertEquals(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440010')
+        self.assertEquals(j.pk, u'550e8400-e29b-41d4-a716-446655440010')
 
