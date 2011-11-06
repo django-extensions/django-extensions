@@ -1,4 +1,5 @@
-from django.core.management.base import NoArgsCommand
+import django
+from django.core.management.base import NoArgsCommand, CommandError
 from django.conf import settings
 import sys
 
@@ -12,7 +13,8 @@ The envisioned use case is something like this:
     requires_model_validation = False
     can_import_settings = True
 
-    def set_db_settings(self, *args, **options):
+    @staticmethod
+    def set_db_settings(**options):
         if django.get_version() >= "1.2":
             router = options.get('router')
             if router == None:
@@ -34,7 +36,7 @@ The envisioned use case is something like this:
     def handle_noargs(self, **options):
 
         if django.get_version() >= "1.2":
-            got_db_settings = self.set_db_settings(*args, **options)
+            got_db_settings = self.set_db_settings(**options)
             if not got_db_settings:
                 raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
 
@@ -53,7 +55,7 @@ The envisioned use case is something like this:
         if engine == 'mysql':
             sys.stderr.write("""-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
 -- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
-""");
+""")
             print "CREATE DATABASE %s CHARACTER SET utf8 COLLATE utf8_bin;" % dbname
             print "GRANT ALL PRIVILEGES ON %s.* to '%s'@'%s' identified by '%s';" % (
                     dbname, dbuser, dbhost, dbpass)
