@@ -8,14 +8,14 @@ def main():
     # Dynamically configure the Django settings with the minimum necessary to
     # get Django running tests
     settings.configure(
-        INSTALLED_APPS=(
+        INSTALLED_APPS=[
             'django.contrib.auth',
             'django.contrib.contenttypes',
             'django.contrib.admin',
             'django.contrib.sessions',
             'django_extensions',
             'django_extensions.tests',
-        ),
+        ],
         # Django replaces this, but it still wants it. *shrugs*
         DATABASE_ENGINE = 'django.db.backends.sqlite3',
         DATABASES = {
@@ -29,10 +29,10 @@ def main():
         DEBUG = True,
 		TEMPLATE_DEBUG = True
     )
-    
+
     # Fire off the tests
     call_command('test', 'django_extensions')
-    
+
 
 if __name__ == '__main__':
     main()
