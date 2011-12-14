@@ -94,11 +94,14 @@ class Command(BaseCommand):
             help="Skip the file mtime check to force upload of all files."),
         optparse.make_option('--filter-list', dest='filter_list',
             action='store', default='',
-            help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
+            help="override default directory and file exclusion filters. (enter as comma seperated line)"),
+        optparse.make_option('--aws-bucket-name', dest='aws_bucket_name',
+            action='store', default='',
+            help="Override the settings for AWS_BUCKET_NAME."),
     )
 
     help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
-    args = 'bucket_name'
+    args = ''
 
     can_import_settings = True
 
@@ -113,13 +116,16 @@ class Command(BaseCommand):
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
 
-        if not hasattr(settings, 'AWS_BUCKET_NAME'):
+        if options.get('aws_bucket_name'):
+            self.AWS_BUCKET_NAME = options.get('aws_bucket_name')
+        elif not hasattr(settings, 'AWS_BUCKET_NAME'):
             raise CommandError('Missing bucket name from settings file. Please' +
                 ' add the AWS_BUCKET_NAME to your settings file.')
         else:
             if not settings.AWS_BUCKET_NAME:
                 raise CommandError('AWS_BUCKET_NAME cannot be empty.')
-        self.AWS_BUCKET_NAME = settings.AWS_BUCKET_NAME
+
+            self.AWS_BUCKET_NAME = settings.AWS_BUCKET_NAME
 
         if not hasattr(settings, 'MEDIA_ROOT'):
             raise CommandError('MEDIA_ROOT must be set in your settings.')
