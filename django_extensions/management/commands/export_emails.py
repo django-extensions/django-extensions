@@ -6,6 +6,7 @@ from csv import writer
 
 FORMATS = [
     'address',
+    'emails',
     'google',
     'outlook',
     'linkedin',
@@ -64,6 +65,13 @@ class Command(BaseCommand):
                              for ent in qs).encode(self.encoding))
         out.write("\n")
 
+    def emails(self, qs, out):
+        """simpler single entry with email only in the format of:
+            my@address.com,
+        """
+        out.write(u",\n".join(u'%s' % (ent['email']) for ent in qs).encode(self.encoding))
+        out.write("\n")
+        
     def google(self, qs, out):
         """CSV format suitable for importing into google GMail
         """
