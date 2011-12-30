@@ -625,6 +625,10 @@ to check/debug ur models compared to the real database tables and columns."""
 
         if not engine:
             engine = connection.__module__.split('.')[-2]
+
+        if '.' in engine:
+            engine = engine.split('.')[-1]
+
         cls = DATABASE_SQLDIFF_CLASSES.get(engine, GenericSQLDiff)
         sqldiff_instance = cls(app_models, options)
         sqldiff_instance.find_differences()
