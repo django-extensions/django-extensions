@@ -39,6 +39,8 @@ import optparse
 import os
 import sys
 import time
+import threading
+from Queue import Queue, Empty
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -88,6 +90,9 @@ class Command(BaseCommand):
         optparse.make_option('--filter-list', dest='filter_list',
             action='store', default='',
             help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
+        optparse.make_option('-t', '--threads', dest='num_threads',
+            action='store', default=5,
+            help="The number of threads to use while uploading"),
     )
 
     help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
@@ -125,6 +130,7 @@ class Command(BaseCommand):
         self.do_gzip = options.get('gzip')
         self.do_expires = options.get('expires')
         self.do_force = options.get('force')
+        self.num_threads = int(options.get('num_threads'))
         self.DIRECTORY = options.get('dir')
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
         filter_list = options.get('filter_list')
@@ -145,9 +151,20 @@ class Command(BaseCommand):
         """
         Walks the media directory and syncs files to S3
         """
-        bucket, key = self.open_s3()
-        os.path.walk(self.DIRECTORY, self.upload_s3,
-            (bucket, key, self.AWS_BUCKET_NAME, self.DIRECTORY))
+        # queue to check for what files to upload
+        self.file_queue = Queue()
+        # queue of files to upload to s3
+        self.upload_queue = Queue()
+
+        os.path.walk(self.DIRECTORY, self.check_media_dir,
+            (self.AWS_BUCKET_NAME, self.DIRECTORY))
+
+        if self.verbosity > 0:
+            print "Checking %d files..." % self.file_queue.qsize()
+        self.start_filecheck_threads()
+        if self.verbosity > 0:
+            print "Uploading %d new files..." % self.upload_queue.qsize()
+        self.start_upload_threads()
 
     def compress_string(self, s):
         """Gzip a given string."""
@@ -173,11 +190,11 @@ class Command(BaseCommand):
             bucket = conn.create_bucket(self.AWS_BUCKET_NAME)
         return bucket, boto.s3.key.Key(bucket)
 
-    def upload_s3(self, arg, dirname, names):
+    def check_media_dir(self, arg, dirname, names):
         """
         This is the callback to os.path.walk and where much of the work happens
         """
-        bucket, key, bucket_name, root_dir = arg
+        bucket_name, root_dir = arg
 
         # Skip directories we don't want to sync
         if os.path.basename(dirname) in self.FILTER_LIST:
@@ -190,77 +207,160 @@ class Command(BaseCommand):
             root_dir = root_dir + os.path.sep
 
         for file in names:
-            headers = {}
+            file_obj = {}
+            file_obj['file'] = file
+            file_obj['dirname'] = dirname
+            file_obj['root_dir'] = root_dir
+            self.file_queue.put(file_obj)
 
-            if file in self.FILTER_LIST:
-                continue  # Skip files we don't want to sync
+    def should_upload(self, file, bucket, key):
+        """
+        Checks if a file on the local file system should be uploaded to
+        S3 by comparing the last modified timestamps.
+        """
+        headers = {}
+        queue_obj = {}
 
-            filename = os.path.join(dirname, file)
-            if os.path.isdir(filename):
-                continue  # Don't try to upload directories
+        if file['file'] in self.FILTER_LIST:
+            return # Skip files we don't want to sync
 
-            file_key = filename[len(root_dir):]
-            if self.prefix:
-                file_key = '%s/%s' % (self.prefix, file_key)
+        filename = os.path.join(file['dirname'], file['file'])
+        if os.path.isdir(filename):
+            return # Don't try to upload directories
 
-            # Check if file on S3 is older than local file, if so, upload
-            if not self.do_force:
-                s3_key = bucket.get_key(file_key)
-                if s3_key:
-                    s3_datetime = datetime.datetime(*time.strptime(
-                        s3_key.last_modified, '%a, %d %b %Y %H:%M:%S %Z')[0:6])
-                    local_datetime = datetime.datetime.utcfromtimestamp(
-                        os.stat(filename).st_mtime)
-                    if local_datetime < s3_datetime:
-                        self.skip_count += 1
-                        if self.verbosity > 1:
-                            print "File %s hasn't been modified since last " \
-                                "being uploaded" % (file_key)
-                        continue
+        file_key = filename[len(file['root_dir']):]
+        if self.prefix:
+            file_key = '%s/%s' % (self.prefix, file_key)
 
-            # File is newer, let's process and upload
-            if self.verbosity > 0:
-                print "Uploading %s..." % (file_key)
-
-            content_type = mimetypes.guess_type(filename)[0]
-            if content_type:
-                headers['Content-Type'] = content_type
-            file_obj = open(filename, 'rb')
-            file_size = os.fstat(file_obj.fileno()).st_size
-            filedata = file_obj.read()
-            if self.do_gzip:
-                # Gzipping only if file is large enough (>1K is recommended)
-                # and only if file is a common text type (not a binary file)
-                if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
-                    filedata = self.compress_string(filedata)
-                    headers['Content-Encoding'] = 'gzip'
+        # Check if file on S3 is older than local file, if so, upload
+        if not self.do_force:
+            s3_key = bucket.get_key(file_key)
+            if s3_key:
+                s3_datetime = datetime.datetime(*time.strptime(
+                    s3_key.last_modified, '%a, %d %b %Y %H:%M:%S %Z')[0:6])
+                local_datetime = datetime.datetime.utcfromtimestamp(
+                    os.stat(filename).st_mtime)
+                if local_datetime < s3_datetime:
+                    self.skip_count += 1
                     if self.verbosity > 1:
-                        print "\tgzipped: %dk to %dk" % \
-                            (file_size / 1024, len(filedata) / 1024)
-            if self.do_expires:
-                # HTTP/1.0
-                headers['Expires'] = '%s GMT' % (email.Utils.formatdate(
-                    time.mktime((datetime.datetime.now() +
-                    datetime.timedelta(days=365 * 2)).timetuple())))
-                # HTTP/1.1
-                headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
-                if self.verbosity > 1:
-                    print "\texpires: %s" % (headers['Expires'])
-                    print "\tcache-control: %s" % (headers['Cache-Control'])
+                        print "File %s hasn't been modified since last " \
+                            "being uploaded" % (file_key)
+                    return
 
+        queue_obj['filename'] = filename
+        queue_obj['headers'] = headers
+        queue_obj['file_key'] = file_key
+
+        # File is newer, let's process and upload
+        self.upload_queue.put(queue_obj)
+
+    def file_worker(self):
+        """
+        Worker thread to process the file check queue.
+        """
+        bucket, key = self.open_s3()
+        while True:
             try:
-                key.name = file_key
-                key.set_contents_from_string(filedata, headers, replace=True)
-                key.set_acl('public-read')
-            except boto.exception.S3CreateError, e:
-                print "Failed: %s" % e
-            except Exception, e:
-                print e
-                raise
+                item = self.file_queue.get(False)
+            except Empty:
+                return
             else:
-                self.upload_count += 1
+                try:
+                    self.should_upload(item, bucket, key)
+                    self.file_queue.task_done()
+                except:
+                    # so this thread doesn't stall
+                    self.file_queue.task_done()
 
-            file_obj.close()
+    def start_filecheck_threads(self):
+        """
+        Starts thread to check list of files that needs to be uploaded.
+        """
+        for i in range(self.num_threads):
+            consumer = threading.Thread(target=self.file_worker)
+            consumer.start()
+
+        # block until queue is done
+        self.file_queue.join()
+
+
+    def upload_worker(self):
+        """
+        Worker thread to upload files to s3.
+        """
+        bucket, key = self.open_s3()
+        while True:
+            try:
+                item = self.upload_queue.get(False)
+            except Empty:
+                return
+            else:
+                try:
+                    self.upload_s3(item, bucket, key)
+                    self.upload_queue.task_done()
+                except:
+                    # so this thread doesn't stall
+                    self.upload_queue.task_done()
+                    return
+
+    def start_upload_threads(self):
+        """
+        Starts upload threads.
+        """
+        for i in range(self.num_threads):
+            consumer = threading.Thread(target=self.upload_worker)
+            consumer.start()
+
+        self.upload_queue.join()
+
+    def upload_s3(self, upload, bucket, key):
+        """
+        Performs upload to s3.
+        """
+
+        if self.verbosity > 0:
+            print "Uploading %s..." % (upload['file_key'])
+
+        content_type = mimetypes.guess_type(upload['filename'])[0]
+        if content_type:
+            upload['headers']['Content-Type'] = content_type
+        file_obj = open(upload['filename'], 'rb')
+        file_size = os.fstat(file_obj.fileno()).st_size
+        filedata = file_obj.read()
+        if self.do_gzip:
+            # Gzipping only if file is large enough (>1K is recommended)
+            # and only if file is a common text type (not a binary file)
+            if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
+                filedata = self.compress_string(filedata)
+                upload['headers']['Content-Encoding'] = 'gzip'
+                if self.verbosity > 1:
+                    print "\tgzipped: %dk to %dk" % \
+                        (file_size / 1024, len(filedata) / 1024)
+        if self.do_expires:
+            # HTTP/1.0
+            upload['headers']['Expires'] = '%s GMT' % (email.Utils.formatdate(
+                time.mktime((datetime.datetime.now() +
+                datetime.timedelta(days=365 * 2)).timetuple())))
+            # HTTP/1.1
+            upload['headers']['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
+            if self.verbosity > 1:
+                print "\texpires: %s" % (upload['headers']['Expires'])
+                print "\tcache-control: %s" % (upload['headers']['Cache-Control'])
+
+        try:
+            key.name = upload['file_key']
+            key.set_contents_from_string(filedata, upload['headers'], replace=True)
+            key.set_acl('public-read')
+        except boto.exception.S3CreateError, e:
+            print "Failed: %s" % e
+        except Exception, e:
+            print e
+            print "Error uploading %s" % upload['file_key']
+            raise
+        else:
+            self.upload_count += 1
+
+        file_obj.close()
 
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
