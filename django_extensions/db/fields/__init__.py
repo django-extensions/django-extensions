@@ -15,7 +15,7 @@ try:
     from django.utils.timezone import now as datetime_now
 except ImportError:
     import datetime
-    datetime_now = datetime.datetime.utcnow
+    datetime_now = datetime.datetime.now
 
 
 class AutoSlugField(SlugField):
