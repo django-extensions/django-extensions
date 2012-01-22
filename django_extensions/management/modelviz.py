@@ -283,7 +283,7 @@ def generate_dot(app_labels, **kwargs):
 
             # find primary key and print it first, ignoring implicit id if other pk exists
             pk = appmodel._meta.pk
-            if pk in attributes:
+            if not appmodel._meta.abstract and pk in attributes:
                 add_attributes(pk)
             for field in attributes:
                 if skip_field(field):
