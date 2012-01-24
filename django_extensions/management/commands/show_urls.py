@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand
+from django.utils.translation import ugettext as _
+
 try:
     # 2008-05-30 admindocs found in newforms-admin brand
     from django.contrib.admindocs.views import simplify_regex

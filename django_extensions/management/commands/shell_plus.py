@@ -13,6 +13,8 @@ class Command(NoArgsCommand):
             help='Tells Django to use plain Python, not IPython.'),
         make_option('--print-sql', action='store_true', default=False,
             help="Print SQL queries as they're executed"),
+        make_option('--dont-load', action='append', dest='dont_load', default=[],
+            help='Ignore autoloading of some apps/models. Can be used several times.'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -56,18 +58,45 @@ class Command(NoArgsCommand):
         # See ticket 5082.
         from django.conf import settings
         imported_objects = {'settings': settings}
+
+        dont_load_cli = options.get('dont_load') # optparse will set this to [] if it doensnt exists
+        dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
+        dont_load = dont_load_cli + dont_load_conf
+
+        model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
+
         for app_mod in get_apps():
             app_models = get_models(app_mod)
             if not app_models:
                 continue
-            model_labels = ", ".join([model.__name__ for model in app_models])
-            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], model_labels))
+
+            app_name = app_mod.__name__.split('.')[-2]
+            if app_name in dont_load:
+                continue
+
+            app_aliases = model_aliases.get(app_name, {})
+            model_labels = []
+
             for model in app_models:
                 try:
-                    imported_objects[model.__name__] = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+                    imported_object = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
+                    model_name = model.__name__
+
+                    if "%s.%s" % (app_name, model_name) in dont_load:
+                        continue
+
+                    alias = app_aliases.get(model_name, model_name)
+                    imported_objects[alias] = imported_object
+                    if model_name == alias:
+                        model_labels.append(model_name)
+                    else:
+                        model_labels.append("%s (as %s)" % (model_name, alias))
+
                 except AttributeError, e:
-                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__.split('.')[-2], str(e)))
+                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e)))
                     continue
+            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels)))
+
         try:
             if use_plain:
                 # Don't bother loading B/IPython, because the user wants plain Python.
@@ -79,15 +108,20 @@ class Command(NoArgsCommand):
                 from bpython import embed
                 embed(imported_objects)
             except ImportError:
-                # Explicitly pass an empty list as arguments, because otherwise IPython
-                # would use sys.argv from this script.
                 try:
                     from IPython import embed
                     embed(user_ns=imported_objects)
                 except ImportError:
-                    from IPython import Shell
-                    shell = Shell.IPShell(argv=[], user_ns=imported_objects)
-                    shell.mainloop()
+                    # IPython < 0.11
+                    # Explicitly pass an empty list as arguments, because otherwise
+                    # IPython would use sys.argv from this script.
+                    try:
+                        from IPython.Shell import IPShell
+                        shell = IPShell(argv=[], user_ns=imported_objects)
+                        shell.mainloop()
+                    except ImportError:
+                        # IPython not found at all, raise ImportError
+                        raise
         except ImportError:
             # Using normal Python shell
             import code
