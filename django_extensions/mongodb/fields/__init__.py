@@ -1,25 +1,41 @@
 """
-Django Extensions additional model fields
+MongoDB model fields emulating Django Extensions' additional model fields
+
+These fields are essentially identical to existing Extensions fields, but South hooks have been removed (since mongo requires no schema migration)
+
 """
 
 from django.template.defaultfilters import slugify
-from django.db.models import DateTimeField, CharField, SlugField
+from django import forms
+from mongoengine.fields import StringField, DateTimeField
+import datetime
 import re
+from django.utils.translation import ugettext_lazy as _
 
 try:
     import uuid
 except ImportError:
     from django_extensions.utils import uuid
 
-try:
-    from django.utils.timezone import now as datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
+class SlugField(StringField):
+    description = _("String (up to %(max_length)s)")
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = kwargs.get('max_length', 50)
+        # Set db_index=True unless it's been set manually.
+        if 'db_index' not in kwargs:
+            kwargs['db_index'] = True
+        super(SlugField, self).__init__(*args, **kwargs)
 
+    def get_internal_type(self):
+        return "SlugField"
 
+    def formfield(self, **kwargs):
+        defaults = {'form_class': forms.SlugField}
+        defaults.update(kwargs)
+        return super(SlugField, self).formfield(**defaults)
+    
 class AutoSlugField(SlugField):
-    """ AutoSlugField
+    """ AutoSlugField, adapted for MongoDB
 
     By default, sets editable=False, blank=True.
 
@@ -48,9 +64,8 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
-        self.separator = kwargs.pop('separator', u'-')
+        self.separator = kwargs.pop('separator',  u'-')
         self.overwrite = kwargs.pop('overwrite', False)
-        self.allow_duplicates = kwargs.pop('allow_duplicates', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -66,9 +81,7 @@ class AutoSlugField(SlugField):
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
     def slugify_func(self, content):
-        if content:
-            return slugify(content)
-        return ''
+        return slugify(content)
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
@@ -86,7 +99,7 @@ class AutoSlugField(SlugField):
             # step from its number, clean-up
             slug = self._slug_strip(getattr(model_instance, self.attname))
             next = slug.split(self.separator)[-1]
-            if next.isdigit() and not self.allow_duplicates:
+            if next.isdigit():
                 slug = self.separator.join(slug.split(self.separator)[:-1])
                 next = int(next)
             else:
@@ -99,9 +112,6 @@ class AutoSlugField(SlugField):
             slug = slug[:slug_len]
         slug = self._slug_strip(slug)
         original_slug = slug
-
-        if self.allow_duplicates:
-            return slug
 
         # exclude the current model instance from the queryset used in finding
         # the next valid slug
@@ -123,8 +133,8 @@ class AutoSlugField(SlugField):
             slug = original_slug
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
-            if slug_len and len(slug) + end_len > slug_len:
-                slug = slug[:slug_len - end_len]
+            if slug_len and len(slug)+end_len > slug_len:
+                slug = slug[:slug_len-end_len]
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
             kwargs[self.attname] = slug
@@ -139,22 +149,6 @@ class AutoSlugField(SlugField):
     def get_internal_type(self):
         return "SlugField"
 
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = '%s.AutoSlugField' % self.__module__
-        args, kwargs = introspector(self)
-        kwargs.update({
-            'populate_from': repr(self._populate_from),
-            'separator': repr(self.separator),
-            'overwrite': repr(self.overwrite),
-            'allow_duplicates': repr(self.allow_duplicates),
-        })
-        # That's our definition!
-        return (field_class, args, kwargs)
-
-
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
 
@@ -162,23 +156,12 @@ class CreationDateTimeField(DateTimeField):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('editable', False)
-        kwargs.setdefault('blank', True)
-        kwargs.setdefault('default', datetime_now)
+        kwargs.setdefault('default', datetime.datetime.now)
         DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
         return "DateTimeField"
-
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect ourselves, since we inherit.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.DateTimeField"
-        args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
-
-
+    
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField
 
@@ -188,27 +171,17 @@ class ModificationDateTimeField(CreationDateTimeField):
     """
 
     def pre_save(self, model, add):
-        value = datetime_now()
+        value = datetime.datetime.now()
         setattr(model, self.attname, value)
         return value
 
     def get_internal_type(self):
         return "DateTimeField"
-
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect ourselves, since we inherit.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.DateTimeField"
-        args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
-
-
+    
 class UUIDVersionError(Exception):
     pass
 
-
-class UUIDField(CharField):
+class UUIDField(StringField):
     """ UUIDField
 
     By default uses UUID version 1 (generate from host ID, sequence number and current time)
@@ -219,25 +192,20 @@ class UUIDField(CharField):
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
         kwargs['max_length'] = 36
-        if auto:
-            kwargs['blank'] = True
-            kwargs.setdefault('editable', False)
         self.auto = auto
         self.version = version
-        if version == 1:
+        if version==1:
             self.node, self.clock_seq = node, clock_seq
-        elif version == 3 or version == 5:
+        elif version==3 or version==5:
             self.namespace, self.name = namespace, name
-        CharField.__init__(self, verbose_name, name, **kwargs)
+        StringField.__init__(self, verbose_name, name, **kwargs)
 
     def get_internal_type(self):
-        return CharField.__name__
+        return StringField.__name__
 
     def contribute_to_class(self, cls, name):
-        if self.primary_key:
-            assert not cls._meta.has_auto_field, \
-              "A model can't have more than one AutoField: %s %s %s; have %s" % \
-               (self, cls, name, cls._meta.auto_field)
+        if self.primary_key: 
+            assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (self,cls,name,cls._meta.auto_field)
             super(UUIDField, self).contribute_to_class(cls, name)
             cls._meta.has_auto_field = True
             cls._meta.auto_field = self
@@ -245,36 +213,27 @@ class UUIDField(CharField):
             super(UUIDField, self).contribute_to_class(cls, name)
 
     def create_uuid(self):
-        if not self.version or self.version == 4:
+        if not self.version or self.version==4:
             return uuid.uuid4()
-        elif self.version == 1:
+        elif self.version==1:
             return uuid.uuid1(self.node, self.clock_seq)
-        elif self.version == 2:
+        elif self.version==2:
             raise UUIDVersionError("UUID version 2 is not supported.")
-        elif self.version == 3:
+        elif self.version==3:
             return uuid.uuid3(self.namespace, self.name)
-        elif self.version == 5:
+        elif self.version==5:
             return uuid.uuid5(self.namespace, self.name)
         else:
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
 
     def pre_save(self, model_instance, add):
-        value = super(UUIDField, self).pre_save(model_instance, add)
-        if self.auto and add and value is None:
+        if self.auto and add:
             value = unicode(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:
+            value = super(UUIDField, self).pre_save(model_instance, add)
             if self.auto and not value:
                 value = unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
-
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.CharField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return (field_class, args, kwargs)

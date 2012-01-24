@@ -30,6 +30,7 @@ Improvements:
 """
 
 import sys
+import django
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
@@ -219,8 +220,9 @@ class InstanceCode(Code):
 
     def skip(self):
         """ Determine whether or not this object should be skipped.
-            If this model is a parent of a single subclassed instance, skip it.
-            The subclassed instance will create this parent instance for us.
+            If this model instance is a parent of a single subclassed
+            instance, skip it. The subclassed instance will create this
+            parent instance for us.
 
             TODO: Allow the user to force its creation?
         """
@@ -228,15 +230,60 @@ class InstanceCode(Code):
         if self.skip_me is not None:
             return self.skip_me
 
-        try:
-            # Django trunk since r7722 uses CollectedObjects instead of dict
-            from django.db.models.query import CollectedObjects
-            sub_objects = CollectedObjects()
-        except ImportError:
-            # previous versions don't have CollectedObjects
-            sub_objects = {}
-        self.instance._collect_sub_objects(sub_objects)
-        if reduce(lambda x, y: x + y, [self.model in so._meta.parents for so in sub_objects.keys()]) == 1:
+        def get_skip_version():
+            """ Return which version of the skip code should be run
+
+                Django's deletion code was refactored in r14507 which
+                was just two days before 1.3 alpha 1 (r14519)
+            """
+            if not hasattr(self, '_SKIP_VERSION'):
+                version = django.VERSION
+                # no, it isn't lisp. I swear.
+                self._SKIP_VERSION =  (
+                    version[0] > 1 or (  # django 2k... someday :)
+                        version[0] == 1 and (  # 1.x
+                            version[1] >= 4 or  # 1.4+
+                            version[1] == 3 and not (  # 1.3.x
+                                (version[3] == 'alpha' and version[1] == 0)
+                            )
+                        )
+                    )
+                ) and 2 or 1
+            return self._SKIP_VERSION
+
+        if get_skip_version() == 1:
+            try:
+                # Django trunk since r7722 uses CollectedObjects instead of dict
+                from django.db.models.query import CollectedObjects
+                sub_objects = CollectedObjects()
+            except ImportError:
+                # previous versions don't have CollectedObjects
+                sub_objects = {}
+            self.instance._collect_sub_objects(sub_objects)
+            sub_objects = sub_objects.keys()
+
+        elif get_skip_version() == 2:
+            from django.db.models.deletion import Collector
+            from django.db import router
+            cls = self.instance.__class__
+            using = router.db_for_write(cls, instance=self.instance)
+            collector = Collector(using=using)
+            collector.collect([self.instance])
+
+            # collector stores its instances in two places. I *think* we
+            # only need collector.data, but using the batches is needed
+            # to perfectly emulate the old behaviour
+            # TODO: check if batches are really needed. If not, remove them.
+            sub_objects = sum([list(i) for i in collector.data.values()], [])
+
+            for batch in collector.batches.values():
+                # batch.values can be sets, which must be converted to lists
+                sub_objects += sum([list(i) for i in batch.values()], [])
+
+        sub_objects_parents = [so._meta.parents for so in sub_objects]
+        if [self.model in p for p in sub_objects_parents].count(True) == 1:
+            # since this instance isn't explicitly created, it's variable name
+            # can't be referenced in the script, so record None in context dict
             pk_name = self.instance._meta.pk.name
             key = '%s_%s' % (self.model.__name__, getattr(self.instance, pk_name))
             self.context[key] = None

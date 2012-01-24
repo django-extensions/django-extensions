@@ -1,14 +1,15 @@
 """
-Django Extensions abstract base model classes.
+Django Extensions abstract base mongoengine Document classes.
 """
 import datetime
-from django.db import models
+from mongoengine.document import Document
+from mongoengine.fields import StringField, IntField, DateTimeField
+from mongoengine.queryset import QuerySetManager
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.db.fields import (ModificationDateTimeField,
+from django_extensions.mongodb.fields import (ModificationDateTimeField,
                                          CreationDateTimeField, AutoSlugField)
 
-
-class TimeStampedModel(models.Model):
+class TimeStampedModel(Document):
     """ TimeStampedModel
     An abstract base class model that provides self-managed "created" and
     "modified" fields.
@@ -17,56 +18,49 @@ class TimeStampedModel(models.Model):
     modified = ModificationDateTimeField(_('modified'))
 
     class Meta:
-        get_latest_by = 'modified'
-        ordering = ('-modified', '-created',)
         abstract = True
 
-
-class TitleSlugDescriptionModel(models.Model):
+class TitleSlugDescriptionModel(Document):
     """ TitleSlugDescriptionModel
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
-    title = models.CharField(_('title'), max_length=255)
+    title = StringField(_('title'), max_length=255)
     slug = AutoSlugField(_('slug'), populate_from='title')
-    description = models.TextField(_('description'), blank=True, null=True)
+    description = StringField(_('description'), blank=True, null=True)
 
     class Meta:
         abstract = True
 
-
-class ActivatorModelManager(models.Manager):
+class ActivatorModelManager(QuerySetManager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
     def active(self):
         """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
-        return self.get_query_set().filter(status=ActivatorModel.ACTIVE_STATUS)
+        return super(ActivatorModelManager, self).get_query_set().filter(status=1)
 
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
-        return self.get_query_set().filter(status=ActivatorModel.INACTIVE_STATUS)
+        return super(ActivatorModelManager, self).get_query_set().filter(status=0)
 
-
-class ActivatorModel(models.Model):
+class ActivatorModel(Document):
     """ ActivatorModel
     An abstract base class model that provides activate and deactivate fields.
     """
-    INACTIVE_STATUS, ACTIVE_STATUS = range(2)
     STATUS_CHOICES = (
-        (INACTIVE_STATUS, _('Inactive')),
-        (ACTIVE_STATUS, _('Active')),
+        (0, _('Inactive')),
+        (1, _('Active')),
     )
-    status = models.IntegerField(_('status'), choices=STATUS_CHOICES,
-        default=ACTIVE_STATUS)
-    activate_date = models.DateTimeField(blank=True, null=True,
+    status = IntField(_('status'), choices=STATUS_CHOICES,
+        default=1)
+    activate_date = DateTimeField(blank=True, null=True,
         help_text=_('keep empty for an immediate activation'))
-    deactivate_date = models.DateTimeField(blank=True, null=True,
+    deactivate_date = DateTimeField(blank=True, null=True,
         help_text=_('keep empty for indefinite activation'))
     objects = ActivatorModelManager()
 
     class Meta:
-        ordering = ('status', '-activate_date',)
         abstract = True
 
     def save(self, *args, **kwargs):

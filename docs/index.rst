@@ -42,6 +42,7 @@ Contents
    admin_extensions
    command_extension_ideas
    command_extensions
+   shell_plus
    create_app
    dumpscript
    export_emails
@@ -49,13 +50,13 @@ Contents
    graph_models
    installation_instructions
    jobs_scheduling
-   mercurial_gateway
    model_extensions
    namespace_proposal
    runprofileserver
    runserver_plus
    sync_media_s3
    sqldiff
+   sqlcreate
 
 
 Indices and tables

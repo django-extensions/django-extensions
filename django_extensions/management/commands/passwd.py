@@ -35,4 +35,4 @@ class Command(BaseCommand):
         u.set_password(p1)
         u.save()
 
-        return "Password changed successfully for user", u.username
+        return "Password changed successfully for user %s\n" % u.username
