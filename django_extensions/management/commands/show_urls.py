@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
+from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.core.management.base import BaseCommand
 from django.utils.translation import ugettext as _
+from optparse import make_option
 
 try:
     # 2008-05-30 admindocs found in newforms-admin brand
@@ -22,12 +24,23 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
     """
     views = []
     for p in urlpatterns:
-        if hasattr(p, '_get_callback'):
+        if isinstance(p, RegexURLPattern):
+            try:
+                views.append((p.callback, base + p.regex.pattern, p.name))
+            except ViewDoesNotExist:
+                continue
+        elif isinstance(p, RegexURLResolver):
+            try:
+                patterns = p.url_patterns
+            except ImportError:
+                continue
+            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern))
+        elif hasattr(p, '_get_callback'):
             try:
                 views.append((p._get_callback(), base + p.regex.pattern, p.name))
             except ViewDoesNotExist:
                 continue
-        elif hasattr(p, '_get_url_patterns'):
+        elif hasattr(p, 'url_patterns') or hasattr(p, '_get_url_patterns'):
             try:
                 patterns = p.url_patterns
             except ImportError:
@@ -39,6 +52,11 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
 
 
 class Command(BaseCommand):
+    options_list = BaseCommand.option_list + (
+        make_option("--unsorted", "-u", action="store_true", dest="unsorted",
+                    help="Show urls unsorted but same order as found in url patterns"),
+    )
+
     help = "Displays all of the url matching routes for the project."
 
     requires_model_validation = True
@@ -76,4 +94,6 @@ class Command(BaseCommand):
                                        'module': style.MODULE(func.__module__),
                                        'url_name': style.URL_NAME(url_name or ''),
                                        'url': style.URL(simplify_regex(regex))})
-        return "\n".join([v for v in views])
+        if not getattr(options, 'unsorted', False):
+            views = sorted(views)
+        return "\n".join([v for v in views]) + "\n"
