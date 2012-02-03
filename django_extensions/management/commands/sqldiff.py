@@ -69,6 +69,7 @@ class SQLDiff(object):
         'unique-missing-in-model',
         'field-type-differ',
         'field-parameter-differ',
+        'notnull-differ',
     ]
     DIFF_TEXTS = {
         'error': 'error: %(0)s',
@@ -82,6 +83,7 @@ class SQLDiff(object):
         'unique-missing-in-model': "field '%(1)s' UNIQUE defined in database schema but missing in model",
         'field-type-differ': "field '%(1)s' not of same type: db='%(3)s', model='%(2)s'",
         'field-parameter-differ': "field '%(1)s' parameters differ: db='%(3)s', model='%(2)s'",
+        'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
     }
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
@@ -127,6 +129,7 @@ class SQLDiff(object):
             'unique-missing-in-model': self.SQL_UNIQUE_MISSING_IN_MODEL,
             'field-type-differ': self.SQL_FIELD_TYPE_DIFFER,
             'field-parameter-differ': self.SQL_FIELD_PARAMETER_DIFFER,
+            'notnull-differ': self.SQL_NOTNULL_DIFFER,
         }
 
     def add_app_model_marker(self, app_label, model_name):
@@ -507,14 +510,28 @@ class PostgresqlSQLDiff(SQLDiff):
     INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
     ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END,contype,nspname,relname,conname;
     """
+    SQL_LOAD_NULL = """
+    SELECT nspname, relname, attname, attnotnull
+    FROM pg_attribute
+    INNER JOIN pg_class ON attrelid=pg_class.oid
+    INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace;
+    """
 
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
+    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
     def __init__(self, app_models, options):
         SQLDiff.__init__(self, app_models, options)
         self.check_constraints = {}
+        self.null = {}
         self.load_constraints()
+        self.load_null()
+
+    def load_null(self):
+        for dct in self.sql_to_dict(self.SQL_LOAD_NULL, []):
+            key = (dct['nspname'], dct['relname'], dct['attname'])
+            self.null[key] = not dct['attnotnull']
 
     def load_constraints(self):
         for dct in self.sql_to_dict(self.SQL_LOAD_CONSTRAINTS, []):
@@ -540,6 +557,10 @@ class PostgresqlSQLDiff(SQLDiff):
                     check_constraint = '("'.join([')' in e and '" '.join(e.split(" ", 1)) or e for e in check_constraint.split("(")])
                     # TODO: might be more then one constraint in definition ?
                     db_type += ' ' + check_constraint
+                null = self.null.get((tablespace, table_name, field.attname), 'fixme')
+                if field.null != null:
+                    action = field.null and 'DROP' or 'SET'
+                    self.add_difference('notnull-differ', table_name, field.name, action)
         return db_type
 
     """
@@ -548,7 +569,7 @@ class PostgresqlSQLDiff(SQLDiff):
             if field.primary_key and db_type=='integer':
                 db_type = 'serial'
             return model_type, db_type
-        super(PostgresqlSQLDiff, self).find_field_type_differs(meta, table_description, table_name, callback)
+        super(PostgresqlSQLDiff, self).find_field_type_differ(meta, table_description, table_name, callback)
     """
 
 DATABASE_SQLDIFF_CLASSES = {
