@@ -573,6 +573,7 @@ class PostgresqlSQLDiff(SQLDiff):
     """
 
 DATABASE_SQLDIFF_CLASSES = {
+    'postgis': PostgresqlSQLDiff,
     'postgresql_psycopg2' : PostgresqlSQLDiff,
     'postgresql': PostgresqlSQLDiff,
     'mysql': MySQLDiff,
