@@ -32,25 +32,5 @@ image by using the *graph_models* command. Like used in the following examples::
   $ ./manage.py graph_models foo bar > my_project.dot
 
 
-Example Rendered Graphics
--------------------------
-
-The following graphs are from the PyCon-Tech_ project. PyCon-Tech is a
-conference management framework based on Django framework.
-
-
-Pycon-Tech Project
-------------------
-
-http://ido.nl.eu.org/static/images/pycon_no_grouping.png
-
-
-Pycon-Tech Project Overview With Grouping
------------------------------------------
-
-http://ido.nl.eu.org/static/images/pycon_grouping.png
-
-
 .. _GraphViz: http://www.graphviz.org/
 .. _pygraphviz: https://networkx.lanl.gov/wiki/pygraphviz
-.. _PyCon-Tech: https://pycon.coderanger.net/
