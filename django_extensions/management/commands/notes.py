@@ -3,10 +3,11 @@ from django.conf import settings
 import os
 import re
 
-ANNOTATION_RE = re.compile("#[\s]*?(TODO|FIXME|HACK|XXX)[\s:]?(.+)")
+ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|HACK|XXX)[\s:]?(.+)")
+ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")
 
 class Command(BaseCommand):
-    help = 'Show all annotations like TODO, FIXME, HACK or XXX in your py files.'
+    help = 'Show all annotations like TODO, FIXME, HACK or XXX in your py and HTML files.'
     args = 'tag'
     label = 'annotation tag (TODO, FIXME, HACK, XXX)'
 
@@ -17,7 +18,7 @@ class Command(BaseCommand):
         for app_dir in apps:
             for top, dirs, files in os.walk(app_dir):
                 for f in files:
-                    if os.path.splitext(f)[1] in ['.py']:
+                    if os.path.splitext(f)[1] in ['.py','.html']:
                         fpath = os.path.join(top, f)
                         annotation_lines = []
                         with open(fpath, 'r') as f:
@@ -30,6 +31,10 @@ class Command(BaseCommand):
                                         search_for_tag = args[0].upper()
                                         if not search_for_tag == tag:
                                             break
+
+                                    if ANNOTATION_END_RE.search(msg.strip()):
+                                        msg = ANNOTATION_END_RE.findall(msg.strip())[0][0]
+
                                     annotation_lines.append("[%3s] %-5s %s" % (i, tag, msg.strip()))
                             if annotation_lines:
                                 print fpath+":"
