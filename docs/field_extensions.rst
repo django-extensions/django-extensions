@@ -11,6 +11,24 @@ Current Database Model Field Extensions
   incrementing an appended number on the slug until it is unique. Inspired by
   SmileyChris' Unique Slugify snippet.
 
+* *RandomCharField* - AutoRandomCharField will automatically create a
+  unique random character field with the specified length. By default
+  upper/lower case and digits are included as possible characters. Given
+  a length of 8 thats yields 3.4 million possible combinations. A 12
+  character field would yield about 2 billion. Below are some examples::
+
+    >>> RandomCharField(length=8)
+    BVm9GEaE
+
+    >>> RandomCharField(length=4, include_alpha=False)
+    7097
+
+    >>> RandomCharField(length=12, include_punctuation=True)
+    k[ZS.TR,0LHO
+
+    >>> RandomCharField(length=12, lower=True, include_digits=False)
+    pzolbemetmok
+
 * *CreationDateTimeField* - DateTimeField that will automatically set its date
   when the object is first saved to the database. Works in the same way as the
   auto_now_add keyword.
