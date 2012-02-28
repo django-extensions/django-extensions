@@ -28,6 +28,10 @@ class MinutelyJob(BaseJob):
     when = "minutely"
 
 
+class QuarterHourlyJob(BaseJob):
+    when = "quarter_hourly"
+
+
 class HourlyJob(BaseJob):
     when = "hourly"
 
@@ -109,7 +113,7 @@ def get_jobs(when=None, only_scheduled=False):
     if True:
         from django.conf import settings
         for app_name in settings.INSTALLED_APPS:
-            scandirs = (None, 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
+            scandirs = (None, 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
             if when:
                 scandirs = None, when
             for subdir in scandirs:
