@@ -3,10 +3,11 @@ import re
 import django_extensions
 from django.conf import settings
 from django.db import connection
-from django.core.management.base import CommandError, LabelCommand, _make_writeable
+from django.core.management.base import CommandError, LabelCommand
 from django.template import Template, Context
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
+from django_extensions.management.utils import _make_writeable
 from optparse import make_option
 
 
