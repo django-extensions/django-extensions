@@ -1,6 +1,7 @@
 import os
 import sys
-from django.core.management.base import CommandError, AppCommand, _make_writeable
+from django.core.management.base import CommandError, AppCommand
+from django_extensions.management.utils import _make_writeable
 
 
 class Command(AppCommand):
