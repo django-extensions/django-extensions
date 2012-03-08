@@ -197,8 +197,14 @@ class Command(BaseCommand):
             print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
             print "Development server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
+            path = admin_media_path
+            if not path:
+                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
+                if os.path.isdir(admin_media_path):
+                    path = admin_media_path
+                else:
+                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
             try:
-                path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
                 handler = make_profiler_handler(AdminMediaHandler(WSGIHandler(), path))
                 run(addr, int(port), handler)
             except WSGIServerException, e:
