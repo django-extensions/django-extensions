@@ -81,7 +81,13 @@ class Command(BaseCommand):
             print "Development server is running at http://%s:%s/" % (addr, port)
             print "Using the Werkzeug debugger (http://werkzeug.pocoo.org/)"
             print "Quit the server with %s." % quit_command
-            path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
+            path = admin_media_path
+            if not path:
+                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
+                if os.path.isdir(admin_media_path):
+                    path = admin_media_path
+                else:
+                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
             handler = AdminMediaHandler(WSGIHandler(), path)
             if USE_STATICFILES:
                 use_static_handler = options.get('use_static_handler', True)
