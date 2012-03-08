@@ -130,7 +130,7 @@ class Command(BaseCommand):
         self.verbosity = int(options.get('verbosity'))
         self.prefix = options.get('prefix')
         self.do_gzip = options.get('gzip')
-        self.rename_gzip=options.get('renamegzip')
+        self.rename_gzip = options.get('renamegzip')
         self.do_expires = options.get('expires')
         self.do_force = options.get('force')
         self.DIRECTORY = options.get('dir')
@@ -243,7 +243,7 @@ class Command(BaseCommand):
                     filedata = self.compress_string(filedata)
                     if self.rename_gzip: 
                         #If rename_gzip is True, then rename the file by appending '.gz' to original filename
-                        file_key+='.gz'
+                        file_key = '%s.gz' % (file_key)
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
                         print "\tgzipped: %dk to %dk" % \
