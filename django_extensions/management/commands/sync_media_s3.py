@@ -233,6 +233,7 @@ class Command(BaseCommand):
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)
+                    filename+='.gz'
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
                         print "\tgzipped: %dk to %dk" % \
