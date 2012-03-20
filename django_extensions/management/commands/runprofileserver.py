@@ -15,6 +15,15 @@ from datetime import datetime
 import os
 import sys
 
+try:
+    any
+except NameError:
+    # backwards compatibility for <2.5
+    def any(iterable):
+        for element in iterable:
+            if element:
+                return True
+        return False
 
 def label(code):
     if isinstance(code, str):
@@ -160,13 +169,25 @@ class Command(BaseCommand):
             if USE_LSPROF and not USE_CPROFILE:
                 raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
             prof_path = options.get('prof_path', '/tmp')
+            def get_exclude_paths():
+                exclude_paths = []
+                media_url = getattr(settings, 'MEDIA_URL', None)
+                if media_url:
+                    exclude_paths.append(media_url)
+                static_url = getattr(settings, 'STATIC_URL', None)
+                if static_url:
+                    exclude_paths.append(static_url)
+                admin_media_prefix = getattr(settings, 'ADMIN_MEDIA_PREFIX', None)
+                if admin_media_prefix:
+                    exclude_paths.append(admin_media_prefix)
+                return exclude_paths
+
             def make_profiler_handler(inner_handler):
                 def handler(environ, start_response):
                     path_info = environ['PATH_INFO']
-                    # normally /media/ is MEDIA_URL, but in case still check it in case it's differently
-                    # should be hardly a penalty since it's an OR expression.
-                    # TODO: fix this to check the configuration settings and not make assumpsions about where media are on the url
-                    if no_media and (path_info.startswith('/media') or path_info.startswith(settings.MEDIA_URL)):
+                    # when using something like a dynamic site middleware is could be necessary
+                    # to refetch the exclude_paths every time since they could change per site.
+                    if no_media and any(path_info.startswith(p) for p in get_exclude_paths()):
                         return inner_handler(environ, start_response)
                     path_name = path_info.strip("/").replace('/', '.') or "root"
                     profname = "%s.%s.prof" % (path_name, datetime.now().isoformat())
@@ -224,3 +245,4 @@ class Command(BaseCommand):
             autoreload.main(inner_run)
         else:
             inner_run()
+
