@@ -70,8 +70,6 @@ class Command(BaseCommand):
         threaded = options.get('threaded', False)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
-        admin_media_path = options.get('admin_media_path', '')
-        shutdown_message = options.get('shutdown_message', '')
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
@@ -81,7 +79,7 @@ class Command(BaseCommand):
             print "Development server is running at http://%s:%s/" % (addr, port)
             print "Using the Werkzeug debugger (http://werkzeug.pocoo.org/)"
             print "Quit the server with %s." % quit_command
-            path = admin_media_path
+            path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
                 if os.path.isdir(admin_media_path):
