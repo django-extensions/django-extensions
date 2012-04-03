@@ -62,7 +62,7 @@ class Command(BaseCommand):
     AWS_ACCESS_KEY_ID = ''
     AWS_SECRET_ACCESS_KEY = ''
     AWS_BUCKET_NAME = ''
-    DIRECTORY = ''
+    DIRECTORIES = ''
     FILTER_LIST = ['.DS_Store', '.svn', '.hg', '.git', 'Thumbs.db']
     GZIP_CONTENT_TYPES = (
         'text/css',
@@ -80,8 +80,8 @@ class Command(BaseCommand):
             default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
             help="The prefix to prepend to the path on S3."),
         optparse.make_option('-d', '--dir',
-            dest='dir', default=settings.MEDIA_ROOT,
-            help="The root directory to use instead of your MEDIA_ROOT"),
+            dest='dir',
+            help="Custom static root directory to use"),
         optparse.make_option('--gzip',
             action='store_true', dest='gzip', default=False,
             help="Enables gzipping CSS and Javascript files."),
@@ -97,6 +97,12 @@ class Command(BaseCommand):
         optparse.make_option('--filter-list', dest='filter_list',
             action='store', default='',
             help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
+        optparse.make_option('--media-only', dest='media_only',
+            action='store_true', default='',
+            help="Only MEDIA_ROOT files will be uploaded to s3"),
+        optparse.make_option('--static-only', dest='static_only',
+            action='store_true', default='',
+            help="Only STATIC_ROOT files will be uploaded to s3"),
     )
 
     help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
@@ -135,13 +141,29 @@ class Command(BaseCommand):
         self.rename_gzip = options.get('renamegzip')
         self.do_expires = options.get('expires')
         self.do_force = options.get('force')
-        self.DIRECTORY = options.get('dir')
+        self.DIRECTORIES = options.get('dir')
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
         filter_list = options.get('filter_list')
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
             self.FILTER_LIST = filter_list.split(',')
+        self.media_only = options.get('media_only')
+        self.static_only = options.get('static_only')
+
+        # Get directories
+        if self.media_only and self.static_only:
+            raise CommandError("Can't use --media-only and --static-only "
+                "together. Better not use anything...")
+        elif self.media_only:
+            self.DIRECTORIES = [settings.MEDIA_ROOT]
+        elif self.static_only:
+            self.DIRECTORIES = [settings.STATIC_ROOT]
+        elif self.DIRECTORIES:
+            self.DIRECTORIES = [self.DIRECTORIES]
+        else:
+            self.DIRECTORIES = [settings.MEDIA_ROOT, settings.STATIC_ROOT]
+
 
         # Now call the syncing method to walk the MEDIA_ROOT directory and
         # upload all files found.
@@ -153,11 +175,12 @@ class Command(BaseCommand):
 
     def sync_s3(self):
         """
-        Walks the media directory and syncs files to S3
+        Walks the media/static directories and syncs files to S3
         """
         bucket, key = self.open_s3()
-        os.path.walk(self.DIRECTORY, self.upload_s3,
-            (bucket, key, self.AWS_BUCKET_NAME, self.DIRECTORY))
+        for directory in self.DIRECTORIES:
+            os.path.walk(directory, self.upload_s3,
+                (bucket, key, self.AWS_BUCKET_NAME, directory))
 
     def compress_string(self, s):
         """Gzip a given string."""
