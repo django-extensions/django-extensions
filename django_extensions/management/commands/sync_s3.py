@@ -2,8 +2,9 @@
 Sync Media to S3
 ================
 
-Django command that scans all files in your settings.MEDIA_ROOT folder and
-uploads them to S3 with the same directory structure.
+Django command that scans all files in your settings.MEDIA_ROOT and
+settings.STATIC_ROOT folders and uploads them to S3 with the same directory
+structure.
 
 This command can optionally do the following but it is off by default:
 * gzip compress any CSS and Javascript files it finds and adds the appropriate
@@ -30,7 +31,9 @@ Command options are:
   --renamegzip          Enables renaming of gzipped files by appending '.gz.
                         to the original file name. This way your original assets
                         will not be replaced by the gzipped ones if you don't want
-                        them to be. 
+                        them to be.
+  --media-only          Only MEDIA_ROOT files will be uploaded to s3
+  --static-only          Only STATIC_ROOT files will be uploaded to s3
 
 TODO:
  * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
@@ -41,7 +44,6 @@ import email
 import mimetypes
 import optparse
 import os
-import sys
 import time
 
 from django.conf import settings
@@ -241,7 +243,7 @@ class Command(BaseCommand):
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)
-                    if self.rename_gzip: 
+                    if self.rename_gzip:
                         #If rename_gzip is True, then rename the file by appending '.gz' to original filename
                         file_key = '%s.gz' % (file_key)
                     headers['Content-Encoding'] = 'gzip'
