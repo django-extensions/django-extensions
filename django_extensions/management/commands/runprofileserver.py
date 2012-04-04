@@ -14,6 +14,7 @@ from optparse import make_option
 from datetime import datetime
 import os
 import sys
+import time
 
 try:
     any
@@ -144,7 +145,6 @@ class Command(BaseCommand):
             raise CommandError("%r is not a valid port number." % port)
 
         use_reloader = options.get('use_reloader', True)
-        admin_media_path = options.get('admin_media_path', '')
         shutdown_message = options.get('shutdown_message', '')
         no_media = options.get('no_media', False)
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
@@ -190,7 +190,7 @@ class Command(BaseCommand):
                     if no_media and any(path_info.startswith(p) for p in get_exclude_paths()):
                         return inner_handler(environ, start_response)
                     path_name = path_info.strip("/").replace('/', '.') or "root"
-                    profname = "%s.%s.prof" % (path_name, datetime.now().isoformat())
+                    profname = "%s.%d.prof" % (path_name, time.time())
                     profname = os.path.join(prof_path, profname)
                     if USE_CPROFILE:
                         prof = cProfile.Profile()
@@ -208,8 +208,10 @@ class Command(BaseCommand):
                             kg.output(file(profname, 'w'))
                         elif USE_CPROFILE:
                             prof.dump_stats(profname)
-                        profname2 = "%s.%06dms.%s.prof" % (path_name, elapms, datetime.now().isoformat())
+                        profname2 = "%s.%06dms.%d.prof" % (path_name, elapms, time.time())
                         profname2 = os.path.join(prof_path, profname2)
+                        if not USE_CPROFILE:
+                            prof.close()
                         os.rename(profname, profname2)
                 return handler
 
@@ -218,7 +220,7 @@ class Command(BaseCommand):
             print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
             print "Development server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
-            path = admin_media_path
+            path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
                 if os.path.isdir(admin_media_path):
