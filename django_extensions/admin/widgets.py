@@ -39,7 +39,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
+        #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)] This array is overwritten below, also causing bugs in this line wrt django 1.3, label_for_value takes 3 parameters 
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
