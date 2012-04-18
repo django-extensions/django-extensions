@@ -233,9 +233,10 @@ def generate_dot(app_labels, **kwargs):
                 if hasattr(field, 'related_query_name'):
                     label += ' (%s)' % field.related_query_name()
 
+                target_model = field.model if field.rel.to == 'self' else field.rel.to
                 _rel = {
-                    'target_app': field.rel.to.__module__.replace('.', '_'),
-                    'target': field.rel.to.__name__,
+                    'target_app': target_model.__module__.replace('.', '_'),
+                    'target': target_model.__name__,
                     'type': type(field).__name__,
                     'name': field.name,
                     'label': label,
