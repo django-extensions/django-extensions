@@ -133,7 +133,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
 
             database_name = options.get('dbname', 'template1')
             if options.get('dbname') == None:
-                database_name = 'template1'
+                database_name = settings.DATABASE_NAME
             conn_string = "dbname=%s" % database_name
             if settings.DATABASE_USER:
                 conn_string += " user=%s" % user
