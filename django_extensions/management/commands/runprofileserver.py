@@ -12,9 +12,16 @@ Credits for kcachegrind support taken from lsprofcalltree.py go to:
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 from datetime import datetime
+from django.conf import settings
 import os
 import sys
 import time
+
+try:
+    from django.contrib.staticfiles.handlers import StaticFilesHandler
+    USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
+except ImportError, e:
+    USE_STATICFILES = False
 
 try:
     any
@@ -118,6 +125,13 @@ class Command(BaseCommand):
         make_option('--kcachegrind', action='store_true', dest='use_lsprof', default=False,
             help='Create kcachegrind compatible lsprof files, this requires and automatically enables cProfile.'),
     )
+    if USE_STATICFILES:
+        option_list += (
+            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
+                help='Allows serving static files even if DEBUG is False.'),
+        )
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
 
@@ -128,6 +142,7 @@ class Command(BaseCommand):
         import django
         from django.core.servers.basehttp import run, AdminMediaHandler, WSGIServerException
         from django.core.handlers.wsgi import WSGIHandler
+
         if args:
             raise CommandError('Usage is runserver %s' % self.args)
         if not addrport:
@@ -150,8 +165,6 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
-            from django.conf import settings
-
             import os
             import time
             import hotshot
@@ -228,7 +241,14 @@ class Command(BaseCommand):
                 else:
                     path = os.path.join(django.__path__[0], 'contrib/admin/media')
             try:
-                handler = make_profiler_handler(AdminMediaHandler(WSGIHandler(), path))
+                handler = AdminMediaHandler(WSGIHandler(), path)
+                if USE_STATICFILES:
+                    use_static_handler = options.get('use_static_handler', True)
+                    insecure_serving = options.get('insecure_serving', False)
+                    if (use_static_handler and
+                        (settings.DEBUG or insecure_serving)):
+                        handler = StaticFilesHandler(handler)
+                handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)
             except WSGIServerException, e:
                 # Use helpful error messages instead of ugly tracebacks.
