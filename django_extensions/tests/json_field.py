@@ -28,4 +28,8 @@ class JsonFieldTest(unittest.TestCase):
     def testCharFieldCreate(self):
 
         j = TestModel.objects.create(a=6, j_field=dict(foo='bar'))
-        
+
+    def testEmptyList(self):
+        j = TestModel.objects.create(a=6, j_field=[])
+        self.assertIsInstance(j.j_field, list)
+        self.assertEquals(j.j_field, [])
