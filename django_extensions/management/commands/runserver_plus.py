@@ -45,7 +45,7 @@ class Command(BaseCommand):
         try:
             from werkzeug import run_simple, DebuggedApplication
         except ImportError:
-            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/download")
+            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
         # usurp django's handler
         from django.views import debug
