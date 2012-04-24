@@ -12,13 +12,16 @@ class DumpScriptTests(TestCase):
         self.real_stdout = sys.stdout
         sys.stdout = StringIO()
 
-        settings.INSTALLED_APPS += ('django_extensions.tests',)
+        self.original_installed_apps = settings.INSTALLED_APPS
+        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
+        settings.INSTALLED_APPS.append('django_extensions.tests')
         loading.cache.loaded = False
         call_command('syncdb', verbosity=0)
 
     def tearDown(self):
         sys.stdout = self.real_stdout
-        settings.INSTALLED_APPS.pop()
+        settings.INSTALLED_APPS.remove('django_extensions.tests')
+        settings.INSTALLED_APPS = self.original_installed_apps
         loading.cache.loaded = False
 
     def test_runs(self):
@@ -27,3 +30,4 @@ class DumpScriptTests(TestCase):
         n.save()
         call_command('dumpscript', 'tests')
         self.assertTrue('Gabriel' in sys.stdout.getvalue())
+
