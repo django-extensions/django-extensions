@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
+import warnings
 
 try:
     from keyczar import keyczar
@@ -9,6 +10,7 @@ except ImportError:
     raise ImportError('Using an encrypted field requires the Keyczar module. '
                       'You can obtain Keyczar from http://www.keyczar.org/.')
 
+class EncryptionWarning(RuntimeWarning): pass
 
 class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
@@ -17,6 +19,13 @@ class BaseEncryptedField(models.Field):
             raise ImproperlyConfigured('You must set the '
                 'ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory.')
         self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
+
+        # Encrypted size is larger than unencrypted
+        self.unencrypted_length = max_length
+        if max_length:
+            max_length = len(self.prefix) + \
+                len(self.crypt.Encrypt('x'*max_length))
+
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
@@ -28,6 +37,15 @@ class BaseEncryptedField(models.Field):
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
+
+            # Truncated encrypted content is unreadable,
+            # so truncate before encryption
+            max_length = self.unencrypted_length
+            if max_length and len(value) > max_length:
+                warnings.warn("Truncating field %s from %d to %d bytes" % \
+                    (self.name, len(value), max_length),EncryptionWarning)
+                value = value[:max_length]
+
             value = self.prefix + self.crypt.Encrypt(value)
         return value
 
