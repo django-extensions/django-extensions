@@ -75,8 +75,6 @@ class EncryptedCharField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
 
     def __init__(self, max_length=None, *args, **kwargs):
-        if max_length:
-            max_length += len(self.prefix)
         super(EncryptedCharField, self).__init__(max_length=max_length, *args, **kwargs)
 
     def get_internal_type(self):
