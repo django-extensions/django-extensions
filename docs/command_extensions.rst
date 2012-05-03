@@ -78,7 +78,7 @@ Current Command Extensions
 * :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
   in settings.py.
 
-* `sync_media_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
+* `sync_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser
   caching.
@@ -88,6 +88,6 @@ Current Command Extensions
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
 .. _`runserver_plus`: runserver_plus.html
-.. _`sync_media_s3`: sync_media_s3.html
+.. _`sync_s3`: sync_s3.html
 .. _GraphViz: http://www.graphviz.org/
 .. _Werkzeug: http://werkzeug.pocoo.org/
