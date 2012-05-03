@@ -270,8 +270,8 @@ def generate_dot(app_labels, **kwargs):
                     if (getattr(field, 'creates_table', False) or  # django 1.1.
                         (hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created)):  # django 1.2
                         add_relation(field, '[arrowhead=dot arrowtail=dot, dir=both]')
-                    elif isinstance(field, GenericRelation):
-                        add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
+                elif isinstance(field, GenericRelation):
+                    add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
             
             if inheritance:
                 # add inheritance arrows
