@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.admin.sites import site
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.utils.text import truncate_words
@@ -34,7 +35,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
 
     def __init__(self, rel, search_fields, attrs=None):
         self.search_fields = search_fields
-        super(ForeignKeySearchInput, self).__init__(rel, attrs)
+        super(ForeignKeySearchInput, self).__init__(rel, site, attrs)
 
     def render(self, name, value, attrs=None):
         if attrs is None:
