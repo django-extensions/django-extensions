@@ -83,8 +83,6 @@ class Command(NoArgsCommand):
             model_labels = []
 
             for model in app_models:
-                if not model.__module__ == app_mod.__name__:
-                    continue
                 try:
                     imported_object = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
                     model_name = model.__name__
