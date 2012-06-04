@@ -37,6 +37,7 @@ Documentation
 =============
 
 You can view documentation online at::
+
   http://packages.python.org/django-extensions/
 
 Or you can look at the docs/ directory in the repository.
