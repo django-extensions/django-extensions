@@ -24,13 +24,20 @@ If you want to install it from source, grab the git repository from github and r
  $ cd django-extensions
  $ python setup.py install
 
-For more information look
+Getting Involved
+================
+
+Open Source projects can always use more help. Fixing a problem, documenting a feature, adding translation in your language. If you have some time to spare and like to help us, here are the places to do so::
+
+  Github: https://github.com/django-extensions/django-extensions
+  Mailinglist: http://groups.google.com/group/django-extensions
+  Translations: https://www.transifex.net/projects/p/django-extensions/
 
 Documentation
 =============
 
 You can view documentation online at::
- http://packages.python.org/django-extensions/
+  http://packages.python.org/django-extensions/
 
 Or you can look at the docs/ directory in the repository.
 
