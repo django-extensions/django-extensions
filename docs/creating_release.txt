@@ -7,47 +7,52 @@ Creating a release
 How to make a new release
 -------------------------
 
-Get a fresh copy
+Get a fresh copy::
 
- $ git clone git@github.com:django-extensions/django-extensions.git
- $ cd django-extensions
+  $ git clone git@github.com:django-extensions/django-extensions.git
+  $ cd django-extensions
 
-Change version numbers in django_extensions/__init__.py and docs/conf.py
+Run tests::
 
- $ vi django_extensions/__init__.py              (1 occurance)
- $ vi docs/conf.py                              (2 occurances)
- $ git commit -a -m v0.4.1
+  $ python run_tests.py
 
-Tag it
+Change version numbers in django_extensions/__init__.py and docs/conf.py::
 
- $ git tag 0.4.1
+  $ vi django_extensions/__init__.py              (1 occurance)
+  $ vi docs/conf.py                              (2 occurances)
+  $ git commit -a -m v0.4.1
 
-Prepare the release tarball
+Tag it::
 
- $ python ./setup.py sdist
+  $ git tag 0.4.1
 
-Upload release to pypi
+Prepare the release tarball::
 
- $ python ./setup.py register
- $ python ./setup.py sdist upload -s
+  $ python ./setup.py sdist
 
-Upload new documentation to pypi
+Upload release to pypi::
 
- $ cd docs
- $ make html
- $ cd _build/html
- $ zip -r9v ../django_extensions_docs.zip *
+  $ python ./setup.py register
+  $ python ./setup.py sdist upload -s
+
+Upload new documentation to pypi::
+
+  $ cd docs
+  $ make html
+  $ cd _build/html
+  $ zip -r9v ../django_extensions_docs.zip *
 
 Now goto http://pypi.python.org, login and edit the django_extensions package.
 At the bottom of the page your can upload documentation. Click browse, select
 the zip file and hit "Upload Documentation".
 
-Bumb version number to new in-development pre version
+Bumb version number to new in-development pre version::
 
- $ vi django_extensions/__init__.py
- $ git commit -a -m 'bumped version number'
+  $ vi django_extensions/__init__.py
+  $ git commit -a -m 'bumped version number'
 
-Push changes back to github
+Push changes back to github::
 
- $ git push --tags
+  $ git push --tags
+  $ git push
 
