@@ -61,9 +61,8 @@ extensions_dir = 'django_extensions'
 
 for dirpath, dirnames, filenames in os.walk(extensions_dir):
     # Ignore dirnames that start with '.'
-    for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'):
-            del dirnames[i]
+    if os.path.basename(dirpath).startswith("."):
+        continue
     if '__init__.py' in filenames:
         packages.append('.'.join(fullsplit(dirpath)))
     elif filenames:
