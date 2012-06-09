@@ -186,12 +186,14 @@ class SQLDiff(object):
                     # backwards compatibility for before introspection refactoring (r8296)
                     reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
             except KeyError:
-                # type_code not found in data_types_reverse map
-                key = (self.differences[-1][:2], description[:2])
-                if key not in self.unknown_db_fields:
-                    self.unknown_db_fields[key] = 1
-                    self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
-                return None
+                reverse_type = self.get_field_db_type_lookup(type_code)
+                if not reverse_type:
+                    # type_code not found in data_types_reverse map
+                    key = (self.differences[-1][:2], description[:2])
+                    if key not in self.unknown_db_fields:
+                        self.unknown_db_fields[key] = 1
+                        self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
+                    return None
 
         kwargs = {}
         if isinstance(reverse_type, tuple):
@@ -220,6 +222,9 @@ class SQLDiff(object):
         else:
             field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
         return field_db_type
+
+    def get_field_db_type_lookup(self, type_code):
+        return None
 
     def strip_parameters(self, field_type):
         if field_type and field_type != 'double precision':
@@ -501,6 +506,10 @@ class PostgresqlSQLDiff(SQLDiff):
         55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
     }
 
+    DATA_TYPES_REVERSE_NAME = {
+        'hstore': 'django_hstore.hstore.DictionaryField',
+    }
+
     # Hopefully in the future we can add constraint checking and other more
     # advanced checks based on this database.
     SQL_LOAD_CONSTRAINTS = """
@@ -563,6 +572,14 @@ class PostgresqlSQLDiff(SQLDiff):
                     action = field.null and 'DROP' or 'SET'
                     self.add_difference('notnull-differ', table_name, field.name, action)
         return db_type
+
+    @transaction.autocommit
+    def get_field_db_type_lookup(self, type_code):
+        try:
+            name = self.sql_to_dict("SELECT typname FROM pg_type WHERE typelem=%s;", [type_code])[0]['typname']
+            return self.DATA_TYPES_REVERSE_NAME.get(name.strip('_'))
+        except (IndexError, KeyError):
+            pass
 
     """
     def find_field_type_differ(self, meta, table_description, table_name):
