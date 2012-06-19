@@ -32,6 +32,8 @@ class Command(BaseCommand):
                 for filename in filenames:
                     if filename.endswith(".swp"):
                         continue
+                    if filename.endswith("~"):
+                        continue
                     filepath = os.path.join(root, filename)
                     if verbosity>1:
                         print filepath
