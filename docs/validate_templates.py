@@ -1,5 +1,5 @@
-check_templates
-===============
+validate_templates
+==================
 
 :synopsis: Checks templates on syntax or compile errors.
 
@@ -21,15 +21,15 @@ Use -i (can be used multiple times) to add directories to the TEMPLATE_DIRS.
 Settings
 ========
 
-CHECK_TEMPLATES_EXTRA_TEMPLATE_DIRS
+VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use `CHECK_TEMPLATES_EXTRA_TEMPLATE_DIRS` to include a number of template dirs per default directly from the settings file.
+You can use `VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS` to include a number of template dirs per default directly from the settings file.
 This can be usefull for situations where TEMPLATE_DIRS is dynamically generated or switched in middleware or you have other template
 dirs for external applications like celery you want to check as well.
 
 How
 ===
 
- ./manage.py check_templates
+ ./manage.py validate_templates
 
