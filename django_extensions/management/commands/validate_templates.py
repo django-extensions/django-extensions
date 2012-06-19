@@ -42,7 +42,7 @@ class Command(BaseCommand):
                     except Exception, e:
                         errors += 1
                         print "%s:" % filepath
-                        print style.ERROR(str(e))
+                        print style.ERROR("%s %s" % (e.__class__.__name__, str(e)))
                         print
                         if options.get('break', False):
                             return
