@@ -1,6 +1,7 @@
 import os
+import sys
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.template import Template
 
@@ -41,10 +42,13 @@ class Command(BaseCommand):
                         tmpl = Template(open(filepath).read())
                     except Exception, e:
                         errors += 1
-                        print "%s:" % filepath
-                        print style.ERROR("%s %s" % (e.__class__.__name__, str(e)))
-                        print
                         if options.get('break', False):
-                            return
+                            raise CommandError("%s: %s %s" % (filepath, e.__class__.__name__, str(e)))
+                        else:
+                            print "%s:" % filepath
+                            print style.ERROR("%s %s" % (e.__class__.__name__, str(e)))
+                            print
+        if errors:
+            raise CommandError("%s errors found" % errors)
         print "%s errors found" % errors
 
