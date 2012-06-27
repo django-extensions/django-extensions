@@ -24,26 +24,28 @@ def import_items(import_directives):
                 print("import %s" % directive)
                 continue
             try:
-            # Try the ('module.submodule', ('classname1', 'classname2')) form
+                # Try the ('module.submodule', ('classname1', 'classname2')) form
                 for name in directive[1]:
                     imported_object = getattr(__import__(directive[0], {}, {}, name), name)
                     imported_objects[ name ] = imported_object
-                print("from {0} import {1}".format( directive[0], ', '.join(directive[1])))
-            # If it is a tuple, but the second item isn't a list, so we have something like ('module.submodule', 'classname1')
+                print("from %s import %s" % (directive[0], ', '.join(directive[1])))
+                # If it is a tuple, but the second item isn't a list, so we have something like ('module.submodule', 'classname1')
             except AttributeError, ae:
-                print(ae)
                 # Check for the special '*' to import all
                 if directive[1] == '*':
                     imported_object = __import__(directive[0], {}, {}, directive[1])
                     for k in dir(imported_object):
                         imported_objects[k] = getattr(imported_object, k)
-                    print("from {0} import *".format(directive[0]))
+                    print("from %s import *" % directive[0])
                 else:
                     imported_object = getattr(__import__(directive[0], {}, {}, directive[1]), directive[1])
                     imported_objects[ directive[1] ] = imported_object
-                    print("from {0} import {1}".format( directive[0], directive[1] ))
+                    print("from %s import %s" % (directive[0], directive[1]))
         except ImportError:
-            print("Unable to import {0}".format(directive))
+            try:
+                print("Unable to import %s" % directive)
+            except TypeError:
+                print("Unable to import %s from %s" % directive)
     return imported_objects
 
 class Command(NoArgsCommand):
