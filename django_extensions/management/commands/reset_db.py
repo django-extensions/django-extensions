@@ -113,9 +113,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 kwargs['port'] = int(settings.DATABASE_PORT)
 
             connection = Database.connect(**kwargs)
-            drop_query = 'DROP DATABASE IF EXISTS %s' % settings.DATABASE_NAME
+            drop_query = 'DROP DATABASE IF EXISTS `%s`' % settings.DATABASE_NAME
             utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
-            create_query = 'CREATE DATABASE %s %s' % (settings.DATABASE_NAME, utf8_support)
+            create_query = 'CREATE DATABASE `%s` %s' % (settings.DATABASE_NAME, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
