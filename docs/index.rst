@@ -57,6 +57,7 @@ Contents
    sync_media_s3
    sqldiff
    sqlcreate
+   validate_templates
 
 
 Indices and tables

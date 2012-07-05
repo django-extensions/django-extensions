@@ -40,7 +40,13 @@ class Command(BaseCommand):
 
     def handle(self, addrport='', *args, **options):
         import django
-        from django.core.servers.basehttp import run, AdminMediaHandler, WSGIServerException
+        from django.core.servers.basehttp import run, WSGIServerException
+        try:
+            from django.core.servers.basehttp import AdminMediaHandler
+            USE_ADMINMEDIAHANDLER = True
+        except ImportError:
+            USE_ADMINMEDIAHANDLER = False
+
         from django.core.handlers.wsgi import WSGIHandler
         try:
             from werkzeug import run_simple, DebuggedApplication
@@ -86,7 +92,9 @@ class Command(BaseCommand):
                     path = admin_media_path
                 else:
                     path = os.path.join(django.__path__[0], 'contrib/admin/media')
-            handler = AdminMediaHandler(WSGIHandler(), path)
+            handler = WSGIHandler()
+            if USE_ADMINMEDIAHANDLER:
+                handler = AdminMediaHandler(handler, path)
             if USE_STATICFILES:
                 use_static_handler = options.get('use_static_handler', True)
                 insecure_serving = options.get('insecure_serving', False)
