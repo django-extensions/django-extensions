@@ -21,10 +21,11 @@ class BaseEncryptedField(models.Field):
         self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
 
         # Encrypted size is larger than unencrypted
-        self.unencrypted_length = max_length
+        self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
             max_length = len(self.prefix) + \
                 len(self.crypt.Encrypt('x'*max_length))
+            kwargs['max_length'] = max_length
 
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
@@ -93,3 +94,4 @@ class EncryptedCharField(BaseEncryptedField):
         args, kwargs = introspector(self)
         # That's our definition!
         return (field_class, args, kwargs)
+
