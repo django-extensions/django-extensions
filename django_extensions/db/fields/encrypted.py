@@ -14,19 +14,18 @@ class EncryptionWarning(RuntimeWarning): pass
 
 class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
-    def __init__(self, *args, **kwargs):
+    def __init__(self, max_length=None, *args, **kwargs):
         if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
             raise ImproperlyConfigured('You must set the '
                 'ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory.')
         self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
-
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length
         if max_length:
             max_length = len(self.prefix) + \
                 len(self.crypt.Encrypt('x'*max_length))
 
-        super(BaseEncryptedField, self).__init__(*args, **kwargs)
+        super(BaseEncryptedField, self).__init__(max_length=max_length, *args, **kwargs)
 
     def to_python(self, value):
         if value and (value.startswith(self.prefix)):
