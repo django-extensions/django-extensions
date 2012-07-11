@@ -25,6 +25,8 @@ class BaseEncryptedField(models.Field):
         if max_length:
             max_length = len(self.prefix) + \
                 len(self.crypt.Encrypt('x'*max_length))
+            # TODO: Re-examine if this logic will actually make a large-enough
+            # max-length for unicode strings that have non-ascii characters in them.
             kwargs['max_length'] = max_length
 
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
@@ -32,13 +34,18 @@ class BaseEncryptedField(models.Field):
     def to_python(self, value):
         if value and (value.startswith(self.prefix)):
             retval = self.crypt.Decrypt(value[len(self.prefix):])
+            if retval:
+                retval = retval.decode('utf-8')
         else:
             retval = value
         return retval
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
-
+            # We need to encode a unicode string into a byte string, first.
+            # keyczar expects a bytestring, not a unicode string.
+            if type(value) == unicode:
+                value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
             # so truncate before encryption
             max_length = self.unencrypted_length
