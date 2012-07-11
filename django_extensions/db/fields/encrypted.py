@@ -34,10 +34,10 @@ class BaseEncryptedField(models.Field):
     def to_python(self, value):
         if value and (value.startswith(self.prefix)):
             retval = self.crypt.Decrypt(value[len(self.prefix):])
+            if retval:
+                retval = retval.decode('utf-8')
         else:
             retval = value
-        # This decodes any utf-8 coded characters in the byte string.
-        retval = retval.decode('utf-8')
         return retval
 
     def get_db_prep_value(self, value, connection, prepared=False):
