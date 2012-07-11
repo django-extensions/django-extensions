@@ -47,7 +47,10 @@ class Command(BaseCommand):
         except ImportError:
             USE_ADMINMEDIAHANDLER = False
 
-        from django.core.handlers.wsgi import WSGIHandler
+        try:
+            from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
+        except ImportError:
+            from django.core.handlers.wsgi import WSGIHandler
         try:
             from werkzeug import run_simple, DebuggedApplication
         except ImportError:
