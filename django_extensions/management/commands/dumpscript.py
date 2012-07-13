@@ -348,9 +348,7 @@ class InstanceCode(Code):
                     if force:
                         value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
                         #lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
-                        clean_dict = rel_item.__dict__.copy()
-                        if "_state" in clean_dict:
-                            del clean_dict["_state"]
+                        clean_dict = make_clean_dict( rel_item.__dict__ )
                         lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
                         self.many_to_many_waiting_list[field].remove(rel_item)
 
@@ -369,6 +367,8 @@ class Script(Code):
 
         self.indent = -1
         self.imports = {}
+
+        self.context["__avaliable_models"] = set(models)
 
     def get_lines(self):
         """ Returns a list of lists or strings, representing the code body.
@@ -483,9 +483,7 @@ def get_attribute_value(item, field, context, force=False):
             # Return the variable name listed in the context
             return "%s" % variable_name
         elif value.__class__ not in context["__avaliable_models"] or force:
-            clean_dict = value.__dict__.copy()
-            if "_state" in clean_dict:
-                del clean_dict["_state"]
+            clean_dict = make_clean_dict( value.__dict__ )
             return "%s.objects.get(%s=%s) ### %s --- %s" % (value._meta.object_name, pk_name, getattr(value, pk_name) , value , clean_dict)
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
@@ -493,6 +491,13 @@ def get_attribute_value(item, field, context, force=False):
     # A normal field (e.g. a python built-in)
     else:
         return repr(value)
+
+def make_clean_dict(the_dict):
+    if "_state" in the_dict:
+        clean_dict = the_dict.copy()
+        del clean_dict["_state"]
+        return clean_dict
+    return the_dict
 
 
 def queue_models(models, context):
@@ -507,8 +512,6 @@ def queue_models(models, context):
     model_queue = []
     number_remaining_models = len(models)
     allowed_cycles = MAX_CYCLES
-
-    context["__avaliable_models"] = set(models)
 
     while number_remaining_models > 0:
         previous_number_remaining_models = number_remaining_models
