@@ -268,7 +268,7 @@ class InstanceCode(Code):
             cls = self.instance.__class__
             using = router.db_for_write(cls, instance=self.instance)
             collector = Collector(using=using)
-            collector.collect([self.instance])
+            collector.collect([self.instance], collect_related=False)
 
             # collector stores its instances in two places. I *think* we
             # only need collector.data, but using the batches is needed
@@ -374,14 +374,18 @@ class Script(Code):
 
         # Queue and process the required models
         for model_class in queue_models(self.models, context=self.context):
-            sys.stderr.write('Processing model: %s\n' % model_class.model.__name__)
+            msg = 'Processing model: %s\n' % model_class.model.__name__
+            sys.stderr.write(msg)
+            code.append("    #"+msg)
             code.append(model_class.import_lines)
             code.append("")
             code.append(model_class.lines)
 
         # Process left over foreign keys from cyclic models
         for model in self.models:
-            sys.stderr.write('Re-processing model: %s\n' % model.model.__name__)
+            msg = 'Re-processing model: %s\n' % model.model.__name__
+            sys.stderr.write(msg)
+            code.append("    #"+msg)
             for instance in model.instances:
                 if instance.waiting_list or instance.many_to_many_waiting_list:
                     code.append(instance.get_lines(force=True))
@@ -475,7 +479,10 @@ def get_attribute_value(item, field, context, force=False):
             # Return the variable name listed in the context
             return "%s" % variable_name
         elif force:
-            return "%s.objects.get(%s=%s)" % (value._meta.object_name, pk_name, getattr(value, pk_name))
+            clean_dict = value.__dict__.copy()
+            if "_state" in clean_dict:
+                del clean_dict["_state"]
+            return "%s.objects.get(%s=%s) ### %s --- %s" % (value._meta.object_name, pk_name, getattr(value, pk_name) , value , clean_dict)
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
