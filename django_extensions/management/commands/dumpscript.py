@@ -347,7 +347,11 @@ class InstanceCode(Code):
                 except KeyError:
                     if force:
                         value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
-                        lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
+                        #lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
+                        clean_dict = rel_item.__dict__.copy()
+                        if "_state" in clean_dict:
+                            del clean_dict["_state"]
+                        lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
                         self.many_to_many_waiting_list[field].remove(rel_item)
 
         if lines:
@@ -503,6 +507,7 @@ def queue_models(models, context):
     model_queue = []
     number_remaining_models = len(models)
     allowed_cycles = MAX_CYCLES
+
     context["__avaliable_models"] = set(models)
 
     while number_remaining_models > 0:
@@ -511,7 +516,7 @@ def queue_models(models, context):
         model = models.pop(0)
 
         # If the model is ready to be processed, add it to the list
-        if check_dependencies(model, model_queue):
+        if check_dependencies(model, model_queue, context["__avaliable_models"]):
             model_class = ModelCode(model=model, context=context)
             model_queue.append(model_class)
 
@@ -539,14 +544,21 @@ def queue_models(models, context):
     return model_queue
 
 
-def check_dependencies(model, model_queue):
+def check_dependencies(model, model_queue, avaliable_models):
     " Check that all the depenedencies for this model are already in the queue. "
 
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
 
     # For each ForeignKey or ManyToMany field, check that a link is possible
-    for field in model._meta.fields + model._meta.many_to_many:
+
+    for field in model._meta.fields:
+        if field.rel and field.rel.to.__name__ not in allowed_links:
+            if field.rel.to not in avaliable_models:
+                continue
+            return False
+
+    for field in model._meta.many_to_many:
         if field.rel and field.rel.to.__name__ not in allowed_links:
             return False
 
