@@ -478,7 +478,7 @@ def get_attribute_value(item, field, context, force=False):
                 raise SkipValue()
             # Return the variable name listed in the context
             return "%s" % variable_name
-        elif force:
+        elif value.__class__ not in context["__avaliable_models"] or force:
             clean_dict = value.__dict__.copy()
             if "_state" in clean_dict:
                 del clean_dict["_state"]
@@ -503,6 +503,7 @@ def queue_models(models, context):
     model_queue = []
     number_remaining_models = len(models)
     allowed_cycles = MAX_CYCLES
+    context["__avaliable_models"] = set(models)
 
     while number_remaining_models > 0:
         previous_number_remaining_models = number_remaining_models
