@@ -38,6 +38,38 @@ from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
 
 
+def orm_item_locator( ormobj ):
+    """
+    This function is called every time an object that will not be exported is required.
+    Where ormobj is the referred object.
+
+    The output of this function is a string that will be used in a string similar to this:
+    xpto.objects.get(id=44)
+
+    The default behavour is to send the ID, but if you change this function
+    you could do somthing smarter like:
+    xpto.objects.get(name="john muir")
+
+    """
+    pk_name = ormobj._meta.pk.name
+    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
+    return standard
+
+    #Sample lauzy implementation of this function, but it helps one to get the idea
+
+    #the_name = None
+    #try:
+    #    the_name = getattr(ormobj, "name")
+    #except AttributeError:
+    #    pk_name = ormobj._meta.pk.name
+    #    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
+    #    return standard
+    #if the_name == "All Apps and Surveys":
+    #    the_name = "Default Staff Group"
+    #return "%s=u\"%s\"" % ( "name"  , the_name )
+
+
+
 class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
@@ -346,7 +378,8 @@ class InstanceCode(Code):
                     self.many_to_many_waiting_list[field].remove(rel_item)
                 except KeyError:
                     if force:
-                        value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
+                        item_locator=orm_item_locator( rel_item )
+                        value = "%s.objects.get(%s)" % (rel_item._meta.object_name, item_locator)
                         self.context["__extra_imports"][rel_item._meta.object_name] = rel_item.__module__
                         clean_dict = make_clean_dict( rel_item.__dict__ )
                         lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
@@ -491,7 +524,9 @@ def get_attribute_value(item, field, context, force=False):
         elif value.__class__ not in context["__avaliable_models"] or force:
             clean_dict = make_clean_dict( value.__dict__ )
             context["__extra_imports"][value._meta.object_name] = value.__module__
-            return "%s.objects.get(%s=%s) ### %s --- %s" % (value._meta.object_name, pk_name, getattr(value, pk_name) , value , clean_dict)
+
+            item_locator=orm_item_locator( value )
+            return "%s.objects.get(%s) ### %s --- %s" % (value._meta.object_name, item_locator , value , clean_dict)
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
