@@ -347,7 +347,7 @@ class InstanceCode(Code):
                 except KeyError:
                     if force:
                         value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
-                        #lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
+                        self.context["__extra_imports"][rel_item._meta.object_name] = rel_item.__module__
                         clean_dict = make_clean_dict( rel_item.__dict__ )
                         lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
                         self.many_to_many_waiting_list[field].remove(rel_item)
@@ -369,6 +369,7 @@ class Script(Code):
         self.imports = {}
 
         self.context["__avaliable_models"] = set(models)
+        self.context["__extra_imports"] = {}
 
     def get_lines(self):
         """ Returns a list of lists or strings, representing the code body.
@@ -393,6 +394,11 @@ class Script(Code):
             for instance in model.instances:
                 if instance.waiting_list or instance.many_to_many_waiting_list:
                     code.append(instance.get_lines(force=True))
+
+        code.insert(1 , "    #initial imports" )
+        code.insert(2 , "" )
+        for key, value in self.context["__extra_imports"].items():
+            code.insert(2 , "    from %s import %s" % (value, key) )
 
         return code
 
@@ -484,6 +490,7 @@ def get_attribute_value(item, field, context, force=False):
             return "%s" % variable_name
         elif value.__class__ not in context["__avaliable_models"] or force:
             clean_dict = make_clean_dict( value.__dict__ )
+            context["__extra_imports"][value._meta.object_name] = value.__module__
             return "%s.objects.get(%s=%s) ### %s --- %s" % (value._meta.object_name, pk_name, getattr(value, pk_name) , value , clean_dict)
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
