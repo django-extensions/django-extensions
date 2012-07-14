@@ -38,6 +38,38 @@ from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
 
 
+def orm_item_locator( ormobj ):
+    """
+    This function is called every time an object that will not be exported is required.
+    Where ormobj is the referred object.
+
+    The output of this function is a string that will be used in a string similar to this:
+    xpto.objects.get(id=44)
+
+    The default behavour is to send the ID, but if you change this function
+    you could do somthing smarter like:
+    xpto.objects.get(name="john muir")
+
+    """
+    pk_name = ormobj._meta.pk.name
+    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
+    return standard
+
+    #Sample lauzy implementation of this function, but it helps one to get the idea
+
+    #the_name = None
+    #try:
+    #    the_name = getattr(ormobj, "name")
+    #except AttributeError:
+    #    pk_name = ormobj._meta.pk.name
+    #    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
+    #    return standard
+    #if the_name == "All Apps and Surveys":
+    #    the_name = "Default Staff Group"
+    #return "%s=u\"%s\"" % ( "name"  , the_name )
+
+
+
 class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
@@ -268,7 +300,7 @@ class InstanceCode(Code):
             cls = self.instance.__class__
             using = router.db_for_write(cls, instance=self.instance)
             collector = Collector(using=using)
-            collector.collect([self.instance])
+            collector.collect([self.instance], collect_related=False)
 
             # collector stores its instances in two places. I *think* we
             # only need collector.data, but using the batches is needed
@@ -346,8 +378,11 @@ class InstanceCode(Code):
                     self.many_to_many_waiting_list[field].remove(rel_item)
                 except KeyError:
                     if force:
-                        value = "%s.objects.get(%s=%s)" % (rel_item._meta.object_name, pk_name, getattr(rel_item, pk_name))
-                        lines.append('%s.%s.add(%s)' % (self.variable_name, field.name, value))
+                        item_locator=orm_item_locator( rel_item )
+                        value = "%s.objects.get(%s)" % (rel_item._meta.object_name, item_locator)
+                        self.context["__extra_imports"][rel_item._meta.object_name] = rel_item.__module__
+                        clean_dict = make_clean_dict( rel_item.__dict__ )
+                        lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
                         self.many_to_many_waiting_list[field].remove(rel_item)
 
         if lines:
@@ -366,6 +401,9 @@ class Script(Code):
         self.indent = -1
         self.imports = {}
 
+        self.context["__avaliable_models"] = set(models)
+        self.context["__extra_imports"] = {}
+
     def get_lines(self):
         """ Returns a list of lists or strings, representing the code body.
             Each list is a block, each string is a statement.
@@ -374,17 +412,26 @@ class Script(Code):
 
         # Queue and process the required models
         for model_class in queue_models(self.models, context=self.context):
-            sys.stderr.write('Processing model: %s\n' % model_class.model.__name__)
+            msg = 'Processing model: %s\n' % model_class.model.__name__
+            sys.stderr.write(msg)
+            code.append("    #"+msg)
             code.append(model_class.import_lines)
             code.append("")
             code.append(model_class.lines)
 
         # Process left over foreign keys from cyclic models
         for model in self.models:
-            sys.stderr.write('Re-processing model: %s\n' % model.model.__name__)
+            msg = 'Re-processing model: %s\n' % model.model.__name__
+            sys.stderr.write(msg)
+            code.append("    #"+msg)
             for instance in model.instances:
                 if instance.waiting_list or instance.many_to_many_waiting_list:
                     code.append(instance.get_lines(force=True))
+
+        code.insert(1 , "    #initial imports" )
+        code.insert(2 , "" )
+        for key, value in self.context["__extra_imports"].items():
+            code.insert(2 , "    from %s import %s" % (value, key) )
 
         return code
 
@@ -474,14 +521,25 @@ def get_attribute_value(item, field, context, force=False):
                 raise SkipValue()
             # Return the variable name listed in the context
             return "%s" % variable_name
-        elif force:
-            return "%s.objects.get(%s=%s)" % (value._meta.object_name, pk_name, getattr(value, pk_name))
+        elif value.__class__ not in context["__avaliable_models"] or force:
+            clean_dict = make_clean_dict( value.__dict__ )
+            context["__extra_imports"][value._meta.object_name] = value.__module__
+
+            item_locator=orm_item_locator( value )
+            return "%s.objects.get(%s) ### %s --- %s" % (value._meta.object_name, item_locator , value , clean_dict)
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
     # A normal field (e.g. a python built-in)
     else:
         return repr(value)
+
+def make_clean_dict(the_dict):
+    if "_state" in the_dict:
+        clean_dict = the_dict.copy()
+        del clean_dict["_state"]
+        return clean_dict
+    return the_dict
 
 
 def queue_models(models, context):
@@ -503,7 +561,7 @@ def queue_models(models, context):
         model = models.pop(0)
 
         # If the model is ready to be processed, add it to the list
-        if check_dependencies(model, model_queue):
+        if check_dependencies(model, model_queue, context["__avaliable_models"]):
             model_class = ModelCode(model=model, context=context)
             model_queue.append(model_class)
 
@@ -531,14 +589,21 @@ def queue_models(models, context):
     return model_queue
 
 
-def check_dependencies(model, model_queue):
+def check_dependencies(model, model_queue, avaliable_models):
     " Check that all the depenedencies for this model are already in the queue. "
 
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
 
     # For each ForeignKey or ManyToMany field, check that a link is possible
-    for field in model._meta.fields + model._meta.many_to_many:
+
+    for field in model._meta.fields:
+        if field.rel and field.rel.to.__name__ not in allowed_links:
+            if field.rel.to not in avaliable_models:
+                continue
+            return False
+
+    for field in model._meta.many_to_many:
         if field.rel and field.rel.to.__name__ not in allowed_links:
             return False
 
