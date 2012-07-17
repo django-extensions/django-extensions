@@ -50,7 +50,7 @@ class Command(BaseCommand):
     def render_output(self, dotdata, **kwargs):
         try:
             import pygraphviz
-        except ImportError, e:
+        except ImportError:
             raise CommandError("You need to install pygraphviz python module")
 
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
