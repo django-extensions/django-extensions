@@ -22,7 +22,8 @@ Description:
       attribute anymore.
     * Problems may only occur if there is a new model and is now a required
       ForeignKey for an existing model. But this is easy to fix by editing the
-      populate script :)
+      populate script. Half of the job is already done as all ForeingKey
+      lookups occur though the locate_object() function in the generated script.
 
 Improvements:
     See TODOs and FIXMEs scattered throughout :-)
@@ -38,36 +39,22 @@ from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
 
 
-def orm_item_locator( ormobj ):
+def orm_item_locator(orm_obj):
     """
     This function is called every time an object that will not be exported is required.
-    Where ormobj is the referred object.
-
-    The output of this function is a string that will be used in a string similar to this:
-    xpto.objects.get(id=44)
-
-    The default behavour is to send the ID, but if you change this function
-    you could do somthing smarter like:
-    xpto.objects.get(name="john muir")
+    Where orm_obj is the referred object.
+    We postpone the lookup to locate_object() which will be run on the generated script
 
     """
-    pk_name = ormobj._meta.pk.name
-    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
-    return standard
 
-    #Sample lauzy implementation of this function, but it helps one to get the idea
+    object_name = orm_obj._meta.object_name
+    pk_name = orm_obj._meta.pk.name
+    pk_value = getattr(orm_obj, pk_name)
+    clean_dict = make_clean_dict(orm_obj.__dict__)
 
-    #the_name = None
-    #try:
-    #    the_name = getattr(ormobj, "name")
-    #except AttributeError:
-    #    pk_name = ormobj._meta.pk.name
-    #    standard = "%s=%s" % ( pk_name , getattr(ormobj, pk_name))
-    #    return standard
-    #if the_name == "All Apps and Surveys":
-    #    the_name = "Default Staff Group"
-    #return "%s=u\"%s\"" % ( "name"  , the_name )
-
+    output = """ locate_object(%s, "%s", %s, %s ) """ % (object_name, 
+            pk_name, pk_value, clean_dict)
+    return output
 
 
 class Command(BaseCommand):
@@ -378,11 +365,9 @@ class InstanceCode(Code):
                     self.many_to_many_waiting_list[field].remove(rel_item)
                 except KeyError:
                     if force:
-                        item_locator=orm_item_locator( rel_item )
-                        value = "%s.objects.get(%s)" % (rel_item._meta.object_name, item_locator)
-                        self.context["__extra_imports"][rel_item._meta.object_name] = rel_item.__module__
-                        clean_dict = make_clean_dict( rel_item.__dict__ )
-                        lines.append('%s.%s.add(%s) ### %s --- %s' % (self.variable_name, field.name, value , rel_item , clean_dict))
+                        item_locator=orm_item_locator( rel_item )                        
+                        self.context["__extra_imports"][rel_item._meta.object_name] = rel_item.__module__                        
+                        lines.append('%s.%s.add( %s )' % (self.variable_name, field.name, item_locator))
                         self.many_to_many_waiting_list[field].remove(rel_item)
 
         if lines:
@@ -428,11 +413,12 @@ class Script(Code):
                 if instance.waiting_list or instance.many_to_many_waiting_list:
                     code.append(instance.get_lines(force=True))
 
-        code.insert(1 , "    #initial imports" )
-        code.insert(2 , "" )
+        code.insert(1, "    #initial imports")
+        code.insert(2, "")
         for key, value in self.context["__extra_imports"].items():
             code.insert(2 , "    from %s import %s" % (value, key) )
-
+        code.insert(2 + len(self.context["__extra_imports"]), self.locate_object_function)
+        
         return code
 
     lines = property(get_lines)
@@ -446,6 +432,14 @@ class Script(Code):
 # This file has been automatically generated, changes may be lost if you
 # go and generate it again. It was generated with the following command:
 # %s
+#
+# to restore it, run
+# manage.py runscript module_name.this_script_name 
+#
+# example: if manage.py is at ./manage.py
+# and the script is at ./some_folder/some_script.py
+# you must make sure ./some_folder/__init__.py exists
+# and run  ./manage.py runscript some_folder.some_script
 
 import datetime
 from decimal import Decimal
@@ -454,6 +448,33 @@ from django.contrib.contenttypes.models import ContentType
 def run():
 
 """ % " ".join(sys.argv)
+
+
+    locate_object_function = """
+    def locate_object(the_class, pk_name, pk_value, obj_content):
+        #You may change this function to do specific lookup for specific objects
+        #
+        #the_class     class of the django orm's object that needs to be located
+        #pk_name       name of the primary key of the object    
+        #pk_value      value of the primary_key
+        #obj_content   content of the object which was not exported. 
+        #
+        #you should use obj_content to locate the object on the target db    
+        #
+        #example:
+        #if the_class == SurveyResultFormat or the_class == SurveyType or the_class == SurveyState:        
+        #    pk_name="name"
+        #    pk_value=obj_content[pk_name]
+        #if the_class == StaffGroup:
+        #    pk_value=8
+            
+        search_data = { pk_name: pk_value }
+        the_obj =the_class.objects.get(**search_data)
+        #print the_obj
+        return the_obj    
+
+"""
+
 
 
 # HELPER FUNCTIONS
@@ -521,12 +542,10 @@ def get_attribute_value(item, field, context, force=False):
                 raise SkipValue()
             # Return the variable name listed in the context
             return "%s" % variable_name
-        elif value.__class__ not in context["__avaliable_models"] or force:
-            clean_dict = make_clean_dict( value.__dict__ )
+        elif value.__class__ not in context["__avaliable_models"] or force:            
             context["__extra_imports"][value._meta.object_name] = value.__module__
-
             item_locator=orm_item_locator( value )
-            return "%s.objects.get(%s) ### %s --- %s" % (value._meta.object_name, item_locator , value , clean_dict)
+            return item_locator
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
