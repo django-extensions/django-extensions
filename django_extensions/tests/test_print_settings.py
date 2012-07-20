@@ -5,7 +5,7 @@ except ImportError:
 
 import subprocess
 import sys
-import unittest2 as unittest
+from django.utils import unittest
 
 
 class PrintSettingsTests(unittest.TestCase):

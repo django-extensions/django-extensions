@@ -87,8 +87,8 @@ additions for Django projects. See the project page for more information:
     packages=packages,
     cmdclass=cmdclasses,
     data_files=data_files,
-    tests_require=['Django', 'unittest2'],
-    test_suite='unittest2.collector',
+    tests_require=['Django'],
+    test_suite='run_tests.main',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',

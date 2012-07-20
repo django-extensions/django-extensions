@@ -1,6 +1,5 @@
 
-# from http://www.travisswicegood.com/2010/01/17/django-virtualenv-pip-and-fabric/
-
+import sys
 from django.conf import settings
 from django.core.management import call_command
 
@@ -8,7 +7,7 @@ def main():
     # Dynamically configure the Django settings with the minimum necessary to
     # get Django running tests
     settings.configure(
-        INSTALLED_APPS=[
+        INSTALLED_APPS = [
             'django.contrib.auth',
             'django.contrib.contenttypes',
             'django.contrib.admin',
@@ -30,8 +29,10 @@ def main():
         TEMPLATE_DEBUG = True
     )
 
-    # Fire off the tests
-    call_command('test', 'django_extensions')
+    from django.test.utils import get_runner
+    test_runner = get_runner(settings)(verbosity=2, interactive=True)
+    failures = test_runner.run_tests(['django_extensions'])
+    sys.exit(failures)
 
 
 if __name__ == '__main__':
