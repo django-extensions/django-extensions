@@ -37,6 +37,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.utils.encoding import smart_unicode, force_unicode
 from django.contrib.contenttypes.models import ContentType
+import datetime
 
 
 def orm_item_locator(orm_obj):
@@ -47,13 +48,37 @@ def orm_item_locator(orm_obj):
 
     """
 
-    object_name = orm_obj._meta.object_name
+    the_class = orm_obj._meta.object_name
+    original_class = the_class
     pk_name = orm_obj._meta.pk.name
+    original_pk_name = pk_name
     pk_value = getattr(orm_obj, pk_name)
+
+    while hasattr(pk_value,"_meta" ) \
+        and hasattr( pk_value._meta , "pk" ) \
+        and hasattr( pk_value._meta.pk , "name" ):
+
+        the_class=pk_value._meta.object_name
+        pk_name=pk_value._meta.pk.name
+        pk_value=getattr(pk_value, pk_name)
+
     clean_dict = make_clean_dict(orm_obj.__dict__)
 
-    output = """ locate_object(%s, "%s", %s, %s ) """ % (object_name, 
-            pk_name, pk_value, clean_dict)
+    for key in clean_dict:
+        v = clean_dict[key]
+        if  v != None and \
+            not isinstance(v , str ) and \
+            not isinstance(v , unicode ) and \
+            not isinstance(v , int ) and \
+            not isinstance(v , long ) and \
+            not isinstance(v , float ) and \
+            not isinstance(v , datetime.datetime ) :
+
+            clean_dict[key]=u"%s" % v
+
+    output = """ locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
+            original_class, original_pk_name,
+            the_class, pk_name, pk_value, clean_dict)
     return output
 
 
@@ -449,17 +474,23 @@ def run():
 
 """ % " ".join(sys.argv)
 
-
     locate_object_function = """
-    def locate_object(the_class, pk_name, pk_value, obj_content):
+    def locate_object(original_class, original_pk_name, the_class, pk_name, pk_value, obj_content):
         #You may change this function to do specific lookup for specific objects
         #
-        #the_class     class of the django orm's object that needs to be located
-        #pk_name       name of the primary key of the object    
-        #pk_value      value of the primary_key
-        #obj_content   content of the object which was not exported. 
+        #original_class class of the django orm's object that needs to be located
+        #original_pk_name the primary key of original_class
+        #the_class      parent class of original_class which contains obj_content
+        #pk_name        the primary key of original_class
+        #pk_value       value of the primary_key
+        #obj_content    content of the object which was not exported.
         #
         #you should use obj_content to locate the object on the target db    
+        #
+        #and example where original_class and the_class are different is
+        #when original_class is Farmer and
+        #the_class is Person. The table may refer to a Farmer but you will actually
+        #need to locate Person in order to instantiate that Farmer
         #
         #example:
         #if the_class == SurveyResultFormat or the_class == SurveyType or the_class == SurveyState:        
