@@ -30,6 +30,6 @@ class JsonFieldTest(unittest.TestCase):
 
     def testEmptyList(self):
         j = TestModel.objects.create(a=6, j_field=[])
-        self.assertIsInstance(j.j_field, list)
+        self.assertTrue(isinstance(j.j_field, list))
         self.assertEquals(j.j_field, [])
 
