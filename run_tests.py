@@ -27,7 +27,7 @@ def main():
         MEDIA_PATH = '/media/',
         ROOT_URLCONF = 'django_extensions.tests.urls',
         DEBUG = True,
-		TEMPLATE_DEBUG = True
+        TEMPLATE_DEBUG = True
     )
 
     # Fire off the tests
