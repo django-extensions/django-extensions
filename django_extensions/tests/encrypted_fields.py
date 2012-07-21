@@ -10,7 +10,7 @@ try:
     from keyczar import keyczar, keyczart, keyinfo
     from django_extensions.tests.models import Secret
     from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField
-    keyczar_active = True
+    keyczar_active = hasattr(settings, "ENCRYPTED_FIELD_KEYS_DIR")
 except ImportError:
     keyczar_active = False
 
