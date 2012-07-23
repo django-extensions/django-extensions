@@ -16,6 +16,8 @@ class Command(NoArgsCommand):
             help="Print SQL queries as they're executed"),
         make_option('--dont-load', action='append', dest='dont_load', default=[],
             help='Ignore autoloading of some apps/models. Can be used several times.'),
+        make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
+            help='Do not display loaded models messages'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -67,6 +69,7 @@ class Command(NoArgsCommand):
         dont_load_cli = options.get('dont_load') # optparse will set this to [] if it doensnt exists
         dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
         dont_load = dont_load_cli + dont_load_conf
+        quiet_load = options.get('quiet_load')
 
         model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
 
@@ -98,9 +101,11 @@ class Command(NoArgsCommand):
                         model_labels.append("%s (as %s)" % (model_name, alias))
 
                 except AttributeError, e:
-                    print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e)))
+                    if not quiet_load:
+                        print self.style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e)))
                     continue
-            print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels)))
+            if not quiet_load:
+                print self.style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels)))
 
         try:
             if use_plain:
