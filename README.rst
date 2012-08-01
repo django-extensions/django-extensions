@@ -24,6 +24,18 @@ If you want to install it from source, grab the git repository from GitHub and r
  $ cd django-extensions
  $ python setup.py install
 
+Using It
+========
+
+Generate (and view) a graphviz graph of app models::
+
+ $ python manage.py graph_models myapp > myapp_models.dot
+ $ dot -Tpng myapp_models.dot > myapp_models.png
+
+Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for a project::
+
+ $ python manage.py show_urls
+
 Getting Involved
 ================
 
