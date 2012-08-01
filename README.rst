@@ -18,7 +18,7 @@ You can get Django Extentions by using pip or easy_install::
  or
  $ easy_install django-extensions
 
-If you want to install it from source, grab the git repository from github and run setup.py::
+If you want to install it from source, grab the git repository from GitHub and run setup.py::
 
  $ git clone git://github.com/django-extensions/django-extensions.git
  $ cd django-extensions
@@ -29,7 +29,7 @@ Getting Involved
 
 Open Source projects can always use more help. Fixing a problem, documenting a feature, adding translation in your language. If you have some time to spare and like to help us, here are the places to do so::
 
-  Github: https://github.com/django-extensions/django-extensions
+  GitHub: https://github.com/django-extensions/django-extensions
   Mailinglist: http://groups.google.com/group/django-extensions
   Translations: https://www.transifex.net/projects/p/django-extensions/
 
