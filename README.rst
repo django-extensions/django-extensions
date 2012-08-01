@@ -29,8 +29,7 @@ Using It
 
 Generate (and view) a graphviz graph of app models::
 
- $ python manage.py graph_models myapp > myapp_models.dot
- $ dot -Tpng myapp_models.dot > myapp_models.png
+ $ python manage.py graph_models -a -o myapp_models.png
 
 Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for a project::
 
