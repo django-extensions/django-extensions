@@ -71,3 +71,31 @@ To reset a given app, and reload with the saved data::
 
 Note: Runscript needs *scripts* to be a module, so create the directory and a
 *__init__.py* file.
+
+
+Caveats
+=======
+
+Naming conflicts
+~~~~~~~~~~~~~~~~
+
+Please take care that when naming the output files these filenames do not
+clash with other names in your import path. If for example the appname is
+the same as the script name then this can cause an importerror.
+
+Since instead of importing the application modules it tries to load the
+modules from the dumpscript file itself.
+
+Examples::
+
+  # Wrong
+  $ ./manage.py dumpscript appname > dumps/appname.py
+  
+  # Right
+  $ ./manage.py dumpscript appname > dumps/appname_all.py
+  
+  # Right
+  $ ./manage.py dumpscript appname.Somemodel > dumps/appname_somemodel.py
+
+
+
