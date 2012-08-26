@@ -33,3 +33,13 @@ It is also possible to ignore autoloaded modules when using manage.py, like
 
 And, commandline parameters and settings in the configuration file is merged, so you can
 safely append modules to ignore from the commandline for one time usage.
+
+It is possible to use `IPython Notebook`_, an interactive Python shell which
+uses a web browser as its user interface, as an alternative shell::
+
+    $ ./manage.py shell_plus --notebook
+
+The Django settings module and database models are auto-loaded into the
+interactive shell's global namespace also for IPython Notebook.
+
+.. _`IPython Notebook`: http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
