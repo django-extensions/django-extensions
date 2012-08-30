@@ -44,6 +44,8 @@ Current Command Extensions
 
 * *passwd* - Makes it easy to reset a user's password.
 
+* `print_settings`_ - Similar to ``diffsettings`` but shows *all* active Django settings.
+
 * *print_user_for_session* - Print the user information for the provided
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
@@ -87,6 +89,7 @@ Current Command Extensions
 .. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
+.. _`print_settings`: print_settings.html
 .. _`runserver_plus`: runserver_plus.html
 .. _`sync_media_s3`: sync_media_s3.html
 .. _GraphViz: http://www.graphviz.org/

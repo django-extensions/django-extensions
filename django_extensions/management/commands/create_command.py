@@ -1,5 +1,6 @@
 import os
-from django.core.management.base import CommandError, AppCommand, _make_writeable
+from django.core.management.base import CommandError, AppCommand
+from django_extensions.management.utils import _make_writeable
 from optparse import make_option
 
 

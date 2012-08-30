@@ -1,5 +1,6 @@
 from django.db import models
 from django_extensions.tests.test_dumpscript import DumpScriptTests
+from django_extensions.tests.test_print_settings import PrintSettingsTests
 from django_extensions.tests.utils import UTILS_TRUNCATE_LETTERS_TESTS
 from django_extensions.tests.utils import UTILS_UUID_TESTS
 from django_extensions.tests.json_field import JsonFieldTest

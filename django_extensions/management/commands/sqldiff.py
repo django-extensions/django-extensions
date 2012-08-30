@@ -69,6 +69,7 @@ class SQLDiff(object):
         'unique-missing-in-model',
         'field-type-differ',
         'field-parameter-differ',
+        'notnull-differ',
     ]
     DIFF_TEXTS = {
         'error': 'error: %(0)s',
@@ -82,6 +83,7 @@ class SQLDiff(object):
         'unique-missing-in-model': "field '%(1)s' UNIQUE defined in database schema but missing in model",
         'field-type-differ': "field '%(1)s' not of same type: db='%(3)s', model='%(2)s'",
         'field-parameter-differ': "field '%(1)s' parameters differ: db='%(3)s', model='%(2)s'",
+        'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
     }
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
@@ -94,6 +96,7 @@ class SQLDiff(object):
     SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP'), style.SQL_KEYWORD('CONSTRAINT'), style.SQL_TABLE(qn("%s_key" % ('_'.join(args[:2])))))
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
+    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('MODIFY'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
     SQL_ERROR = lambda self, style, qn, args: style.NOTICE('-- Error: %s' % style.ERROR(args[0]))
     SQL_COMMENT = lambda self, style, qn, args: style.NOTICE('-- Comment: %s' % style.SQL_TABLE(args[0]))
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
@@ -127,6 +130,7 @@ class SQLDiff(object):
             'unique-missing-in-model': self.SQL_UNIQUE_MISSING_IN_MODEL,
             'field-type-differ': self.SQL_FIELD_TYPE_DIFFER,
             'field-parameter-differ': self.SQL_FIELD_PARAMETER_DIFFER,
+            'notnull-differ': self.SQL_NOTNULL_DIFFER,
         }
 
     def add_app_model_marker(self, app_label, model_name):
@@ -182,12 +186,14 @@ class SQLDiff(object):
                     # backwards compatibility for before introspection refactoring (r8296)
                     reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
             except KeyError:
-                # type_code not found in data_types_reverse map
-                key = (self.differences[-1][:2], description[:2])
-                if key not in self.unknown_db_fields:
-                    self.unknown_db_fields[key] = 1
-                    self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
-                return None
+                reverse_type = self.get_field_db_type_lookup(type_code)
+                if not reverse_type:
+                    # type_code not found in data_types_reverse map
+                    key = (self.differences[-1][:2], description[:2])
+                    if key not in self.unknown_db_fields:
+                        self.unknown_db_fields[key] = 1
+                        self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
+                    return None
 
         kwargs = {}
         if isinstance(reverse_type, tuple):
@@ -216,6 +222,9 @@ class SQLDiff(object):
         else:
             field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
         return field_db_type
+
+    def get_field_db_type_lookup(self, type_code):
+        return None
 
     def strip_parameters(self, field_type):
         if field_type and field_type != 'double precision':
@@ -497,6 +506,10 @@ class PostgresqlSQLDiff(SQLDiff):
         55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
     }
 
+    DATA_TYPES_REVERSE_NAME = {
+        'hstore': 'django_hstore.hstore.DictionaryField',
+    }
+
     # Hopefully in the future we can add constraint checking and other more
     # advanced checks based on this database.
     SQL_LOAD_CONSTRAINTS = """
@@ -507,14 +520,28 @@ class PostgresqlSQLDiff(SQLDiff):
     INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
     ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END,contype,nspname,relname,conname;
     """
+    SQL_LOAD_NULL = """
+    SELECT nspname, relname, attname, attnotnull
+    FROM pg_attribute
+    INNER JOIN pg_class ON attrelid=pg_class.oid
+    INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace;
+    """
 
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
+    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
     def __init__(self, app_models, options):
         SQLDiff.__init__(self, app_models, options)
         self.check_constraints = {}
+        self.null = {}
         self.load_constraints()
+        self.load_null()
+
+    def load_null(self):
+        for dct in self.sql_to_dict(self.SQL_LOAD_NULL, []):
+            key = (dct['nspname'], dct['relname'], dct['attname'])
+            self.null[key] = not dct['attnotnull']
 
     def load_constraints(self):
         for dct in self.sql_to_dict(self.SQL_LOAD_CONSTRAINTS, []):
@@ -540,7 +567,19 @@ class PostgresqlSQLDiff(SQLDiff):
                     check_constraint = '("'.join([')' in e and '" '.join(e.split(" ", 1)) or e for e in check_constraint.split("(")])
                     # TODO: might be more then one constraint in definition ?
                     db_type += ' ' + check_constraint
+                null = self.null.get((tablespace, table_name, field.attname), 'fixme')
+                if field.null != null:
+                    action = field.null and 'DROP' or 'SET'
+                    self.add_difference('notnull-differ', table_name, field.name, action)
         return db_type
+
+    @transaction.autocommit
+    def get_field_db_type_lookup(self, type_code):
+        try:
+            name = self.sql_to_dict("SELECT typname FROM pg_type WHERE typelem=%s;", [type_code])[0]['typname']
+            return self.DATA_TYPES_REVERSE_NAME.get(name.strip('_'))
+        except (IndexError, KeyError):
+            pass
 
     """
     def find_field_type_differ(self, meta, table_description, table_name):
@@ -548,10 +587,11 @@ class PostgresqlSQLDiff(SQLDiff):
             if field.primary_key and db_type=='integer':
                 db_type = 'serial'
             return model_type, db_type
-        super(PostgresqlSQLDiff, self).find_field_type_differs(meta, table_description, table_name, callback)
+        super(PostgresqlSQLDiff, self).find_field_type_differ(meta, table_description, table_name, callback)
     """
 
 DATABASE_SQLDIFF_CLASSES = {
+    'postgis': PostgresqlSQLDiff,
     'postgresql_psycopg2' : PostgresqlSQLDiff,
     'postgresql': PostgresqlSQLDiff,
     'mysql': MySQLDiff,

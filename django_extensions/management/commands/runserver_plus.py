@@ -40,12 +40,21 @@ class Command(BaseCommand):
 
     def handle(self, addrport='', *args, **options):
         import django
-        from django.core.servers.basehttp import run, AdminMediaHandler, WSGIServerException
-        from django.core.handlers.wsgi import WSGIHandler
+        from django.core.servers.basehttp import run, WSGIServerException
+        try:
+            from django.core.servers.basehttp import AdminMediaHandler
+            USE_ADMINMEDIAHANDLER = True
+        except ImportError:
+            USE_ADMINMEDIAHANDLER = False
+
+        try:
+            from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
+        except ImportError:
+            from django.core.handlers.wsgi import WSGIHandler
         try:
             from werkzeug import run_simple, DebuggedApplication
         except ImportError:
-            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/download")
+            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
         # usurp django's handler
         from django.views import debug
@@ -70,8 +79,6 @@ class Command(BaseCommand):
         threaded = options.get('threaded', False)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
-        admin_media_path = options.get('admin_media_path', '')
-        shutdown_message = options.get('shutdown_message', '')
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
@@ -81,12 +88,20 @@ class Command(BaseCommand):
             print "Development server is running at http://%s:%s/" % (addr, port)
             print "Using the Werkzeug debugger (http://werkzeug.pocoo.org/)"
             print "Quit the server with %s." % quit_command
-            path = admin_media_path or django.__path__[0] + '/contrib/admin/media'
-            handler = AdminMediaHandler(WSGIHandler(), path)
+            path = options.get('admin_media_path', '')
+            if not path:
+                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
+                if os.path.isdir(admin_media_path):
+                    path = admin_media_path
+                else:
+                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
+            handler = WSGIHandler()
+            if USE_ADMINMEDIAHANDLER:
+                handler = AdminMediaHandler(handler, path)
             if USE_STATICFILES:
                 use_static_handler = options.get('use_static_handler', True)
                 insecure_serving = options.get('insecure_serving', False)
-                if use_static_handler and (settings.DEBUG or insecure_serving) and 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
+                if use_static_handler and (settings.DEBUG or insecure_serving):
                     handler = StaticFilesHandler(handler)
             if open_browser:
                 import webbrowser

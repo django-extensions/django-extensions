@@ -1,4 +1,4 @@
-from django import forms
+from django import forms, VERSION
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.utils.text import truncate_words
@@ -39,7 +39,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
+        #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
@@ -57,16 +57,23 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             label = self.label_for_value(value)
         else:
             label = u''
+
+        try:
+            admin_media_prefix = settings.ADMIN_MEDIA_PREFIX
+        except AttributeError:
+            admin_media_prefix = settings.STATIC_URL + "admin/"
+
         context = {
             'url': url,
             'related_url': related_url,
-            'admin_media_prefix': settings.ADMIN_MEDIA_PREFIX,
+            'admin_media_prefix': admin_media_prefix,
             'search_path': self.search_path,
             'search_fields': ','.join(self.search_fields),
             'model_name': model_name,
             'app_label': app_label,
             'label': label,
             'name': name,
+            'pre_django_14': (VERSION[:2]<(1,4)),
         }
         output.append(render_to_string(self.widget_template or (
             'django_extensions/widgets/%s/%s/foreignkey_searchinput.html' % (app_label, model_name),

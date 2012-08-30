@@ -52,11 +52,13 @@ Contents
    jobs_scheduling
    model_extensions
    namespace_proposal
+   print_settings
    runprofileserver
    runserver_plus
    sync_media_s3
    sqldiff
    sqlcreate
+   validate_templates
 
 
 Indices and tables

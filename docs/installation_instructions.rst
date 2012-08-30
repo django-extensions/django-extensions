@@ -1,17 +1,28 @@
 Installation instructions
 =========================
 
-:synopsis: Installing django-command-extensions
+:synopsis: Installing django-extensions
 
 
 Download and installation
 -------------------------
 
+Pip and easy_install
+^^^^^^^^^^^^^^^^^^^^
+
+You can use pip or easy_install to install django-extensions::
+
+  $ pip install django-extensions
+
+or::
+
+  $ easy_install django-extensions
+
 Download
 ^^^^^^^^
 
 Download the latest packaged version from
-http://code.google.com/p/django-command-extensions/ and unpack it. Inside is a
+http://pypi.python.org/pypi/django-extensions/ and unpack it. Inside is a
 script called setup.py. Enter this command::
 
   python setup.py install
@@ -46,11 +57,14 @@ If the given application or python library is not installed on your system (or
 not in the python path) the executed command will raise an exception and inform
 you of the missing dependency.
 
-Version Control (Subversion and Mercurial)
-------------------------------------------
+Version Control
+---------------
 
-Alternatively, source code can be accessed by performing a Subversion checkout
-or a Mercurial clone.
+Django-extensions is hosted on github::
+
+ https://github.com/django-extensions/django-extensions
+
+Source code can be accessed by performing a Git clone.
 
 Tracking the development version of *django command extensions* should be
 pretty stable and will keep you up-to-date with the latests fixes.
@@ -58,15 +72,9 @@ pretty stable and will keep you up-to-date with the latests fixes.
 The following command will check the application's source code out to a
 directory called *django-command-extensions*:
 
-Subversion::
+Git::
 
-  svn checkout http://django-command-extensions.googlecode.com/svn/trunk/ django-command-extensions
-
-Mercurial::
-
-  hg clone http://hgsvn.trbs.net/django-command-extensions
-
-*For more information about Mercurial see MercurialGateway wiki page*
+  git clone git://github.com/django-extensions/django-extensions.git
 
 You should either install the resulting project with *python setup.py install*
 or put it the *extensions* directory into your PYTHONPATH. The most common way
@@ -76,7 +84,7 @@ site-packages directory.
 
 ::
 
-  ln -sf /full/path/to/django-command-extensions/django_extensions /usr/lib/python2.5/site-packages/django_extensions
+  ln -sf /full/path/to/django-command-extensions/django_extensions /usr/lib/python2.7/site-packages/django_extensions
 
 You can verify that the application is available on your PYTHONPATH by opening a Python interpreter and entering the following commands:
 
@@ -84,8 +92,9 @@ You can verify that the application is available on your PYTHONPATH by opening a
 
   >>> import django_extensions
   >>> django_extensions.VERSION
-  (0, 6)
+  (0, 8)
 
-Keep in mind that the current code in SVN trunk may be different from the
-packaged release, and may contain bugs and backwards-incompatible changes, as
-well as new goodies to play with.
+Keep in mind that the current code in the git repository may be different from the
+packaged release. It may contain bugs and backwards-incompatible changes but most
+likely also new goodies to play with.
+
