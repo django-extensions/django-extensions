@@ -75,9 +75,15 @@ class Command(NoArgsCommand):
             except ImportError:
                 try:
                     if use_notebook:
+                        from django.conf import settings
                         from IPython.frontend.html.notebook import notebookapp
                         app = notebookapp.NotebookApp.instance()
-                        app.initialize(['--ext', 'django_extensions.management.notebook_extension'])
+                        ipython_arguments = getattr(
+                            settings,
+                            'IPYTHON_ARGUMENTS',
+                            ['--ext',
+                             'django_extensions.management.notebook_extension'])
+                        app.initialize(ipython_arguments)
                         app.start()
                     else:
                         from IPython import embed
