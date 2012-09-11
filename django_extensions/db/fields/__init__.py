@@ -85,12 +85,9 @@ class AutoSlugField(SlugField):
             # get slug from the current model instance and calculate next
             # step from its number, clean-up
             slug = self._slug_strip(getattr(model_instance, self.attname))
-            next = slug.split(self.separator)[-1]
-            if next.isdigit() and not self.allow_duplicates:
-                slug = self.separator.join(slug.split(self.separator)[:-1])
-                next = int(next)
-            else:
-                next = 2
+            # model_instance is being modified, and overwrite is False,
+            # so instead of doing anything, just return the current slug
+            return slug
 
         # strip slug depending on max_length attribute of the slug field
         # and clean-up
