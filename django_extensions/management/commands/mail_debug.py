@@ -1,10 +1,37 @@
-from django.core.management.base import BaseCommand
+from django_extensions.management.utils import setup_logger
+from django.core.management.base import BaseCommand, CommandError
+from optparse import make_option
+from smtpd import SMTPServer
 import sys
-import smtpd
 import asyncore
+from logging import getLogger
+
+
+logger = getLogger(__name__)
+
+
+class ExtensionDebuggingServer(SMTPServer):
+    """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
+    # Do something with the gathered message
+    def process_message(self, peer, mailfrom, rcpttos, data):
+        """Output will be sent to the module logger at INFO level."""
+        inheaders = 1
+        lines = data.split('\n')
+        logger.info('---------- MESSAGE FOLLOWS ----------')
+        for line in lines:
+            # headers first
+            if inheaders and not line:
+                logger.info('X-Peer: %s' % peer[0])
+                inheaders = 0
+            logger.info(line)
+        logger.info('------------ END MESSAGE ------------')
 
 
 class Command(BaseCommand):
+    option_list = BaseCommand.option_list + (
+        make_option('--output', dest='output_file', default=None,
+                    help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
+    )
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
@@ -12,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, addrport='', *args, **options):
         if args:
-            raise CommandError('Usage is runserver %s' % self.args)
+            raise CommandError('Usage is mail_debug %s' % self.args)
         if not addrport:
             addr = ''
             port = '1025'
@@ -29,11 +56,14 @@ class Command(BaseCommand):
         else:
             port = int(port)
 
-        quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
+        # Add console handler
+        setup_logger(logger, filename=options.get('output_file', None))
 
         def inner_run():
-            print "Now accepting mail at %s:%s" % (addr, port)
-            server = smtpd.DebuggingServer((addr, port), None)
+            quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
+            print "Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command)
+
+            ExtensionDebuggingServer((addr, port), None)
             asyncore.loop()
 
         try:
