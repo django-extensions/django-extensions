@@ -31,6 +31,9 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--output', dest='output_file', default=None,
                     help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
+        make_option('--use-settings', dest='use_settings',
+                    action='store_true', default=False,
+                    help='Uses EMAIL_HOST and HOST_PORT from Django settings.'),
     )
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
@@ -41,8 +44,13 @@ class Command(BaseCommand):
         if args:
             raise CommandError('Usage is mail_debug %s' % self.args)
         if not addrport:
-            addr = ''
-            port = '1025'
+            if options.get('use_settings', False):
+                from django.conf import settings
+                addr = getattr(settings, 'EMAIL_HOST', '')
+                port = str(getattr(settings, 'EMAIL_PORT', '1025'))
+            else:
+                addr = ''
+                port = '1025'
         else:
             try:
                 addr, port = addrport.split(':')
