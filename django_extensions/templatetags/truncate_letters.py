@@ -1,3 +1,4 @@
+import django
 from django import template
 from django.template.defaultfilters import stringfilter
 
@@ -17,6 +18,11 @@ def truncateletters(value, arg):
         return value  # Fail silently
     return truncate_letters(value, length)
 
-truncateletters.is_safe = True
-truncateletters = stringfilter(truncateletters)
-register.filter(truncateletters)
+if django.get_version() >= "1.4":
+    truncateletters = stringfilter(truncateletters)
+    register.filter(truncateletters, is_safe=True)
+else:
+    truncateletters.is_safe = True
+    truncateletters = stringfilter(truncateletters)
+    register.filter(truncateletters)
+
