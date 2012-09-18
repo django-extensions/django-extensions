@@ -61,3 +61,29 @@ class AutoSlugFieldTest(unittest.TestCase):
 
         m.save()
         self.assertEqual(m.slug, 'foo-2012')
+
+    def testSimpleSlugSource(self):
+        m = SluggedTestModel(title='-foo')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        n = SluggedTestModel(title='-foo')
+        n.save()
+        self.assertEqual(n.slug, 'foo-2')
+
+        n.save()
+        self.assertEqual(n.slug, 'foo-2')
+
+    def testEmptySlugSource(self):
+        # regression test
+
+        m = SluggedTestModel(title='')
+        m.save()
+        self.assertEqual(m.slug, '-2')
+
+        n = SluggedTestModel(title='')
+        n.save()
+        self.assertEqual(n.slug, '-3')
+
+        n.save()
+        self.assertEqual(n.slug, '-3')
