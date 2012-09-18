@@ -82,9 +82,8 @@ class AutoSlugField(SlugField):
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             next = 2
         else:
-            # get slug from the current model instance and calculate next
-            # step from its number, clean-up
-            slug = self._slug_strip(getattr(model_instance, self.attname))
+            # get slug from the current model instance
+            slug = getattr(model_instance, self.attname)
             # model_instance is being modified, and overwrite is False,
             # so instead of doing anything, just return the current slug
             return slug
