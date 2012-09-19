@@ -97,7 +97,8 @@ class Command(BaseCommand):
         context = {}
 
         # Create a dumpscript object and let it format itself as a string
-        print Script(models=models, context=context)
+        self.stdout.write(str(Script(models=models, context=context, stdout=self.stdout, stderr=self.stderr)))
+        self.stdout.write("\n")
 
 
 def get_models(app_labels):
@@ -141,15 +142,20 @@ class Code(object):
         in this class.
     """
 
-    def __init__(self):
-        self.imports = {}
-        self.indent = -1
+    def __init__(self, indent=-1, stdout=None, stderr=None):
+
+        if not stdout: stdout = sys.stdout
+        if not stderr: stderr= sys.stderr
+
+        self.indent = indent
+        self.stdout = stdout
+        self.stderr = stderr
 
     def __str__(self):
         """ Returns a string representation of this script.
         """
         if self.imports:
-            sys.stderr.write(repr(self.import_lines))
+            self.stderr.write(repr(self.import_lines))
             return flatten_blocks([""] + self.import_lines + [""] + self.lines, num_indents=self.indent)
         else:
             return flatten_blocks(self.lines, num_indents=self.indent)
@@ -167,11 +173,12 @@ class Code(object):
 class ModelCode(Code):
     " Produces a python script that can recreate data for a given model class. "
 
-    def __init__(self, model, context={}):
+    def __init__(self, model, context={},stdout=None, stderr=None):
+        super(ModelCode,self).__init__(indent=0,stdout=stdout, stderr=stderr)
         self.model = model
         self.context = context
         self.instances = []
-        self.indent = 0
+
 
     def get_imports(self):
         """ Returns a dictionary of import statements, with the variable being
@@ -187,7 +194,7 @@ class ModelCode(Code):
         code = []
 
         for counter, item in enumerate(self.model._default_manager.all()):
-            instance = InstanceCode(instance=item, id=counter + 1, context=self.context)
+            instance = InstanceCode(instance=item, id=counter + 1, context=self.context, stdout=self.stdout, stderr=self.stderr)
             self.instances.append(instance)
             if instance.waiting_list:
                 code += instance.lines
@@ -206,8 +213,11 @@ class ModelCode(Code):
 class InstanceCode(Code):
     " Produces a python script that can recreate data for a given model instance. "
 
-    def __init__(self, instance, id, context={}):
+    def __init__(self, instance, id, context={}, stdout=None, stderr=None):
         """ We need the instance in question and an id """
+
+        super(InstanceCode,self).__init__(indent=0,stdout=stdout, stderr=stderr)
+        self.imports = {}
 
         self.instance = instance
         self.model = self.instance.__class__
@@ -215,9 +225,6 @@ class InstanceCode(Code):
         self.variable_name = "%s_%s" % (self.instance._meta.db_table, id)
         self.skip_me = None
         self.instantiated = False
-
-        self.indent = 0
-        self.imports = {}
 
         self.waiting_list = list(self.model._meta.fields)
 
@@ -404,15 +411,65 @@ class InstanceCode(Code):
 class Script(Code):
     " Produces a complete python script that can recreate data for the given apps. "
 
-    def __init__(self, models, context={}):
+    def __init__(self, models, context={}, stdout=None, stderr=None):
+
+        super(Script,self).__init__(stdout=stdout, stderr=stderr)
+        self.imports = {}
+
         self.models = models
         self.context = context
 
-        self.indent = -1
-        self.imports = {}
-
         self.context["__avaliable_models"] = set(models)
         self.context["__extra_imports"] = {}
+
+
+    def _queue_models(self, models, context):
+        """ Works an an appropriate ordering for the models.
+            This isn't essential, but makes the script look nicer because
+            more instances can be defined on their first try.
+        """
+
+        # Max number of cycles allowed before we call it an infinite loop.
+        MAX_CYCLES = 5
+
+        model_queue = []
+        number_remaining_models = len(models)
+        allowed_cycles = MAX_CYCLES
+
+        while number_remaining_models > 0:
+            previous_number_remaining_models = number_remaining_models
+
+            model = models.pop(0)
+
+            # If the model is ready to be processed, add it to the list
+            if check_dependencies(model, model_queue, context["__avaliable_models"]):
+                model_class = ModelCode(model=model, context=context, stdout=self.stdout, stderr=self.stderr)
+                model_queue.append(model_class)
+
+            # Otherwise put the model back at the end of the list
+            else:
+                models.append(model)
+
+            # Check for infinite loops.
+            # This means there is a cyclic foreign key structure
+            # That cannot be resolved by re-ordering
+            number_remaining_models = len(models)
+            if number_remaining_models == previous_number_remaining_models:
+                allowed_cycles -= 1
+                if allowed_cycles <= 0:
+                    # Add the remaining models, but do not remove them from the model list
+                    missing_models = [ModelCode(model=m, context=context, stdout=self.stdout, stderr=self.stderr) for m in models]
+                    model_queue += missing_models
+                    # Replace the models with the model class objects
+                    # (sure, this is a little bit of hackery)
+                    models[:] = missing_models
+                    break
+            else:
+                allowed_cycles = MAX_CYCLES
+
+        return model_queue
+
+
 
     def get_lines(self):
         """ Returns a list of lists or strings, representing the code body.
@@ -421,9 +478,9 @@ class Script(Code):
         code = [self.FILE_HEADER.strip()]
 
         # Queue and process the required models
-        for model_class in queue_models(self.models, context=self.context):
+        for model_class in self._queue_models(self.models, context=self.context):
             msg = 'Processing model: %s\n' % model_class.model.__name__
-            sys.stderr.write(msg)
+            self.stderr.write(msg)
             code.append("    #"+msg)
             code.append(model_class.import_lines)
             code.append("")
@@ -432,7 +489,7 @@ class Script(Code):
         # Process left over foreign keys from cyclic models
         for model in self.models:
             msg = 'Re-processing model: %s\n' % model.model.__name__
-            sys.stderr.write(msg)
+            self.stderr.write(msg)
             code.append("    #"+msg)
             for instance in model.instances:
                 if instance.waiting_list or instance.many_to_many_waiting_list:
@@ -592,51 +649,6 @@ def make_clean_dict(the_dict):
     return the_dict
 
 
-def queue_models(models, context):
-    """ Works an an appropriate ordering for the models.
-        This isn't essential, but makes the script look nicer because
-        more instances can be defined on their first try.
-    """
-
-    # Max number of cycles allowed before we call it an infinite loop.
-    MAX_CYCLES = 5
-
-    model_queue = []
-    number_remaining_models = len(models)
-    allowed_cycles = MAX_CYCLES
-
-    while number_remaining_models > 0:
-        previous_number_remaining_models = number_remaining_models
-
-        model = models.pop(0)
-
-        # If the model is ready to be processed, add it to the list
-        if check_dependencies(model, model_queue, context["__avaliable_models"]):
-            model_class = ModelCode(model=model, context=context)
-            model_queue.append(model_class)
-
-        # Otherwise put the model back at the end of the list
-        else:
-            models.append(model)
-
-        # Check for infinite loops.
-        # This means there is a cyclic foreign key structure
-        # That cannot be resolved by re-ordering
-        number_remaining_models = len(models)
-        if number_remaining_models == previous_number_remaining_models:
-            allowed_cycles -= 1
-            if allowed_cycles <= 0:
-                # Add the remaining models, but do not remove them from the model list
-                missing_models = [ModelCode(model=m, context=context) for m in models]
-                model_queue += missing_models
-                # Replace the models with the model class objects
-                # (sure, this is a little bit of hackery)
-                models[:] = missing_models
-                break
-        else:
-            allowed_cycles = MAX_CYCLES
-
-    return model_queue
 
 
 def check_dependencies(model, model_queue, avaliable_models):
