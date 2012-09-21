@@ -1,6 +1,6 @@
 from django import forms, VERSION
 from django.conf import settings
-+from django.contrib.admin.sites import site
+from django.contrib.admin.sites import site
 from django.utils.safestring import mark_safe
 from django.utils.text import truncate_words
 from django.template.loader import render_to_string
