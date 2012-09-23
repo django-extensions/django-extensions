@@ -1,6 +1,7 @@
-from django import forms, VERSION
+import django
+from django import forms
 from django.conf import settings
-+from django.contrib.admin.sites import site
+from django.contrib.admin.sites import site
 from django.utils.safestring import mark_safe
 from django.utils.text import truncate_words
 from django.template.loader import render_to_string
@@ -77,7 +78,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             'app_label': app_label,
             'label': label,
             'name': name,
-            'pre_django_14': (VERSION[:2]<(1,4)),
+            'pre_django_14': (django.VERSION[:2]<(1,4)),
         }
         output.append(render_to_string(self.widget_template or (
             'django_extensions/widgets/%s/%s/foreignkey_searchinput.html' % (app_label, model_name),
