@@ -65,7 +65,7 @@ class Command(BaseCommand):
             port = int(port)
 
         # Add console handler
-        setup_logger(logger, filename=options.get('output_file', None))
+        setup_logger(logger, stream=self.stdout, filename=options.get('output_file', None))
 
         def inner_run():
             quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
