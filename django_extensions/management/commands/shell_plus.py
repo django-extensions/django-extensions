@@ -53,7 +53,7 @@ class Command(NoArgsCommand):
                         else:
                             print raw_sql
                         print
-                        print 'Execution time: %.6fs' % execution_time
+                        print 'Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias)
                         print
 
             util.CursorDebugWrapper = PrintQueryWrapper
