@@ -69,7 +69,7 @@ class JSONField(models.TextField):
         if not default:
             kwargs['default'] = '{}'
         elif isinstance(default, (list, dict)):
-            kwargs['default'] = dump(value)
+            kwargs['default'] = dumps(default)
         models.TextField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
