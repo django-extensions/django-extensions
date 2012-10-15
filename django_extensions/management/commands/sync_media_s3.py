@@ -18,6 +18,12 @@ AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 AWS_BUCKET_NAME = ''
 
+When you call this command with the `--renamegzip` param, it will add
+the '.gz' extension to the file name. But Safari just doesn't recognize
+'.gz' files and your site won't work on it! To fix this problem, you can
+set any other extension (like .jgz) in the `SYNC_S3_RENAME_GZIP_EXT`
+variable.
+
 Command options are:
   -p PREFIX, --prefix=PREFIX
                         The prefix to prepend to the path on S3.
@@ -27,10 +33,12 @@ Command options are:
                         files.
   --filter-list         Override default directory and file exclusion
                         filters. (enter as comma seperated line)
-  --renamegzip          Enables renaming of gzipped files by appending '.gz.
-                        to the original file name. This way your original assets
-                        will not be replaced by the gzipped ones if you don't want
-                        them to be. 
+  --renamegzip          Enables renaming of gzipped files by appending '.gz'.
+                        to the original file name. This way your original
+                        assets will not be replaced by the gzipped ones.
+                        You can change the extension setting the
+                        `SYNC_S3_RENAME_GZIP_EXT` var in your settings.py
+                        file.
   --invalidate          Invalidates the objects in CloudFront after uploaading
                         stuff to s3.
 
@@ -64,6 +72,8 @@ class Command(BaseCommand):
     AWS_SECRET_ACCESS_KEY = ''
     AWS_BUCKET_NAME = ''
     AWS_CLOUDFRONT_DISTRIBUTION = ''
+    SYNC_S3_RENAME_GZIP_EXT = ''
+
     DIRECTORY = ''
     FILTER_LIST = ['.DS_Store', '.svn', '.hg', '.git', 'Thumbs.db']
     GZIP_CONTENT_TYPES = (
@@ -90,7 +100,8 @@ class Command(BaseCommand):
             help="Enables gzipping CSS and Javascript files."),
         optparse.make_option('--renamegzip',
             action='store_true', dest='renamegzip', default=False,
-            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."),
+            help=("Enables renaming of gzipped assets to have '.gz' appended "
+                  "to the filename."),
         optparse.make_option('--expires',
             action='store_true', dest='expires', default=False,
             help="Enables setting a far future expires header."),
@@ -137,6 +148,9 @@ class Command(BaseCommand):
 
         self.AWS_CLOUDFRONT_DISTRIBUTION = \
             getattr(settings, 'AWS_CLOUDFRONT_DISTRIBUTION', '')
+
+        self.SYNC_S3_RENAME_GZIP_EXT = \
+            getattr(settings, 'SYNC_S3_RENAME_GZIP_EXT', '.gz')
 
         self.verbosity = int(options.get('verbosity'))
         self.prefix = options.get('prefix')
@@ -290,9 +304,12 @@ class Command(BaseCommand):
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)
-                    if self.rename_gzip: 
-                        #If rename_gzip is True, then rename the file by appending '.gz' to original filename
-                        file_key = '%s.gz' % (file_key)
+                    if self.rename_gzip:
+                        # If rename_gzip is True, then rename the file
+                        # by appending an extension (like '.gz)' to
+                        # original filename.
+                        file_key = '%s.%s' % (
+                            file_key, self.SYNC_S3_RENAME_GZIP_EXT)
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
                         print "\tgzipped: %dk to %dk" % \
