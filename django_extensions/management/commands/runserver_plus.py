@@ -1,14 +1,20 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django_extensions.management.utils import setup_logger, RedirectHandler
 from optparse import make_option
 import os
 import sys
+import time
 
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
     USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 except ImportError, e:
     USE_STATICFILES = False
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 def null_technical_500_response(request, exc_type, exc_value, tb):
     raise exc_type, exc_value, tb
@@ -17,20 +23,24 @@ def null_technical_500_response(request, exc_type, exc_value, tb):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-            help='Tells Django to NOT use the auto-reloader.'),
+                    help='Tells Django to NOT use the auto-reloader.'),
         make_option('--browser', action='store_true', dest='open_browser',
-            help='Tells Django to open a browser.'),
+                    help='Tells Django to open a browser.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
-            help='Specifies the directory from which to serve admin media.'),
+                    help='Specifies the directory from which to serve admin media.'),
         make_option('--threaded', action='store_true', dest='threaded',
-            help='Run in multithreaded mode.'),
+                    help='Run in multithreaded mode.'),
+        make_option('--output', dest='output_file', default=None,
+                    help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
+        make_option('--print-sql', action='store_true', default=False,
+                    help="Print SQL queries as they're executed"),
     )
     if USE_STATICFILES:
         option_list += (
             make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
             make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                help='Allows serving static files even if DEBUG is False.'),
+                        help='Allows serving static files even if DEBUG is False.'),
         )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
@@ -40,7 +50,39 @@ class Command(BaseCommand):
 
     def handle(self, addrport='', *args, **options):
         import django
-        from django.core.servers.basehttp import run, WSGIServerException
+
+        setup_logger(logger, self.stderr, filename=options.get('output_file', None))  # , fmt="[%(name)s] %(message)s")
+        logredirect = RedirectHandler(__name__)
+
+        # Redirect werkzeug log items
+        werklogger = logging.getLogger('werkzeug')
+        werklogger.setLevel(logging.INFO)
+        werklogger.addHandler(logredirect)
+        werklogger.propagate = False
+
+        if options.get("print_sql", False):
+            from django.db.backends import util
+            try:
+                import sqlparse
+            except ImportError:
+                sqlparse = None  # noqa
+
+            class PrintQueryWrapper(util.CursorDebugWrapper):
+                def execute(self, sql, params=()):
+                    starttime = time.time()
+                    try:
+                        return self.cursor.execute(sql, params)
+                    finally:
+                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+                        execution_time = time.time() - starttime
+                        therest = ' -- [Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias)
+                        if sqlparse:
+                            logger.info(sqlparse.format(raw_sql, reindent=True) + therest)
+                        else:
+                            logger.info(raw_sql + therest)
+
+            util.CursorDebugWrapper = PrintQueryWrapper
+
         try:
             from django.core.servers.basehttp import AdminMediaHandler
             USE_ADMINMEDIAHANDLER = True
@@ -50,7 +92,7 @@ class Command(BaseCommand):
         try:
             from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
         except ImportError:
-            from django.core.handlers.wsgi import WSGIHandler
+            from django.core.handlers.wsgi import WSGIHandler  # noqa
         try:
             from werkzeug import run_simple, DebuggedApplication
         except ImportError:
