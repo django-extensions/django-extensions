@@ -12,7 +12,7 @@ The easiest way to figure out what Django Extensions are all about is to watch t
 Getting It
 ==========
 
-You can get Django Extentions by using pip or easy_install::
+You can get Django Extensions by using pip or easy_install::
 
  $ pip install django-extensions
  or
