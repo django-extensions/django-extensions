@@ -3,19 +3,23 @@ Graph models
 
 :synopsis: Renders a graphical overview of your project or specified apps.
 
-Creates a GraphViz_ dot file for the specified app names.  You can pass
-multiple app names and they will all be combined into a single model.  Output
-is usually directed to a dot file.
+Creates a GraphViz_ dot file for the specified app names based on their models.py.
+You can pass multiple app names and they will all be combined into a single model.
+Output is usually directed to a dot file.
+
+There several options available like: grouping models, including inheritance, 
+excluding models and columns and changing the layout when rendering to an output
+image.
 
 With the latest revisions it's also possible to specify an output file if
 pygraphviz_ is installed and render directly to an image or other supported
-filetype.
+file-type.
 
 
 Example Usage
 -------------
 
-With *django-command-extensions* installed you can create a dot-file or an
+With *django-extensions* installed you can create a dot-file or an
 image by using the *graph_models* command. Like used in the following examples::
 
   # Create a dot file
