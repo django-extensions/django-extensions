@@ -70,7 +70,7 @@ Tracking the development version of *django command extensions* should be
 pretty stable and will keep you up-to-date with the latests fixes.
 
 The following command will check the application's source code out to a
-directory called *django-command-extensions*:
+directory called *django-extensions*:
 
 Git::
 
@@ -84,7 +84,7 @@ site-packages directory.
 
 ::
 
-  ln -sf /full/path/to/django-command-extensions/django_extensions /usr/lib/python2.7/site-packages/django_extensions
+  ln -sf /full/path/to/django-extensions/django_extensions /usr/lib/python2.7/site-packages/django_extensions
 
 You can verify that the application is available on your PYTHONPATH by opening a Python interpreter and entering the following commands:
 
