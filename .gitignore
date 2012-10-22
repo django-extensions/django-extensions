@@ -8,3 +8,4 @@ docs/_build
 docs/_static
 *.egg-info
 .tox
+*.bak
