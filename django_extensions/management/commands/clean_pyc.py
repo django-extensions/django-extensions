@@ -22,14 +22,17 @@ class Command(NoArgsCommand):
         if not project_root:
             project_root = get_project_root()
         exts = options.get("optimize", False) and [".pyc", ".pyo"] or [".pyc"]
-        verbose = int(options.get("verbosity", 1)) > 1
+        verbose = int(options.get("verbosity", 1))
+
+        if verbose > 1:
+            print "Project Root: %s" % project_root
 
         for root, dirs, files in os.walk(project_root):
             for file in files:
                 ext = os.path.splitext(file)[1]
                 if ext in exts:
                     full_path = _j(root, file)
-                    if verbose:
+                    if verbose > 1:
                         print full_path
                     os.remove(full_path)
 
