@@ -100,7 +100,7 @@ class Command(BaseCommand):
             help="Enables gzipping CSS and Javascript files."),
         optparse.make_option('--renamegzip',
             action='store_true', dest='renamegzip', default=False,
-            help=("Enables renaming of gzipped assets to have '.gz' appended to the filename."),
+            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."),
         optparse.make_option('--expires',
             action='store_true', dest='expires', default=False,
             help="Enables setting a far future expires header."),
