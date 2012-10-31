@@ -47,7 +47,7 @@ class RedirectHandler(logging.Handler):
     """Redirect logging sent to one logger (name) to another."""
     def __init__(self, name, level=logging.DEBUG):
         # Contemplate feasibility of copying a destination (allow original handler) and redirecting.
-        super(RedirectHandler, self).__init__(level)
+        logging.Handler.__init__(self, level)
         self.name = name
         self.logger = logging.getLogger(name)
 
