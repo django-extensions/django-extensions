@@ -44,16 +44,16 @@ $(function(){
  */
 
 
-(function($) {
+(function(jQuery) {
 
-	var ajax = $.ajax;
+	var ajax = jQuery.ajax;
 
 	var pendingRequests = {};
 
 	var synced = [];
 	var syncedData = [];
 
-	$.ajax = function(settings) {
+	jQuery.ajax = function(settings) {
 		// create settings for compatibility with ajaxSetup
 		settings = jQuery.extend(settings, jQuery.extend({}, jQuery.ajaxSettings, settings));
 
