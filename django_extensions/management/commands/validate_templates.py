@@ -4,6 +4,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.template import Template
+from django.template.loaders.filesystem import Loader
 
 #
 # TODO: Render the template with fake request object ?
@@ -28,6 +29,9 @@ class Command(BaseCommand):
         settings.TEMPLATE_DIRS = list(template_dirs)
         verbosity = int(options.get('verbosity', 1))
         errors = 0
+
+        template_loader = Loader()
+
         for template_dir in template_dirs:
             for root, dirs, filenames in os.walk(template_dir):
                 for filename in filenames:
@@ -39,7 +43,7 @@ class Command(BaseCommand):
                     if verbosity>1:
                         print filepath
                     try:
-                        tmpl = Template(open(filepath).read())
+                        template_loader.load_template(filename, [root])
                     except Exception, e:
                         errors += 1
                         if options.get('break', False):
