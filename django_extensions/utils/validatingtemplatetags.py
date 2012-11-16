@@ -3,13 +3,15 @@ from django.template import defaulttags
 from django.templatetags import future
 register = Library()
 
+error_on_old_style_url_tag = False
 new_style_url_tag = False
 errors = []
 
-def before_new_template():
+def before_new_template(force_new_urls):
     """Reset state ready for new template"""
-    global new_style_url_tag, errors
+    global new_style_url_tag, error_on_old_style_url_tag, errors
     new_style_url_tag = False
+    error_on_old_style_url_tag = force_new_urls
     errors = []
 
 def get_template_errors():
@@ -50,8 +52,14 @@ def load(parser, token):
 
 @register.tag(name='url')
 def old_style_url(parser, token):
+    global error_on_old_style_url_tag
+
     bits = token.split_contents()
     view = bits[1]
+
+    if error_on_old_style_url_tag:
+        _error("Old style url tag used (only reported once per file): {%% %s %%}" % (" ".join(bits)), token)
+        error_on_old_style_url_tag = False
 
     if view[0] in "\"'" and view[0] == view[-1]:
         _error("Old style url tag with quotes around view name: {%% %s %%}" % (" ".join(bits)), token)

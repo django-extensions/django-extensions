@@ -20,6 +20,8 @@ class Command(BaseCommand):
                     default=False, help="Break on first error."),
         make_option('--check-urls', '-u', action='store_true', dest='check_urls',
                     default=False, help="Check url tag view names are quoted appropriately"),
+        make_option('--force-new-urls', '-n', action='store_true', dest='force_new_urls',
+                    default=False, help="Error on usage of old style url tags (without {% load urls from future %}"),
         make_option('--include', '-i', action='append', dest='includes',
                     default=[], help="Append these paths to TEMPLATE_DIRS")
     )
@@ -51,7 +53,7 @@ class Command(BaseCommand):
                     filepath = os.path.join(root, filename)
                     if verbosity>1:
                         print filepath
-                    validatingtemplatetags.before_new_template()
+                    validatingtemplatetags.before_new_template(options.get('force_new_urls', False))
                     try:
                         template_loader.load_template(filename, [root])
                     except Exception, e:
