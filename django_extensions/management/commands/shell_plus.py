@@ -70,7 +70,7 @@ class Command(NoArgsCommand):
                     # User wants IPython
                     raise ImportError
                 from bpython import embed
-                imported_objects = import_objects(options, self.style)
+                imported_objects = self.import_objects(options, self.style)
                 embed(imported_objects)
             except ImportError:
                 try:
@@ -87,7 +87,7 @@ class Command(NoArgsCommand):
                         app.start()
                     else:
                         from IPython import embed
-                        imported_objects = import_objects(options, self.style)
+                        imported_objects = self.import_objects(options, self.style)
                         embed(user_ns=imported_objects)
                 except ImportError:
                     # IPython < 0.11
@@ -96,7 +96,7 @@ class Command(NoArgsCommand):
                     # Notebook not supported for IPython < 0.11.
                     try:
                         from IPython.Shell import IPShell
-                        imported_objects = import_objects(options, self.style)
+                        imported_objects = self.import_objects(options, self.style)
                         shell = IPShell(argv=[], user_ns=imported_objects)
                         shell.mainloop()
                     except ImportError:
@@ -105,7 +105,7 @@ class Command(NoArgsCommand):
         except ImportError:
             # Using normal Python shell
             import code
-            imported_objects = import_objects(options, self.style)
+            imported_objects = self.import_objects(options, self.style)
             try:
                 # Try activating rlcompleter, because it's handy.
                 import readline
@@ -130,3 +130,13 @@ class Command(NoArgsCommand):
                 # This will import .pythonrc.py as a side-effect
                 import user
             code.interact(local=imported_objects)
+
+    def import_objects(self, options):
+        """
+        Hook for importing objects into the shell's global scope
+        The import_objects function here loads the projects Models 
+        and django.conf.settings, depending on command line arguments
+        To add your own objects, override this method
+        """
+        return import_objects(options, self.style)
+        
