@@ -85,8 +85,8 @@ class EncryptedTextField(BaseEncryptedField):
 class EncryptedCharField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
 
-    def __init__(self, max_length=None, *args, **kwargs):
-        super(EncryptedCharField, self).__init__(max_length=max_length, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(EncryptedCharField, self).__init__(*args, **kwargs)
 
     def get_internal_type(self):
         return "CharField"
