@@ -13,5 +13,5 @@ install:
   - python setup.py -q install
 
 script:
-  - flake8 .
+  - flake8 --ignore=E501,W391 .
   - python setup.py test
