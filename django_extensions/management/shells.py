@@ -7,12 +7,12 @@ def import_objects(options, style):
     # models from installed apps. (this is fixed by now, but leaving it here
     # for people using 0.96 or older trunk (pre [5919]) versions.
     from django.db.models.loading import get_models, get_apps
-    loaded_models = get_models()
+    loaded_models = get_models()  # NOQA
 
     from django.conf import settings
     imported_objects = {'settings': settings}
 
-    dont_load_cli = options.get('dont_load') # optparse will set this to [] if it doensnt exists
+    dont_load_cli = options.get('dont_load')  # optparse will set this to [] if it doensnt exists
     dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
     dont_load = dont_load_cli + dont_load_conf
     quiet_load = options.get('quiet_load')

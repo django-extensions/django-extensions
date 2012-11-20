@@ -8,11 +8,13 @@ import re
 
 try:
     import uuid
+    assert uuid
 except ImportError:
     from django_extensions.utils import uuid
 
 try:
     from django.utils.timezone import now as datetime_now
+    assert datetime_now
 except ImportError:
     import datetime
     datetime_now = datetime.datetime.now
@@ -232,9 +234,9 @@ class UUIDField(CharField):
 
     def contribute_to_class(self, cls, name):
         if self.primary_key:
-            assert not cls._meta.has_auto_field, \
-              "A model can't have more than one AutoField: %s %s %s; have %s" % \
-               (self, cls, name, cls._meta.auto_field)
+            assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (
+                self, cls, name, cls._meta.auto_field
+            )
             super(UUIDField, self).contribute_to_class(cls, name)
             cls._meta.has_auto_field = True
             cls._meta.auto_field = self
@@ -266,7 +268,7 @@ class UUIDField(CharField):
                 value = unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
-    
+
     def formfield(self, **kwargs):
         if self.auto:
             return None

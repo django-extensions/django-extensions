@@ -8,19 +8,19 @@ import time
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--ipython', action='store_true', dest='ipython',
-            help='Tells Django to use IPython, not BPython.'),
+                    help='Tells Django to use IPython, not BPython.'),
         make_option('--notebook', action='store_true', dest='notebook',
-            help='Tells Django to use IPython Notebook.'),
+                    help='Tells Django to use IPython Notebook.'),
         make_option('--plain', action='store_true', dest='plain',
-            help='Tells Django to use plain Python, not BPython nor IPython.'),
+                    help='Tells Django to use plain Python, not BPython nor IPython.'),
         make_option('--no-pythonrc', action='store_true', dest='no_pythonrc',
-            help='Tells Django to use plain Python, not IPython.'),
+                    help='Tells Django to use plain Python, not IPython.'),
         make_option('--print-sql', action='store_true', default=False,
-            help="Print SQL queries as they're executed"),
+                    help="Print SQL queries as they're executed"),
         make_option('--dont-load', action='append', dest='dont_load', default=[],
-            help='Ignore autoloading of some apps/models. Can be used several times.'),
+                    help='Ignore autoloading of some apps/models. Can be used several times.'),
         make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
-            help='Do not display loaded models messages'),
+                    help='Do not display loaded models messages'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -35,10 +35,11 @@ class Command(NoArgsCommand):
         if options.get("print_sql", False):
             # Code from http://gist.github.com/118990
             from django.db.backends import util
+            sqlparse = None
             try:
                 import sqlparse
             except ImportError:
-                sqlparse = None
+                pass
 
             class PrintQueryWrapper(util.CursorDebugWrapper):
                 def execute(self, sql, params=()):
@@ -128,5 +129,5 @@ class Command(NoArgsCommand):
                     except NameError:
                         pass
                 # This will import .pythonrc.py as a side-effect
-                import user
+                import user  # NOQA
             code.interact(local=imported_objects)

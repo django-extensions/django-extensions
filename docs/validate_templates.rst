@@ -22,7 +22,7 @@ Settings
 ========
 
 VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can use `VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS` to include a number of template dirs per default directly from the settings file.
 This can be usefull for situations where TEMPLATE_DIRS is dynamically generated or switched in middleware or you have other template

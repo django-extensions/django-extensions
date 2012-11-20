@@ -1,7 +1,6 @@
 import unittest
 
 
-from django.db import connection
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
@@ -13,17 +12,20 @@ class TestModel_field(models.Model):
     a = models.IntegerField()
     uuid_field = UUIDField()
 
+
 class TestModel_pk(models.Model):
     uuid_field = UUIDField(primary_key=True)
+
 
 class TestAgregateModel(TestModel_pk):
     a = models.IntegerField()
 
+
 class TestManyToManyModel(TestModel_pk):
     many = models.ManyToManyField(TestModel_field)
 
-class UUIDFieldTest(unittest.TestCase):
 
+class UUIDFieldTest(unittest.TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
         settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
@@ -45,6 +47,7 @@ class UUIDFieldTest(unittest.TestCase):
 
     def testUUIDField_pkAgregateCreate(self):
         j = TestAgregateModel.objects.create(a=6)
+        self.assertEquals(j.a, 6)
 
     def testUUIDFieldManyToManyCreate(self):
         j = TestManyToManyModel.objects.create(uuid_field=u'550e8400-e29b-41d4-a716-446655440010')

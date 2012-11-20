@@ -14,8 +14,8 @@ import datetime
 from decimal import Decimal
 from django.conf import settings
 from django.utils import simplejson
-from django.utils.encoding import smart_unicode
 from mongoengine.fields import StringField
+
 
 class JSONEncoder(simplejson.JSONEncoder):
     def default(self, obj):
@@ -26,17 +26,17 @@ class JSONEncoder(simplejson.JSONEncoder):
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
         return simplejson.JSONEncoder.default(self, obj)
 
+
 def dumps(value):
     assert isinstance(value, dict)
     return JSONEncoder().encode(value)
 
+
 def loads(txt):
-    value = simplejson.loads(
-        txt,
-        parse_float = Decimal,
-        encoding    = settings.DEFAULT_CHARSET)
+    value = simplejson.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
     assert isinstance(value, dict)
     return value
+
 
 class JSONDict(dict):
     """
@@ -45,6 +45,7 @@ class JSONDict(dict):
     """
     def __repr__(self):
         return dumps(self)
+
 
 class JSONField(StringField):
     """JSONField is a generic textfield that neatly serializes/unserializes

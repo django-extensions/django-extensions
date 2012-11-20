@@ -10,21 +10,23 @@ except ImportError:
     raise ImportError('Using an encrypted field requires the Keyczar module. '
                       'You can obtain Keyczar from http://www.keyczar.org/.')
 
-class EncryptionWarning(RuntimeWarning): pass
+
+class EncryptionWarning(RuntimeWarning):
+    pass
+
 
 class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
+
     def __init__(self, *args, **kwargs):
         if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
-            raise ImproperlyConfigured('You must set the '
-                'ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory.')
+            raise ImproperlyConfigured('You must set the ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory.')
         self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
 
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
-            max_length = len(self.prefix) + \
-                len(self.crypt.Encrypt('x'*max_length))
+            max_length = len(self.prefix) + len(self.crypt.Encrypt('x' * max_length))
             # TODO: Re-examine if this logic will actually make a large-enough
             # max-length for unicode strings that have non-ascii characters in them.
             kwargs['max_length'] = max_length
@@ -50,8 +52,9 @@ class BaseEncryptedField(models.Field):
             # so truncate before encryption
             max_length = self.unencrypted_length
             if max_length and len(value) > max_length:
-                warnings.warn("Truncating field %s from %d to %d bytes" % \
-                    (self.name, len(value), max_length),EncryptionWarning)
+                warnings.warn("Truncating field %s from %d to %d bytes" % (
+                    self.name, len(value), max_length), EncryptionWarning
+                )
                 value = value[:max_length]
 
             value = self.prefix + self.crypt.Encrypt(value)

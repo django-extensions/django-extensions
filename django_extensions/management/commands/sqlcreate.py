@@ -5,6 +5,7 @@ import django
 from django.core.management.base import CommandError, BaseCommand
 from django.conf import settings
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('-R', '--router', action='store',
@@ -27,7 +28,7 @@ The envisioned use case is something like this:
     def set_db_settings(**options):
         if django.get_version() >= "1.2":
             router = options.get('router')
-            if router == None:
+            if router is None:
                 return False
 
             # retrieve this with the 'using' argument
@@ -68,7 +69,8 @@ The envisioned use case is something like this:
 """)
             print "CREATE DATABASE %s CHARACTER SET utf8 COLLATE utf8_bin;" % dbname
             print "GRANT ALL PRIVILEGES ON %s.* to '%s'@'%s' identified by '%s';" % (
-                    dbname, dbuser, dbhost, dbpass)
+                dbname, dbuser, dbhost, dbpass
+            )
         elif engine == 'postgresql_psycopg2':
             if options.get('drop'):
                 print "DROP DATABASE IF EXISTS %s;" % (dbname,)

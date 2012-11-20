@@ -78,7 +78,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             'app_label': app_label,
             'label': label,
             'name': name,
-            'pre_django_14': (django.VERSION[:2]<(1,4)),
+            'pre_django_14': (django.VERSION[:2] < (1, 4)),
         }
         output.append(render_to_string(self.widget_template or (
             'django_extensions/widgets/%s/%s/foreignkey_searchinput.html' % (app_label, model_name),

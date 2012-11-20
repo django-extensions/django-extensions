@@ -8,7 +8,7 @@ from distutils.command.install import INSTALL_SCHEMES
 try:
     from setuptools import setup
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup  # NOQA
 
 
 class osx_install_data(install_data):

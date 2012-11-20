@@ -15,7 +15,6 @@ from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.utils import simplejson
-from django.utils.encoding import smart_unicode
 
 
 class JSONEncoder(simplejson.JSONEncoder):
@@ -48,6 +47,7 @@ class JSONDict(dict):
     """
     def __repr__(self):
         return dumps(self)
+
 
 class JSONList(list):
     """

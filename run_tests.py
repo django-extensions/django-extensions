@@ -4,7 +4,7 @@ import sys
 import shutil
 import tempfile
 from django.conf import settings
-from django.core.management import call_command
+
 
 def main():
     # Dynamically configure the Django settings with the minimum necessary to
@@ -21,7 +21,7 @@ def main():
             pass
 
         settings.configure(
-            INSTALLED_APPS = [
+            INSTALLED_APPS=[
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'django.contrib.admin',
@@ -30,18 +30,18 @@ def main():
                 'django_extensions.tests',
             ],
             # Django replaces this, but it still wants it. *shrugs*
-            DATABASE_ENGINE = 'django.db.backends.sqlite3',
-            DATABASES = {
+            DATABASE_ENGINE='django.db.backends.sqlite3',
+            DATABASES={
                 'default': {
                     'ENGINE': 'django.db.backends.sqlite3',
                 }
             },
-            MEDIA_ROOT = '/tmp/django_extensions_test_media/',
-            MEDIA_PATH = '/media/',
-            ROOT_URLCONF = 'django_extensions.tests.urls',
-            DEBUG = True,
-            TEMPLATE_DEBUG = True,
-            ENCRYPTED_FIELD_KEYS_DIR = ENCRYPTED_FIELD_KEYS_DIR,
+            MEDIA_ROOT='/tmp/django_extensions_test_media/',
+            MEDIA_PATH='/media/',
+            ROOT_URLCONF='django_extensions.tests.urls',
+            DEBUG=True,
+            TEMPLATE_DEBUG=True,
+            ENCRYPTED_FIELD_KEYS_DIR=ENCRYPTED_FIELD_KEYS_DIR,
         )
 
         from django.test.utils import get_runner

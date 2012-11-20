@@ -280,8 +280,7 @@ class SQLDiff(object):
         db_fields = [row[0] for row in table_description]
         for field_name, field in fieldmap.iteritems():
             if field_name not in db_fields:
-                self.add_difference('field-missing-in-db', table_name, field_name, 
-                                                           field.db_type(connection=connection))
+                self.add_difference('field-missing-in-db', table_name, field_name, field.db_type(connection=connection))
 
     def find_field_type_differ(self, meta, table_description, table_name, func=None):
         db_fields = dict([(row[0], row) for row in table_description])
@@ -592,7 +591,7 @@ class PostgresqlSQLDiff(SQLDiff):
 
 DATABASE_SQLDIFF_CLASSES = {
     'postgis': PostgresqlSQLDiff,
-    'postgresql_psycopg2' : PostgresqlSQLDiff,
+    'postgresql_psycopg2': PostgresqlSQLDiff,
     'postgresql': PostgresqlSQLDiff,
     'mysql': MySQLDiff,
     'sqlite3': SqliteSQLDiff,
@@ -639,9 +638,9 @@ to check/debug ur models compared to the real database tables and columns."""
         if engine == 'dummy':
             # This must be the "dummy" database backend, which means the user
             # hasn't set DATABASE_ENGINE.
-            raise CommandError("Django doesn't know which syntax to use for your SQL statements,\n" +
-                "because you haven't specified the DATABASE_ENGINE setting.\n" +
-                "Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.")
+            raise CommandError("""Django doesn't know which syntax to use for your SQL statements,
+because you haven't specified the DATABASE_ENGINE setting.
+Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
             app_models = models.get_models()

@@ -1,14 +1,6 @@
 from django.core.management.base import BaseCommand
-from django.core.management.color import no_style
 from optparse import make_option
-import sys
-import os
 import imp
-
-try:
-    set
-except NameError:
-    from sets import Set as set   # Python 2.3 fallback
 
 
 def vararg_callback(option, opt_str, opt_value, parser):
@@ -30,16 +22,16 @@ def vararg_callback(option, opt_str, opt_value, parser):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
-            help='Only look in app.fixtures subdir'),
+                    help='Only look in app.fixtures subdir'),
         make_option('--noscripts', action='store_true', dest='noscripts', default=False,
-            help='Look in app.scripts subdir'),
+                    help='Look in app.scripts subdir'),
         make_option('-s', '--silent', action='store_true', dest='silent', default=False,
-            help='Run silently, do not show errors and tracebacks'),
+                    help='Run silently, do not show errors and tracebacks'),
         make_option('--no-traceback', action='store_true', dest='no_traceback', default=False,
-            help='Do not show tracebacks'),
+                    help='Do not show tracebacks'),
         make_option('--script-args', action='callback', callback=vararg_callback, type='string',
-            help='Space-separated argument list to be passed to the scripts. Note that the '
-                 'same arguments will be passed to all named scripts.'),
+                    help='Space-separated argument list to be passed to the scripts. Note that the '
+                         'same arguments will be passed to all named scripts.'),
     )
     help = 'Runs a script in django context.'
     args = "script [script ...]"
@@ -81,7 +73,7 @@ class Command(BaseCommand):
         def run_script(mod, *script_args):
             try:
                 mod.run(*script_args)
-            except Exception, e:
+            except Exception:
                 if silent:
                     return
                 if verbosity > 0:
@@ -95,7 +87,6 @@ class Command(BaseCommand):
             # check if module exists before importing
             try:
                 path = None
-                full_path = mod.split('.')
                 for package in mod.split('.')[:-1]:
                     module_tuple = imp.find_module(package, path)
                     path = imp.load_module(package, *module_tuple).__path__

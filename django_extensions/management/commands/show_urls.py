@@ -2,12 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.core.management.base import BaseCommand
-from django.utils.translation import ugettext as _
 from optparse import make_option
 
 try:
     # 2008-05-30 admindocs found in newforms-admin brand
     from django.contrib.admindocs.views import simplify_regex
+    assert simplify_regex
 except ImportError:
     # fall back to trunk, pre-NFA merge
     from django.contrib.admin.views.doc import simplify_regex
@@ -47,7 +47,7 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
                 continue
             views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern))
         else:
-            raise TypeError, _("%s does not appear to be a urlpattern object") % p
+            raise TypeError("%s does not appear to be a urlpattern object" % p)
     return views
 
 
@@ -90,10 +90,12 @@ class Command(BaseCommand):
                     func_name = '%s()' % func.__class__.__name__
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
-                views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s" % {'name': style.MODULE_NAME(func_name),
-                                       'module': style.MODULE(func.__module__),
-                                       'url_name': style.URL_NAME(url_name or ''),
-                                       'url': style.URL(simplify_regex(regex))})
+                views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s" % {
+                    'name': style.MODULE_NAME(func_name),
+                    'module': style.MODULE(func.__module__),
+                    'url_name': style.URL_NAME(url_name or ''),
+                    'url': style.URL(simplify_regex(regex))
+                })
         if not getattr(options, 'unsorted', False):
             views = sorted(views)
         return "\n".join([v for v in views]) + "\n"

@@ -1,6 +1,6 @@
 import os
 import sys
-from django.core.management.base import CommandError, AppCommand
+from django.core.management.base import AppCommand
 from django_extensions.management.utils import _make_writeable
 
 
@@ -22,7 +22,6 @@ class Command(AppCommand):
 def copy_template(template_name, copy_to):
     """copies the specified template directory to the copy_to location"""
     import django_extensions
-    import re
     import shutil
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
@@ -54,4 +53,4 @@ def copy_template(template_name, copy_to):
                 shutil.copymode(path_old, path_new)
                 _make_writeable(path_new)
             except OSError:
-                sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
+                sys.stderr.write("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new)

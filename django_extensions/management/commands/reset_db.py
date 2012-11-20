@@ -4,7 +4,6 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
-from django.db import connection
 import django
 import logging
 import re
@@ -37,7 +36,7 @@ class Command(BaseCommand):
     def set_db_settings(self, *args, **options):
         if django.get_version() >= "1.2":
             router = options.get('router')
-            if router == None:
+            if router is None:
                 return False
 
             # retrieve this with the 'using' argument
@@ -86,10 +85,10 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
         postgis = re.compile('.*postgis')
         engine = settings.DATABASE_ENGINE
         user = options.get('user', settings.DATABASE_USER)
-        if user == None:
+        if user is None:
             user = settings.DATABASE_USER
         password = options.get('password', settings.DATABASE_PASSWORD)
-        if password == None:
+        if password is None:
             password = settings.DATABASE_PASSWORD
 
         if engine == 'sqlite3':
@@ -123,16 +122,16 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
 
         elif engine == 'postgresql' or engine == 'postgresql_psycopg2' or postgis.match(engine):
             if engine == 'postgresql':
-                import psycopg as Database
+                import psycopg as Database  # NOQA
             elif engine == 'postgresql_psycopg2' or postgis.match(engine):
-                import psycopg2 as Database
+                import psycopg2 as Database  # NOQA
 
             if settings.DATABASE_NAME == '':
                 from django.core.exceptions import ImproperlyConfigured
                 raise ImproperlyConfigured("You need to specify DATABASE_NAME in your Django settings file.")
 
             database_name = options.get('dbname', 'template1')
-            if options.get('dbname') == None:
+            if options.get('dbname') is None:
                 database_name = 'template1'
             conn_string = "dbname=%s" % database_name
             if settings.DATABASE_USER:

@@ -6,8 +6,8 @@ from mongoengine.document import Document
 from mongoengine.fields import StringField, IntField, DateTimeField
 from mongoengine.queryset import QuerySetManager
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.mongodb.fields import (ModificationDateTimeField,
-                                         CreationDateTimeField, AutoSlugField)
+from django_extensions.mongodb.fields import ModificationDateTimeField, CreationDateTimeField, AutoSlugField
+
 
 class TimeStampedModel(Document):
     """ TimeStampedModel
@@ -19,6 +19,7 @@ class TimeStampedModel(Document):
 
     class Meta:
         abstract = True
+
 
 class TitleSlugDescriptionModel(Document):
     """ TitleSlugDescriptionModel
@@ -32,6 +33,7 @@ class TitleSlugDescriptionModel(Document):
     class Meta:
         abstract = True
 
+
 class ActivatorModelManager(QuerySetManager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
@@ -44,6 +46,7 @@ class ActivatorModelManager(QuerySetManager):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
         return super(ActivatorModelManager, self).get_query_set().filter(status=0)
 
+
 class ActivatorModel(Document):
     """ ActivatorModel
     An abstract base class model that provides activate and deactivate fields.
@@ -52,12 +55,9 @@ class ActivatorModel(Document):
         (0, _('Inactive')),
         (1, _('Active')),
     )
-    status = IntField(_('status'), choices=STATUS_CHOICES,
-        default=1)
-    activate_date = DateTimeField(blank=True, null=True,
-        help_text=_('keep empty for an immediate activation'))
-    deactivate_date = DateTimeField(blank=True, null=True,
-        help_text=_('keep empty for indefinite activation'))
+    status = IntField(_('status'), choices=STATUS_CHOICES, default=1)
+    activate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for an immediate activation'))
+    deactivate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for indefinite activation'))
     objects = ActivatorModelManager()
 
     class Meta:

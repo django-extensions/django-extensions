@@ -80,8 +80,7 @@ class Command(BaseCommand):
         transaction.enter_transaction_management()
         transaction.managed(True)
 
-        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') \
-                        for app in get_apps()]
+        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in get_apps()]
         for fixture_label in fixture_labels:
             parts = fixture_label.split('.')
             if len(parts) == 1:
@@ -98,10 +97,7 @@ class Command(BaseCommand):
                 if verbosity > 1:
                     print "Loading '%s' fixtures..." % fixture_name
             else:
-                sys.stderr.write(
-                    self.style.ERROR("Problem installing fixture '%s': %s is not a known " + \
-                                     "serialization format." % (fixture_name, format))
-                    )
+                sys.stderr.write(self.style.ERROR("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format)))
                 transaction.rollback()
                 transaction.leave_transaction_management()
                 return
@@ -117,17 +113,15 @@ class Command(BaseCommand):
 
                 label_found = False
                 for format in formats:
-                    serializer = serializers.get_serializer(format)
+                    #serializer = serializers.get_serializer(format)
                     if verbosity > 1:
-                        print "Trying %s for %s fixture '%s'..." % \
-                            (humanize(fixture_dir), format, fixture_name)
+                        print "Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format, fixture_name)
                     try:
                         full_path = os.path.join(fixture_dir, '.'.join([fixture_name, format]))
                         fixture = open(full_path, 'r')
                         if label_found:
                             fixture.close()
-                            print self.style.ERROR("Multiple fixtures named '%s' in %s. Aborting." %
-                                (fixture_name, humanize(fixture_dir)))
+                            print self.style.ERROR("Multiple fixtures named '%s' in %s. Aborting." % (fixture_name, humanize(fixture_dir)))
                             transaction.rollback()
                             transaction.leave_transaction_management()
                             return
@@ -166,8 +160,7 @@ class Command(BaseCommand):
                                     traceback.print_exc()
                                 else:
                                     sys.stderr.write(
-                                        self.style.ERROR("Problem installing fixture '%s': %s\n" %
-                                             (full_path, traceback.format_exc())))
+                                        self.style.ERROR("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc())))
                                 return
                             fixture.close()
                     except:
@@ -179,8 +172,7 @@ class Command(BaseCommand):
         # error was encountered during fixture loading.
         if 0 in objects_per_fixture:
             sys.stderr.write(
-                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" %
-                    (fixture_name)))
+                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % (fixture_name)))
             transaction.rollback()
             transaction.leave_transaction_management()
             return
@@ -215,6 +207,6 @@ class Command(BaseCommand):
 if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
-            default='1', type='choice', choices=['0', '1', '2'],
-            help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+                    default='1', type='choice', choices=['0', '1', '2'],
+                    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
     )

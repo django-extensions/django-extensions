@@ -7,6 +7,7 @@ from django_extensions.tests.models import Name
 from django.conf import settings
 from django.db.models import loading
 
+
 class DumpScriptTests(TestCase):
     def setUp(self):
         self.real_stdout = sys.stdout
@@ -42,8 +43,8 @@ class DumpScriptTests(TestCase):
         n.save()
         tmp_out = StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
-        self.assertTrue('Mike' in tmp_out.getvalue()) # script should go to tmp_out
-        self.assertFalse(sys.stdout.len) # there should not be any output to sys.stdout
+        self.assertTrue('Mike' in tmp_out.getvalue())  # script should go to tmp_out
+        self.assertFalse(sys.stdout.len)  # there should not be any output to sys.stdout
         tmp_out.close()
 
     #----------------------------------------------------------------------
@@ -54,7 +55,7 @@ class DumpScriptTests(TestCase):
         tmp_err = StringIO()
         sys.stderr = StringIO()
         call_command('dumpscript', 'tests', stderr=tmp_err)
-        self.assertTrue('Fred' in sys.stdout.getvalue()) # script should still go to stdout
-        self.assertTrue('Name' in tmp_err.getvalue()) # error output should go to tmp_err
-        self.assertFalse(sys.stderr.len) # there should not be any output to sys.stderr
+        self.assertTrue('Fred' in sys.stdout.getvalue())  # script should still go to stdout
+        self.assertTrue('Name' in tmp_err.getvalue())  # error output should go to tmp_err
+        self.assertFalse(sys.stderr.len)  # there should not be any output to sys.stderr
         tmp_err.close()

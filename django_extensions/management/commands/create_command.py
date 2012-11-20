@@ -1,4 +1,5 @@
 import os
+import sys
 from django.core.management.base import CommandError, AppCommand
 from django_extensions.management.utils import _make_writeable
 from optparse import make_option
@@ -7,9 +8,9 @@ from optparse import make_option
 class Command(AppCommand):
     option_list = AppCommand.option_list + (
         make_option('--name', '-n', action='store', dest='command_name', default='sample',
-            help='The name to use for the management command'),
+                    help='The name to use for the management command'),
         make_option('--base', '-b', action='store', dest='base_command', default='Base',
-            help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
+                    help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
     )
 
     help = ("Creates a Django management command directory structure for the given app name"
@@ -38,7 +39,6 @@ class Command(AppCommand):
 def copy_template(template_name, copy_to, command_name, base_command):
     """copies the specified template directory to the copy_to location"""
     import django_extensions
-    import re
     import shutil
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
@@ -78,4 +78,4 @@ def copy_template(template_name, copy_to, command_name, base_command):
                 shutil.copymode(path_old, path_new)
                 _make_writeable(path_new)
             except OSError:
-                sys.stderr.write(style.NOTICE("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new))
+                sys.stderr.write("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new)

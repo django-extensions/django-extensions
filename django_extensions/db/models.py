@@ -8,6 +8,7 @@ from django_extensions.db.fields import (ModificationDateTimeField,
 
 try:
     from django.utils.timezone import now as datetime_now
+    assert datetime_now
 except ImportError:
     import datetime
     datetime_now = datetime.datetime.now
@@ -62,12 +63,9 @@ class ActivatorModel(models.Model):
         (INACTIVE_STATUS, _('Inactive')),
         (ACTIVE_STATUS, _('Active')),
     )
-    status = models.IntegerField(_('status'), choices=STATUS_CHOICES,
-        default=ACTIVE_STATUS)
-    activate_date = models.DateTimeField(blank=True, null=True,
-        help_text=_('keep empty for an immediate activation'))
-    deactivate_date = models.DateTimeField(blank=True, null=True,
-        help_text=_('keep empty for indefinite activation'))
+    status = models.IntegerField(_('status'), choices=STATUS_CHOICES, default=ACTIVE_STATUS)
+    activate_date = models.DateTimeField(blank=True, null=True, help_text=_('keep empty for an immediate activation'))
+    deactivate_date = models.DateTimeField(blank=True, null=True, help_text=_('keep empty for indefinite activation'))
     objects = ActivatorModelManager()
 
     class Meta:

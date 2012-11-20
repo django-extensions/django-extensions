@@ -6,7 +6,7 @@ from django_extensions.management.jobs import get_job, print_jobs
 class Command(LabelCommand):
     option_list = LabelCommand.option_list + (
         make_option('--list', '-l', action="store_true", dest="list_jobs",
-            help="List all jobs with their description"),
+                    help="List all jobs with their description"),
     )
     help = "Run a single maintenance job."
     args = "[app_name] job_name"
@@ -20,7 +20,7 @@ class Command(LabelCommand):
             print "Executing job: %s (app: %s)" % (job_name, app_name)
         try:
             job = get_job(app_name, job_name)
-        except KeyError, e:
+        except KeyError:
             if app_name:
                 print "Error: Job %s for applabel %s not found" % (app_name, job_name)
             else:
@@ -29,7 +29,7 @@ class Command(LabelCommand):
             return
         try:
             job().execute()
-        except Exception, e:
+        except Exception:
             import traceback
             print "ERROR OCCURED IN JOB: %s (APP: %s)" % (job_name, app_name)
             print "START TRACEBACK:"
@@ -55,6 +55,6 @@ class Command(LabelCommand):
 if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
         make_option('--verbosity', '-v', action="store", dest="verbosity",
-            default='1', type='choice', choices=['0', '1', '2'],
-            help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
+                    default='1', type='choice', choices=['0', '1', '2'],
+                    help="Verbosity level; 0=minimal output, 1=normal output, 2=all output"),
     )

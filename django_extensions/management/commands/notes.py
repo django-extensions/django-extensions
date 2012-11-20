@@ -1,11 +1,12 @@
 from __future__ import with_statement
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.conf import settings
 import os
 import re
 
 ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|HACK|XXX)[\s:]?(.+)")
 ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")
+
 
 class Command(BaseCommand):
     help = 'Show all annotations like TODO, FIXME, HACK or XXX in your py and HTML files.'
@@ -14,12 +15,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # don't add django internal code
-        apps = filter(lambda app: not app.startswith('django.contrib'),
-                        settings.INSTALLED_APPS)
+        apps = filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)
         for app_dir in apps:
             for top, dirs, files in os.walk(app_dir):
                 for f in files:
-                    if os.path.splitext(f)[1] in ['.py','.html']:
+                    if os.path.splitext(f)[1] in ('.py', '.html'):
                         fpath = os.path.join(top, f)
                         annotation_lines = []
                         with open(fpath, 'r') as f:
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
                                     annotation_lines.append("[%3s] %-5s %s" % (i, tag, msg.strip()))
                             if annotation_lines:
-                                print fpath+":"
+                                print "%s:" % fpath
                                 for annotation in annotation_lines:
-                                    print "  * "+annotation
+                                    print "  * %s" % annotation
                                 print

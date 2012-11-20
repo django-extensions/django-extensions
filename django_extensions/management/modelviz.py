@@ -37,7 +37,7 @@ options:
 
     -X, --exclude_models
     exclude specific model(s) from the graph.
-    
+
     -e, --inheritance
     show inheritance arrows.
 """
@@ -46,14 +46,14 @@ __svnid__ = "$Id$"
 __license__ = "Python"
 __author__ = "Antonio Cavedoni <http://cavedoni.com/>"
 __contributors__ = [
-   "Stefano J. Attardi <http://attardi.org/>",
-   "limodou <http://www.donews.net/limodou/>",
-   "Carlo C8E Miron",
-   "Andre Campos <cahenan@gmail.com>",
-   "Justin Findlay <jfindlay@gmail.com>",
-   "Alexander Houben <alexander@houben.ch>",
-   "Bas van Oostveen <v.oostveen@gmail.com>",
-   "Joern Hees <gitdev@joernhees.de>"
+    "Stefano J. Attardi <http://attardi.org/>",
+    "limodou <http://www.donews.net/limodou/>",
+    "Carlo C8E Miron",
+    "Andre Campos <cahenan@gmail.com>",
+    "Justin Findlay <jfindlay@gmail.com>",
+    "Alexander Houben <alexander@houben.ch>",
+    "Bas van Oostveen <v.oostveen@gmail.com>",
+    "Joern Hees <gitdev@joernhees.de>"
 ]
 
 import os
@@ -71,7 +71,7 @@ else:
 
 from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe
-from django.template import Template, Context, loader
+from django.template import Context, loader
 from django.db import models
 from django.db.models import get_models
 from django.db.models.fields.related import \
@@ -79,8 +79,10 @@ from django.db.models.fields.related import \
 
 try:
     from django.db.models.fields.generic import GenericRelation
+    assert GenericRelation
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
+
 
 def parse_file_or_list(arg):
     if not arg:
@@ -112,9 +114,6 @@ def generate_dot(app_labels, **kwargs):
                 return True
         return False
 
-
-
-
     t = loader.get_template('django_extensions/graph_models/head.html')
     c = Context({})
     dot = t.render(c)
@@ -143,9 +142,8 @@ def generate_dot(app_labels, **kwargs):
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
-        abstract_models = list(set(abstract_models)) # remove duplicates
+        abstract_models = list(set(abstract_models))  # remove duplicates
         appmodels = abstract_models + appmodels
-        
 
         for appmodel in appmodels:
             appmodel_abstracts = [abstract_model.__name__ for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
@@ -214,7 +212,7 @@ def generate_dot(app_labels, **kwargs):
                     continue
                 if not field.primary_key:
                     add_attributes(field)
-            
+
             # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
             #if appmodel._meta.many_to_many:
             #    for field in appmodel._meta.many_to_many:
@@ -228,14 +226,14 @@ def generate_dot(app_labels, **kwargs):
                     label = field.verbose_name
                 else:
                     label = field.name
-                    
+
                 # show related field name
                 if hasattr(field, 'related_query_name'):
                     label += ' (%s)' % field.related_query_name()
 
                 # handle self-relationships
                 if field.rel.to == 'self':
-                    target_model = field.model 
+                    target_model = field.model
                 else:
                     target_model = field.rel.to
 
@@ -252,9 +250,9 @@ def generate_dot(app_labels, **kwargs):
                     model['relations'].append(_rel)
 
             for field in appmodel._meta.local_fields:
-                if field.attname.endswith('_ptr_id'): # excluding field redundant with inheritance relation
+                if field.attname.endswith('_ptr_id'):  # excluding field redundant with inheritance relation
                     continue
-                if field in abstract_fields: # excluding fields inherited from abstract classes. they too show as local_fields
+                if field in abstract_fields:  # excluding fields inherited from abstract classes. they too show as local_fields
                     continue
                 if skip_field(field):
                     continue
@@ -268,15 +266,15 @@ def generate_dot(app_labels, **kwargs):
                     continue
                 if isinstance(field, ManyToManyField):
                     if (getattr(field, 'creates_table', False) or  # django 1.1.
-                        (hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created)):  # django 1.2
+                            (hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created)):  # django 1.2
                         add_relation(field, '[arrowhead=dot arrowtail=dot, dir=both]')
                 elif isinstance(field, GenericRelation):
                     add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
-            
+
             if inheritance:
                 # add inheritance arrows
                 for parent in appmodel.__bases__:
-                    if hasattr(parent, "_meta"): # parent is a model
+                    if hasattr(parent, "_meta"):  # parent is a model
                         l = "multi-table"
                         if parent._meta.abstract:
                             l = "abstract"
@@ -295,7 +293,7 @@ def generate_dot(app_labels, **kwargs):
                         # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
                         if _rel not in model['relations'] and consider(_rel['target']):
                             model['relations'].append(_rel)
-            
+
             graph['models'].append(model)
         graphs.append(graph)
 
@@ -317,16 +315,15 @@ def generate_dot(app_labels, **kwargs):
         t = loader.get_template('django_extensions/graph_models/rel.html')
         dot += '\n' + t.render(graph)
 
-
     t = loader.get_template('django_extensions/graph_models/tail.html')
     c = Context({})
     dot += '\n' + t.render(c)
     return dot
 
+
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:en",
-                    ["help", "all_applications", "disable_fields", "group_models", "include_models=", "inheritance", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
+        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:en", ["help", "all_applications", "disable_fields", "group_models", "include_models=", "inheritance", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
     except getopt.GetoptError, error:
         print __doc__
         sys.exit(error)

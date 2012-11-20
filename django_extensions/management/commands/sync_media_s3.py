@@ -50,10 +50,16 @@ TODO:
 import datetime
 import email
 import mimetypes
-import optparse
+from optparse import make_option
 import os
-import sys
 import time
+import gzip
+try:
+    from cStringIO import StringIO
+    assert StringIO
+except ImportError:
+    from StringIO import StringIO
+
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -63,7 +69,7 @@ try:
     import boto
     import boto.exception
 except ImportError:
-    raise ImportError, "The boto Python library is not installed."
+    raise ImportError("The boto Python library is not installed.")
 
 
 class Command(BaseCommand):
@@ -88,31 +94,31 @@ class Command(BaseCommand):
     skip_count = 0
 
     option_list = BaseCommand.option_list + (
-        optparse.make_option('-p', '--prefix',
-            dest='prefix',
-            default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
-            help="The prefix to prepend to the path on S3."),
-        optparse.make_option('-d', '--dir',
-            dest='dir', default=settings.MEDIA_ROOT,
-            help="The root directory to use instead of your MEDIA_ROOT"),
-        optparse.make_option('--gzip',
-            action='store_true', dest='gzip', default=False,
-            help="Enables gzipping CSS and Javascript files."),
-        optparse.make_option('--renamegzip',
-            action='store_true', dest='renamegzip', default=False,
-            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."),
-        optparse.make_option('--expires',
-            action='store_true', dest='expires', default=False,
-            help="Enables setting a far future expires header."),
-        optparse.make_option('--force',
-            action='store_true', dest='force', default=False,
-            help="Skip the file mtime check to force upload of all files."),
-        optparse.make_option('--filter-list', dest='filter_list',
-            action='store', default='',
-            help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
-        optparse.make_option('--invalidate', dest='invalidate', default=False,
-            action='store_true',
-            help='Invalidates the associated objects in CloudFront')
+        make_option('-p', '--prefix',
+                    dest='prefix',
+                    default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
+                    help="The prefix to prepend to the path on S3."),
+        make_option('-d', '--dir',
+                    dest='dir', default=settings.MEDIA_ROOT,
+                    help="The root directory to use instead of your MEDIA_ROOT"),
+        make_option('--gzip',
+                    action='store_true', dest='gzip', default=False,
+                    help="Enables gzipping CSS and Javascript files."),
+        make_option('--renamegzip',
+                    action='store_true', dest='renamegzip', default=False,
+                    help="Enables renaming of gzipped assets to have '.gz' appended to the filename."),
+        make_option('--expires',
+                    action='store_true', dest='expires', default=False,
+                    help="Enables setting a far future expires header."),
+        make_option('--force',
+                    action='store_true', dest='force', default=False,
+                    help="Skip the file mtime check to force upload of all files."),
+        make_option('--filter-list', dest='filter_list',
+                    action='store', default='',
+                    help="Override default directory and file exclusion filters. (enter as comma seperated line)"),
+        make_option('--invalidate', dest='invalidate', default=False,
+                    action='store_true',
+                    help='Invalidates the associated objects in CloudFront')
     )
 
     help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
@@ -123,17 +129,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Check for AWS keys in settings
-        if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or \
-            not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
-            raise CommandError('Missing AWS keys from settings file.  Please' +
-                                'supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
+        if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
+            raise CommandError('Missing AWS keys from settings file.  Please supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
 
         if not hasattr(settings, 'AWS_BUCKET_NAME'):
-            raise CommandError('Missing bucket name from settings file. Please' +
-                ' add the AWS_BUCKET_NAME to your settings file.')
+            raise CommandError('Missing bucket name from settings file. Please add the AWS_BUCKET_NAME to your settings file.')
         else:
             if not settings.AWS_BUCKET_NAME:
                 raise CommandError('AWS_BUCKET_NAME cannot be empty.')
@@ -145,8 +148,7 @@ class Command(BaseCommand):
             if not settings.MEDIA_ROOT:
                 raise CommandError('MEDIA_ROOT must be set in your settings.')
 
-        self.AWS_CLOUDFRONT_DISTRIBUTION = \
-            getattr(settings, 'AWS_CLOUDFRONT_DISTRIBUTION', '')
+        self.AWS_CLOUDFRONT_DISTRIBUTION = getattr(settings, 'AWS_CLOUDFRONT_DISTRIBUTION', '')
 
         self.SYNC_S3_RENAME_GZIP_EXT = \
             getattr(settings, 'SYNC_S3_RENAME_GZIP_EXT', '.gz')
@@ -216,16 +218,10 @@ class Command(BaseCommand):
         Walks the media directory and syncs files to S3
         """
         bucket, key = self.open_s3()
-        os.path.walk(self.DIRECTORY, self.upload_s3,
-            (bucket, key, self.AWS_BUCKET_NAME, self.DIRECTORY))
+        os.path.walk(self.DIRECTORY, self.upload_s3, (bucket, key, self.AWS_BUCKET_NAME, self.DIRECTORY))
 
     def compress_string(self, s):
         """Gzip a given string."""
-        import gzip
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
         zbuf = StringIO()
         zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
         zfile.write(s)
@@ -342,7 +338,7 @@ class Command(BaseCommand):
 # Backwards compatibility for Django r9110
 if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
     Command.option_list += (
-        optparse.make_option('-v', '--verbosity',
-            dest='verbosity', default=1, action='count',
-            help="Verbose mode. Multiple -v options increase the verbosity."),
+        make_option('-v', '--verbosity',
+                    dest='verbosity', default=1, action='count',
+                    help="Verbose mode. Multiple -v options increase the verbosity."),
     )

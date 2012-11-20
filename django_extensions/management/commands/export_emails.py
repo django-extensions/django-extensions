@@ -24,9 +24,9 @@ def full_name(first_name, last_name, username, **extra):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--group', '-g', action='store', dest='group', default=None,
-            help='Limit to users which are part of the supplied group name'),
+                    help='Limit to users which are part of the supplied group name'),
         make_option('--format', '-f', action='store', dest='format', default=FORMATS[0],
-            help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
+                    help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
     )
 
     help = ("Export user email address list in one of a number of formats.")
@@ -71,7 +71,7 @@ class Command(BaseCommand):
         """
         out.write(u",\n".join(u'%s' % (ent['email']) for ent in qs).encode(self.encoding))
         out.write("\n")
-        
+
     def google(self, qs, out):
         """CSV format suitable for importing into google GMail
         """

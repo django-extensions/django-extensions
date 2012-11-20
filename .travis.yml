@@ -9,7 +9,9 @@ env:
   - DJANGO_VERSION=1.3.1
 
 install:
-  - pip install --use-mirrors -q Django==$DJANGO_VERSION PyYAML unittest2
+  - pip install --use-mirrors -q Django==$DJANGO_VERSION PyYAML unittest2 flake8
   - python setup.py -q install
 
-script: python setup.py test
+script:
+  - flake8 .
+  - python setup.py test

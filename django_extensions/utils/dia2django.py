@@ -15,7 +15,7 @@ dependclasses = ["User", "Group", "Permission", "Message"]
 import codecs
 import sys
 import gzip
-from xml.dom.minidom import *
+from xml.dom.minidom import *  # NOQA
 import re
 
 #Type dictionary translation types SQL -> Django
@@ -144,7 +144,7 @@ def dia2django(archivo):
                                     tc = "models." + tc
                                     if len(val) > 0:
                                         tc = tc.replace(")", "," + val + ")")
-                                elif varch == None:
+                                elif varch is None:
                                     tc = "models." + tsd[tc.strip().lower()] + "(" + val + ")"
                                 else:
                                     tc = "models.CharField(max_length=" + varch.group(1) + ")"

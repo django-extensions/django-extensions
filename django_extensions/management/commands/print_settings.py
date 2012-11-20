@@ -17,9 +17,9 @@ class Command(NoArgsCommand):
 
     option_list = NoArgsCommand.option_list + (
         make_option('--format', default='simple', dest='format',
-            help='Specifies output format.'),
+                    help='Specifies output format.'),
         make_option('--indent', default=4, dest='indent', type='int',
-            help='Specifies indent level for JSON and YAML'),
+                    help='Specifies indent level for JSON and YAML'),
     )
 
     def handle_noargs(self, **options):
@@ -68,6 +68,5 @@ class Command(NoArgsCommand):
         try:
             import json
         except ImportError:
-            import simplejson as json
-        else:
-            return json
+            import simplejson as json  # NOQA
+        return json

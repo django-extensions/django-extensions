@@ -38,7 +38,7 @@ def describe_form(label, fields=None):
         attrs = {}
         valid_fields = ['required', 'initial', 'max_length', 'min_length', 'max_value', 'min_value', 'max_digits', 'decimal_places', 'choices', 'help_text', 'label']
         for k, v in formfield.__dict__.items():
-            if k in valid_fields and v != None:
+            if k in valid_fields and v is not None:
                 # ignore defaults, to minimize verbosity
                 if k == 'required' and v:
                     continue

@@ -13,9 +13,7 @@ from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 from datetime import datetime
 from django.conf import settings
-import os
 import sys
-import time
 
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
@@ -32,6 +30,7 @@ except NameError:
             if element:
                 return True
         return False
+
 
 def label(code):
     if isinstance(code, str):
@@ -113,24 +112,24 @@ class KCacheGrind(object):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-            help='Tells Django to NOT use the auto-reloader.'),
+                    help='Tells Django to NOT use the auto-reloader.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
-            help='Specifies the directory from which to serve admin media.'),
+                    help='Specifies the directory from which to serve admin media.'),
         make_option('--prof-path', dest='prof_path', default='/tmp',
-            help='Specifies the directory which to save profile information in.'),
+                    help='Specifies the directory which to save profile information in.'),
         make_option('--nomedia', action='store_true', dest='no_media', default=False,
-            help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL'),
+                    help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL'),
         make_option('--use-cprofile', action='store_true', dest='use_cprofile', default=False,
-            help='Use cProfile if available, this is disabled per default because of incompatibilities.'),
+                    help='Use cProfile if available, this is disabled per default because of incompatibilities.'),
         make_option('--kcachegrind', action='store_true', dest='use_lsprof', default=False,
-            help='Create kcachegrind compatible lsprof files, this requires and automatically enables cProfile.'),
+                    help='Create kcachegrind compatible lsprof files, this requires and automatically enables cProfile.'),
     )
     if USE_STATICFILES:
         option_list += (
             make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
             make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                help='Allows serving static files even if DEBUG is False.'),
+                        help='Allows serving static files even if DEBUG is False.'),
         )
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
@@ -187,6 +186,7 @@ class Command(BaseCommand):
             if USE_LSPROF and not USE_CPROFILE:
                 raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
             prof_path = options.get('prof_path', '/tmp')
+
             def get_exclude_paths():
                 exclude_paths = []
                 media_url = getattr(settings, 'MEDIA_URL', None)
@@ -252,8 +252,7 @@ class Command(BaseCommand):
                 if USE_STATICFILES:
                     use_static_handler = options.get('use_static_handler', True)
                     insecure_serving = options.get('insecure_serving', False)
-                    if (use_static_handler and
-                        (settings.DEBUG or insecure_serving)):
+                    if (use_static_handler and (settings.DEBUG or insecure_serving)):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)
