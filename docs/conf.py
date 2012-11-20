@@ -171,10 +171,10 @@ htmlhelp_basename = 'django-extensionsdoc'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ('index', 'django-extensions.tex', u'django-extensions Documentation',
-    u'Michael Trier, Bas van Oostveen, and contributors', 'manual'),
-]
+latex_documents = [(
+    'index', 'django-extensions.tex', u'django-extensions Documentation',
+    u'Michael Trier, Bas van Oostveen, and contributors', 'manual'
+), ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

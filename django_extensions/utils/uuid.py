@@ -100,8 +100,7 @@ class UUID(object):
                     when the variant is RFC_4122)
     """
 
-    def __init__(self, hex=None, bytes=None, bytes_le=None, fields=None,
-                       int=None, version=None):
+    def __init__(self, hex=None, bytes=None, bytes_le=None, fields=None, int=None, version=None):
         r"""Create a UUID from either a string of 32 hexadecimal digits,
         a string of 16 bytes as the 'bytes' argument, a string of 16 bytes
         in little-endian order as the 'bytes_le' argument, a tuple of six

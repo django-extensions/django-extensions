@@ -52,9 +52,11 @@ def describe_form(label, fields=None):
                     attrs[k] = v
 
         params = ', '.join(['%s=%r' % (k, v) for k, v in attrs.items()])
-        field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % {'field_name': f.name,
-                                                                                  'field_type': formfield.__class__.__name__,
-                                                                                  'params': params})
+        field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % {
+            'field_name': f.name,
+            'field_type': formfield.__class__.__name__,
+            'params': params
+        })
     return '''
 from django import forms
 from %(app_name)s.models import %(object_name)s
