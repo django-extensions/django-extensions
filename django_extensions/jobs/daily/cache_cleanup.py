@@ -34,8 +34,10 @@ class Job(DailyJob):
                 os.environ['TZ'] = settings.TIME_ZONE
                 table_name = settings.CACHE_BACKEND[5:]
                 cursor = connection.cursor()
-                cursor.execute("DELETE FROM %s WHERE %s < current_timestamp;" % (
-                    connection.ops.quote_name(table_name),
-                    connection.ops.quote_name('expires'))
+                cursor.execute(
+                    "DELETE FROM %s WHERE %s < current_timestamp;" % (
+                        connection.ops.quote_name(table_name),
+                        connection.ops.quote_name('expires')
+                    )
                 )
                 transaction.commit_unless_managed()
