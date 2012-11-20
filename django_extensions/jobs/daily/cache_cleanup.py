@@ -16,10 +16,15 @@ class Job(DailyJob):
         from django.db import transaction
         import os
 
-        if hasattr(settings, 'CACHES'):
+        try:
+            from django.utils import timezone
+        except ImportError:
+            timezone = None
+
+        if hasattr(settings, 'CACHES') and timezone:
             from django.core.cache import get_cache
             from django.db import router, connections
-            from django.utils import timezone
+
             for cache_name, cache_options in settings.CACHES.iteritems():
                 if cache_options['BACKEND'].endswith("DatabaseCache"):
                     cache = get_cache(cache_name)
@@ -28,7 +33,9 @@ class Job(DailyJob):
                     now = timezone.now()
                     cache._cull(db, cursor, now)
                     transaction.commit_unless_managed(using=db)
-        elif hasattr(settings, 'CACHE_BACKEND'):
+            return
+
+        if hasattr(settings, 'CACHE_BACKEND'):
             if settings.CACHE_BACKEND.startswith('db://'):
                 from django.db import connection
                 os.environ['TZ'] = settings.TIME_ZONE
