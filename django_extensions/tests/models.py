@@ -4,11 +4,11 @@ try:
     from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField
 except ImportError:
     class EncryptedCharField(object):
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             pass
 
     class EncryptedTextField(object):
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             pass
 
 
