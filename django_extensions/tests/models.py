@@ -13,8 +13,8 @@ except ImportError:
 
 
 class Secret(models.Model):
-    name = EncryptedCharField(blank=True, max_length=255)
-    text = EncryptedTextField(blank=True)
+    name = EncryptedCharField("Name", blank=True, max_length=255)
+    text = EncryptedTextField("Text", blank=True)
 
 
 class Name(models.Model):
