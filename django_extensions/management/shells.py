@@ -1,3 +1,4 @@
+
 class ObjectImportError(Exception):
     pass
 
