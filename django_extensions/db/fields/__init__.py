@@ -209,7 +209,7 @@ class UUIDVersionError(Exception):
 class UUIDField(CharField):
     """ UUIDField
 
-    By default uses UUID version 1 (generate from host ID, sequence number and current time)
+    By default uses UUID version 4 (generate from host ID, sequence number and current time)
 
     The field support all uuid versions which are natively supported by the uuid python module.
     For more information see: http://docs.python.org/lib/module-uuid.html
