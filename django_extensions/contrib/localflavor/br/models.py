@@ -14,15 +14,21 @@ from django_extensions.db.fields import \
 from .managers import BRPublisherModelManager
 
 
-class BRTitleSlugCreationModificationModel(models.Model):
+class BRCreationModificationModel(models.Model):
+
+    data_criacao = CreationDateTimeField(_(u'Data de criação'))
+    data_modificacao = ModificationDateTimeField(_(u'Data de modificação'))
+
+    class Meta:
+        abstract = True
+
+
+class BRTitleSlugCreationModificationModel(BRCreationModificationModel):
 
     titulo = models.CharField(_(u'Título'), max_length=255)
     slug = AutoSlugField(
         _('slug'), populate_from='titulo', overwrite=True, max_length=255,
         editable=False)
-
-    data_criacao = CreationDateTimeField(_(u'Data de criação'))
-    data_modificacao = ModificationDateTimeField(_(u'Data de modificação'))
 
     def __unicode__(self):
         return self.titulo
