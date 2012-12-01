@@ -38,18 +38,18 @@ Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for 
 Getting Involved
 ================
 
-Open Source projects can always use more help. Fixing a problem, documenting a feature, adding translation in your language. If you have some time to spare and like to help us, here are the places to do so::
+Open Source projects can always use more help. Fixing a problem, documenting a feature, adding translation in your language. If you have some time to spare and like to help us, here are the places to do so:
 
-  GitHub: https://github.com/django-extensions/django-extensions
-  Mailinglist: http://groups.google.com/group/django-extensions
-  Translations: https://www.transifex.net/projects/p/django-extensions/
+- GitHub: https://github.com/django-extensions/django-extensions
+- Mailing list: http://groups.google.com/group/django-extensions
+- Translations: https://www.transifex.net/projects/p/django-extensions/
 
 Documentation
 =============
 
-You can view documentation online at::
+You can view documentation online at:
 
-  http://packages.python.org/django-extensions/
+- http://packages.python.org/django-extensions/
 
 Or you can look at the docs/ directory in the repository.
 
