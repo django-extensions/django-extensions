@@ -52,7 +52,7 @@ def extract_views_from_urlpatterns(urlpatterns, base=''):
 
 
 class Command(BaseCommand):
-    options_list = BaseCommand.option_list + (
+    option_list = BaseCommand.option_list + (
         make_option("--unsorted", "-u", action="store_true", dest="unsorted",
                     help="Show urls unsorted but same order as found in url patterns"),
     )
@@ -96,6 +96,8 @@ class Command(BaseCommand):
                     'url_name': style.URL_NAME(url_name or ''),
                     'url': style.URL(simplify_regex(regex))
                 })
-        if not getattr(options, 'unsorted', False):
+
+        if not options.get('unsorted', False):
             views = sorted(views)
+
         return "\n".join([v for v in views]) + "\n"
