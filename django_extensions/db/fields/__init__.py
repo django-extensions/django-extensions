@@ -232,6 +232,12 @@ class UUIDField(CharField):
     def get_internal_type(self):
         return CharField.__name__
 
+    def db_type(self, connection=None):
+        if connection and connection.vendor in ("postgresql",):
+            return "UUID"
+
+        return super(UUIDField, self).db_type(connection)
+
     def contribute_to_class(self, cls, name):
         if self.primary_key:
             assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (
