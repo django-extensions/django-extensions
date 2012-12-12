@@ -1,6 +1,5 @@
 import sys
 
-import django
 from django.core.management.base import BaseCommand
 from django.utils.log import getLogger
 
@@ -21,12 +20,12 @@ class LoggingBaseCommand(BaseCommand):
             def handle(self, *args, **options):
                 raise Exception
 
-    
+
     And then define a logging handler in settings.py:
 
         LOGGING = {
             ... # Other stuff here
-            
+
             'handlers': {
                 'mail_admins': {
                     'level': 'ERROR',
@@ -43,17 +42,12 @@ class LoggingBaseCommand(BaseCommand):
             }
 
         }
-        
+
     """
 
     def execute(self, *args, **options):
         try:
             super(LoggingBaseCommand, self).execute(*args, **options)
         except Exception, e:
-            logger.error(e,
-                exc_info=sys.exc_info(),
-                extra={
-                    'status_code': 500,
-                }
-            )
+            logger.error(e, exc_info=sys.exc_info(), extra={'status_code': 500})
             raise

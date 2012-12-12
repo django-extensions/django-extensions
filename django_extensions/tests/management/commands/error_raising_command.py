@@ -6,4 +6,5 @@ class Command(LoggingBaseCommand):
     help = 'Test error'
 
     def handle(self, *args, **options):
-        print error
+        raise Exception("Test Error")
+

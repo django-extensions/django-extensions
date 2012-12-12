@@ -2,7 +2,6 @@ import logging
 
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.log import getLogger
 
 
 class MockLoggingHandler(logging.Handler):
@@ -31,6 +30,7 @@ class CommandTest(TestCase):
         # Ensure command errors are properly logged and reraised
         from django_extensions.management.base import logger
         logger.addHandler(MockLoggingHandler())
-        self.assertRaises(NameError, call_command, 'error_raising_command')
+        self.assertRaises(Exception, call_command, 'error_raising_command')
         handler = logger.handlers[0]
         self.assertEqual(len(handler.messages['error']), 1)
+
