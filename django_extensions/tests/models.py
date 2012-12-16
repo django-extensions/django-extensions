@@ -1,7 +1,10 @@
 from django.db import models
+from django.conf import settings
 
 try:
     from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField
+    if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
+        raise ImportError
 except ImportError:
     class EncryptedCharField(object):
         def __init__(self, *args, **kwargs):
