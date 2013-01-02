@@ -3,7 +3,10 @@ from django import forms
 from django.conf import settings
 from django.contrib.admin.sites import site
 from django.utils.safestring import mark_safe
-from django.utils.text import Truncator
+if django.get_version() >= "1.4":
+    from django.utils.text import Truncator
+else:
+    from django.utils.text import truncate_words
 from django.template.loader import render_to_string
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 
@@ -32,7 +35,10 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
         obj = self.rel.to._default_manager.get(**{key: value})
-        return Truncator(obj).words(14, truncate='...')
+        if django.get_version() >= "1.4":
+            return Truncator(obj).words(14, truncate='...')
+        else:
+            return truncate_words(obj, 14)
 
     def __init__(self, rel, search_fields, attrs=None):
         self.search_fields = search_fields
