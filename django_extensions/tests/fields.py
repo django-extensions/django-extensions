@@ -12,6 +12,10 @@ class SluggedTestModel(models.Model):
     slug = AutoSlugField(populate_from='title')
 
 
+class ChildSluggedTestModel(SluggedTestModel):
+    pass
+
+
 class AutoSlugFieldTest(unittest.TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
@@ -87,3 +91,15 @@ class AutoSlugFieldTest(unittest.TestCase):
 
         n.save()
         self.assertEqual(n.slug, '-3')
+
+    def testInheritanceCreatesNextSlug(self):
+        m = SluggedTestModel(title='foo')
+        m.save()
+
+        n = ChildSluggedTestModel(title='foo')
+        n.save()
+        self.assertEqual(n.slug, 'foo-2')
+
+        o = SluggedTestModel(title='foo')
+        o.save()
+        self.assertEqual(o.slug, 'foo-3')
