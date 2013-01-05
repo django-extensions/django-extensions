@@ -67,6 +67,12 @@ class AutoSlugField(SlugField):
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
+    def get_queryset(self, model_cls, slug_field):
+        for field, model in model_cls._meta.get_fields_with_model():
+            if model and field == slug_field:
+                return model._default_manager.all()
+        return model_cls._default_manager.all()
+
     def slugify_func(self, content):
         if content:
             return slugify(content)
@@ -103,7 +109,7 @@ class AutoSlugField(SlugField):
 
         # exclude the current model instance from the queryset used in finding
         # the next valid slug
-        queryset = model_instance.__class__._default_manager.all()
+        queryset = self.get_queryset(model_instance.__class__, slug_field)
         if model_instance.pk:
             queryset = queryset.exclude(pk=model_instance.pk)
 
