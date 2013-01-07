@@ -13,7 +13,7 @@ __test__ = {
 }
 
 __test_classes__ = [
-    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest, CommandTest
+    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest, CommandTest, ShowTemplateTagsTests
 ]
 
 try:
