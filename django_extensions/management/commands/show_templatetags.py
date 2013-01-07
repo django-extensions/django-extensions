@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 app_labeled = False
                 for taglib in tag_files:
                     try:
-                        lib = get_library("django.templatetags.%s" % taglib)
+                        lib = get_library(taglib)
                     except:
                         continue
                     if not app_labeled:
