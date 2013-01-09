@@ -34,7 +34,9 @@ class BaseEncryptedField(models.Field):
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if value and (value.startswith(self.prefix)):
+        if isinstance(self.crypt.primary_key, keyczar.keys.RsaPublicKey):
+            retval = value
+        elif value and (value.startswith(self.prefix)):
             retval = self.crypt.Decrypt(value[len(self.prefix):])
             if retval:
                 retval = retval.decode('utf-8')
