@@ -5,7 +5,7 @@ from django_extensions.tests.utils import UTILS_UUID_TESTS
 from django_extensions.tests.json_field import JsonFieldTest
 from django_extensions.tests.uuid_field import UUIDFieldTest
 from django_extensions.tests.fields import AutoSlugFieldTest
-from django_extensions.tests.management_command import CommandTest
+from django_extensions.tests.management_command import CommandTest, ShowTemplateTagsTests
 
 __test__ = {
     'UTILS_TRUNCATE_LETTERS_TESTS': UTILS_TRUNCATE_LETTERS_TESTS,
@@ -13,7 +13,7 @@ __test__ = {
 }
 
 __test_classes__ = [
-    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest, CommandTest
+    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest, CommandTest, ShowTemplateTagsTests
 ]
 
 try:

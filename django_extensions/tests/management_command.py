@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import logging
+from cStringIO import StringIO
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -34,3 +36,15 @@ class CommandTest(TestCase):
         handler = logger.handlers[0]
         self.assertEqual(len(handler.messages['error']), 1)
 
+
+class ShowTemplateTagsTests(TestCase):
+    def test_some_output(self):
+        out = StringIO()
+        call_command('show_templatetags',
+                     stdout=out)
+        output = out.getvalue()
+        # Once django_extension is installed during tests it should appear with
+        # its templatetags
+        self.assertIn('django_extensions', output)
+        # let's check at least one
+        self.assertIn('truncate_letters', output)
