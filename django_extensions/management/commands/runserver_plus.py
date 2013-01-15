@@ -34,6 +34,9 @@ class Command(BaseCommand):
                     help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
         make_option('--print-sql', action='store_true', default=False,
                     help="Print SQL queries as they're executed"),
+        make_option('--cert', dest='cert_path', action="store", type="string",
+                    help='To use SSL, specify certificate path.'),
+
     )
     if USE_STATICFILES:
         option_list += (
@@ -121,6 +124,7 @@ class Command(BaseCommand):
         threaded = options.get('threaded', False)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
+        cert_path = options.get("cert_path")
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
@@ -149,6 +153,20 @@ class Command(BaseCommand):
                 import webbrowser
                 url = "http://%s:%s/" % (addr, port)
                 webbrowser.open(url)
-            run_simple(addr, int(port), DebuggedApplication(handler, True),
-                       use_reloader=use_reloader, use_debugger=True, threaded=threaded)
+            if cert_path:
+                try:
+                    from werkzeug.serving import make_ssl_devcert
+                    ssl_context = make_ssl_devcert(cert_path, host='localhost')
+                    run_simple(addr, int(port),
+                        DebuggedApplication(handler, True),
+                        use_reloader=use_reloader, use_debugger=True,
+                        threaded=threaded, ssl_context=ssl_context)
+                except ImportError:
+                    raise CommandError("Werkzeug 0.8.2 or later is required "
+                        "to use runserver_plus with ssl support.  Please "
+                        "visit http://werkzeug.pocoo.org/download")
+            else:
+                run_simple(addr, int(port), DebuggedApplication(handler, True),
+                    use_reloader=use_reloader, use_debugger=True,
+                    threaded=threaded)
         inner_run()
