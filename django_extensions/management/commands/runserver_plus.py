@@ -157,16 +157,26 @@ class Command(BaseCommand):
                 try:
                     from werkzeug.serving import make_ssl_devcert
                     ssl_context = make_ssl_devcert(cert_path, host='localhost')
-                    run_simple(addr, int(port),
+                    run_simple(
+                        addr,
+                        int(port),
                         DebuggedApplication(handler, True),
-                        use_reloader=use_reloader, use_debugger=True,
-                        threaded=threaded, ssl_context=ssl_context)
+                        use_reloader=use_reloader,
+                        use_debugger=True,
+                        threaded=threaded,
+                        ssl_context=ssl_context
+                    )
                 except ImportError:
-                    raise CommandError("Werkzeug 0.8.2 or later is required "
-                        "to use runserver_plus with ssl support.  Please "
-                        "visit http://werkzeug.pocoo.org/download")
+                    raise CommandError("""Werkzeug 0.8.2 or later is required
+to use runserver_plus with ssl support.  Please
+visit http://werkzeug.pocoo.org/download""")
             else:
-                run_simple(addr, int(port), DebuggedApplication(handler, True),
-                    use_reloader=use_reloader, use_debugger=True,
-                    threaded=threaded)
+                run_simple(
+                    addr,
+                    int(port),
+                    DebuggedApplication(handler, True),
+                    use_reloader=use_reloader,
+                    use_debugger=True,
+                    threaded=threaded
+                )
         inner_run()
