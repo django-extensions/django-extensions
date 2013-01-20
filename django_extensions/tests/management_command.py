@@ -7,7 +7,7 @@ from django.test import TestCase
 
 
 class MockLoggingHandler(logging.Handler):
-    """Mock logging handler to check for expected logs."""
+    """ Mock logging handler to check for expected logs. """
 
     def __init__(self, *args, **kwargs):
         self.reset()
@@ -40,8 +40,7 @@ class CommandTest(TestCase):
 class ShowTemplateTagsTests(TestCase):
     def test_some_output(self):
         out = StringIO()
-        call_command('show_templatetags',
-                     stdout=out)
+        call_command('show_templatetags', stdout=out)
         output = out.getvalue()
         # Once django_extension is installed during tests it should appear with
         # its templatetags
