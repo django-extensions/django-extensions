@@ -2,6 +2,11 @@
 import logging
 from cStringIO import StringIO
 
+try:
+    import importlib  # NOQA
+except ImportError:
+    from django.utils import importlib  # NOQA
+
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -31,16 +36,12 @@ class CommandTest(TestCase):
         # Ensure command errors are properly logged and reraised
         from django_extensions.management.base import logger
         logger.addHandler(MockLoggingHandler())
-        from django.conf import settings
-        org_apps = None
-        apps = list(settings.INSTALLED_APPS)
-        if not 'django_extensions.tests' in apps:
-            apps.append('django_extensions.tests')
-        self.assertRaises(Exception, call_command, 'error_raising_command')
+        module_path = "django_extensions.tests.management.commands.error_raising_command"
+        module = importlib.import_module(module_path)
+        error_raising_command = module.Command()
+        self.assertRaises(Exception, error_raising_command.execute)
         handler = logger.handlers[0]
         self.assertEqual(len(handler.messages['error']), 1)
-        if org_apps:
-            settings.INSTALLED_APPS = org_apps
 
 
 class ShowTemplateTagsTests(TestCase):
