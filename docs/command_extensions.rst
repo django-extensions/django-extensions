@@ -60,7 +60,7 @@ Current Command Extensions
 * :doc:`runprofileserver <runprofileserver>` - Starts *runserver* with hotshot/profiling tools enabled.
   I haven't had a chance to check this one out, but it looks really cool.
 
-* *runscript* - Runs a script in django context.
+* `runscript`_ - Runs a script in the django context.
 
 * `runserver_plus`_ - The standard runserver stuff but with
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
@@ -90,6 +90,7 @@ Current Command Extensions
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
 .. _`print_settings`: print_settings.html
+.. _`runscript`: runscript.html
 .. _`runserver_plus`: runserver_plus.html
 .. _`sync_media_s3`: sync_media_s3.html
 .. _GraphViz: http://www.graphviz.org/
