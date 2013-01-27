@@ -1,48 +1,12 @@
 #!/usr/bin/env python
-
-"""Django model to DOT (Graphviz) converter
+"""
+Django model to DOT (Graphviz) converter
 by Antonio Cavedoni <antonio@cavedoni.org>
 
-Make sure your DJANGO_SETTINGS_MODULE is set to your project or
-place this script in the same directory of the project and call
-the script like this:
-
-$ python modelviz.py [-h] [-a] [-d] [-g] [-n] [-L <language>] [-i <model_names>] <app_label> ... <app_label> > <filename>.dot
-$ dot <filename>.dot -Tpng -o <filename>.png
-
-options:
-    -h, --help
-    show this help message and exit.
-
-    -a, --all_applications
-    show models from all applications.
-
-    -d, --disable_fields
-    don't show the class member fields.
-
-    -g, --group_models
-    draw an enclosing box around models from the same app.
-
-    -i, --include_models=User,Person,Car
-    only include selected models in graph.
-
-    -n, --verbose_names
-    use verbose_name for field and models.
-
-    -L, --language
-    specify language used for verrbose_name localization
-
-    -x, --exclude_columns
-    exclude specific column(s) from the graph.
-
-    -X, --exclude_models
-    exclude specific model(s) from the graph.
-
-    -e, --inheritance
-    show inheritance arrows.
+Adapted to be used with django-extensions
 """
+
 __version__ = "0.9"
-__svnid__ = "$Id$"
 __license__ = "Python"
 __author__ = "Antonio Cavedoni <http://cavedoni.com/>"
 __contributors__ = [
@@ -53,21 +17,12 @@ __contributors__ = [
     "Justin Findlay <jfindlay@gmail.com>",
     "Alexander Houben <alexander@houben.ch>",
     "Bas van Oostveen <v.oostveen@gmail.com>",
-    "Joern Hees <gitdev@joernhees.de>"
+    "Joern Hees <gitdev@joernhees.de>",
 ]
 
 import os
 import sys
 import getopt
-
-from django.core.management import setup_environ
-
-try:
-    import settings
-except ImportError:
-    pass
-else:
-    setup_environ(settings)
 
 from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe
@@ -319,44 +274,3 @@ def generate_dot(app_labels, **kwargs):
     c = Context({})
     dot += '\n' + t.render(c)
     return dot
-
-
-def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hadgi:L:x:X:en", ["help", "all_applications", "disable_fields", "group_models", "include_models=", "inheritance", "verbose_names", "language=", "exclude_columns=", "exclude_models="])
-    except getopt.GetoptError, error:
-        print __doc__
-        sys.exit(error)
-
-    kwargs = {}
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print __doc__
-            sys.exit()
-        if opt in ("-a", "--all_applications"):
-            kwargs['all_applications'] = True
-        if opt in ("-d", "--disable_fields"):
-            kwargs['disable_fields'] = True
-        if opt in ("-g", "--group_models"):
-            kwargs['group_models'] = True
-        if opt in ("-i", "--include_models"):
-            kwargs['include_models'] = arg
-        if opt in ("-e", "--inheritance"):
-            kwargs['inheritance'] = True
-        if opt in ("-n", "--verbose-names"):
-            kwargs['verbose_names'] = True
-        if opt in ("-L", "--language"):
-            kwargs['language'] = arg
-        if opt in ("-x", "--exclude_columns"):
-            kwargs['exclude_columns'] = arg
-        if opt in ("-X", "--exclude_models"):
-            kwargs['exclude_models'] = arg
-
-    if not args and not kwargs.get('all_applications', False):
-        print __doc__
-        sys.exit()
-
-    print generate_dot(args, **kwargs)
-
-if __name__ == "__main__":
-    main()
