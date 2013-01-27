@@ -116,6 +116,6 @@ After you run above command, you can access your web application through https:/
 
   $ python manage.py runserver_plus --cert /tmp/cert 
   
-Note that you need OpenSSL library to use SSL, and Werkzeug later than 0.9 if you would like to reuse existing certificates. To install OpenSSL::
+Note that you need OpenSSL library to use SSL, and Werkzeug 0.9 or later if you would like to reuse existing certificates. To install OpenSSL::
 
   $ pip install pyOpenSSL
