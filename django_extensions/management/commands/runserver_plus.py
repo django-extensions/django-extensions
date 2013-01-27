@@ -154,29 +154,50 @@ class Command(BaseCommand):
                 url = "http://%s:%s/" % (addr, port)
                 webbrowser.open(url)
             if cert_path:
+                """
+                OpenSSL is needed for SSL support.
+
+                This will make flakes8 throw warning since OpenSSL is not used
+                directly, alas, this is the only way to show meaningful error
+                messages. See:
+                http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
+                for more information on python imports.
+                """
+                try:
+                    import OpenSSL
+                except ImportError:
+                    raise CommandError("Python OpenSSL Library is "
+                       "required to use runserver_plus with ssl support. "
+                       "Install via pip (pip install pyOpenSSL).")
+
+                dir_path, cert_file = os.path.split(cert_path)
+                if not dir_path:
+                    dir_path = os.getcwd()
+                root, ext = os.path.splitext(cert_file)
+                certfile = os.path.join(dir_path, root + ".crt")
+                keyfile = os.path.join(dir_path, root + ".key")
                 try:
                     from werkzeug.serving import make_ssl_devcert
-                    ssl_context = make_ssl_devcert(cert_path, host='localhost')
-                    run_simple(
-                        addr,
-                        int(port),
-                        DebuggedApplication(handler, True),
-                        use_reloader=use_reloader,
-                        use_debugger=True,
-                        threaded=threaded,
-                        ssl_context=ssl_context
-                    )
+                    if os.path.exists(certfile) and \
+                            os.path.exists(keyfile):
+                                ssl_context = (certfile, keyfile)
+                    else:  # Create cert, key files ourselves.
+                        ssl_context = make_ssl_devcert(
+                            os.path.join(dir_path, root), host='localhost')
                 except ImportError:
-                    raise CommandError("""Werkzeug 0.8.2 or later is required
-to use runserver_plus with ssl support.  Please
-visit http://werkzeug.pocoo.org/download""")
+                    print "Werkzeug version is less than 0.9, "\
+                        "trying adhoc certificate."
+                    ssl_context = "adhoc"
+
             else:
-                run_simple(
-                    addr,
-                    int(port),
-                    DebuggedApplication(handler, True),
-                    use_reloader=use_reloader,
-                    use_debugger=True,
-                    threaded=threaded
-                )
+                ssl_context = None
+            run_simple(
+                addr,
+                int(port),
+                DebuggedApplication(handler, True),
+                use_reloader=use_reloader,
+                use_debugger=True,
+                threaded=threaded,
+                ssl_context=ssl_context
+            )
         inner_run()
