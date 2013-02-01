@@ -278,7 +278,7 @@ class UUIDField(CharField):
     def formfield(self, **kwargs):
         if self.auto:
             return None
-        super(UUIDField, self).formfield(**kwargs)
+        return super(UUIDField, self).formfield(**kwargs)
 
     def south_field_triple(self):
         "Returns a suitable description of this field for South."
