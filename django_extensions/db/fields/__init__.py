@@ -222,7 +222,7 @@ class UUIDField(CharField):
     """
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
-        kwargs['max_length'] = 36
+        kwargs.setdefault('max_length', 36)
         if auto:
             self.empty_strings_allowed = False
             kwargs['blank'] = True
