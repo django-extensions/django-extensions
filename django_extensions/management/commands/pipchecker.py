@@ -19,13 +19,12 @@ from pip.req import parse_requirements
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
-        make_option("-t", "--github-api-token", action="store", dest="github_api_token",
-                    help="A github api authentication token."),
-        make_option("-r", "--requirement",
-            action="append",
-            dest="requirements",
-            default=[],
-            metavar="FILENAME",
+        make_option(
+            "-t", "--github-api-token", action="store", dest="github_api_token",
+            help="A github api authentication token."),
+        make_option(
+            "-r", "--requirement", action="append", dest="requirements",
+            default=[], metavar="FILENAME",
             help="Check all the packages listed in the given requirements file. "
                  "This option can be used multiple times."),
     )
