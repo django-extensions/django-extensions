@@ -21,8 +21,6 @@ __contributors__ = [
 ]
 
 import os
-import sys
-import getopt
 
 from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe

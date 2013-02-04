@@ -164,11 +164,11 @@ class Command(BaseCommand):
                 for more information on python imports.
                 """
                 try:
-                    import OpenSSL
+                    import OpenSSL  # NOQA
                 except ImportError:
                     raise CommandError("Python OpenSSL Library is "
-                       "required to use runserver_plus with ssl support. "
-                       "Install via pip (pip install pyOpenSSL).")
+                                       "required to use runserver_plus with ssl support. "
+                                       "Install via pip (pip install pyOpenSSL).")
 
                 dir_path, cert_file = os.path.split(cert_path)
                 if not dir_path:
