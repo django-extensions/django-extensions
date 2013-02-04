@@ -164,7 +164,7 @@ class Command(BaseCommand):
                 for more information on python imports.
                 """
                 try:
-                    import OpenSSL  # pylint: disable=W402
+                    import OpenSSL  # NOQA
                 except ImportError:
                     raise CommandError("Python OpenSSL Library is "
                                        "required to use runserver_plus with ssl support. "
