@@ -257,7 +257,7 @@ class InstanceCode(Code):
         # Print the save command for our new object
         # e.g. model_name_35.save()
         if code_lines:
-            code_lines.append("save_if_convenient(%s)\n" % (self.variable_name))
+            code_lines.append("%s = save_or_locate(%s)\n" % (self.variable_name, self.variable_name))
 
         code_lines += self.get_many_to_many_lines(force=force)
 
@@ -504,11 +504,15 @@ class Script(Code):
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file has been automatically generated. Changes will be lost if
-# generated again. Instead, just create import_helper.py, which this
-# file tries to import.
+# This file has been automatically generated.
+# Instead of changing it, create a file called import_helper.py
+# which this script has hooks to.
 #
-# It was generated with the following command:
+# On that file, don't forget to add the necessary Django imports
+# and take a look at how locate_object() and save_or_locate()
+# are implemented here and expected to behave.
+#
+# This file was generated with the following command:
 # %s
 #
 # to restore it, run
@@ -520,9 +524,6 @@ class Script(Code):
 # and run  ./manage.py runscript some_folder.some_script
 
 try:
-    # you should create a file called import_helper.py and add rewrite
-    # locate_object() and save_if_convenient()
-    # otherwise you can just change it here
 
     import import_helper
 except ImportError:
@@ -572,12 +573,12 @@ def run():
         #print the_obj
         return the_obj
 
-    def save_if_convenient(the_obj):
+    def save_or_locate(the_obj):
         try:
-            import_helper.save_if_convenient(the_obj)
-            return
+            the_obj = import_helper.save_or_locate(the_obj)
         except (NameError, AttributeError):
             the_obj.save()
+        return the_obj
 
 """
 
