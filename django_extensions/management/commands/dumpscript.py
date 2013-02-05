@@ -257,7 +257,7 @@ class InstanceCode(Code):
         # Print the save command for our new object
         # e.g. model_name_35.save()
         if code_lines:
-            code_lines.append("%s.save()\n" % (self.variable_name))
+            code_lines.append("save_if_convenient(%s)\n" % (self.variable_name))
 
         code_lines += self.get_many_to_many_lines(force=force)
 
@@ -504,8 +504,11 @@ class Script(Code):
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file has been automatically generated, changes may be lost if you
-# go and generate it again. It was generated with the following command:
+# This file has been automatically generated. Changes will be lost if
+# generated again. Instead, just create import_helper.py, which this
+# file tries to import.
+#
+# It was generated with the following command:
 # %s
 #
 # to restore it, run
@@ -515,6 +518,15 @@ class Script(Code):
 # and the script is at ./some_folder/some_script.py
 # you must make sure ./some_folder/__init__.py exists
 # and run  ./manage.py runscript some_folder.some_script
+
+try:
+    # you should create a file called import_helper.py and add rewrite
+    # locate_object() and save_if_convenient()
+    # otherwise you can just change it here
+
+    import import_helper
+except ImportError:
+    pass
 
 import datetime
 from decimal import Decimal
@@ -549,10 +561,23 @@ def run():
         #if the_class == StaffGroup:
         #    pk_value=8
 
+
+        try:
+            return import_helper.locate_object(original_class, original_pk_name, the_class, pk_name, pk_value, obj_content)
+        except (NameError, AttributeError):
+            pass
+
         search_data = { pk_name: pk_value }
         the_obj =the_class.objects.get(**search_data)
         #print the_obj
         return the_obj
+
+    def save_if_convenient(the_obj):
+        try:
+            import_helper.save_if_convenient(the_obj)
+            return
+        except (NameError, AttributeError):
+            the_obj.save()
 
 """
 
