@@ -81,5 +81,6 @@ class DumpScriptTests(TestCase):
         tmp_out = StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
         ast_syntax_tree = compiler.parse(tmp_out.getvalue())
+        self.assertTrue(len(ast_syntax_tree.asList())>1)
         tmp_out.close()
 
