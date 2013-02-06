@@ -523,9 +523,11 @@ class Script(Code):
 # you must make sure ./some_folder/__init__.py exists
 # and run  ./manage.py runscript some_folder.some_script
 
-try:
 
+IMPORT_HELPER_AVAILABLE = False
+try:
     import import_helper
+    IMPORT_HELPER_AVAILABLE = True
 except ImportError:
     pass
 
@@ -563,10 +565,8 @@ def run():
         #    pk_value=8
 
 
-        try:
+        if IMPORT_HELPER_AVAILABLE and hasattr(import_helper, "locate_object"):
             return import_helper.locate_object(original_class, original_pk_name, the_class, pk_name, pk_value, obj_content)
-        except (NameError, AttributeError):
-            pass
 
         search_data = { pk_name: pk_value }
         the_obj =the_class.objects.get(**search_data)
@@ -574,9 +574,9 @@ def run():
         return the_obj
 
     def save_or_locate(the_obj):
-        try:
+        if IMPORT_HELPER_AVAILABLE and hasattr(import_helper, "save_or_locate"):
             the_obj = import_helper.save_or_locate(the_obj)
-        except (NameError, AttributeError):
+        else:
             the_obj.save()
         return the_obj
 
