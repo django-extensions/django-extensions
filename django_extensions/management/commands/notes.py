@@ -4,14 +4,14 @@ from django.conf import settings
 import os
 import re
 
-ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|HACK|BUG|XXX)[\s:]?(.+)")
+ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
 ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")
 
 
 class Command(BaseCommand):
-    help = 'Show all annotations like TODO, FIXME, HACK, BUG or XXX in your py and HTML files.'
+    help = 'Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.'
     args = 'tag'
-    label = 'annotation tag (TODO, FIXME, HACK, BUG, XXX)'
+    label = 'annotation tag (TODO, FIXME, BUG, HACK, WARNING, NOTE, XXX)'
 
     def handle(self, *args, **options):
         # don't add django internal code
