@@ -158,12 +158,12 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             create_query = "CREATE DATABASE %s" % settings.DATABASE_NAME
             if settings.DATABASE_USER:
                 create_query += " WITH OWNER = %s " % settings.DATABASE_USER
-            create_query += " ENCODING = 'UTF8' "
+            create_query += " ENCODING = 'UTF8'"
 
             if postgis.match(engine):
-                create_query += 'TEMPLATE = template_postgis '
+                create_query += ' TEMPLATE = template_postgis'
             if settings.DEFAULT_TABLESPACE:
-                create_query += 'TABLESPACE = %s;' % (settings.DEFAULT_TABLESPACE)
+                create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
             else:
                 create_query += ';'
             logging.info('Executing... "' + create_query + '"')
