@@ -77,5 +77,15 @@ class Command(BaseCommand):
             graph.draw(kwargs['outputfile'])
         else: #pydot
             graph = pydot.graph_from_dot_data(vizdata)
-            graph.write(kwargs['outputfile'], format='raw')
+            output_file = kwargs['outputfile']
+            formats = ['canon', 'cmap', 'cmapx', 'cmapx_np', 'dia', 'dot',
+                       'fig', 'gd', 'gd2', 'gif', 'hpgl', 'imap', 'imap_np',
+                       'ismap', 'jpe', 'jpeg', 'jpg', 'mif', 'mp', 'pcl', 'pdf',
+                       'pic', 'plain', 'plain-ext', 'png', 'ps', 'ps2', 'svg',
+                       'svgz', 'vml', 'vmlz', 'vrml', 'vtx', 'wbmp', 'xdot', 'xlib']
+            format = 'raw'
+            ext = output_file[output_file.rfind('.')+1:]
+            if ext in formats:
+                format = ext
+            graph.write(output_file, format=format)
             # e.g. change to: `format='ps'`
