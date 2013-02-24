@@ -31,13 +31,20 @@ Improvements:
 """
 
 import sys
+import datetime
+import six
+
 import django
 from django.db.models import AutoField, BooleanField, FileField, ForeignKey
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.utils.encoding import smart_unicode, force_unicode
+
+# conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
-import datetime
+try:
+    from django.utils.encoding import smart_unicode, force_unicode
+except ImportError:
+    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode
 
 
 def orm_item_locator(orm_obj):
@@ -63,7 +70,7 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (basestring, int, long, float, datetime.datetime)):
+        if v is not None and not isinstance(v, (six.string_types, int, long, float, datetime.datetime)):
             clean_dict[key] = u"%s" % v
 
     output = """ locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
@@ -598,7 +605,7 @@ def flatten_blocks(lines, num_indents=-1):
         return ""
 
     # If this is a string, add the indentation and finish here
-    if isinstance(lines, basestring):
+    if isinstance(lines, six.string_types):
         return INDENTATION * num_indents + lines
 
     # If this is not a string, join the lines and recurse
