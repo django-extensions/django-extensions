@@ -48,24 +48,34 @@ class Command(BaseCommand):
         print dotdata.encode('utf-8')
 
     def render_output(self, dotdata, **kwargs):
+        pygraphviz = False
         try:
             import pygraphviz
+            pygraphviz = True
         except ImportError:
-            raise CommandError("You need to install pygraphviz python module")
+            try:
+                import pydot
+            except:
+                raise CommandError("You need to install pygraphviz or pydot python modules")
 
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
-        version = pygraphviz.__version__.rstrip("-svn")
-        try:
-            if [int(v) for v in version.split('.')] < (0, 36):
-                # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
-                import tempfile
-                tmpfile = tempfile.NamedTemporaryFile()
-                tmpfile.write(vizdata)
-                tmpfile.seek(0)
-                vizdata = tmpfile.name
-        except ValueError:
-            pass
+        if pygraphviz:
+            version = pygraphviz.__version__.rstrip("-svn")
+            try:
+                if [int(v) for v in version.split('.')] < (0, 36):
+                    # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
+                    import tempfile
+                    tmpfile = tempfile.NamedTemporaryFile()
+                    tmpfile.write(vizdata)
+                    tmpfile.seek(0)
+                    vizdata = tmpfile.name
+            except ValueError:
+                pass
 
-        graph = pygraphviz.AGraph(vizdata)
-        graph.layout(prog=kwargs['layout'])
-        graph.draw(kwargs['outputfile'])
+            graph = pygraphviz.AGraph(vizdata)
+            graph.layout(prog=kwargs['layout'])
+            graph.draw(kwargs['outputfile'])
+        else: #pydot
+            graph = pydot.graph_from_dot_data(vizdata)
+            graph.write(kwargs['outputfile'], format='raw')
+            # e.g. change to: `format='ps'`
