@@ -84,5 +84,6 @@ class Command(BaseCommand):
                        'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
                        'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
 
-            format = output_file[output_file.rfind('.')+1:] if ext in formats else 'raw'
+            ext = output_file[output_file.rfind('.')+1:]
+            format = ext if ext in formats else 'raw'
             graph.write(output_file, format=format)
