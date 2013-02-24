@@ -1,13 +1,19 @@
 import sys
-import compiler
+
+# conditional imports for python 3
+try:
+    import compiler
+    from StringIO import StringIO
+except ImportError:
+    import ast as compiler
+    from io import StringIO
 from django.test import TestCase
+
 from django.core.management import call_command
 from django_extensions.tests.models import Name, Note, Person
 
 from django.conf import settings
 from django.db.models import loading
-
-from StringIO import StringIO
 
 
 class DumpScriptTests(TestCase):
@@ -46,7 +52,7 @@ class DumpScriptTests(TestCase):
         tmp_out = StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
         self.assertTrue('Mike' in tmp_out.getvalue())  # script should go to tmp_out
-        self.assertFalse(sys.stdout.len)  # there should not be any output to sys.stdout
+        self.assertEquals(0, len(sys.stdout.getvalue()))  # there should not be any output to sys.stdout
         tmp_out.close()
 
     #----------------------------------------------------------------------
@@ -59,7 +65,7 @@ class DumpScriptTests(TestCase):
         call_command('dumpscript', 'tests', stderr=tmp_err)
         self.assertTrue('Fred' in sys.stdout.getvalue())  # script should still go to stdout
         self.assertTrue('Name' in tmp_err.getvalue())  # error output should go to tmp_err
-        self.assertFalse(sys.stderr.len)  # there should not be any output to sys.stderr
+        self.assertEquals(0, len(sys.stderr.getvalue()))  # there should not be any output to sys.stderr
         tmp_err.close()
 
     #----------------------------------------------------------------------
@@ -81,6 +87,9 @@ class DumpScriptTests(TestCase):
         tmp_out = StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
         ast_syntax_tree = compiler.parse(tmp_out.getvalue())
-        self.assertTrue(len(ast_syntax_tree.asList()) > 1)
+        if hasattr(ast_syntax_tree, 'body'):
+            self.assertTrue(len(ast_syntax_tree.body) > 1)
+        else:
+            self.assertTrue(len(ast_syntax_tree.asList()) > 1)
         tmp_out.close()
 
