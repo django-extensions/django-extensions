@@ -78,11 +78,11 @@ class Command(BaseCommand):
         else: #pydot
             graph = pydot.graph_from_dot_data(vizdata)
             output_file = kwargs['outputfile']
-			formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
-					   'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
-					   'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
-					   'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
-					   'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
+            formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
+                       'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
+                       'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
+                       'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
+                       'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
 
             format = output_file[output_file.rfind('.')+1:] if ext in formats else 'raw'
             graph.write(output_file, format=format)
