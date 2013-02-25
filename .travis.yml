@@ -12,7 +12,7 @@ env:
 
 install:
   - pip install -q $DJANGO
-  - pip install unittest2 flake8 --use-mirrors
+  - pip install flake8 --use-mirrors
   - pip install -q python-keyczar --use-mirrors
   - pip install -q PyYAML --use-mirrors
   - pip install -e . --use-mirrors

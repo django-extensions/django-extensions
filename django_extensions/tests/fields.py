@@ -1,9 +1,9 @@
-import unittest
-
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
 from django.db import models
+from django.utils import unittest
+
 from django_extensions.db.fields import AutoSlugField
 
 
