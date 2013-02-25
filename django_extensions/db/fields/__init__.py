@@ -19,11 +19,10 @@ except ImportError:
     import datetime
     datetime_now = datetime.datetime.now
 
-# conditional import, force_unicode was renamed in Django 1.5
 try:
-    from django.utils.encoding import smart_unicode, force_unicode
+    from django.utils.encoding import force_unicode
 except ImportError:
-    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode
+    from django.utils.encoding import force_text as force_unicode
 
 
 class AutoSlugField(SlugField):
