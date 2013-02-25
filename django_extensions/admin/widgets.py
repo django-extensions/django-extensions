@@ -62,6 +62,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             url = ''
         if not 'class' in attrs:
             attrs['class'] = 'vForeignKeyRawIdAdminField'
+        attrs['type'] = 'hidden'
         # Call the TextInput render method directly to have more control
         output = [forms.TextInput.render(self, name, value, attrs)]
         if value:
