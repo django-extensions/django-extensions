@@ -50,6 +50,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
+        attrs.update(self.attrs)
         #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
