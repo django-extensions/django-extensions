@@ -101,10 +101,29 @@ class Command(NoArgsCommand):
         """
         If the requirement is frozen to a github url, check for new commits.
 
+        API Tokens
+        ----------
         For more than 50 github api calls per hour, pipchecker requires
         authentication with the github api by settings the environemnt
         variable ``GITHUB_API_TOKEN`` or setting the command flag
         --github-api-token='mytoken'``.
+
+        To create a github api token for use at the command line::
+             curl -u 'rizumu' -d '{"scopes":["repo"], "note":"pipchecker"}' https://api.github.com/authorizations
+
+        For more info on github api tokens:
+            https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
+            http://developer.github.com/v3/oauth/#oauth-authorizations-api
+
+        Requirement Format
+        ------------------
+        Pipchecker gets the sha of frozen repo and checks if it is
+        found at the head of any branches. If it is not found then
+        the requirement is considered to be out of date.
+
+        Therefore, freezing at the commit hash will provide the expected
+        results, but if freezing at a branch or tag name, pipchecker will
+        not be able to determine with certainty if the repo is out of date.
 
         Freeze at the commit hash (sha)::
             git+git://github.com/django/django.git@393c268e725f5b229ecb554f3fac02cfc250d2df#egg=Django
@@ -118,18 +137,11 @@ class Command(NoArgsCommand):
         Do not freeze::
             git+git://github.com/django/django.git#egg=Django
 
-        This script will get the sha of frozen repo and check if that same
-        sha if found at the head of any branches. If it is not found then
-        the requirement is considered to be out of date.
-
-        Therefore, freezing at the commit hash will provide the expected
-        results, but if freezing at a branch or tag name, pipchecker will
-        not be able to determine with certainty if the repo is out of date.
-
         """
         for name, req in self.reqs.items():
             if "github.com/" not in req["url"]:
                 continue
+
             headers = {
                 "content-type": "application/json",
             }
@@ -137,31 +149,38 @@ class Command(NoArgsCommand):
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
             user, repo = urlparse.urlparse(req["url"]).path.split("#")[0].strip("/").rstrip("/").split("/")
 
+            test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
+            if "message" in test_auth and test_auth["message"] == "Bad credentials":
+                sys.exit("\nGithub API: Bad credentials. Aborting!\n")
+            elif "message" in test_auth and test_auth["message"].startswith("API Rate Limit Exceeded"):
+                sys.exit("\nGithub API: Rate Limit Exceeded. Aborting!\n")
+
             if ".git" in repo:
-                repo_name, frozen_commit = repo.split(".git")
-                if frozen_commit.startswith("@"):
-                    frozen_commit = frozen_commit[1:]
+                repo_name, frozen_commit_full = repo.split(".git")
+                if frozen_commit_full.startswith("@"):
+                    frozen_commit_sha = frozen_commit_full[1:]
             elif "@" in repo:
-                repo_name, frozen_commit = repo.split("@")
+                repo_name, frozen_commit_sha = repo.split("@")
             else:
-                frozen_commit = None
+                frozen_commit_sha = None
                 msg = "repo is not frozen"
 
-            if frozen_commit:
-                branches = requests.get("https://api.github.com/repos/{0}/{1}/branches".format(
+            if frozen_commit_sha:
+                branch_data = requests.get("https://api.github.com/repos/{0}/{1}/branches".format(
                     user, repo_name), headers=headers).json()
-                frozen_commit = requests.get("https://api.github.com/repos/{0}/{1}/commits/{2}".format(
-                    user, repo_name, frozen_commit), headers=headers).json()
-                if "sha" not in frozen_commit and "API Rate Limit Exceeded" in frozen_commit["message"]:
-                    sys.exit("\n Aborting! Github API Rate Limit Exceeded.\n")
-                if frozen_commit["sha"] in [b["commit"]["sha"] for b in branches]:
+                frozen_commit_data = requests.get("https://api.github.com/repos/{0}/{1}/commits/{2}".format(
+                    user, repo_name, frozen_commit_sha), headers=headers).json()
+                if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
+                    msg = "{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name)
+                elif frozen_commit_sha in [branch["commit"]["sha"] for branch in branch_data]:
                     msg = "up to date"
-                    del self.reqs[name]
-                    continue
                 else:
-                    msg = "{0} is not the head of any branch.".format(frozen_commit["sha"][:10])
+                    msg = "{0} is not the head of any branch".format(frozen_commit_data["sha"][:10])
 
-            pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
+            if "dist" in req:
+                pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
+            else:
+                pkg_info = "{0} {1}".format(name, frozen_commit_sha[:10])
             print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
             del self.reqs[name]
 
