@@ -50,6 +50,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
+        attrs.update(self.attrs)
         #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
@@ -62,7 +63,6 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             url = ''
         if not 'class' in attrs:
             attrs['class'] = 'vForeignKeyRawIdAdminField'
-        attrs['type'] = 'hidden'
         # Call the TextInput render method directly to have more control
         output = [forms.TextInput.render(self, name, value, attrs)]
         if value:

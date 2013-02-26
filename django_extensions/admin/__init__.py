@@ -136,6 +136,6 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
             help_text = self.get_help_text(db_field.name, model_name)
             if kwargs.get('help_text'):
                 help_text = u'%s %s' % (kwargs['help_text'], help_text)
-            kwargs['widget'] = ForeignKeySearchInput(db_field.rel, self.related_search_fields[db_field.name])
+            kwargs['widget'] = ForeignKeySearchInput(db_field.rel, self.related_search_fields[db_field.name], attrs=getattr(self, 'related_search_options', None))
             kwargs['help_text'] = help_text
         return super(ForeignKeyAutocompleteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
