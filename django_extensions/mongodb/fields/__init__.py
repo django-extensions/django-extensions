@@ -5,6 +5,7 @@ These fields are essentially identical to existing Extensions fields, but South 
 
 """
 
+import six
 from django.template.defaultfilters import slugify
 from django import forms
 from mongoengine.fields import StringField, DateTimeField
@@ -146,7 +147,7 @@ class AutoSlugField(SlugField):
         return slug
 
     def pre_save(self, model_instance, add):
-        value = unicode(self.create_slug(model_instance, add))
+        value = six.u(self.create_slug(model_instance, add))
         setattr(model_instance, self.attname, value)
         return value
 
@@ -236,12 +237,12 @@ class UUIDField(StringField):
 
     def pre_save(self, model_instance, add):
         if self.auto and add:
-            value = unicode(self.create_uuid())
+            value = six.u(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:
             value = super(UUIDField, self).pre_save(model_instance, add)
             if self.auto and not value:
-                value = unicode(self.create_uuid())
+                value = six.u(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value

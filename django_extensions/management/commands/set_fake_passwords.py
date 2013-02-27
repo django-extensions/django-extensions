@@ -41,4 +41,4 @@ class Command(NoArgsCommand):
         user.set_password(passwd)
         count = User.objects.all().update(password=user.password)
 
-        print 'Reset %d passwords' % count
+        print('Reset %d passwords' % count)

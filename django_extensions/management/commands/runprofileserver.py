@@ -18,7 +18,7 @@ import sys
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
     USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
-except ImportError, e:
+except ImportError as e:
     USE_STATICFILES = False
 
 try:
@@ -181,7 +181,7 @@ class Command(BaseCommand):
                     import cProfile
                     USE_CPROFILE = True
                 except ImportError:
-                    print "cProfile disabled, module cannot be imported!"
+                    print("cProfile disabled, module cannot be imported!")
                     USE_CPROFILE = False
             if USE_LSPROF and not USE_CPROFILE:
                 raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
@@ -223,7 +223,7 @@ class Command(BaseCommand):
                         elapms = elap.seconds * 1000.0 + elap.microseconds / 1000.0
                         if USE_LSPROF:
                             kg = KCacheGrind(prof)
-                            kg.output(file(profname, 'w'))
+                            kg.output(open(profname, 'w'))
                         elif USE_CPROFILE:
                             prof.dump_stats(profname)
                         profname2 = "%s.%06dms.%d.prof" % (path_name, elapms, time.time())
@@ -233,11 +233,11 @@ class Command(BaseCommand):
                         os.rename(profname, profname2)
                 return handler
 
-            print "Validating models..."
+            print("Validating models...")
             self.validate(display_num_errors=True)
-            print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
-            print "Development server is running at http://%s:%s/" % (addr, port)
-            print "Quit the server with %s." % quit_command
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at http://%s:%s/" % (addr, port))
+            print("Quit the server with %s." % quit_command)
             path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
@@ -256,7 +256,7 @@ class Command(BaseCommand):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)
-            except WSGIServerException, e:
+            except WSGIServerException as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {
                     13: "You don't have permission to access that port.",
@@ -272,7 +272,7 @@ class Command(BaseCommand):
                 os._exit(1)
             except KeyboardInterrupt:
                 if shutdown_message:
-                    print shutdown_message
+                    print(shutdown_message)
                 sys.exit(0)
         if use_reloader:
             from django.utils import autoreload

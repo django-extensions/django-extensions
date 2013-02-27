@@ -70,7 +70,7 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (six.string_types, int, long, float, datetime.datetime)):
+        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float, datetime.datetime)):
             clean_dict[key] = u"%s" % v
 
     output = """ locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
@@ -577,7 +577,6 @@ def run():
 
         search_data = { pk_name: pk_value }
         the_obj =the_class.objects.get(**search_data)
-        #print the_obj
         return the_obj
 
     def save_or_locate(the_obj):

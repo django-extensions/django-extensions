@@ -76,11 +76,11 @@ class Command(BaseCommand):
         for settings_mod in settings_modules:
             try:
                 urlconf = __import__(settings_mod.ROOT_URLCONF, {}, {}, [''])
-            except Exception, e:
+            except Exception as e:
                 if options.get('traceback', None):
                     import traceback
                     traceback.print_exc()
-                print style.ERROR("Error occurred while trying to load %s: %s" % (settings_mod.ROOT_URLCONF, str(e)))
+                print(style.ERROR("Error occurred while trying to load %s: %s" % (settings_mod.ROOT_URLCONF, str(e))))
                 continue
             view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
             for (func, regex, url_name) in view_functions:

@@ -26,7 +26,7 @@ class Command(NoArgsCommand):
                 if ext == ".py":
                     full_path = _j(root, file)
                     if verbose:
-                        print "%sc" % full_path
+                        print("%sc" % full_path)
                     py_compile.compile(full_path)
 
 # Backwards compatibility for Django r9110

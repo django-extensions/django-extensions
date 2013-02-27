@@ -63,11 +63,11 @@ class Command(BaseCommand):
             verbosity = 0
 
         if len(subdirs) < 1:
-            print NOTICE("No subdirs to run left.")
+            print(NOTICE("No subdirs to run left."))
             return
 
         if len(scripts) < 1:
-            print ERROR("Script name required.")
+            print(ERROR("Script name required."))
             return
 
         def run_script(mod, *script_args):
@@ -77,13 +77,13 @@ class Command(BaseCommand):
                 if silent:
                     return
                 if verbosity > 0:
-                    print ERROR("Exception while running run() in '%s'" % mod.__name__)
+                    print(ERROR("Exception while running run() in '%s'" % mod.__name__))
                 if show_traceback:
                     raise
 
         def my_import(mod):
             if verbosity > 1:
-                print NOTICE("Check for %s" % mod)
+                print(NOTICE("Check for %s" % mod))
             # check if module exists before importing
             try:
                 path = None
@@ -96,16 +96,16 @@ class Command(BaseCommand):
 
             t = __import__(mod, [], [], [" "])
             #if verbosity > 1:
-            #    print NOTICE("Found script %s ..." % mod)
+            #    print(NOTICE("Found script %s ..." % mod))
             if hasattr(t, "run"):
                 if verbosity > 1:
-                    print NOTICE2("Found script '%s' ..." % mod)
+                    print(NOTICE2("Found script '%s' ..." % mod))
                 #if verbosity > 1:
-                #    print NOTICE("found run() in %s. executing..." % mod)
+                #    print(NOTICE("found run() in %s. executing..." % mod))
                 return t
             else:
                 if verbosity > 1:
-                    print ERROR2("Find script '%s' but no run() function found." % mod)
+                    print(ERROR2("Find script '%s' but no run() function found." % mod))
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
@@ -142,10 +142,10 @@ class Command(BaseCommand):
             modules = find_modules_for_script(script)
             if not modules:
                 if verbosity > 0 and not silent:
-                    print ERROR("No module for script '%s' found" % script)
+                    print(ERROR("No module for script '%s' found" % script))
             for mod in modules:
                 if verbosity > 1:
-                    print NOTICE2("Running script '%s' ..." % mod.__name__)
+                    print(NOTICE2("Running script '%s' ..." % mod.__name__))
                 run_script(mod, *script_args)
 
 

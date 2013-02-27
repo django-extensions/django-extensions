@@ -24,7 +24,7 @@ class Command(NoArgsCommand):
         verbose = int(options.get("verbosity", 1))
 
         if verbose > 1:
-            print "Project Root: %s" % project_root
+            print("Project Root: %s" % project_root)
 
         for root, dirs, files in os.walk(project_root):
             for file in files:
@@ -32,7 +32,7 @@ class Command(NoArgsCommand):
                 if ext in exts:
                     full_path = _j(root, file)
                     if verbose > 1:
-                        print full_path
+                        print(full_path)
                     os.remove(full_path)
 
 # Backwards compatibility for Django r9110

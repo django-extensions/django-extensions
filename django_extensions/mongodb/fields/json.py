@@ -10,6 +10,7 @@ more information.
      extra = json.JSONField()
 """
 
+import six
 import datetime
 from decimal import Decimal
 from django.conf import settings
@@ -60,7 +61,7 @@ class JSONField(StringField):
         """Convert our string value to JSON after we load it from the DB"""
         if not value:
             return {}
-        elif isinstance(value, basestring):
+        elif isinstance(value, six.string_types):
             res = loads(value)
             assert isinstance(res, dict)
             return JSONDict(**res)

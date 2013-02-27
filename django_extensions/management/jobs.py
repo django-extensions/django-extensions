@@ -148,7 +148,7 @@ def get_job(app_name, job_name):
 
 def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True):
     jobmap = get_jobs(when, only_scheduled=only_scheduled)
-    print "Job List: %i jobs" % len(jobmap)
+    print("Job List: %i jobs" % len(jobmap))
     jlist = jobmap.keys()
     jlist.sort()
     appname_spacer = "%%-%is" % max(len(e[0]) for e in jlist)
@@ -162,8 +162,8 @@ def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=Fal
         if show_when:
             line += " - " + when_spacer % "when"
         line += " - help"
-        print line
-        print "-" * 80
+        print(line)
+        print("-" * 80)
 
     for app_name, job_name in jlist:
         job = jobmap[(app_name, job_name)]
@@ -174,4 +174,4 @@ def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=Fal
         if show_when:
             line += " - " + when_spacer % (job.when and job.when or "")
         line += " - " + job.help
-        print line
+        print(line)

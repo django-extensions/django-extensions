@@ -30,7 +30,7 @@ class Command(AppCommand):
         if not os.path.exists(project_dir):
             try:
                 os.mkdir(project_dir)
-            except OSError, e:
+            except OSError as e:
                 raise CommandError(e)
 
         copy_template('command_template', project_dir, options.get('command_name'), '%sCommand' % options.get('base_command'))

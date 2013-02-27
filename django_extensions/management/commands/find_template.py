@@ -32,4 +32,4 @@ class Command(LabelCommand):
             sys.stderr.write("No template found\n")
             sys.exit(1)
         else:
-            print path
+            print(path)

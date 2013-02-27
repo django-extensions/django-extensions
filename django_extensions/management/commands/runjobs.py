@@ -15,7 +15,7 @@ class Command(LabelCommand):
     requires_model_validation = True
 
     def usage_msg(self):
-        print "Run scheduled jobs. Please specify 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'"
+        print("Run scheduled jobs. Please specify 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'")
 
     def runjobs(self, when, options):
         verbosity = int(options.get('verbosity', 1))
@@ -25,15 +25,15 @@ class Command(LabelCommand):
         for app_name, job_name in list:
             job = jobs[(app_name, job_name)]
             if verbosity > 1:
-                print "Executing %s job: %s (app: %s)" % (when, job_name, app_name)
+                print("Executing %s job: %s (app: %s)" % (when, job_name, app_name))
             try:
                 job().execute()
             except Exception:
                 import traceback
-                print "ERROR OCCURED IN %s JOB: %s (APP: %s)" % (when.upper(), job_name, app_name)
-                print "START TRACEBACK:"
+                print("ERROR OCCURED IN %s JOB: %s (APP: %s)" % (when.upper(), job_name, app_name))
+                print("START TRACEBACK:")
                 traceback.print_exc()
-                print "END TRACEBACK\n"
+                print("END TRACEBACK\n")
 
     def runjobs_by_signals(self, when, options):
         """ Run jobs from the signals """
@@ -52,7 +52,7 @@ class Command(LabelCommand):
         for app in models.get_apps():
             if verbosity > 1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
-                print "Sending %s job signal for: %s" % (when, app_name)
+                print("Sending %s job signal for: %s" % (when, app_name))
             if when == 'minutely':
                 signals.run_minutely_jobs.send(sender=app, app=app)
             elif when == 'quarter_hourly':

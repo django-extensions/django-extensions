@@ -35,10 +35,10 @@ class Command(NoArgsCommand):
 
         if output_format == 'json':
             json = self.import_json()
-            print json.dumps(a_dict, indent=indent)
+            print(json.dumps(a_dict, indent=indent))
         elif output_format == 'yaml':
             import yaml  # requires PyYAML
-            print yaml.dump(a_dict, indent=indent)
+            print(yaml.dump(a_dict, indent=indent))
         elif output_format == 'pprint':
             from pprint import pprint
             pprint(a_dict)

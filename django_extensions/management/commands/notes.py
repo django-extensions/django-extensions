@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
                                     annotation_lines.append("[%3s] %-5s %s" % (i, tag, msg.strip()))
                             if annotation_lines:
-                                print "%s:" % fpath
+                                print("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    print "  * %s" % annotation
+                                    print("  * %s" % annotation)
                                 print

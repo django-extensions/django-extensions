@@ -2,6 +2,7 @@
 Django Extensions additional model fields
 """
 import re
+import six
 
 try:
     import uuid
@@ -276,7 +277,7 @@ class UUIDField(CharField):
             return value
         else:
             if self.auto and not value:
-                value = unicode(self.create_uuid())
+                value = six.u(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
 

@@ -346,7 +346,7 @@ class SQLDiff(object):
 
             try:
                 table_description = self.introspection.get_table_description(self.cursor, table_name)
-            except Exception, e:
+            except Exception as e:
                 self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
@@ -387,18 +387,18 @@ class SQLDiff(object):
             if not diffs:
                 continue
             if not self.dense and cur_app_label != app_label:
-                print style.NOTICE("+ Application:"), style.SQL_TABLE(app_label)
+                print("%s %s" % (style.NOTICE("+ Application:"), style.SQL_TABLE(app_label)))
                 cur_app_label = app_label
             if not self.dense:
-                print style.NOTICE("|-+ Differences for model:"), style.SQL_TABLE(model_name)
+                print("%s %s" % (style.NOTICE("|-+ Differences for model:"), style.SQL_TABLE(model_name)))
             for diff in diffs:
                 diff_type, diff_args = diff
                 text = self.DIFF_TEXTS[diff_type] % dict((str(i), style.SQL_TABLE(e)) for i, e in enumerate(diff_args))
                 text = "'".join(i % 2 == 0 and style.ERROR(e) or e for i, e in enumerate(text.split("'")))
                 if not self.dense:
-                    print style.NOTICE("|--+"), text
+                    print("%s %s" % (style.NOTICE("|--+"), text))
                 else:
-                    print style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text
+                    print("%s %s %s %s %s" % (style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text))
 
     def print_diff_sql(self, style):
         cur_app_label = None
@@ -406,24 +406,24 @@ class SQLDiff(object):
         has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
         if not has_differences:
             if not self.dense:
-                print style.SQL_KEYWORD("-- No differences")
+                print(style.SQL_KEYWORD("-- No differences"))
         else:
-            print style.SQL_KEYWORD("BEGIN;")
+            print(style.SQL_KEYWORD("BEGIN;"))
             for app_label, model_name, diffs in self.differences:
                 if not diffs:
                     continue
                 if not self.dense and cur_app_label != app_label:
-                    print style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label))
+                    print(style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label)))
                     cur_app_label = app_label
                 if not self.dense:
-                    print style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name))
+                    print(style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name)))
                 for diff in diffs:
                     diff_type, diff_args = diff
                     text = self.DIFF_SQL[diff_type](style, qn, diff_args)
                     if self.dense:
                         text = text.replace("\n\t", " ")
-                    print text
-            print style.SQL_KEYWORD("COMMIT;")
+                    print(text)
+            print(style.SQL_KEYWORD("COMMIT;"))
 
 
 class GenericSQLDiff(SQLDiff):
@@ -649,7 +649,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
                 raise CommandError('Enter at least one appname.')
             try:
                 app_list = [models.get_app(app_label) for app_label in app_labels]
-            except (models.ImproperlyConfigured, ImportError), e:
+            except (models.ImproperlyConfigured, ImportError) as e:
                 raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
 
             app_models = []

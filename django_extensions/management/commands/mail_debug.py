@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
         def inner_run():
             quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-            print "Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command)
+            print("Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command))
 
             ExtensionDebuggingServer((addr, port), None)
             asyncore.loop()

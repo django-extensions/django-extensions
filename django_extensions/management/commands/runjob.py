@@ -17,24 +17,24 @@ class Command(LabelCommand):
     def runjob(self, app_name, job_name, options):
         verbosity = int(options.get('verbosity', 1))
         if verbosity > 1:
-            print "Executing job: %s (app: %s)" % (job_name, app_name)
+            print("Executing job: %s (app: %s)" % (job_name, app_name))
         try:
             job = get_job(app_name, job_name)
         except KeyError:
             if app_name:
-                print "Error: Job %s for applabel %s not found" % (app_name, job_name)
+                print("Error: Job %s for applabel %s not found" % (app_name, job_name))
             else:
-                print "Error: Job %s not found" % job_name
-            print "Use -l option to view all the available jobs"
+                print("Error: Job %s not found" % job_name)
+            print("Use -l option to view all the available jobs")
             return
         try:
             job().execute()
         except Exception:
             import traceback
-            print "ERROR OCCURED IN JOB: %s (APP: %s)" % (job_name, app_name)
-            print "START TRACEBACK:"
+            print("ERROR OCCURED IN JOB: %s (APP: %s)" % (job_name, app_name))
+            print("START TRACEBACK:")
             traceback.print_exc()
-            print "END TRACEBACK\n"
+            print("END TRACEBACK\n")
 
     def handle(self, *args, **options):
         app_name = None
@@ -47,7 +47,7 @@ class Command(LabelCommand):
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)
         else:
             if not job_name:
-                print "Run a single maintenance job. Please specify the name of the job."
+                print("Run a single maintenance job. Please specify the name of the job.")
                 return
             self.runjob(app_name, job_name, options)
 

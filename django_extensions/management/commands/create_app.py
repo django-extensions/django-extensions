@@ -57,16 +57,15 @@ class Command(LabelCommand):
 
         try:
             os.makedirs(app_dir)
-        except OSError, e:
+        except OSError as e:
             raise CommandError(e)
 
         copy_template(app_template, app_dir, project_name, app_name)
 
         if dia_parse:
             generate_models_and_admin(dia_path, app_dir, project_name, app_name)
-            print "Application %r created." % app_name
-            print "Please add now %r and any other dependent application in " \
-                "settings.INSTALLED_APPS, and run 'manage syncdb'" % app_name
+            print("Application %r created." % app_name)
+            print("Please add now %r and any other dependent application in settings.INSTALLED_APPS, and run 'manage syncdb'" % app_name)
 
 
 def copy_template(app_template, copy_to, project_name, app_name):

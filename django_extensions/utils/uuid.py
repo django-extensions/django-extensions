@@ -1,3 +1,4 @@
+# flake8:noqa
 r"""UUID objects (universally unique identifiers) according to RFC 4122.
 
 This module provides immutable UUID objects (class UUID) and the functions

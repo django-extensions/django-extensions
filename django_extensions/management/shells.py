@@ -48,11 +48,11 @@ def import_objects(options, style):
                 else:
                     model_labels.append("%s (as %s)" % (model_name, alias))
 
-            except AttributeError, e:
+            except AttributeError as e:
                 if not quiet_load:
-                    print style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e)))
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e))))
                 continue
         if not quiet_load:
-            print style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels)))
+            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels))))
 
     return imported_objects

@@ -10,6 +10,7 @@
 #
 
 import operator
+from six.moves import reduce
 from django.http import HttpResponse, HttpResponseNotFound
 from django.db import models
 from django.db.models.query import QuerySet

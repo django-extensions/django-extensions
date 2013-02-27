@@ -178,8 +178,8 @@ class Command(BaseCommand):
             self.invalidate_objects_cf()
 
         print
-        print "%d files uploaded." % (self.upload_count)
-        print "%d files skipped." % (self.skip_count)
+        print("%d files uploaded." % self.upload_count)
+        print("%d files skipped." % self.skip_count)
 
     def open_cf(self):
         """
@@ -280,13 +280,12 @@ class Command(BaseCommand):
                     if local_datetime < s3_datetime:
                         self.skip_count += 1
                         if self.verbosity > 1:
-                            print "File %s hasn't been modified since last " \
-                                "being uploaded" % (file_key)
+                            print("File %s hasn't been modified since last being uploaded" % file_key)
                         continue
 
             # File is newer, let's process and upload
             if self.verbosity > 0:
-                print "Uploading %s..." % (file_key)
+                print("Uploading %s..." % file_key)
 
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
@@ -307,25 +306,24 @@ class Command(BaseCommand):
                             file_key, self.SYNC_S3_RENAME_GZIP_EXT)
                     headers['Content-Encoding'] = 'gzip'
                     if self.verbosity > 1:
-                        print "\tgzipped: %dk to %dk" % \
-                            (file_size / 1024, len(filedata) / 1024)
+                        print("\tgzipped: %dk to %dk" % (file_size / 1024, len(filedata) / 1024))
             if self.do_expires:
                 # HTTP/1.0
                 headers['Expires'] = '%s GMT' % (email.Utils.formatdate(time.mktime((datetime.datetime.now() + datetime.timedelta(days=365 * 2)).timetuple())))
                 # HTTP/1.1
                 headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
                 if self.verbosity > 1:
-                    print "\texpires: %s" % (headers['Expires'])
-                    print "\tcache-control: %s" % (headers['Cache-Control'])
+                    print("\texpires: %s" % headers['Expires'])
+                    print("\tcache-control: %s" % headers['Cache-Control'])
 
             try:
                 key.name = file_key
                 key.set_contents_from_string(filedata, headers, replace=True)
                 key.set_acl('public-read')
-            except boto.exception.S3CreateError, e:
-                print "Failed: %s" % e
-            except Exception, e:
-                print e
+            except boto.exception.S3CreateError as e:
+                print("Failed: %s" % e)
+            except Exception as e:
+                print(e)
                 raise
             else:
                 self.upload_count += 1

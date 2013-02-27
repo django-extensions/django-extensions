@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 names = "'" + names + "'."
             raise CommandError("Unknown group '" + group + "'. Valid group names are: " + names)
         if len(args) and args[0] != '-':
-            outfile = file(args[0], 'w')
+            outfile = open(args[0], 'w')
         else:
             outfile = stdout
 
@@ -110,7 +110,7 @@ class Command(BaseCommand):
         try:
             import vobject
         except ImportError:
-            print self.style.ERROR("Please install python-vobject to use the vcard export format.")
+            print(self.style.ERROR("Please install python-vobject to use the vcard export format."))
             import sys
             sys.exit(1)
         for ent in qs:

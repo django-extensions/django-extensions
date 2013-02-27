@@ -9,15 +9,13 @@ import time
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
     USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
-except ImportError, e:
+except ImportError:
     USE_STATICFILES = False
 
 import logging
 logger = logging.getLogger(__name__)
 
-
-def null_technical_500_response(request, exc_type, exc_value, tb):
-    raise exc_type, exc_value, tb
+from django_extensions.management.technical_response import null_technical_500_response
 
 
 class Command(BaseCommand):
@@ -128,12 +126,12 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
-            print "Validating models..."
+            print("Validating models...")
             self.validate(display_num_errors=True)
-            print "\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE)
-            print "Development server is running at http://%s:%s/" % (addr, port)
-            print "Using the Werkzeug debugger (http://werkzeug.pocoo.org/)"
-            print "Quit the server with %s." % quit_command
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at http://%s:%s/" % (addr, port))
+            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Quit the server with %s." % quit_command)
             path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
@@ -185,8 +183,7 @@ class Command(BaseCommand):
                         ssl_context = make_ssl_devcert(
                             os.path.join(dir_path, root), host='localhost')
                 except ImportError:
-                    print "Werkzeug version is less than 0.9, "\
-                        "trying adhoc certificate."
+                    print("Werkzeug version is less than 0.9, trying adhoc certificate.")
                     ssl_context = "adhoc"
 
             else:

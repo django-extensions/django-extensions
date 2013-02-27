@@ -55,11 +55,11 @@ class Command(NoArgsCommand):
                         execution_time = time.time() - starttime
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
                         if sqlparse:
-                            print sqlparse.format(raw_sql, reindent=True)
+                            print(sqlparse.format(raw_sql, reindent=True))
                         else:
-                            print raw_sql
+                            print(raw_sql)
                         print
-                        print 'Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias)
+                        print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
                         print
 
             util.CursorDebugWrapper = PrintQueryWrapper
@@ -93,10 +93,11 @@ class Command(NoArgsCommand):
             if use_pythonrc:
                 pythonrc = os.environ.get("PYTHONSTARTUP")
                 if pythonrc and os.path.isfile(pythonrc):
-                    try:
-                        execfile(pythonrc)
-                    except NameError:
-                        pass
+                    with open(pythonrc) as rcfile:
+                        try:
+                            exec(compile(rcfile.read(), pythonrc, 'exec'))
+                        except NameError:
+                            pass
                 # This will import .pythonrc.py as a side-effect
                 import user  # NOQA
             code.interact(local=imported_objects)
@@ -140,5 +141,5 @@ class Command(NoArgsCommand):
             else:
                 import traceback
                 traceback.print_exc()
-                print self.style.ERROR("Could not load any interactive Python environment.")
+                print(self.style.ERROR("Could not load any interactive Python environment."))
 

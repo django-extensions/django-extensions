@@ -12,7 +12,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
 
         if settings.MEDIA_ROOT == '':
-            print "MEDIA_ROOT is not set, nothing to do"
+            print("MEDIA_ROOT is not set, nothing to do")
             return
 
         # Get a list of all files under MEDIA_ROOT
@@ -44,4 +44,4 @@ class Command(NoArgsCommand):
         # Print each file in MEDIA_ROOT that is not referenced in the database
         for m in media:
             if m not in referenced:
-                print m
+                print(m)

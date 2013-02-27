@@ -45,7 +45,7 @@ class Command(BaseCommand):
             self.print_output(dotdata)
 
     def print_output(self, dotdata):
-        print dotdata.encode('utf-8')
+        print(dotdata.encode('utf-8'))
 
     def render_output(self, dotdata, **kwargs):
         try:

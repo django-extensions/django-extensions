@@ -73,4 +73,4 @@ class Command(NoArgsCommand):
                                   'first_name': user.first_name,
                                   'last_name': user.last_name}
             user.save()
-        print 'Changed %d emails' % users.count()
+        print('Changed %d emails' % users.count())

@@ -158,7 +158,7 @@ def dia2django(archivo):
             for j in a:
                 if len(j.getAttribute("to")):
                     mycons[int(j.getAttribute("handle"))] = j.getAttribute("to")
-            print mycons
+            print(mycons)
             if not 'A' in mycons:
                 herit.append(mycons)
         elif i.getAttribute("type") == "UML - SmallPackage":
@@ -192,7 +192,7 @@ def dia2django(archivo):
             # swap %s in %s" % ( ordered[i] , ordered[mark]) to make ordered[i] to be at the end
             if ordered[i][0] in ordered[mark][1] and ordered[mark][0] in ordered[i][1]:
                 #Resolving simplistic circular ForeignKeys
-                print "Not able to resolve circular ForeignKeys between %s and %s" % (ordered[i][1], ordered[mark][0])
+                print("Not able to resolve circular ForeignKeys between %s and %s" % (ordered[i][1], ordered[mark][0]))
                 break
             a = ordered[i]
             ordered[i] = ordered[mark]
@@ -211,4 +211,4 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         dia2django(sys.argv[1])
     else:
-        print " Use:\n \n   " + sys.argv[0] + " diagram.dia\n\n"
+        print(" Use:\n \n   " + sys.argv[0] + " diagram.dia\n\n")
