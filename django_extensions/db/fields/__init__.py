@@ -1,9 +1,6 @@
 """
 Django Extensions additional model fields
 """
-
-from django.template.defaultfilters import slugify
-from django.db.models import DateTimeField, CharField, SlugField
 import re
 
 try:
@@ -12,12 +9,20 @@ try:
 except ImportError:
     from django_extensions.utils import uuid
 
+from django.template.defaultfilters import slugify
+from django.db.models import DateTimeField, CharField, SlugField
+
 try:
     from django.utils.timezone import now as datetime_now
     assert datetime_now
 except ImportError:
     import datetime
     datetime_now = datetime.datetime.now
+
+try:
+    from django.utils.encoding import force_unicode
+except ImportError:
+    from django.utils.encoding import force_text as force_unicode
 
 
 class AutoSlugField(SlugField):
@@ -136,7 +141,7 @@ class AutoSlugField(SlugField):
         return slug
 
     def pre_save(self, model_instance, add):
-        value = unicode(self.create_slug(model_instance, add))
+        value = force_unicode(self.create_slug(model_instance, add))
         setattr(model_instance, self.attname, value)
         return value
 
@@ -266,7 +271,7 @@ class UUIDField(CharField):
     def pre_save(self, model_instance, add):
         value = super(UUIDField, self).pre_save(model_instance, add)
         if self.auto and add and value is None:
-            value = unicode(self.create_uuid())
+            value = force_unicode(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:

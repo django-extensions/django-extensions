@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
-from cStringIO import StringIO
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 try:
     import importlib  # NOQA
