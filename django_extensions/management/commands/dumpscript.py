@@ -42,9 +42,9 @@ from django.core.management.base import BaseCommand
 # conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
 try:
-    from django.utils.encoding import smart_unicode, force_unicode
+    from django.utils.encoding import smart_unicode, force_unicode  # NOQA
 except ImportError:
-    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode
+    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
 
 
 def orm_item_locator(orm_obj):

@@ -4,9 +4,9 @@ from django.utils.functional import allow_lazy
 
 # conditional import, force_unicode was renamed in Django 1.5
 try:
-    from django.utils.encoding import force_unicode
+    from django.utils.encoding import force_unicode  # NOQA
 except ImportError:
-    from django.utils.encoding import force_text as force_unicode
+    from django.utils.encoding import force_text as force_unicode  # NOQA
 
 
 def truncate_letters(s, num):

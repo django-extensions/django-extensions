@@ -2,9 +2,9 @@
 import logging
 
 try:
-    from cStringIO import StringIO
+    from cStringIO import StringIO  # NOQA
 except ImportError:
-    from io import StringIO
+    from io import StringIO  # NOQA
 
 try:
     import importlib  # NOQA

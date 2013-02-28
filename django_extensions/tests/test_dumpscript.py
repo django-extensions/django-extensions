@@ -2,11 +2,11 @@ import sys
 
 # conditional imports for python 3
 try:
-    import compiler
-    from StringIO import StringIO
+    import compiler  # NOQA
+    from StringIO import StringIO  # NOQA
 except ImportError:
-    import ast as compiler
-    from io import StringIO
+    import ast as compiler  # NOQA
+    from io import StringIO  # NOQA
 from django.test import TestCase
 
 from django.core.management import call_command

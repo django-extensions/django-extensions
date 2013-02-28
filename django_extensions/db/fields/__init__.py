@@ -21,9 +21,9 @@ except ImportError:
     datetime_now = datetime.datetime.now
 
 try:
-    from django.utils.encoding import force_unicode
+    from django.utils.encoding import force_unicode  # NOQA
 except ImportError:
-    from django.utils.encoding import force_text as force_unicode
+    from django.utils.encoding import force_text as force_unicode  # NOQA
 
 
 class AutoSlugField(SlugField):
