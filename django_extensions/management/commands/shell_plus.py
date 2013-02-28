@@ -18,8 +18,8 @@ class Command(NoArgsCommand):
                     help='Tells Django to use IPython, not BPython.'),
         make_option('--notebook', action='store_true', dest='notebook',
                     help='Tells Django to use IPython Notebook.'),
-        make_option('--no-pythonrc', action='store_true', dest='no_pythonrc',
-                    help='Tells Django not to execute PYTHONSTARTUP file'),
+        make_option('--use-pythonrc', action='store_true', dest='use_pythonrc',
+                    help='Tells Django to execute PYTHONSTARTUP file (BE CAREFULL WITH THIS!)'),
         make_option('--print-sql', action='store_true', default=False,
                     help="Print SQL queries as they're executed"),
         make_option('--dont-load', action='append', dest='dont_load', default=[],
@@ -36,7 +36,7 @@ class Command(NoArgsCommand):
         use_ipython = options.get('ipython', False)
         use_bpython = options.get('bpython', False)
         use_plain = options.get('plain', False)
-        use_pythonrc = not options.get('no_pythonrc', True)
+        use_pythonrc = options.get('use_pythonrc', True)
 
         if options.get("print_sql", False):
             # Code from http://gist.github.com/118990
@@ -94,13 +94,18 @@ class Command(NoArgsCommand):
             if use_pythonrc:
                 pythonrc = os.environ.get("PYTHONSTARTUP")
                 if pythonrc and os.path.isfile(pythonrc):
+                    global_ns = {}
                     with open(pythonrc) as rcfile:
                         try:
-                            six.exec_(compile(rcfile.read(), pythonrc, 'exec'))
+                            six.exec_(compile(rcfile.read(), pythonrc, 'exec'), global_ns)
+                            imported_objects.update(global_ns)
                         except NameError:
                             pass
                 # This will import .pythonrc.py as a side-effect
-                import user  # NOQA
+                try:
+                    import user  # NOQA
+                except ImportError:
+                    pass
             code.interact(local=imported_objects)
 
         def run_bpython():
