@@ -1,4 +1,5 @@
 import os
+import six
 import time
 from optparse import make_option
 
@@ -95,7 +96,7 @@ class Command(NoArgsCommand):
                 if pythonrc and os.path.isfile(pythonrc):
                     with open(pythonrc) as rcfile:
                         try:
-                            exec(compile(rcfile.read(), pythonrc, 'exec'))
+                            six.exec_(compile(rcfile.read(), pythonrc, 'exec'))
                         except NameError:
                             pass
                 # This will import .pythonrc.py as a side-effect
