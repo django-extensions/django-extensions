@@ -1,5 +1,4 @@
 import six
-import sys
 
 
 def null_technical_500_response(request, exc_type, exc_value, tb):
