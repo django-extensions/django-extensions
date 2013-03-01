@@ -57,7 +57,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
     related_string_functions = {}
 
     def get_urls(self):
-        from django.conf.urls.defaults import patterns, url
+        try:
+            from django.conf.urls import patterns, url
+        except ImportError: # django < 1.4
+            from django.conf.urls.defaults import patterns, url
 
         def wrap(view):
             def wrapper(*args, **kwargs):
