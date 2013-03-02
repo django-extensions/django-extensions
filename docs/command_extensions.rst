@@ -3,7 +3,8 @@ Current Command Extensions
 
 :synopsis: Current Command Extensions
 
-* :doc:`shell_plus` - Django shell with autoloading of the apps database models
+* :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
+  all your models making it easy to work with the ORM right away.
 
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
@@ -66,9 +67,6 @@ Current Command Extensions
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
 
 * *set_fake_passwords* -  Sets all user passwords to a common value (*password* by default). *DEBUG only*.
-
-* *shell_plus* - An enhanced version of the Django shell.  It will autoload
-  all your models making it easy to work with the ORM right away.
 
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
