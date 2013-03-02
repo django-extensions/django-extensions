@@ -45,4 +45,4 @@ class Command(BaseCommand):
                                 print("%s:" % fpath)
                                 for annotation in annotation_lines:
                                     print("  * %s" % annotation)
-                                print()
+                                print("")
