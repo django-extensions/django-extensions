@@ -45,6 +45,7 @@ Contents
    shell_plus
    create_app
    dumpscript
+   runscript
    export_emails
    field_extensions
    graph_models

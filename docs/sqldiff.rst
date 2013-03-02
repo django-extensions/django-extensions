@@ -12,6 +12,19 @@ it might certainly be of help during migrations. It's purpose is to show the
 current differences as a way to checking or debugging your models compared to
 the real database tables and columns.
 
+Supported Databases
+-------------------
+
+Currently the following databases are supported:
+
+* PostgreSQL
+* Sqlite3
+* MySQL
+* Oracle
+
+Patches to support other databases are welcome ! :-)
+
+
 Example Usage
 -------------
 
