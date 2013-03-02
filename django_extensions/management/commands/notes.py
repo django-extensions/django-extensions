@@ -16,7 +16,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # don't add django internal code
         apps = filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)
+        template_dirs = getattr(settings, 'TEMPLATE_DIRS', [])
+        if template_dirs:
+            apps += template_dirs
         for app_dir in apps:
+            app_dir = app_dir.replace(".", "/")
             for top, dirs, files in os.walk(app_dir):
                 for f in files:
                     if os.path.splitext(f)[1] in ('.py', '.html'):
@@ -41,4 +45,4 @@ class Command(BaseCommand):
                                 print("%s:" % fpath)
                                 for annotation in annotation_lines:
                                     print("  * %s" % annotation)
-                                print
+                                print()
