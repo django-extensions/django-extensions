@@ -4,6 +4,7 @@ import time
 from optparse import make_option
 
 from django.core.management.base import NoArgsCommand
+from django.conf import settings
 
 from django_extensions.management.shells import import_objects
 
@@ -128,6 +129,13 @@ class Command(NoArgsCommand):
                 shell = IPShell(argv=[], user_ns=imported_objects)
                 shell.mainloop()
 
+        shells = (
+            ('bpython', run_bpython),
+            ('ipython', run_ipython),
+            ('plain', run_plain),
+        )
+        SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
+
         if use_notebook:
             run_notebook()
         elif use_plain:
@@ -136,8 +144,15 @@ class Command(NoArgsCommand):
             run_ipython()
         elif use_bpython:
             run_bpython()
+        elif SETTINGS_SHELL_PLUS:
+            try:
+                dict(shells)[SETTINGS_SHELL_PLUS]()
+            except ImportError:
+                import traceback
+                traceback.print_exc()
+                print(self.style.ERROR("Could not load '%s' Python environment." % SETTINGS_SHELL_PLUS))
         else:
-            for func in (run_bpython, run_ipython, run_plain):
+            for shell_name, func in shells:
                 try:
                     func()
                 except ImportError:

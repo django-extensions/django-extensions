@@ -4,6 +4,37 @@ shell_plus
 :synopsis: Django shell with autoloading of the apps database models
 
 
+Interactive Python Shells
+-------------------------
+
+There is support for three different types of interactive python shells.
+
+IPython::
+
+  $ ./manage.py shell_plus --use-ipython
+
+
+BPython::
+
+  $ ./manage.py shell_plus --use-bpython
+
+
+Python::
+
+  $ ./manage.py shell_plus --use-plain
+
+
+The default resolution order is: bpython, ipython, python.
+
+You can also set the configuration option SHELL_PLUS to explicitly specify which version you want.
+
+::
+
+  # Always use IPython for shell_plus
+  SHELL_PLUS = "ipython"
+
+
+
 Configuration
 -------------
 
@@ -52,7 +83,8 @@ the ``IPYTHON_ARGUMENTS`` setting.  For example::
     IPYTHON_ARGUMENTS = [
         '--ext', 'django_extensions.management.notebook_extension',
         '--ext', 'myproject.notebook_extension',
-        '--debug']
+        '--debug',
+    ]
 
 To activate auto-loading, remember to either include django-extensions' default
 notebook extension or copy the auto-loading code from it into your own
