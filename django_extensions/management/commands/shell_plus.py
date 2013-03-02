@@ -59,9 +59,9 @@ class Command(NoArgsCommand):
                             print(sqlparse.format(raw_sql, reindent=True))
                         else:
                             print(raw_sql)
-                        print
+                        print("")
                         print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
-                        print
+                        print("")
 
             util.CursorDebugWrapper = PrintQueryWrapper
 

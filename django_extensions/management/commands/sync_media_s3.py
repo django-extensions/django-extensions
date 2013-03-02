@@ -177,7 +177,7 @@ class Command(BaseCommand):
         if self.invalidate:
             self.invalidate_objects_cf()
 
-        print
+        print("")
         print("%d files uploaded." % self.upload_count)
         print("%d files skipped." % self.skip_count)
 

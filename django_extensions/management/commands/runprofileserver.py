@@ -48,7 +48,7 @@ class KCacheGrind(object):
 
     def output(self, out_file):
         self.out_file = out_file
-        print >> out_file, 'events: Ticks'
+        self.out_file.write('events: Ticks\n')
         self._print_summary()
         for entry in self.data:
             self._entry(entry)
@@ -58,7 +58,7 @@ class KCacheGrind(object):
         for entry in self.data:
             totaltime = int(entry.totaltime * 1000)
             max_cost = max(max_cost, totaltime)
-        print >> self.out_file, 'summary: %d' % (max_cost,)
+        self.out_file.write('summary: %d\n' % (max_cost,))
 
     def _entry(self, entry):
         out_file = self.out_file
@@ -66,16 +66,16 @@ class KCacheGrind(object):
         code = entry.code
         #print >> out_file, 'ob=%s' % (code.co_filename,)
         if isinstance(code, str):
-            print >> out_file, 'fi=~'
+            out_file.write('fi=~\n')
         else:
-            print >> out_file, 'fi=%s' % (code.co_filename,)
-        print >> out_file, 'fn=%s' % (label(code),)
+            out_file.write('fi=%s\n' % (code.co_filename,))
+        out_file.write('fn=%s\n' % (label(code),))
 
         inlinetime = int(entry.inlinetime * 1000)
         if isinstance(code, str):
-            print >> out_file, '0 ', inlinetime
+            out_file.write('0  %s\n' % inlinetime)
         else:
-            print >> out_file, '%d %d' % (code.co_firstlineno, inlinetime)
+            out_file.write('%d %d\n' % (code.co_firstlineno, inlinetime))
 
         # recursive calls are counted in entry.calls
         if entry.calls:
@@ -90,23 +90,22 @@ class KCacheGrind(object):
 
         for subentry in calls:
             self._subentry(lineno, subentry)
-        print >> out_file
+        out_file.write("\n")
 
     def _subentry(self, lineno, subentry):
         out_file = self.out_file
         code = subentry.code
-        #print >> out_file, 'cob=%s' % (code.co_filename,)
-        print >> out_file, 'cfn=%s' % (label(code),)
+        #out_file.write('cob=%s\n' % (code.co_filename,))
+        out_file.write('cfn=%s\n' % (label(code),))
         if isinstance(code, str):
-            print >> out_file, 'cfi=~'
-            print >> out_file, 'calls=%d 0' % (subentry.callcount,)
+            out_file.write('cfi=~\n')
+            out_file.write('calls=%d 0\n' % (subentry.callcount,))
         else:
-            print >> out_file, 'cfi=%s' % (code.co_filename,)
-            print >> out_file, 'calls=%d %d' % (
-                subentry.callcount, code.co_firstlineno)
+            out_file.write('cfi=%s\n' % (code.co_filename,))
+            out_file.write('calls=%d %d\n' % (subentry.callcount, code.co_firstlineno))
 
         totaltime = int(subentry.totaltime * 1000)
-        print >> out_file, '%d %d' % (lineno, totaltime)
+        out_file.write('%d %d\n' % (lineno, totaltime))
 
 
 class Command(BaseCommand):

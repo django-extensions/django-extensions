@@ -24,7 +24,7 @@ Example:
 
  {% highlight 'python' 'Excerpt: blah.py' %}
  def need_food(self):
-     print "Love is <colder> than &death&"
+     print("Love is <colder> than &death&")
  {% endhighlight %}
 
 """
@@ -80,7 +80,7 @@ def highlight(parser, token):
     {% load highlighting %}
     {% highlight 'python' 'Excerpt: blah.py' %}
     def need_food(self):
-        print "Love is colder than death"
+        print("Love is colder than death")
     {% endhighlight %}
     """
     nodelist = parser.parse(('endhighlight',))

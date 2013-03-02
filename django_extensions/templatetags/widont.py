@@ -14,13 +14,13 @@ def widont(value, count=1):
 
     Examples:
 
-    >>> print widont('Test   me   out')
+    >>> print(widont('Test   me   out'))
     Test   me&nbsp;out
 
     >>> widont('It works with trailing spaces too  ')
     u'It works with trailing spaces&nbsp;too  '
 
-    >>> print widont('NoEffect')
+    >>> print(widont('NoEffect'))
     NoEffect
     """
     def replace(matchobj):
@@ -38,13 +38,13 @@ def widont_html(value):
 
     Examples:
 
-    >>> print widont_html('<h2>Here is a simple  example  </h2> <p>Single</p>')
+    >>> print(widont_html('<h2>Here is a simple  example  </h2> <p>Single</p>'))
     <h2>Here is a simple&nbsp;example  </h2> <p>Single</p>
 
-    >>> print widont_html('<p>test me<br /> out</p><h2>Ok?</h2>Not in a p<p title="test me">and this</p>')
+    >>> print(widont_html('<p>test me<br /> out</p><h2>Ok?</h2>Not in a p<p title="test me">and this</p>'))
     <p>test&nbsp;me<br /> out</p><h2>Ok?</h2>Not in a&nbsp;p<p title="test me">and&nbsp;this</p>
 
-    >>> print widont_html('leading text  <p>test me out</p>  trailing text')
+    >>> print(widont_html('leading text  <p>test me out</p>  trailing text'))
     leading&nbsp;text  <p>test me&nbsp;out</p>  trailing&nbsp;text
     """
     def replace(matchobj):

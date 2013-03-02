@@ -51,7 +51,7 @@ The envisioned use case is something like this:
             if not got_db_settings:
                 raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
 
-        #print "%s %s %s %s" % (settings.DATABASE_ENGINE, settings.DATABASE_NAME, settings.DATABASE_USER, settings.DATABASE_PASSWORD)
+        #print("%s %s %s %s" % (settings.DATABASE_ENGINE, settings.DATABASE_NAME, settings.DATABASE_USER, settings.DATABASE_PASSWORD))
         engine = settings.DATABASE_ENGINE
         dbname = settings.DATABASE_NAME
         dbuser = settings.DATABASE_USER
