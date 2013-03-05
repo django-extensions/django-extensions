@@ -87,7 +87,7 @@ class Command(NoArgsCommand):
         for name, req in self.reqs.items():
             if req["url"]:
                 continue  # skipping github packages.
-            elif "dist" in req.keys():
+            elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
                 available = pypi.package_releases(req["pip_req"].url_name)
