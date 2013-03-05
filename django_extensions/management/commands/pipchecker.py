@@ -4,7 +4,7 @@ import pip
 try:
     import requests
 except ImportError:
-    print("The request library is not installed. To continue:\n"
+    print("The requests library is not installed. To continue:\n"
           "   pip install requests")
 import sys
 import urlparse
