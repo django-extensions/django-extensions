@@ -155,7 +155,7 @@ class Command(NoArgsCommand):
 
         """
         for name, req in self.reqs.items():
-            if "github.com/" not in req["url"]:
+            if "git://github.com/" not in req["url"]:
                 continue
 
             headers = {
@@ -208,7 +208,12 @@ class Command(NoArgsCommand):
         support here.
         """
         if self.reqs:
-            print("\nOnly pypi and github based requirements are supported.")
+            print("\nOnly pypi and github based requirements are supported:")
             for name, req in self.reqs.items():
-                pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
+                if "dist" in req:
+                    pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
+                elif "url" in req:
+                    pkg_info = "{url}".format(url=req["url"])
+                else:
+                    pkg_info = "unknown package"
                 print("{pkg_info:40} is not a pypi or github requirement".format(pkg_info=pkg_info))
