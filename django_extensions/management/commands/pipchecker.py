@@ -9,6 +9,7 @@ except ImportError:
 import sys
 import urlparse
 import xmlrpclib
+from distutils.version import LooseVersion
 
 from optparse import make_option
 
@@ -21,16 +22,23 @@ class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option(
             "-t", "--github-api-token", action="store", dest="github_api_token",
-            help="A github api authentication token."),
+            help="A github api authentication token."
+        ),
         make_option(
             "-r", "--requirement", action="append", dest="requirements",
             default=[], metavar="FILENAME",
             help="Check all the packages listed in the given requirements file. "
-                 "This option can be used multiple times."),
+                 "This option can be used multiple times."
+        ),
+        make_option(
+            "-n", "--newer", action="store_true", dest="show_newer",
+            help="Also show when newer version then available is installed."
+        ),
     )
     help = "Scan pip requirement files for out-of-date packages."
 
     def handle_noargs(self, **options):
+        self.options = options
         if options["requirements"]:
             req_files = options["requirements"]
         elif os.path.exists("requirements.txt"):
@@ -38,7 +46,7 @@ class Command(NoArgsCommand):
         elif os.path.exists("requirements"):
             req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
                          if os.path.isfile(os.path.join("requirements", f)) and
-                         f.lower().endswith(".txt")]
+                            f.lower().endswith(".txt")]
         else:
             sys.exit("requirements not found")
 
@@ -81,11 +89,19 @@ class Command(NoArgsCommand):
                 continue  # skipping github packages.
             elif "dist" in req.keys():
                 dist = req["dist"]
+                dist_version = LooseVersion(dist.version)
                 available = pypi.package_releases(req["pip_req"].url_name)
-                if not available:
+                try:
+                    available_version = LooseVersion(available[0])
+                except IndexError:
+                    available_version = None
+
+                if not available_version:
                     msg = "release is not on pypi (check capitalization and/or --extra-index-url)"
-                elif available[0] != dist.version:
-                    msg = "{0} available".format(available[0])
+                elif self.options['show_newer'] and dist_version > available_version:
+                    msg = "{0} available (newer installed)".format(available_version)
+                elif available_version > dist_version:
+                    msg = "{0} available".format(available_version)
                 else:
                     msg = "up to date"
                     del self.reqs[name]
