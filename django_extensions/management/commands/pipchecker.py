@@ -46,7 +46,7 @@ class Command(NoArgsCommand):
         elif os.path.exists("requirements"):
             req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
                          if os.path.isfile(os.path.join("requirements", f)) and
-                            f.lower().endswith(".txt")]
+                         f.lower().endswith(".txt")]
         else:
             sys.exit("requirements not found")
 
@@ -155,7 +155,8 @@ class Command(NoArgsCommand):
 
         """
         for name, req in self.reqs.items():
-            if "git://github.com/" not in req["url"]:
+            req_url = req["url"]
+            if req_url.startswith("git") and "github.com/" not in req_url:
                 continue
 
             headers = {
@@ -163,7 +164,7 @@ class Command(NoArgsCommand):
             }
             if self.github_api_token:
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
-            user, repo = urlparse.urlparse(req["url"]).path.split("#")[0].strip("/").rstrip("/").split("/")
+            user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
 
             test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             if "message" in test_auth and test_auth["message"] == "Bad credentials":
