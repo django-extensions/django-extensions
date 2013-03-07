@@ -1,9 +1,12 @@
 
-VERSION = (0, 7, 'pre')
+VERSION = (1, 1, 1, 'dev')
 
 # Dynamically calculate the version based on VERSION tuple
-if len(VERSION)>2 and VERSION[2] is not None:
-    str_version = "%s.%s_%s" % VERSION[:3]
+if len(VERSION) > 2 and VERSION[2] is not None:
+    if isinstance(VERSION[2], int):
+        str_version = "%s.%s.%s" % VERSION[:3]
+    else:
+        str_version = "%s.%s_%s" % VERSION[:3]
 else:
     str_version = "%s.%s" % VERSION[:2]
 

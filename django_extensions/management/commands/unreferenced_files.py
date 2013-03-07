@@ -5,15 +5,16 @@ from django.core.management.base import NoArgsCommand
 from django.db import models
 from django.db.models.loading import cache
 
+
 class Command(NoArgsCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
     def handle_noargs(self, **options):
 
         if settings.MEDIA_ROOT == '':
-            print "MEDIA_ROOT is not set, nothing to do"
+            print("MEDIA_ROOT is not set, nothing to do")
             return
-        
+
         # Get a list of all files under MEDIA_ROOT
         media = []
         for root, dirs, files in os.walk(settings.MEDIA_ROOT):
@@ -36,9 +37,11 @@ class Command(NoArgsCommand):
             all = model.objects.all().iterator()
             for object in all:
                 for field in model_dict[model]:
-                    referenced.append(os.path.abspath(getattr(object, field.name).path))
+                    target_file = getattr(object, field.name)
+                    if target_file:
+                        referenced.append(os.path.abspath(target_file.path))
 
         # Print each file in MEDIA_ROOT that is not referenced in the database
         for m in media:
             if m not in referenced:
-                print m
+                print(m)

@@ -5,6 +5,7 @@ Sets up the terminal color scheme.
 from django.core.management import color
 from django.utils import termcolors
 
+
 def color_style():
     style = color.color_style()
     if color.supports_color():

@@ -21,30 +21,31 @@ Example:
  </style>
 
  <h2>check out this code</h2>
- 
+
  {% highlight 'python' 'Excerpt: blah.py' %}
  def need_food(self):
-     print "Love is <colder> than &death&"
+     print("Love is <colder> than &death&")
  {% endhighlight %}
 
 """
 
 from pygments import highlight as pyghighlight
-from pygments.lexers import get_lexer_by_name, guess_lexer
+from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
-from django.conf import settings
 from django import template
-from django.template import Template, Context, Node, Variable
+from django.template import Template, Context, Node, Variable, TemplateSyntaxError
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+
 
 @register.filter
 @stringfilter
 def parse_template(value):
     return mark_safe(Template(value).render(Context()))
 parse_template.is_safe = True
+
 
 class CodeNode(Node):
     def __init__(self, language, nodelist, name=''):
@@ -65,20 +66,21 @@ class CodeNode(Node):
             html = '<div class="predesc"><span>%s</span></div>' % (name)
         return html + pyghighlight(code, lexer, formatter)
 
+
 @register.tag
 def highlight(parser, token):
     """
     Allows you to put a highlighted source code <pre> block in your code.
     This takes two arguments, the language and a little explaination message
     that will be generated before the code.  The second argument is optional.
-    
+
     Your code will be fed through pygments so you can use any language it
     supports.
-    
+
     {% load highlighting %}
     {% highlight 'python' 'Excerpt: blah.py' %}
     def need_food(self):
-        print "Love is colder than death"
+        print("Love is colder than death")
     {% endhighlight %}
     """
     nodelist = parser.parse(('endhighlight',))

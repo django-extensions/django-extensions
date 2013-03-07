@@ -43,13 +43,13 @@ Using
 Whenever we hit an exception in our code, instead of the normal Django
 traceback page appearing, we see the Werkzeug traceback page instead.
 
-http://blog.michaeltrier.com/assets/2008/6/22/werkzeug-traceback.png
+http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-traceback.png
 
 Along with the typical traceback information we have a couple of options. These
 options appear when you hover over a particular traceback line.  Notice that
 two buttons appear to the right:
 
-http://blog.michaeltrier.com/assets/2008/6/22/werkzeug-options.png
+http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-options.png
 
 The options are:
 
@@ -59,7 +59,7 @@ View Source
 
 This displays the source below the traceback:
 
-http://blog.michaeltrier.com/assets/2008/6/22/werkzeug-source.png
+http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-source.png
 
 Being able to view the source file is handy because you are able to get more
 context information around where the error occurred.  The actual traceback
@@ -75,7 +75,7 @@ Interactive Debugging Console
 When you click on this button a new pane will open up below the traceback line
 you're on. This is the money shot:
 
-http://blog.michaeltrier.com/assets/2008/6/22/werkzeug-debugger.png
+http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-debugger.png
 
 An ajax based console appears in the pane and you can begin debugging away.
 Notice in the screenshot above I did a `print environ` to see what was in the
@@ -87,3 +87,35 @@ interactive debugger allows you to evaluate python code right against the
 server.  You've been warned.
 
 .. _`Werkzeug WSGI utilities`: http://werkzeug.pocoo.org/
+
+
+SSL
+^^^
+
+runserver_plus also supports SSL, so that you can easily debug bugs which seem to popup when https is used. To use SSL simply provide a file name for certificates, a key and certificate file will be automatically generated::
+
+  $ python manage.py runserver_plus --cert cert
+  Validating models...
+  0 errors found
+
+  Django version 1.6.dev20130122125534, using settings 'mysite.settings'
+  Development server is running at http://127.0.0.1:8000/
+  Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
+  Quit the server with CONTROL-C.
+   * Running on https://127.0.0.1:8000/
+   * Restarting with reloader
+  Validating models...
+  0 errors found
+
+  Django version 1.6.dev20130122125534, using settings 'mysite.settings'
+  Development server is running at http://127.0.0.1:8000/
+  Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
+  Quit the server with CONTROL-C.
+  
+After you run above command, you can access your web application through https://127.0.0.1:8000. You will also find that two files are created in the current working directory, which are key file and a certificate file. If you run the above command again, these certificate files will be reused so that you do not have to keep accepting the self generated certificates from your browser every time. You can also provide absolute file for the certificate to be used if you already have one::
+
+  $ python manage.py runserver_plus --cert /tmp/cert 
+  
+Note that you need OpenSSL library to use SSL, and Werkzeug 0.9 or later if you would like to reuse existing certificates. To install OpenSSL::
+
+  $ pip install pyOpenSSL

@@ -2,14 +2,14 @@
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 
-
+from six.moves import input
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
-from django.db import connection
 import django
 import logging
 import re
 from optparse import make_option
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -34,14 +34,14 @@ class Command(BaseCommand):
     )
     help = "Resets the database for this project."
 
-    def set_db_settings(self, *args, **options ):
-        if django.get_version()>="1.2":
+    def set_db_settings(self, *args, **options):
+        if django.get_version() >= "1.2":
             router = options.get('router')
-            if router==None:
+            if router is None:
                 return False
-        
+
             # retrieve this with the 'using' argument
-            dbinfo = settings.DATABASES.get( router )
+            dbinfo = settings.DATABASES.get(router)
             settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
             settings.DATABASE_USER = dbinfo.get('USER')
             settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
@@ -56,20 +56,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """
         Resets the database for this project.
-    
+
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-        
-        if django.get_version()>="1.2":
+
+        if django.get_version() >= "1.2":
             got_db_settings = self.set_db_settings(*args, **options)
             if not got_db_settings:
                 raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
                 return
-        
+
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
-            confirm = raw_input("""
+            confirm = input("""
 You have requested a database reset.
 This will IRREVERSIBLY DESTROY
 ALL data in the database "%s".
@@ -80,18 +80,18 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             confirm = 'yes'
 
         if confirm != 'yes':
-            print "Reset cancelled."
+            print("Reset cancelled.")
             return
 
         postgis = re.compile('.*postgis')
         engine = settings.DATABASE_ENGINE
         user = options.get('user', settings.DATABASE_USER)
-        if user==None:
+        if user is None:
             user = settings.DATABASE_USER
         password = options.get('password', settings.DATABASE_PASSWORD)
-        if password==None:
+        if password is None:
             password = settings.DATABASE_PASSWORD
-        
+
         if engine == 'sqlite3':
             import os
             try:
@@ -113,26 +113,26 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 kwargs['port'] = int(settings.DATABASE_PORT)
 
             connection = Database.connect(**kwargs)
-            drop_query = 'DROP DATABASE IF EXISTS %s' % settings.DATABASE_NAME
+            drop_query = 'DROP DATABASE IF EXISTS `%s`' % settings.DATABASE_NAME
             utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
-            create_query = 'CREATE DATABASE %s %s' % (settings.DATABASE_NAME, utf8_support)
+            create_query = 'CREATE DATABASE `%s` %s' % (settings.DATABASE_NAME, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
             connection.query(create_query)
-       
+
         elif engine == 'postgresql' or engine == 'postgresql_psycopg2' or postgis.match(engine):
             if engine == 'postgresql':
-                import psycopg as Database
+                import psycopg as Database  # NOQA
             elif engine == 'postgresql_psycopg2' or postgis.match(engine):
-                import psycopg2 as Database
-            
+                import psycopg2 as Database  # NOQA
+
             if settings.DATABASE_NAME == '':
                 from django.core.exceptions import ImproperlyConfigured
                 raise ImproperlyConfigured("You need to specify DATABASE_NAME in your Django settings file.")
-            
-            database_name = options.get('dbname', 'template1') 
-            if options.get('dbname') == None:
+
+            database_name = options.get('dbname', 'template1')
+            if options.get('dbname') is None:
                 database_name = 'template1'
             conn_string = "dbname=%s" % database_name
             if settings.DATABASE_USER:
@@ -145,30 +145,33 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
                 conn_string += " port=%s" % settings.DATABASE_PORT
 
             connection = Database.connect(conn_string)
-            connection.set_isolation_level(0) #autocommit false
+            connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
             drop_query = 'DROP DATABASE %s' % settings.DATABASE_NAME
             logging.info('Executing... "' + drop_query + '"')
-    
+
             try:
                 cursor.execute(drop_query)
-            except Database.ProgrammingError, e:
-                logging.info("Error: "+str(e))
-    
+            except Database.ProgrammingError as e:
+                logging.info("Error: %s" % str(e))
+
             # Encoding should be SQL_ASCII (7-bit postgres default) or prefered UTF8 (8-bit)
-            create_query = """CREATE DATABASE %s WITH OWNER = %s ENCODING = 'UTF8' """ % (settings.DATABASE_NAME, settings.DATABASE_USER)
+            create_query = "CREATE DATABASE %s" % settings.DATABASE_NAME
+            if settings.DATABASE_USER:
+                create_query += " WITH OWNER = %s " % settings.DATABASE_USER
+            create_query += " ENCODING = 'UTF8'"
 
             if postgis.match(engine):
-                create_query+= 'TEMPLATE = template_postgis '
+                create_query += ' TEMPLATE = template_postgis'
             if settings.DEFAULT_TABLESPACE:
-                create_query+= 'TABLESPACE = %s;' % (settings.DEFAULT_TABLESPACE)
+                create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
             else:
-                create_query+= ';'
+                create_query += ';'
             logging.info('Executing... "' + create_query + '"')
             cursor.execute(create_query)
-    
+
         else:
             raise CommandError("Unknown database engine %s" % engine)
 
         if verbosity >= 2 or options.get('interactive'):
-            print "Reset successful."
+            print("Reset successful.")

@@ -5,6 +5,7 @@ import re
 
 SESSION_RE = re.compile("^[0-9a-f]{20,40}$")
 
+
 class Command(BaseCommand):
     help = ("print the user information for the provided session key. "
             "this is very helpful when trying to track down the person who "
@@ -26,24 +27,21 @@ class Command(BaseCommand):
         try:
             session = Session.objects.get(pk=key)
         except Session.DoesNotExist:
-            print "Session Key does not exist. Expired?"
+            print("Session Key does not exist. Expired?")
             return
 
         data = session.get_decoded()
-        print 'Session to Expire:', session.expire_date
-        print 'Raw Data:', data
+        print('Session to Expire: %s' % session.expire_date)
+        print('Raw Data: %s' % data)
         uid = data.get('_auth_user_id', None)
         if uid is None:
-            print 'No user associated with session'
+            print('No user associated with session')
             return
-        print "User id:", uid
+        print("User id: %s" % uid)
         try:
             user = User.objects.get(pk=uid)
         except User.DoesNotExist:
-            print "No user associated with that id."
+            print("No user associated with that id.")
             return
         for key in ['username', 'email', 'first_name', 'last_name']:
-            print key+': ' + getattr(user, key)
-
-
-
+            print("%s: %s" % (key, getattr(user, key)))

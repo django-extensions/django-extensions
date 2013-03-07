@@ -1,10 +1,10 @@
 {% load i18n %}
 <input type="text" id="lookup_{{ name }}" value="{{ label }}" style="display:none;" />
 <a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);">
-  <img src="{{ admin_media_prefix }}img/admin/selector-search.gif" width="16" height="16" alt="{% trans "Lookup" %}" />
+  <img src="{{ admin_media_prefix }}img/{% if pre_django_14 %}admin/{% endif %}selector-search.gif" width="16" height="16" alt="{% trans "Lookup" %}" />
 </a>
 <script type="text/javascript">
-$(document).ready(function() {
+(function($){
     // Show lookup input
     $("#lookup_{{ name }}").show();
     function reset() {
@@ -56,5 +56,5 @@ $(document).ready(function() {
         }
     }
     timeout = window.setInterval(check, 300);
-});
+})((typeof window.jQuery == 'undefined' && typeof window.django != 'undefined')? django.jQuery : jQuery);
 </script>

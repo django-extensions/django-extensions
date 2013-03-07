@@ -3,6 +3,8 @@ Current Command Extensions
 
 :synopsis: Current Command Extensions
 
+* :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
+  all your models making it easy to work with the ORM right away.
 
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
@@ -43,6 +45,8 @@ Current Command Extensions
 
 * *passwd* - Makes it easy to reset a user's password.
 
+* `print_settings`_ - Similar to ``diffsettings`` but shows *all* active Django settings.
+
 * *print_user_for_session* - Print the user information for the provided
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
@@ -57,22 +61,22 @@ Current Command Extensions
 * :doc:`runprofileserver <runprofileserver>` - Starts *runserver* with hotshot/profiling tools enabled.
   I haven't had a chance to check this one out, but it looks really cool.
 
-* *runscript* - Runs a script in django context.
+* `runscript`_ - Runs a script in the django context.
 
 * `runserver_plus`_ - The standard runserver stuff but with
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
 
 * *set_fake_passwords* -  Sets all user passwords to a common value (*password* by default). *DEBUG only*.
 
-* *shell_plus* - An enhanced version of the Django shell.  It will autoload
-  all your models making it easy to work with the ORM right away.
-
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
 
-* *sqldiff* - Prints the (approximated) difference between an apps models and
+* :doc:`sqldiff` - Prints the (approximated) difference between an apps models and
   what is in the database.  This is very nice, but also very experimental at
   the moment.  It can not catch everything but it's a great sanity check.
+
+* :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
+  in settings.py.
 
 * `sync_media_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the
@@ -83,6 +87,8 @@ Current Command Extensions
 .. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
+.. _`print_settings`: print_settings.html
+.. _`runscript`: runscript.html
 .. _`runserver_plus`: runserver_plus.html
 .. _`sync_media_s3`: sync_media_s3.html
 .. _GraphViz: http://www.graphviz.org/

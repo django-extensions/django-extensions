@@ -3,19 +3,23 @@ Graph models
 
 :synopsis: Renders a graphical overview of your project or specified apps.
 
-Creates a GraphViz_ dot file for the specified app names.  You can pass
-multiple app names and they will all be combined into a single model.  Output
-is usually directed to a dot file.
+Creates a GraphViz_ dot file for the specified app names based on their models.py.
+You can pass multiple app names and they will all be combined into a single model.
+Output is usually directed to a dot file.
+
+There several options available like: grouping models, including inheritance, 
+excluding models and columns and changing the layout when rendering to an output
+image.
 
 With the latest revisions it's also possible to specify an output file if
 pygraphviz_ is installed and render directly to an image or other supported
-filetype.
+file-type.
 
 
 Example Usage
 -------------
 
-With *django-command-extensions* installed you can create a dot-file or an
+With *django-extensions* installed you can create a dot-file or an
 image by using the *graph_models* command. Like used in the following examples::
 
   # Create a dot file
@@ -32,25 +36,5 @@ image by using the *graph_models* command. Like used in the following examples::
   $ ./manage.py graph_models foo bar > my_project.dot
 
 
-Example Rendered Graphics
--------------------------
-
-The following graphs are from the PyCon-Tech_ project. PyCon-Tech is a
-conference management framework based on Django framework.
-
-
-Pycon-Tech Project
-------------------
-
-http://ido.nl.eu.org/static/images/pycon_no_grouping.png
-
-
-Pycon-Tech Project Overview With Grouping
------------------------------------------
-
-http://ido.nl.eu.org/static/images/pycon_grouping.png
-
-
 .. _GraphViz: http://www.graphviz.org/
 .. _pygraphviz: https://networkx.lanl.gov/wiki/pygraphviz
-.. _PyCon-Tech: https://pycon.coderanger.net/

@@ -3,6 +3,7 @@ The following individuals have contributed to this project
 Antonio Cavedoni - For the GraphViz stuff (http://cavedoni.com/)
 Ludvig Ericson (toxic)
 Collin Grady (magus)
+Gabriel Grant (gabrielgrant)
 Rob Hudson (robhudson)
 Jannis Leidel (leidel)
 Brian Rosner (brosner)
@@ -15,3 +16,5 @@ Patrick Altman (paltman) - Patched sync_media_s3
 Chris Beaven (smileychris) - widont filter
 qMax - various graph_model patches
 Tyson Clugg (tclugg) - Patched sqldiff
+Domen Kožar (iElectric) - staticfiles patch improvement
+quinox - original staticfiles patch
