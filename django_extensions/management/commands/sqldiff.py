@@ -553,8 +553,11 @@ class PostgresqlSQLDiff(SQLDiff):
         if not db_type:
             return
         if field:
-            if field.primary_key and db_type == 'integer':
-                db_type = 'serial'
+            if field.primary_key:
+                if db_type == 'integer':
+                    db_type = 'serial'
+                elif db_type == 'bigint':
+                    db_type = 'bigserial'
             if table_name:
                 tablespace = field.db_tablespace
                 if tablespace == "":
