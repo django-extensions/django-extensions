@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 import os
 import pip
-try:
-    import requests
-except ImportError:
-    print("The requests library is not installed. To continue:\n"
-          "   pip install requests")
 import sys
+import json
+import urllib2
 import urlparse
 import xmlrpclib
 from distutils.version import LooseVersion
@@ -73,6 +70,11 @@ class Command(NoArgsCommand):
         self.check_pypi()
         self.check_github()
         self.check_other()
+
+    def _urlopen_as_json(self, url, headers=None):
+        """Shorcut for return contents as json"""
+        req = urllib2.Request(url, headers=headers)
+        return json.loads(urllib2.urlopen(req).read())
 
     def check_pypi(self):
         """
@@ -166,7 +168,7 @@ class Command(NoArgsCommand):
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
             user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
 
-            test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
+            test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
             if "message" in test_auth and test_auth["message"] == "Bad credentials":
                 sys.exit("\nGithub API: Bad credentials. Aborting!\n")
             elif "message" in test_auth and test_auth["message"].startswith("API Rate Limit Exceeded"):
@@ -183,10 +185,13 @@ class Command(NoArgsCommand):
                 msg = "repo is not frozen"
 
             if frozen_commit_sha:
-                branch_data = requests.get("https://api.github.com/repos/{0}/{1}/branches".format(
-                    user, repo_name), headers=headers).json()
-                frozen_commit_data = requests.get("https://api.github.com/repos/{0}/{1}/commits/{2}".format(
-                    user, repo_name, frozen_commit_sha), headers=headers).json()
+                branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
+                branch_data = self._urlopen_as_json(branch_url, headers=headers)
+
+                frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}" \
+                    .format(user, repo_name, frozen_commit_sha)
+                frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
+
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
                     msg = "{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name)
                 elif frozen_commit_sha in [branch["commit"]["sha"] for branch in branch_data]:
