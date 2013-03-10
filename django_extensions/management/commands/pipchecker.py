@@ -168,11 +168,18 @@ class Command(NoArgsCommand):
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
             user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
 
-            test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
+            try:
+                test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
+            except urllib2.HTTPError as e:
+                print("\n%s\n" % str(e))
+                return
+
             if "message" in test_auth and test_auth["message"] == "Bad credentials":
-                sys.exit("\nGithub API: Bad credentials. Aborting!\n")
+                print("\nGithub API: Bad credentials. Aborting!\n")
+                return
             elif "message" in test_auth and test_auth["message"].startswith("API Rate Limit Exceeded"):
-                sys.exit("\nGithub API: Rate Limit Exceeded. Aborting!\n")
+                print("\nGithub API: Rate Limit Exceeded. Aborting!\n")
+                return
 
             if ".git" in repo:
                 repo_name, frozen_commit_full = repo.split(".git")
@@ -188,8 +195,9 @@ class Command(NoArgsCommand):
                 branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
                 branch_data = self._urlopen_as_json(branch_url, headers=headers)
 
-                frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}" \
-                    .format(user, repo_name, frozen_commit_sha)
+                frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}".format(
+                    user, repo_name, frozen_commit_sha
+                )
                 frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
