@@ -8,6 +8,12 @@ import urlparse
 import xmlrpclib
 from distutils.version import LooseVersion
 
+try:
+    import requests
+except ImportError:
+    print("""The requests library is not installed. To continue:
+   pip install requests""")
+
 from optparse import make_option
 
 from django.core.management.base import NoArgsCommand
@@ -169,7 +175,8 @@ class Command(NoArgsCommand):
             user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
 
             try:
-                test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
+                #test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
+                test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             except urllib2.HTTPError as e:
                 print("\n%s\n" % str(e))
                 return
@@ -193,12 +200,14 @@ class Command(NoArgsCommand):
 
             if frozen_commit_sha:
                 branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
-                branch_data = self._urlopen_as_json(branch_url, headers=headers)
+                #branch_data = self._urlopen_as_json(branch_url, headers=headers)
+                branch_data = requests.get(branch_url, headers=headers).json()
 
                 frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}".format(
                     user, repo_name, frozen_commit_sha
                 )
-                frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
+                #frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
+                frozen_commit_data = requests.get(frozen_commit_url, headers=headers).json()
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
                     msg = "{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name)
