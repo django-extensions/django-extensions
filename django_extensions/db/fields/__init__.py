@@ -227,7 +227,7 @@ class UUIDField(CharField):
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
+    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, **kwargs):
         kwargs.setdefault('max_length', 36)
         if auto:
             self.empty_strings_allowed = False
