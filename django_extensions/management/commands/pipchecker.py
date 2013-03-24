@@ -172,7 +172,11 @@ class Command(NoArgsCommand):
             }
             if self.github_api_token:
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
-            user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
+            try:
+                user, repo = urlparse.urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
+            except (ValueError, IndexError) as e:
+                print("\nFailed to parse %r: %s\n" % (req_url, e))
+                continue
 
             try:
                 #test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
