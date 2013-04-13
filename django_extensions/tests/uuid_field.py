@@ -37,19 +37,19 @@ class UUIDFieldTest(unittest.TestCase):
 
     def testUUIDFieldCreate(self):
         j = TestModel_field.objects.create(a=6, uuid_field=u'550e8400-e29b-41d4-a716-446655440000')
-        self.assertEquals(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440000')
+        self.assertEqual(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440000')
 
     def testUUIDField_pkCreate(self):
         j = TestModel_pk.objects.create(uuid_field=u'550e8400-e29b-41d4-a716-446655440000')
-        self.assertEquals(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440000')
-        self.assertEquals(j.pk, u'550e8400-e29b-41d4-a716-446655440000')
+        self.assertEqual(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440000')
+        self.assertEqual(j.pk, u'550e8400-e29b-41d4-a716-446655440000')
 
     def testUUIDField_pkAgregateCreate(self):
         j = TestAgregateModel.objects.create(a=6)
-        self.assertEquals(j.a, 6)
+        self.assertEqual(j.a, 6)
 
     def testUUIDFieldManyToManyCreate(self):
         j = TestManyToManyModel.objects.create(uuid_field=u'550e8400-e29b-41d4-a716-446655440010')
-        self.assertEquals(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440010')
-        self.assertEquals(j.pk, u'550e8400-e29b-41d4-a716-446655440010')
+        self.assertEqual(j.uuid_field, u'550e8400-e29b-41d4-a716-446655440010')
+        self.assertEqual(j.pk, u'550e8400-e29b-41d4-a716-446655440010')
 
