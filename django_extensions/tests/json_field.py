@@ -25,9 +25,9 @@ class JsonFieldTest(unittest.TestCase):
 
     def testCharFieldCreate(self):
         j = TestModel.objects.create(a=6, j_field=dict(foo='bar'))
-        self.assertEquals(j.a, 6)
+        self.assertEqual(j.a, 6)
 
     def testEmptyList(self):
         j = TestModel.objects.create(a=6, j_field=[])
         self.assertTrue(isinstance(j.j_field, list))
-        self.assertEquals(j.j_field, [])
+        self.assertEqual(j.j_field, [])
