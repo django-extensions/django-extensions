@@ -92,7 +92,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
         if password is None:
             password = settings.DATABASE_PASSWORD
 
-        if engine == 'sqlite3':
+        if engine in ('sqlite3', 'spatialite'):
             import os
             try:
                 logging.info("Unlinking sqlite3 database")
