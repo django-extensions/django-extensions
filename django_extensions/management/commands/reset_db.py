@@ -95,7 +95,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
         if engine in ('sqlite3', 'spatialite'):
             import os
             try:
-                logging.info("Unlinking sqlite3 database")
+                logging.info("Unlinking %s database" % engine)
                 os.unlink(settings.DATABASE_NAME)
             except OSError:
                 pass
