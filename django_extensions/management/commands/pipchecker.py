@@ -1,24 +1,16 @@
 #!/usr/bin/env python
 import os
-import pip
 import sys
 import json
 import urllib2
 import urlparse
 import xmlrpclib
+from optparse import make_option
 from distutils.version import LooseVersion
 
-try:
-    import requests
-except ImportError:
-    print("""The requests library is not installed. To continue:
-   pip install requests""")
-
-from optparse import make_option
-
-from django.core.management.base import NoArgsCommand
-
+import pip
 from pip.req import parse_requirements
+from django.core.management.base import NoArgsCommand
 
 
 class Command(NoArgsCommand):
@@ -180,7 +172,7 @@ class Command(NoArgsCommand):
 
             try:
                 #test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
-                test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
+                test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
             except urllib2.HTTPError as e:
                 print("\n%s\n" % str(e))
                 return
@@ -205,13 +197,13 @@ class Command(NoArgsCommand):
             if frozen_commit_sha:
                 branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
                 #branch_data = self._urlopen_as_json(branch_url, headers=headers)
-                branch_data = requests.get(branch_url, headers=headers).json()
+                branch_data = self._urlopen_as_json(branch_url, headers=headers)
 
                 frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}".format(
                     user, repo_name, frozen_commit_sha
                 )
                 #frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
-                frozen_commit_data = requests.get(frozen_commit_url, headers=headers).json()
+                frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
                     msg = "{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name)
