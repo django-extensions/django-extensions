@@ -535,11 +535,14 @@ class Script(Code):
 # you must make sure ./some_folder/__init__.py exists
 # and run  ./manage.py runscript some_folder.some_script
 
+from django.db import transaction
+
 class BasicImportHelper(object):
 
     def pre_import(self):
         pass
 
+#    @transaction.atomic # you probably want to uncomment this
     def run_import(self, import_data):
         import_data()
 
@@ -580,7 +583,7 @@ class BasicImportHelper(object):
 
         search_data = { pk_name: pk_value }
         the_obj = the_class.objects.get(**search_data)
-        #print the_obj
+        #print(the_obj)
         return the_obj
 
 
@@ -589,15 +592,15 @@ class BasicImportHelper(object):
         try:
             the_obj.save()
         except:
-            print "---------------"
-            print "Error saving the following object:"
-            print the_obj.__class__
-            print " "
-            print the_obj.__dict__
-            print " "
-            print the_obj
-            print " "
-            print "---------------"
+            print("---------------")
+            print("Error saving the following object:")
+            print(the_obj.__class__)
+            print(" ")
+            print(the_obj.__dict__)
+            print(" ")
+            print(the_obj)
+            print(" ")
+            print("---------------")
 
             raise
         return the_obj
@@ -610,7 +613,7 @@ try:
     #has no knowlodge of this class
     importer = type("DynamicImportHelper", (import_helper.ImportHelper, BasicImportHelper ) , {} )()
 except ImportError, e:
-    if e == "No module named import_helper":
+    if str(e) == "No module named import_helper":
         importer = BasicImportHelper()
     else:
         raise
