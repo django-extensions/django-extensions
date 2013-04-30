@@ -542,7 +542,9 @@ class BasicImportHelper(object):
     def pre_import(self):
         pass
 
-#    @transaction.atomic # you probably want to uncomment this
+    # You probably want to uncomment on of these two lines
+    # @transaction.atomic  # Django 1.6
+    # @transaction.commit_on_success  # Django <1.6
     def run_import(self, import_data):
         import_data()
 
@@ -612,7 +614,7 @@ try:
     #we need this so ImportHelper can extend BasicImportHelper, although import_helper.py
     #has no knowlodge of this class
     importer = type("DynamicImportHelper", (import_helper.ImportHelper, BasicImportHelper ) , {} )()
-except ImportError, e:
+except ImportError as e:
     if str(e) == "No module named import_helper":
         importer = BasicImportHelper()
     else:
