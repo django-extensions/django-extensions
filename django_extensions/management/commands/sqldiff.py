@@ -228,7 +228,7 @@ class SQLDiff(object):
 
     def strip_parameters(self, field_type):
         if field_type and field_type != 'double precision':
-            return field_type.split(" ")[0].split("(")[0]
+            return field_type.split(" ")[0].split("(")[0].lower()
         return field_type
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_name):
