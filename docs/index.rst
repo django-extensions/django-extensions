@@ -33,6 +33,15 @@ If you want to install it from source, grab the git repository and run setup.py:
 
 For more detailed instructions check out our :doc:`installation_instructions`. Enjoy.
 
+Compatibility with versions of Python and Django
+=================================================
+
+We try to follow the Django guidelines for supported Python and Django versions.
+
+This might mean the django-extensions may work with older or unsupported versions but we do not garantee it and most likely will not fix bugs related to incompatibilities with older versions.
+
+At the time of writing we require at least Python 2.5.
+
 Contents
 ========
 

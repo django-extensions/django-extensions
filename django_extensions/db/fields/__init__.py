@@ -3,12 +3,7 @@ Django Extensions additional model fields
 """
 import re
 import six
-
-try:
-    import uuid
-    assert uuid
-except ImportError:
-    from django_extensions.utils import uuid
+import uuid
 
 from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
