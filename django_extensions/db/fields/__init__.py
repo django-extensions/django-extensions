@@ -3,8 +3,13 @@ Django Extensions additional model fields
 """
 import re
 import six
-import uuid
+try:
+    import uuid
+    HAS_UUID = True
+except ImportError:
+    HAS_UUID = False
 
+from django.core.exceptions import ImproperlyConfigured
 from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
 
@@ -223,6 +228,8 @@ class UUIDField(CharField):
     """
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
+        if not HAS_UUID:
+            raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
         kwargs.setdefault('max_length', 36)
         if auto:
             self.empty_strings_allowed = False
