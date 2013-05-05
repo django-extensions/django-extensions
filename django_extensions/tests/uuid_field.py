@@ -48,7 +48,7 @@ class UUIDFieldTest(unittest.TestCase):
     def testUUIDField_pkAgregateCreate(self):
         j = TestAgregateModel.objects.create(a=6)
         self.assertEqual(j.a, 6)
-        self.assertIsInstance(j.pk, basestring)
+        self.assertIsInstance(j.pk, six.string_types)
         self.assertEqual(len(j.pk), 36)
 
     def testUUIDFieldManyToManyCreate(self):
