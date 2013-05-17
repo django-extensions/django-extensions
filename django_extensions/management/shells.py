@@ -9,6 +9,14 @@ def import_objects(options, style):
     # models from installed apps. (this is fixed by now, but leaving it here
     # for people using 0.96 or older trunk (pre [5919]) versions.
     from django.db.models.loading import get_models, get_apps
+    mongoengine = False
+    try:
+        # check what mongoengine version is so we make sure this works
+        from mongoengine.base import _document_registry
+        mongoengine = True
+    except:
+        pass
+
     loaded_models = get_models()  # NOQA
 
     from django.conf import settings
@@ -20,6 +28,24 @@ def import_objects(options, style):
     quiet_load = options.get('quiet_load')
 
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
+
+    mongo_labels = {}
+    if mongoengine:
+        mongo_models = {}
+        for name, mod in _document_registry.items():
+            mongo_models.setdefault(mod.__module__, [])
+            mongo_models[mod.__module__].append(name)
+
+        # load mongoengine classes
+        for module, clss in mongo_models.items():
+            for name in clss:
+                try:
+                    exec "from %s import %s" % (module, name)
+                    pretty_name = module.split('.')[-2]
+                    mongo_labels.setdefault(pretty_name, [])
+                    mongo_labels[pretty_name].append(name)
+                except:
+                    continue
 
     for app_mod in get_apps():
         app_models = get_models(app_mod)
@@ -50,9 +76,14 @@ def import_objects(options, style):
 
             except AttributeError as e:
                 if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e))))
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__,
+                        app_name, str(e))))
                 continue
+
         if not quiet_load:
-            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels))))
+            pretty_name = app_mod.__name__.split('.')[-2]
+            # TODO check if the postgres app doesn't loads other apps this may not print the mongoengine apps
+            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (pretty_name,
+                ", ".join(mongo_labels.get(pretty_name, []) + model_labels))))
 
     return imported_objects
