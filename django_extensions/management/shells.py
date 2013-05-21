@@ -50,6 +50,9 @@ def import_objects(options, style):
             continue
 
         for mod in app_models:
+            if "%s.%s" % (app_name, mod.__name__) in dont_load:
+                continue
+
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(mod.__name__)
 
@@ -61,10 +64,6 @@ def import_objects(options, style):
         for model_name in models:
             try:
                 imported_object = getattr(__import__(app_mod, {}, {}, model_name), model_name)
-
-                if "%s.%s" % (app_name, model_name) in dont_load:
-                    continue
-
                 alias = app_aliases.get(model_name, model_name)
                 imported_objects[alias] = imported_object
                 if model_name == alias:
