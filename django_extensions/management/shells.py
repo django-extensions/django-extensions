@@ -29,23 +29,16 @@ def import_objects(options, style):
 
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
 
-    mongo_labels = {}
+    load_models = {}
     if mongoengine:
-        mongo_models = {}
+        load_models = {}
         for name, mod in _document_registry.items():
-            mongo_models.setdefault(mod.__module__, [])
-            mongo_models[mod.__module__].append(name)
+            app_name = mod.__module__.split('.')[-2]
+            if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
+                continue
 
-        # load mongoengine classes
-        for module, clss in mongo_models.items():
-            for name in clss:
-                try:
-                    exec "from %s import %s" % (module, name)
-                    pretty_name = module.split('.')[-2]
-                    mongo_labels.setdefault(pretty_name, [])
-                    mongo_labels[pretty_name].append(name)
-                except:
-                    continue
+            load_models.setdefault(mod.__module__, [])
+            load_models[mod.__module__].append(name)
 
     for app_mod in get_apps():
         app_models = get_models(app_mod)
@@ -56,13 +49,18 @@ def import_objects(options, style):
         if app_name in dont_load:
             continue
 
+        for mod in app_models:
+            load_models.setdefault(mod.__module__, [])
+            load_models[mod.__module__].append(mod.__name__)
+
+    for app_mod, models in load_models.items():
+        app_name = app_mod.split('.')[-2]
         app_aliases = model_aliases.get(app_name, {})
         model_labels = []
 
-        for model in app_models:
+        for model_name in models:
             try:
-                imported_object = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
-                model_name = model.__name__
+                imported_object = getattr(__import__(app_mod, {}, {}, model_name), model_name)
 
                 if "%s.%s" % (app_name, model_name) in dont_load:
                     continue
@@ -76,14 +74,11 @@ def import_objects(options, style):
 
             except AttributeError as e:
                 if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__,
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model_name,
                         app_name, str(e))))
                 continue
 
         if not quiet_load:
-            pretty_name = app_mod.__name__.split('.')[-2]
-            # TODO check if the postgres app doesn't loads other apps this may not print the mongoengine apps
-            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (pretty_name,
-                ", ".join(mongo_labels.get(pretty_name, []) + model_labels))))
+            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod, ", ".join(model_labels))))
 
     return imported_objects
