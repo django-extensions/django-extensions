@@ -74,8 +74,7 @@ def import_objects(options, style):
 
             except AttributeError as e:
                 if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model_name,
-                        app_name, str(e))))
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model_name, app_name, str(e))))
                 continue
 
         if not quiet_load:
