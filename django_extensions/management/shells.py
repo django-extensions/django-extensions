@@ -31,7 +31,6 @@ def import_objects(options, style):
 
     load_models = {}
     if mongoengine:
-        load_models = {}
         for name, mod in _document_registry.items():
             app_name = mod.__module__.split('.')[-2]
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
