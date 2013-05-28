@@ -268,7 +268,7 @@ class UUIDField(CharField):
             return value
         else:
             if self.auto and not value:
-                value = six.u(self.create_uuid())
+                value = force_unicode(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
 
