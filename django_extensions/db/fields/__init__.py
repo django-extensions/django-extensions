@@ -221,13 +221,13 @@ class UUIDVersionError(Exception):
 class UUIDField(CharField):
     """ UUIDField
 
-    By default uses UUID version 1 (generate from host ID, sequence number and current time)
+    By default uses UUID version 4 (randomly generated UUID).
 
-    The field support all uuid versions which are natively supported by the uuid python module.
+    The field support all uuid versions which are natively supported by the uuid python module, except version 2.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
+    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, **kwargs):
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
         kwargs.setdefault('max_length', 36)
