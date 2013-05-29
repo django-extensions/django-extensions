@@ -26,6 +26,15 @@ to specify your own target directory. Saving the data in a meaningful directory
 structure helps to keep your profile data organized and /tmp uncluttered. (Yes
 this is probably a bug on windows and other systems where /tmp does not exist)
 
+To define profile filenames use --prof-file option. Default format
+is "{path}.{duration:06d}ms.{time}" (Python
+`Format Specification <http://docs.python.org/3/library/string.html#formatspec>`_
+is used).
+
+Examples:
+
+  * "{time}-{path}-{duration}ms" - to order profile-data-files by request time
+  * "{duration:06d}ms.{path}.{time}" - to order by request duration
 
 gather_profile_stats.py
 -----------------------
