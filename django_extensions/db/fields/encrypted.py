@@ -58,8 +58,9 @@ class BaseEncryptedField(models.Field):
         elif crypt_type == 'DECRYPT_AND_ENCRYPT':
             crypt_class_name = 'Crypter'
         else:
-            raise ImproperlyConfigured('ENCRYPTED_FIELD_MODE must be either '
-                    'DECRYPT_AND_ENCRYPT or ENCRYPT, not %s' % crypt_type)
+            raise ImproperlyConfigured(
+                    'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT '
+                    'or ENCRYPT, not %s.' % crypt_type)
         return getattr(keyczar, crypt_class_name)
 
     def to_python(self, value):
