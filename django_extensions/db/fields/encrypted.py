@@ -93,9 +93,8 @@ class BaseEncryptedField(models.Field):
         return value
 
 
-class EncryptedTextField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
-
+class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
+                                            BaseEncryptedField)):
     def get_internal_type(self):
         return 'TextField'
 
@@ -114,9 +113,8 @@ class EncryptedTextField(BaseEncryptedField):
         return (field_class, args, kwargs)
 
 
-class EncryptedCharField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
-
+class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
+                                            BaseEncryptedField)):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
