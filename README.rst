@@ -24,6 +24,18 @@ If you want to install it from source, grab the git repository from GitHub and r
  $ cd django-extensions
  $ python setup.py install
 
+Installing It
+=============
+
+To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects `settings.py` file::
+
+ INSTALLED_APPS = (
+     ...
+     'django_extensions',
+     ...
+ )
+
+
 Using It
 ========
 
