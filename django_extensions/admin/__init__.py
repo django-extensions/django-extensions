@@ -100,7 +100,14 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 else:
                     return "%s__icontains" % field_name
             model = models.get_model(app_label, model_name)
-            queryset = model._default_manager.all()
+            # as of Django 1.1 there is an Admin Specific record filter:
+            # https://docs.djangoproject.com/en/1.1/ref/contrib/admin/#django.contrib.admin.ModelAdmin.queryset
+            try:
+                # See if there is a custom admin queryset:
+                queryset = model.queryset(request)
+            except:
+                # If not, then make our own:
+                queryset = model._default_manager.all()
             data = ''
             if query:
                 for bit in query.split():
