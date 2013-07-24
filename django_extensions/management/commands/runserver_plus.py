@@ -126,6 +126,11 @@ class Command(BaseCommand):
             raise CommandError('Your Python does not support IPv6.')
         self._raw_ipv6 = False
         if not addrport:
+            try:
+                addrport = settings.RUNSERVERPLUS_SERVER_ADDRESS_PORT
+            except AttributeError:
+                pass
+        if not addrport:
             self.addr = ''
             self.port = DEFAULT_PORT
         else:
@@ -160,7 +165,7 @@ class Command(BaseCommand):
             print("Validating models...")
             self.validate(display_num_errors=True)
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url, ))
+            print("Development server is running at %s" % (bind_url,))
             print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
             print("Quit the server with %s." % quit_command)
             path = options.get('admin_media_path', '')
