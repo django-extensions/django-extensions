@@ -16,20 +16,11 @@ from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.utils import simplejson
-
-
-class JSONEncoder(simplejson.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return str(obj)
-        elif isinstance(obj, datetime.datetime):
-            assert settings.TIME_ZONE == 'UTC'
-            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-        return simplejson.JSONEncoder.default(self, obj)
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 def dumps(value):
-    return JSONEncoder().encode(value)
+    return DjangoJSONEncoder().encode(value)
 
 
 def loads(txt):
