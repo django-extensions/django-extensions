@@ -2,6 +2,10 @@
  Django Extensions
 ===================
 
+.. image:: https://secure.travis-ci.org/django-extensions/django-extensions.png?branch=master
+    :alt: Build Status
+    :target: http://travis-ci.org/django-extensions/django-extensions
+
 Django Extensions is a collection of custom extensions for the Django Framework.
 
 Getting Started
