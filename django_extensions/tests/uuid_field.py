@@ -46,7 +46,7 @@ class UUIDFieldTest(unittest.TestCase):
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440000'))
 
     def testUUIDField_pkAgregateCreate(self):
-        j = TestAgregateModel.objects.create(a=6, uuid_field=u'550e8400-e29b-41d4-a716-446655440001')
+        j = TestAgregateModel.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440001'))
         self.assertEqual(j.a, 6)
         self.assertIsInstance(j.pk, six.string_types)
         self.assertEqual(len(j.pk), 36)
