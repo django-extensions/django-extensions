@@ -63,8 +63,8 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
     def __init__(self, *args, **kwargs):
-        default = kwargs.get('default')
-        if not default:
+        default = kwargs.get('default', None)
+        if default is None:
             kwargs['default'] = '{}'
         elif isinstance(default, (list, dict)):
             kwargs['default'] = dumps(default)
