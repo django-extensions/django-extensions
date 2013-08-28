@@ -50,6 +50,9 @@ class AutoSlugField(SlugField):
     overwrite
         If set to True, overwrites the slug on every save (default: False)
 
+    allow_duplicates
+        If set to True, allow duplicated values in slug field (default: False)
+
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
