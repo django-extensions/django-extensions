@@ -168,7 +168,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         Verifies the data is decrypted when reading the value back from the
         model.
         """
-        with keys(keyinfo.DECRYPT_AND_ENCRYPT) as crypt:
+        with keys(keyinfo.DECRYPT_AND_ENCRYPT):
             with secret_model() as model:
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
@@ -201,7 +201,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         Verifies the data is decrypted when reading the value back from the
         model.
         """
-        with keys(keyinfo.DECRYPT_AND_ENCRYPT) as crypt:
+        with keys(keyinfo.DECRYPT_AND_ENCRYPT):
             with secret_model() as model:
                 test_val = "Test Secret"
                 secret = model.objects.create(text=test_val)
@@ -214,7 +214,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         Uses a public key to encrypt data on model creation.
         Verifies that the data cannot be decrypted using the same key.
         """
-        with keys(keyinfo.ENCRYPT, mode=keyinfo.ENCRYPT.name) as crypt:
+        with keys(keyinfo.ENCRYPT, mode=keyinfo.ENCRYPT.name):
             with secret_model() as model:
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
@@ -232,8 +232,8 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         exception.
         """
         with self.assertRaises(keyczar.errors.KeyczarError):
-            with keys(keyinfo.ENCRYPT) as crypt:
-                with secret_model() as model:
+            with keys(keyinfo.ENCRYPT):
+                with secret_model():
                     # A KeyCzar exception should get raised during class
                     # definition time, so any code in here would never get run.
                     pass
@@ -245,9 +245,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         ENCRYPTED_FIELD_MODE is explicitly set to ENCRYPT, meaning data should
         not be decrypted, even though the key would allow for it.
         """
-        with keys(
-                keyinfo.DECRYPT_AND_ENCRYPT,
-                mode=keyinfo.ENCRYPT.name) as crypt:
+        with keys(keyinfo.DECRYPT_AND_ENCRYPT, mode=keyinfo.ENCRYPT.name):
             with secret_model() as model:
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
@@ -264,7 +262,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
         test_val = "Test Secret"
 
         # First, encrypt data with public key and save to db.
-        with keys(keyinfo.ENCRYPT, mode=keyinfo.ENCRYPT.name) as crypt:
+        with keys(keyinfo.ENCRYPT, mode=keyinfo.ENCRYPT.name):
             with secret_model() as model:
                 secret = model.objects.create(name=test_val)
                 enc_retrieved_secret = model.objects.get(id=secret.id)
@@ -274,7 +272,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                         EncryptedCharField.prefix))
 
         # Next, retrieve data from db, and decrypt with private key.
-        with keys(keyinfo.DECRYPT_AND_ENCRYPT) as crypt:
+        with keys(keyinfo.DECRYPT_AND_ENCRYPT):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)

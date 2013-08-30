@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 
 
 class Secret(models.Model):
