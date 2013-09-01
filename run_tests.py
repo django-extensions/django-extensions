@@ -16,16 +16,13 @@ def main():
             from keyczar import keyczart, keyinfo
 
             # Create an RSA private key.
-            keys_dir = tempfile.mkdtemp(
-                "django_extensions_tests_keyzcar_rsa_dir")
-            keyczart.Create(
-                keys_dir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
+            keys_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_rsa_dir")
+            keyczart.Create(keys_dir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
             keyczart.AddKey(keys_dir, "PRIMARY", size=4096)
             KEY_LOCS['DECRYPT_AND_ENCRYPT'] = keys_dir
 
             # Create an RSA public key.
-            pub_dir = tempfile.mkdtemp(
-                "django_extensions_tests_keyzcar_pub_dir")
+            pub_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_pub_dir")
             keyczart.PubKey(keys_dir, pub_dir)
             KEY_LOCS['ENCRYPT'] = pub_dir
         except ImportError:

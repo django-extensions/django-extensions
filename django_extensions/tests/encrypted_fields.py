@@ -12,8 +12,7 @@ from django_extensions.tests.models import Secret
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
 try:
-    from django_extensions.db.fields.encrypted import (
-        EncryptedTextField, EncryptedCharField)  # NOQA
+    from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField  # NOQA
     from keyczar import keyczar, keyczart, keyinfo  # NOQA
     keyczar_active = True
 except ImportError:
@@ -108,15 +107,15 @@ def secret_model():
     try:
         # Create a new class that shadows tests.models.Secret.
         attrs = {
-            'name': EncryptedCharField(
-                "Name", max_length=Secret._meta.get_field('name').max_length),
+            'name': EncryptedCharField("Name", max_length=Secret._meta.get_field('name').max_length),
             'text': EncryptedTextField("Text"),
             '__module__': 'django_extensions.tests.models',
-            'Meta': type('Meta', (object,), {
+            'Meta': type('Meta', (object, ), {
                 'managed': False,
-                'db_table': Secret._meta.db_table})
+                'db_table': Secret._meta.db_table
+            })
         }
-        yield type('Secret', (models.Model,), attrs)
+        yield type('Secret', (models.Model, ), attrs)
 
     except:
         raise  # Reraise any exceptions.
@@ -153,12 +152,10 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                 secret = model.objects.create(name=test_val)
 
                 cursor = connection.cursor()
-                query = "SELECT name FROM %s WHERE id = %d" % (
-                    model._meta.db_table, secret.id)
+                query = "SELECT name FROM %s WHERE id = %d" % (model._meta.db_table, secret.id)
                 cursor.execute(query)
                 db_val, = cursor.fetchone()
-                decrypted_val = crypt.Decrypt(
-                    db_val[len(EncryptedCharField.prefix):])
+                decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
                 self.assertEqual(test_val, decrypted_val)
 
     @run_if_active
@@ -186,12 +183,10 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                 test_val = "Test Secret"
                 secret = model.objects.create(text=test_val)
                 cursor = connection.cursor()
-                query = "SELECT text FROM %s WHERE id = %d" % (
-                    model._meta.db_table, secret.id)
+                query = "SELECT text FROM %s WHERE id = %d" % (model._meta.db_table, secret.id)
                 cursor.execute(query)
                 db_val, = cursor.fetchone()
-                decrypted_val = crypt.Decrypt(
-                    db_val[len(EncryptedCharField.prefix):])
+                decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
                 self.assertEqual(test_val, decrypted_val)
 
     @run_if_active
@@ -220,8 +215,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                 secret = model.objects.create(name=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertNotEqual(test_val, retrieved_secret.name)
-                self.assertTrue(
-                    retrieved_secret.name.startswith(EncryptedCharField.prefix))
+                self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
 
     @run_if_active
     def testUnacceptablePurpose(self):
@@ -251,8 +245,7 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                 secret = model.objects.create(name=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertNotEqual(test_val, retrieved_secret.name)
-                self.assertTrue(
-                    retrieved_secret.name.startswith(EncryptedCharField.prefix))
+                self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
 
     @run_if_active
     def testEncryptPublicDecryptPrivate(self):
@@ -267,12 +260,11 @@ class EncryptedFieldsTestCase(unittest.TestCase):
                 secret = model.objects.create(name=test_val)
                 enc_retrieved_secret = model.objects.get(id=secret.id)
                 self.assertNotEqual(test_val, enc_retrieved_secret.name)
-                self.assertTrue(
-                    enc_retrieved_secret.name.startswith(
-                        EncryptedCharField.prefix))
+                self.assertTrue(enc_retrieved_secret.name.startswith(EncryptedCharField.prefix))
 
         # Next, retrieve data from db, and decrypt with private key.
         with keys(keyinfo.DECRYPT_AND_ENCRYPT):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)
+
