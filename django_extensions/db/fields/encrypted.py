@@ -21,7 +21,7 @@ class BaseEncryptedField(models.Field):
 
     def __init__(self, *args, **kwargs):
         if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
-            raise ImproperlyConfigured('You must set the ENCRYPTED_FIELD_KEYS_DIR '
+            raise ImproperlyConfigured('You must set the settings.ENCRYPTED_FIELD_KEYS_DIR '
                                        'setting to your Keyczar keys directory.')
         crypt_class = self.get_crypt_class()
         self.crypt = crypt_class.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)

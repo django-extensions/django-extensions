@@ -31,7 +31,7 @@ def run_if_active(func):
 
 
 # Locations of both private and public keys.
-KEY_LOCS = settings.ENCRYPTED_FIELD_KEYS_DIR
+KEY_LOCS = getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', {})
 
 
 @contextmanager
