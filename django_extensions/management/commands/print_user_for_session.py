@@ -1,8 +1,6 @@
-import re
 from importlib import import_module
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.sessions.models import Session
 
 try:
     from django.contrib.auth import get_user_model  # Django 1.5
