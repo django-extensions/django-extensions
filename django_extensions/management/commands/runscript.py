@@ -91,10 +91,10 @@ class Command(BaseCommand):
                     module_tuple = imp.find_module(package, path)
                     path = imp.load_module(package, *module_tuple).__path__
                 imp.find_module(mod.split('.')[-1], path)
+                t = __import__(mod, [], [], [" "])
             except (ImportError, AttributeError):
                 return False
 
-            t = __import__(mod, [], [], [" "])
             #if verbosity > 1:
             #    print(NOTICE("Found script %s ..." % mod))
             if hasattr(t, "run"):
