@@ -70,6 +70,8 @@ class SQLDiff(object):
         'table-missing-in-db',
         'field-missing-in-db',
         'field-missing-in-model',
+        'fkey-missing-in-db',
+        'fkey-missing-in-model',
         'index-missing-in-db',
         'index-missing-in-model',
         'unique-missing-in-db',
@@ -84,6 +86,8 @@ class SQLDiff(object):
         'table-missing-in-db': "table '%(0)s' missing in database",
         'field-missing-in-db': "field '%(1)s' defined in model but missing in database",
         'field-missing-in-model': "field '%(1)s' defined in database but missing in model",
+        'fkey-missing-in-db': "field '%(1)s' FOREIGN KEY defined in model but missing in database",
+        'fkey-missing-in-model': "field '%(1)s' FOREIGN KEY defined in database but missing in model",
         'index-missing-in-db': "field '%(1)s' INDEX defined in model but missing in database",
         'index-missing-in-model': "field '%(1)s' INDEX defined in database schema but missing in model",
         'unique-missing-in-db': "field '%(1)s' UNIQUE defined in model but missing in database",
@@ -93,12 +97,13 @@ class SQLDiff(object):
         'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
     }
 
-    SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
+    SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_FIELD(qn(args[1])), ' '.join(style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a) for i, a in enumerate(args[2:])))
     SQL_FIELD_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP COLUMN'), style.SQL_FIELD(qn(args[1])))
+    SQL_FKEY_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s %s (%s)%s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_FIELD(qn(args[1])), ' '.join(style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a) for i, a in enumerate(args[4:])), style.SQL_KEYWORD('REFERENCES'), style.SQL_TABLE(qn(args[2])), style.SQL_FIELD(qn(args[3])), connection.ops.deferrable_sql())
     SQL_INDEX_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s%s);" % (style.SQL_KEYWORD('CREATE INDEX'), style.SQL_TABLE(qn("%s" % '_'.join(a for a in args[0:3] if a))), style.SQL_KEYWORD('ON'), style.SQL_TABLE(qn(args[0])), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[3]))
     # FIXME: need to lookup index name instead of just appending _idx to table + fieldname
     SQL_INDEX_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s;" % (style.SQL_KEYWORD('DROP INDEX'), style.SQL_TABLE(qn("%s" % '_'.join(a for a in args[0:3] if a))))
-    SQL_UNIQUE_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s);" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_KEYWORD('UNIQUE'), style.SQL_FIELD(qn(args[1])))
+    SQL_UNIQUE_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s);" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_KEYWORD('UNIQUE'), style.SQL_FIELD(qn(args[1])))
     # FIXME: need to lookup unique constraint name instead of appending _key to table + fieldname
     SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP'), style.SQL_KEYWORD('CONSTRAINT'), style.SQL_TABLE(qn("%s_key" % ('_'.join(args[:2])))))
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD("MODIFY"), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
@@ -131,6 +136,8 @@ class SQLDiff(object):
             'table-missing-in-db': self.SQL_TABLE_MISSING_IN_DB,
             'field-missing-in-db': self.SQL_FIELD_MISSING_IN_DB,
             'field-missing-in-model': self.SQL_FIELD_MISSING_IN_MODEL,
+            'fkey-missing-in-db': self.SQL_FKEY_MISSING_IN_DB,
+            'fkey-missing-in-model': self.SQL_FIELD_MISSING_IN_MODEL,
             'index-missing-in-db': self.SQL_INDEX_MISSING_IN_DB,
             'index-missing-in-model': self.SQL_INDEX_MISSING_IN_MODEL,
             'unique-missing-in-db': self.SQL_UNIQUE_MISSING_IN_DB,
@@ -295,7 +302,16 @@ class SQLDiff(object):
         db_fields = [row[0] for row in table_description]
         for field_name, field in fieldmap.iteritems():
             if field_name not in db_fields:
-                self.add_difference('field-missing-in-db', table_name, field_name, field.db_type(connection=connection))
+                field_output = []
+                if field.rel:
+                    field_output.extend([field.rel.to._meta.db_table, field.rel.to._meta.get_field(field.rel.field_name).column])
+                    op = 'fkey-missing-in-db'
+                else:
+                    op = 'field-missing-in-db'
+                field_output.append(field.db_type(connection=connection))
+                if not field.null:
+                    field_output.append('NOT NULL')
+                self.add_difference(op, table_name, field_name, *field_output)
 
     def find_field_type_differ(self, meta, table_description, table_name, func=None):
         db_fields = dict([(row[0], row) for row in table_description])
