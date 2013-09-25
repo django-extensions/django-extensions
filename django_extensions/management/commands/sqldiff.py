@@ -95,9 +95,9 @@ class SQLDiff(object):
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_FIELD(qn(args[1])), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP COLUMN'), style.SQL_FIELD(qn(args[1])))
-    SQL_INDEX_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s);" % (style.SQL_KEYWORD('CREATE INDEX'), style.SQL_TABLE(qn("%s_idx" % '_'.join(args[0:2]))), style.SQL_KEYWORD('ON'), style.SQL_TABLE(qn(args[0])), style.SQL_FIELD(qn(args[1])))
+    SQL_INDEX_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s%s);" % (style.SQL_KEYWORD('CREATE INDEX'), style.SQL_TABLE(qn("%s" % '_'.join(a for a in args[0:3] if a))), style.SQL_KEYWORD('ON'), style.SQL_TABLE(qn(args[0])), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[3]))
     # FIXME: need to lookup index name instead of just appending _idx to table + fieldname
-    SQL_INDEX_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s;" % (style.SQL_KEYWORD('DROP INDEX'), style.SQL_TABLE(qn("%s_idx" % '_'.join(args[0:2]))))
+    SQL_INDEX_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s;" % (style.SQL_KEYWORD('DROP INDEX'), style.SQL_TABLE(qn("%s" % '_'.join(a for a in args[0:3] if a))))
     SQL_UNIQUE_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s);" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD'), style.SQL_KEYWORD('UNIQUE'), style.SQL_FIELD(qn(args[1])))
     # FIXME: need to lookup unique constraint name instead of appending _key to table + fieldname
     SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('DROP'), style.SQL_KEYWORD('CONSTRAINT'), style.SQL_TABLE(qn("%s_key" % ('_'.join(args[:2])))))
@@ -261,7 +261,12 @@ class SQLDiff(object):
             if field.db_index:
                 attname = field.db_column or field.attname
                 if not attname in table_indexes:
-                    self.add_difference('index-missing-in-db', table_name, attname)
+                    self.add_difference('index-missing-in-db', table_name, attname, '', '')
+                    db_type = field.db_type(connection=connection)
+                    if db_type.startswith('varchar'):
+                        self.add_difference('index-missing-in-db', table_name, attname, 'like', ' varchar_pattern_ops')
+                    if db_type.startswith('text'):
+                        self.add_difference('index-missing-in-db', table_name, attname, 'like', ' text_pattern_ops')
 
     def find_index_missing_in_model(self, meta, table_indexes, table_name):
         fields = dict([(field.name, field) for field in all_local_fields(meta)])
@@ -277,6 +282,9 @@ class SQLDiff(object):
                 if att_opts['unique'] and att_name in flatten(meta.unique_together):
                     continue
                 self.add_difference('index-missing-in-model', table_name, att_name)
+                db_type = field.db_type(connection=connection)
+                if db_type.startswith('varchar') or db_type.startswith('text'):
+                    self.add_difference('index-missing-in-model', table_name, att_name, 'like')
 
     def find_field_missing_in_model(self, fieldmap, table_description, table_name):
         for row in table_description:
