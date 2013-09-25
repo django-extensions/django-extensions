@@ -573,7 +573,7 @@ class PostgresqlSQLDiff(SQLDiff):
                 if check_constraint:
                     check_constraint = check_constraint.replace("((", "(")
                     check_constraint = check_constraint.replace("))", ")")
-                    check_constraint = '("'.join([')' in e and '" '.join(e.split(" ", 1)) or e for e in check_constraint.split("(")])
+                    check_constraint = '("'.join([')' in e and '" '.join(p.strip('"') for p in e.split(" ", 1)) or e for e in check_constraint.split("(")])
                     # TODO: might be more then one constraint in definition ?
                     db_type += ' ' + check_constraint
                 null = self.null.get((tablespace, table_name, field.attname), 'fixme')
