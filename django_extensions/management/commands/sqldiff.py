@@ -48,9 +48,16 @@ def flatten(l, ltypes=(list, tuple)):
 
 
 def all_local_fields(meta):
-    all_fields = meta.local_fields[:]
-    for parent in meta.parents:
-        all_fields.extend(all_local_fields(parent._meta))
+    all_fields = []
+    if not meta.managed or meta.proxy:
+        for parent in meta.parents:
+            all_fields.extend(all_local_fields(parent._meta))
+    else:
+        for f in meta.local_fields:
+            col_type = f.db_type(connection=connection)
+            if col_type is None:
+                continue
+            all_fields.append(f)
     return all_fields
 
 
