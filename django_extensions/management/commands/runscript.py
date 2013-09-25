@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from optparse import make_option
 import imp
 
@@ -37,8 +38,6 @@ class Command(BaseCommand):
     args = "script [script ...]"
 
     def handle(self, *scripts, **options):
-        from django.db.models import get_apps
-
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
@@ -111,10 +110,9 @@ class Command(BaseCommand):
             """ find script module which contains 'run' attribute """
             modules = []
             # first look in apps
-            for app in get_apps():
-                app_name = app.__name__.split(".")[:-1]  # + ['fixtures']
+            for app in settings.INSTALLED_APPS:
                 for subdir in subdirs:
-                    mod = my_import(".".join(app_name + [subdir, script]))
+                    mod = my_import("%s.%s.%s" % (app, subdir, script))
                     if mod:
                         modules.append(mod)
 
