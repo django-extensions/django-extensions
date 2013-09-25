@@ -678,7 +678,7 @@ because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
-            app_models = models.get_models()
+            app_models = models.get_models(include_auto_created=True)
         else:
             if not app_labels:
                 raise CommandError('Enter at least one appname.')
@@ -689,7 +689,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
 
             app_models = []
             for app in app_list:
-                app_models.extend(models.get_models(app))
+                app_models.extend(models.get_models(app, include_auto_created=True))
 
         ## remove all models that are not managed by Django
         #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
