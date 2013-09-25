@@ -38,8 +38,6 @@ class Command(BaseCommand):
     args = "script [script ...]"
 
     def handle(self, *scripts, **options):
-        from django.db.models import get_apps
-
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
