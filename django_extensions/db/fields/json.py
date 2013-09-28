@@ -11,17 +11,17 @@ more information.
 """
 
 import six
-import datetime
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 
 try:
-    import json
-except ImportError:
-    # Django < 1.5 backwards compatibility
+    # Django <= 1.6 backwards compatibility
     from django.utils import simplejson as json
+except ImportError:
+    # Django >= 1.7
+    import json
 
 
 def dumps(value):
