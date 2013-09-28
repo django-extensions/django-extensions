@@ -65,7 +65,7 @@ Contents
    print_settings
    runprofileserver
    runserver_plus
-   sync_media_s3
+   sync_s3
    sqldiff
    sqlcreate
    validate_templates
