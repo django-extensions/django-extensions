@@ -94,3 +94,34 @@ Note that the IPython Notebook feature doesn't currently honor the
 ``--dont-load`` option.
 
 .. _`IPython Notebook`: http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
+
+
+
+Additional Imports
+------------------
+
+In addition to importing the models you can also specify other items to import by default.
+These are specified in SHELL_PLUS_PRE_IMPORTS and SHELL_PLUS_POST_IMPORTS. The former is imported
+before any other imports (such as the default models import) and the latter is imported after any
+other imports. Both have similar syntax
+
+::
+
+    SHELL_PLUS_PRE_IMPORTS = (
+        ('module.submodule1', ('class1', 'function2')),
+        ('module.submodule2', 'function3'),
+        ('module.submodule3', '*'),
+        'module.submodule4'
+    )
+
+The above example would directly translate to the following python code which would be executed before
+the automatic imports
+
+::
+
+    from module.submodule1 import class1, function2
+    from module.submodule2 import function3
+    from module.submodule3 import *
+    import module.submodule4
+
+These symbols will be available as soon as the shell starts
