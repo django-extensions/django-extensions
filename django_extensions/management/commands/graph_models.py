@@ -79,7 +79,7 @@ class Command(BaseCommand):
     def render_output_pygraphviz(self, dotdata, **kwargs):
         """Renders the image using pygraphviz"""
         if not HAS_PYGRAPHVIZ:
-           raise CommandError("You need to install pygraphviz python module")
+            raise CommandError("You need to install pygraphviz python module")
 
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
         version = pygraphviz.__version__.rstrip("-svn")
