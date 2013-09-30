@@ -5,6 +5,10 @@ from django_extensions.management.modelviz import generate_dot
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
+        make_option('--pygraphviz', action='store_true', dest='pygraphviz',
+                    help='Use PyGraphViz to generate the image.'),
+        make_option('--pydot', action='store_true', dest='pydot',
+                    help='Use PyDot to generate the image.'),
         make_option('--disable-fields', '-d', action='store_true', dest='disable_fields',
                     help='Do not show the class member fields'),
         make_option('--group-models', '-g', action='store_true', dest='group_models',
@@ -38,16 +42,24 @@ class Command(BaseCommand):
         if len(args) < 1 and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
+        use_pygraphviz = options.get('pygraphviz', False)
+        use_pydot = options.get('pydot', False)
         dotdata = generate_dot(args, **options)
         if options['outputfile']:
-            self.render_output(dotdata, **options)
+            if use_pygraphviz:
+                self.render_output_pygraphviz(dotdata, **options)
+            elif use_pydot:
+                self.render_output_pydot(dotdata, **options)
+            else:
+                raise CommandError("You need to specify --pygraphviz or --pydot to generate the image")
         else:
             self.print_output(dotdata)
 
     def print_output(self, dotdata):
         print(dotdata.encode('utf-8'))
 
-    def render_output(self, dotdata, **kwargs):
+    def render_output_pygraphviz(self, dotdata, **kwargs):
+        """Renders the image using pygraphviz"""
         try:
             import pygraphviz
         except ImportError:
@@ -69,3 +81,22 @@ class Command(BaseCommand):
         graph = pygraphviz.AGraph(vizdata)
         graph.layout(prog=kwargs['layout'])
         graph.draw(kwargs['outputfile'])
+
+    def render_output_pydot(self, dotdata, **kwargs):
+        """Renders the image using pydot"""
+        try:
+            import pydot
+        except:
+            raise CommandError("You need to install pydot python module")
+
+        vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
+        graph = pydot.graph_from_dot_data(vizdata)
+        output_file = kwargs['outputfile']
+        formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
+                   'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
+                   'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
+                   'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
+                   'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
+        ext = output_file[output_file.rfind('.')+1:]
+        format = ext if ext in formats else 'raw'
+        graph.write(output_file, format=format)
