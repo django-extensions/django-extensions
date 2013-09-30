@@ -97,6 +97,6 @@ class Command(BaseCommand):
                    'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
                    'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
                    'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
-        ext = output_file[output_file.rfind('.')+1:]
+        ext = output_file[output_file.rfind('.') + 1:]
         format = ext if ext in formats else 'raw'
         graph.write(output_file, format=format)
