@@ -22,6 +22,9 @@ Selecting a library
 You need to select the library to generate the image, you can do so by passing
 the --pygraphviz or --pydot parameters depending on the library you want to use.
 
+When neither of the command line parameters are given the default is to try and load
+pygraphviz or pydot (in that order) to generate the image.
+
 To install pygraphviz you usually need to run this command:
 
 ::
@@ -54,8 +57,10 @@ image by using the *graph_models* command. Like used in the following examples::
 ::
 
   # Create a PNG image file called my_project_visualized.png with application grouping
+  $ ./manage.py graph_models -a -g -o my_project_visualized.png
+
+  # Same example but with explicitly selecting pygraphviz or pydot
   $ ./manage.py graph_models --pygraphviz -a -g -o my_project_visualized.png
-  # Same but using pydot instead
   $ ./manage.py graph_models --pydot -a -g -o my_project_visualized.png
 
 ::

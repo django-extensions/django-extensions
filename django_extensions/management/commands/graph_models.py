@@ -3,6 +3,19 @@ from optparse import make_option
 from django_extensions.management.modelviz import generate_dot
 
 
+try:
+    import pygraphviz
+    HAS_PYGRAPHVIZ = True
+except ImportError:
+    HAS_PYGRAPHVIZ = False
+
+try:
+    import pydot
+    HAS_PYDOT = True
+except ImportError:
+    HAS_PYDOT = False
+
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--pygraphviz', action='store_true', dest='pygraphviz',
@@ -46,12 +59,17 @@ class Command(BaseCommand):
         use_pydot = options.get('pydot', False)
         dotdata = generate_dot(args, **options)
         if options['outputfile']:
+            if not use_pygraphviz and not use_pydot:
+                if HAS_PYGRAPHVIZ:
+                    use_pygraphviz = True
+                elif HAS_PYDOT:
+                    use_pydot = True
             if use_pygraphviz:
                 self.render_output_pygraphviz(dotdata, **options)
             elif use_pydot:
                 self.render_output_pydot(dotdata, **options)
             else:
-                raise CommandError("You need to specify --pygraphviz or --pydot to generate the image")
+                raise CommandError("Neither pygraphviz nor pydot could be found to generate the image")
         else:
             self.print_output(dotdata)
 
@@ -60,10 +78,8 @@ class Command(BaseCommand):
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
         """Renders the image using pygraphviz"""
-        try:
-            import pygraphviz
-        except ImportError:
-            raise CommandError("You need to install pygraphviz python module")
+        if not HAS_PYGRAPHVIZ:
+           raise CommandError("You need to install pygraphviz python module")
 
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
         version = pygraphviz.__version__.rstrip("-svn")
@@ -84,9 +100,7 @@ class Command(BaseCommand):
 
     def render_output_pydot(self, dotdata, **kwargs):
         """Renders the image using pydot"""
-        try:
-            import pydot
-        except:
+        if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 
         vizdata = ' '.join(dotdata.split("\n")).strip().encode('utf-8')
