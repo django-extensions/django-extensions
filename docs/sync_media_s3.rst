@@ -41,3 +41,4 @@ The keys are added to your settings.py file, for example::
   # settings.py
   AWS_ACCESS_KEY_ID = ''
   AWS_SECRET_ACCESS_KEY = ''
+  AWS_REGION = ''  # default to "us-east-1"

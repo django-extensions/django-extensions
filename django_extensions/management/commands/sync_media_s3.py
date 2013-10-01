@@ -134,6 +134,7 @@ class Command(BaseCommand):
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
+        self.AWS_REGION = getattr(settings, 'AWS_REGION', 'us-east-1')
 
         if not hasattr(settings, 'AWS_BUCKET_NAME'):
             raise CommandError('Missing bucket name from settings file. Please add the AWS_BUCKET_NAME to your settings file.')
@@ -232,7 +233,11 @@ class Command(BaseCommand):
         """
         Opens connection to S3 returning bucket and key
         """
-        conn = boto.connect_s3(self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
+        conn = boto.connect_s3(
+            self.AWS_ACCESS_KEY_ID,
+            self.AWS_SECRET_ACCESS_KEY,
+            host=self.AWS_REGION,
+        )
         try:
             bucket = conn.get_bucket(self.AWS_BUCKET_NAME)
         except boto.exception.S3ResponseError:
