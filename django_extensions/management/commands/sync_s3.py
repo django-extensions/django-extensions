@@ -71,8 +71,9 @@ from django.core.management.base import BaseCommand, CommandError
 try:
     import boto
     import boto.exception
+    HAS_BOTO = True
 except ImportError:
-    raise ImportError("The boto Python library is not installed.")
+    HAS_BOTO = False
 
 
 class Command(BaseCommand):
@@ -136,6 +137,9 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def handle(self, *args, **options):
+        if not HAS_BOTO:
+            raise ImportError("The boto Python library is not installed.")
+
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
