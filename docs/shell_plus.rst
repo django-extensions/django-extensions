@@ -103,7 +103,7 @@ Additional Imports
 In addition to importing the models you can also specify other items to import by default.
 These are specified in SHELL_PLUS_PRE_IMPORTS and SHELL_PLUS_POST_IMPORTS. The former is imported
 before any other imports (such as the default models import) and the latter is imported after any
-other imports. Both have similar syntax
+other imports. Both have similar syntax. So in you settings.py file:
 
 ::
 
@@ -115,7 +115,7 @@ other imports. Both have similar syntax
     )
 
 The above example would directly translate to the following python code which would be executed before
-the automatic imports
+the automatic imports:
 
 ::
 
@@ -124,4 +124,4 @@ the automatic imports
     from module.submodule3 import *
     import module.submodule4
 
-These symbols will be available as soon as the shell starts
+These symbols will be available as soon as the shell starts.
