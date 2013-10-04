@@ -43,13 +43,15 @@ Using
 Whenever we hit an exception in our code, instead of the normal Django
 traceback page appearing, we see the Werkzeug traceback page instead.
 
-http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-traceback.png
+.. image:: https://f.cloud.github.com/assets/202559/1261027/2637f826-2c22-11e3-83c6-646acc87808b.png
+    :alt: werkzeug-traceback
 
 Along with the typical traceback information we have a couple of options. These
 options appear when you hover over a particular traceback line.  Notice that
 two buttons appear to the right:
 
-http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-options.png
+.. image:: https://f.cloud.github.com/assets/202559/1261035/558ad0ee-2c22-11e3-8ddd-6678d84d77e7.png
+    :alt: werkzeug-options
 
 The options are:
 
@@ -59,7 +61,8 @@ View Source
 
 This displays the source below the traceback:
 
-http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-source.png
+.. image:: https://f.cloud.github.com/assets/202559/1261036/583c8c42-2c22-11e3-9eb9-5c16b8732512.png
+    :alt: werkzeug-source
 
 Being able to view the source file is handy because you are able to get more
 context information around where the error occurred.  The actual traceback
@@ -75,7 +78,8 @@ Interactive Debugging Console
 When you click on this button a new pane will open up below the traceback line
 you're on. This is the money shot:
 
-http://blog.michaeltrier.com/media/assets/2008/6/22/werkzeug-debugger.png
+.. image:: https://f.cloud.github.com/assets/202559/1261037/5d12eda6-2c22-11e3-802a-2639ff8813fa.png
+    :alt: werkzeug-debugger
 
 An ajax based console appears in the pane and you can begin debugging away.
 Notice in the screenshot above I did a `print environ` to see what was in the
