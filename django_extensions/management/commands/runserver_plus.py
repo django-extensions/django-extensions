@@ -7,7 +7,6 @@ import time
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.color import color_style
 from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.utils import setup_logger, RedirectHandler
 from django_extensions.management.technical_response import null_technical_500_response
@@ -123,40 +122,11 @@ class Command(BaseCommand):
 
             # Set colored output
             if settings.DEBUG:
-                from werkzeug.serving import WSGIRequestHandler
-                from werkzeug._internal import _log
+                try:
+                    set_werkzeug_log_color()
+                except:     # We are dealing with some internals, anything could go wrong
+                    pass
 
-                _style = color_style()
-
-                def werk_log(self, type, message, *args):
-                    msg = '%s - - [%s] %s' % (
-                        self.address_string(),
-                        self.log_date_time_string(),
-                        message % args,
-                    )
-                    http_code = str(args[1])
-
-                    # Utilize terminal colors, if available
-                    if http_code[0] == '2':
-                        # Put 2XX first, since it should be the common case
-                        msg = _style.HTTP_SUCCESS(msg)
-                    elif http_code[0] == '1':
-                        msg = _style.HTTP_INFO(msg)
-                    elif http_code == '304':
-                        msg = _style.HTTP_NOT_MODIFIED(msg)
-                    elif http_code[0] == '3':
-                        msg = _style.HTTP_REDIRECT(msg)
-                    elif http_code == '404':
-                        msg = _style.HTTP_NOT_FOUND(msg)
-                    elif http_code[0] == '4':
-                        msg = _style.HTTP_BAD_REQUEST(msg)
-                    else:
-                        # Any 5XX, or any other response
-                        msg = _style.HTTP_SERVER_ERROR(msg)
-
-                    _log(type, msg)
-
-                WSGIRequestHandler.log = werk_log
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
@@ -276,3 +246,43 @@ class Command(BaseCommand):
                 ssl_context=ssl_context
             )
         inner_run()
+
+
+def set_werkzeug_log_color():
+    """Try to set color to the werkzeug log.
+    """
+    from django.core.management.color import color_style
+    from werkzeug.serving import WSGIRequestHandler
+    from werkzeug._internal import _log
+
+    _style = color_style()
+
+    def werk_log(self, type, message, *args):
+        msg = '%s - - [%s] %s' % (
+            self.address_string(),
+            self.log_date_time_string(),
+            message % args,
+        )
+        http_code = str(args[1])
+
+        # Utilize terminal colors, if available
+        if http_code[0] == '2':
+            # Put 2XX first, since it should be the common case
+            msg = _style.HTTP_SUCCESS(msg)
+        elif http_code[0] == '1':
+            msg = _style.HTTP_INFO(msg)
+        elif http_code == '304':
+            msg = _style.HTTP_NOT_MODIFIED(msg)
+        elif http_code[0] == '3':
+            msg = _style.HTTP_REDIRECT(msg)
+        elif http_code == '404':
+            msg = _style.HTTP_NOT_FOUND(msg)
+        elif http_code[0] == '4':
+            msg = _style.HTTP_BAD_REQUEST(msg)
+        else:
+            # Any 5XX, or any other response
+            msg = _style.HTTP_SERVER_ERROR(msg)
+
+        _log(type, msg)
+
+    WSGIRequestHandler.log = werk_log
