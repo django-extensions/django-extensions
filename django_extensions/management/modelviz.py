@@ -52,7 +52,7 @@ def generate_dot(app_labels, **kwargs):
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
-    inheritance = kwargs.get('inheritance', False)
+    inheritance = kwargs.get('inheritance', True)
     relations_as_fields = kwargs.get("relations_as_fields", True)
     sort_fields = kwargs.get("sort_fields", True)
     language = kwargs.get('language', None)
