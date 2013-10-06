@@ -13,7 +13,6 @@ import sys
 import six
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
-from optparse import make_option
 
 
 class Command(BaseCommand):

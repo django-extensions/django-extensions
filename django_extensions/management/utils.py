@@ -12,6 +12,7 @@ except ImportError:
         def import_module(module):
             return __import__(module, {}, {}, [''])
 
+
 def get_project_root():
     """ get the project root directory """
     django_settings_module = os.environ.get('DJANGO_SETTINGS_MODULE')
@@ -21,7 +22,6 @@ def get_project_root():
         module_str = django_settings_module.split(".")[0]
     mod = import_module(module_str)
     return os.path.dirname(os.path.abspath(mod.__file__))
-
 
 
 def _make_writeable(filename):
