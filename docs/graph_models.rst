@@ -39,10 +39,24 @@ To install pydot you need to run this command:
   $ pip install pyparsing==1.5.7
   $ pip install pydot
 
-Instalation should be fast and easy, remember to install this exact version of
+Installation should be fast and easy, remember to install this exact version of
 pyparsing, otherwise it's possible you get this error:
 
     Couldn't import dot_parser, loading of dot files will not be possible.
+
+
+Default Settings
+----------------
+
+The option GRAPH_MODELS = {} can be used in the settings file to specify default options::
+
+  GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+  }
+
+It uses the same names as on the command line only with the leading two dashes removed and
+the other dashes replaced by underscores.
 
 
 Example Usage
