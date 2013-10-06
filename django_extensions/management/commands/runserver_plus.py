@@ -125,6 +125,7 @@ class Command(BaseCommand):
                 try:
                     set_werkzeug_log_color()
                 except:     # We are dealing with some internals, anything could go wrong
+                    print("Wrapping internal werkzeug logger for color highlighting has failed!")
                     pass
 
         except ImportError:
@@ -256,14 +257,18 @@ def set_werkzeug_log_color():
     from werkzeug._internal import _log
 
     _style = color_style()
+    _orig_log = WSGIRequestHandler.log
 
     def werk_log(self, type, message, *args):
-        msg = '%s - - [%s] %s' % (
-            self.address_string(),
-            self.log_date_time_string(),
-            message % args,
-        )
-        http_code = str(args[1])
+        try:
+            msg = '%s - - [%s] %s' % (
+                self.address_string(),
+                self.log_date_time_string(),
+                message % args,
+            )
+            http_code = str(args[1])
+        except:
+            return _orig_log(type, message, *args)
 
         # Utilize terminal colors, if available
         if http_code[0] == '2':
