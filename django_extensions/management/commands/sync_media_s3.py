@@ -290,11 +290,3 @@ class Command(BaseCommand):
                 self.uploaded_files.append(file_key)
 
             file_obj.close()
-
-# Backwards compatibility for Django r9110
-if not [opt for opt in Command.option_list if opt.dest == 'verbosity']:
-    Command.option_list += (
-        make_option('-v', '--verbosity',
-                    dest='verbosity', default=1, action='count',
-                    help="Verbose mode. Multiple -v options increase the verbosity."),
-    )
