@@ -109,7 +109,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs.dup_select_related(queryset)
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
-                data = ''.join([six.u('%s|%s\n' % (to_string_function(f), f.pk)) for f in queryset])
+                data = ''.join([self._escape('%s|%s\n' % (to_string_function(f), f.pk)) for f in queryset])
             elif object_pk:
                 try:
                     obj = queryset.get(pk=object_pk)
@@ -119,6 +119,11 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     data = to_string_function(obj)
             return HttpResponse(data)
         return HttpResponseNotFound()
+
+    def _escape(self, string):
+        if not six.PY3 and not isinstance(string, six.text_type):
+            string = six.u(string)
+        return string
 
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)
