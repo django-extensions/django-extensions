@@ -25,6 +25,12 @@ try:
 except ImportError:
     from django.utils.encoding import force_text as force_unicode  # NOQA
 
+try: 
+    import shortuuid
+    HAS_SHORTUUID = True
+except ImportError: 
+    HAS_SHORTUUID = False
+
 
 class AutoSlugField(SlugField):
     """ AutoSlugField
@@ -43,6 +49,9 @@ class AutoSlugField(SlugField):
 
     overwrite
         If set to True, overwrites the slug on every save (default: False)
+
+    allow_duplicates
+        If set to True, allow duplicated values in slug field (default: False)
 
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
@@ -285,3 +294,75 @@ class UUIDField(CharField):
         args, kwargs = introspector(self)
         # That's our definition!
         return (field_class, args, kwargs)
+
+
+class ShortUUIDField(CharField): 
+    """ ShortUUIDField 
+
+    A field which stores a short UUID value in base57 format
+
+    Basically is a field wrapper around Stochastic Technologies shortuuid module
+
+    You can pass usual Django CharField parameters on init, although some of them are added/overwritten (as max_length=22 since we are using base-57)
+
+    By default, sets auto=True (which enforces field autofill, editable=False and blank=True) and length=22
+
+    Optional parameters
+
+    auto
+       If set to True, auto fill the field
+
+    length
+        Set characters length. If length<22 it's not universal unique id any more but collision probability is still low 
+
+    Inspired in Ben Roberts django-shortuuidfield 
+    """ 
+
+    def __init__(self, *args, **kwargs): 
+        if not HAS_SHORTUUID:
+            raise ImproperlyConfigured("'shortuuid' module by Stochastic Technologies is required for ShortUUIDField")
+        self.auto = kwargs.pop('auto', True)
+        self.length = kwargs.pop('length', 22)
+
+        # We store UUIDs in base57 format, which is fixed at 22 characters.
+        kwargs['max_length'] = 22
+
+        # Fill value
+        if self.auto: 
+            # Do not let the user edit UUIDs if they are auto-assigned.
+            kwargs['editable'] = False
+            kwargs['blank'] = True
+            kwargs['unique'] = True  # UUIDs are intended to be unique 
+
+
+        super(ShortUUIDField, self).__init__(*args, **kwargs)
+
+    def pre_save(self, model_instance, add):
+        """
+        Auto fill value if required.
+        """
+        value = super(ShortUUIDField, self).pre_save(model_instance, add)
+        if self.auto and not value:
+            # Assign a new value for this attribute if required.
+            suuid = shortuuid.uuid()
+            # If shorter IDs are required
+            if self.length:
+                suuid = suuid[:self.length]
+            value = unicode(suuid)
+            setattr(model_instance, self.attname, value)
+        return value
+
+    def formfield(self, **kwargs):
+        if self.auto:
+            return None
+        return super(ShortUUIDField, self).formfield(**kwargs)
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = "django.db.models.fields.CharField"
+        args, kwargs = introspector(self)
+        # That's our definition!
+        return (field_class, args, kwargs)
+
