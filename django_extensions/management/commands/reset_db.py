@@ -29,7 +29,7 @@ class Command(BaseCommand):
                     dest='dbname', default=None,
                     help='Use another database name then defined in settings.py (For PostgreSQL this defaults to "template1")'),
         make_option('-R', '--router', action='store',
-                    dest='router', default=None,
+                    dest='router', default='default',
                     help='Use this router-database other then defined in settings.py'),
     )
     help = "Resets the database for this project."
@@ -42,12 +42,8 @@ class Command(BaseCommand):
         autocommit, anybody know how to do this the right way?
         """
 
-        router = options.get('router')
-        if router is None:
-            return False
-
         # retrieve this with the 'using' argument
-        dbinfo = settings.DATABASES.get(router)
+        dbinfo = settings.DATABASES.get(options.get('router'))
         settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
         settings.DATABASE_USER = dbinfo.get('USER')
         settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
