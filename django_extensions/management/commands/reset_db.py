@@ -25,7 +25,7 @@ class Command(BaseCommand):
                     help='Use another password for the database then defined in settings.py'),
         make_option('-D', '--dbname', action='store',
                     dest='dbname', default=None,
-                    help='Use another database name then defined in settings.py (For PostgreSQL this defaults to "template1")'),
+                    help='Use another database name then defined in settings.py'),
         make_option('-R', '--router', action='store',
                     dest='router', default='default',
                     help='Use this router-database other then defined in settings.py'),
@@ -39,13 +39,21 @@ class Command(BaseCommand):
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-        dbinfo = settings.DATABASES.get(options.get('router'))
+        router = options.get('router')
+        dbinfo = settings.DATABASES.get(router)
+        if dbinfo is None:
+            raise CommandError("Unknown database router %s" % router)
+
         engine = dbinfo.get('ENGINE').split('.')[-1]
-        user = options.get('user', dbinfo.get('USER'))
-        password = options.get('password', dbinfo.get('PASSWORD'))
-        settings.DATABASE_NAME = dbinfo.get('NAME')
-        settings.DATABASE_HOST = dbinfo.get('HOST')
-        settings.DATABASE_PORT = dbinfo.get('PORT')
+        user = options.get('user') or dbinfo.get('USER')
+        password = options.get('password') or dbinfo.get('PASSWORD')
+
+        database_name = options.get('dbname') or dbinfo.get('NAME')
+        if database_name == '':
+            raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
+
+        database_host = dbinfo.get('HOST')
+        database_port = dbinfo.get('PORT')
 
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
@@ -55,7 +63,7 @@ This will IRREVERSIBLY DESTROY
 ALL data in the database "%s".
 Are you sure you want to do this?
 
-Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
+Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         else:
             confirm = 'yes'
 
@@ -67,26 +75,28 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             import os
             try:
                 logging.info("Unlinking %s database" % engine)
-                os.unlink(settings.DATABASE_NAME)
+                os.unlink(database_name)
             except OSError:
                 pass
-        elif engine == 'mysql':
+
+        elif engine in ('mysql',):
             import MySQLdb as Database
             kwargs = {
                 'user': user,
                 'passwd': password,
             }
-            if settings.DATABASE_HOST.startswith('/'):
-                kwargs['unix_socket'] = settings.DATABASE_HOST
+            if database_host.startswith('/'):
+                kwargs['unix_socket'] = database_host
             else:
-                kwargs['host'] = settings.DATABASE_HOST
-            if settings.DATABASE_PORT:
-                kwargs['port'] = int(settings.DATABASE_PORT)
+                kwargs['host'] = database_host
+
+            if database_port:
+                kwargs['port'] = int(database_port)
 
             connection = Database.connect(**kwargs)
-            drop_query = 'DROP DATABASE IF EXISTS `%s`' % settings.DATABASE_NAME
+            drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
             utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
-            create_query = 'CREATE DATABASE `%s` %s' % (settings.DATABASE_NAME, utf8_support)
+            create_query = 'CREATE DATABASE `%s` %s' % (database_name, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
@@ -98,27 +108,20 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             elif engine in ('postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
-            if settings.DATABASE_NAME == '':
-                from django.core.exceptions import ImproperlyConfigured
-                raise ImproperlyConfigured("You need to specify DATABASE_NAME in your Django settings file.")
-
-            database_name = options.get('dbname', 'template1')
-            if options.get('dbname') is None:
-                database_name = 'template1'
             conn_string = "dbname=%s" % database_name
             if user:
                 conn_string += " user=%s" % user
             if password:
                 conn_string += " password='%s'" % password
-            if settings.DATABASE_HOST:
-                conn_string += " host=%s" % settings.DATABASE_HOST
-            if settings.DATABASE_PORT:
-                conn_string += " port=%s" % settings.DATABASE_PORT
+            if database_host:
+                conn_string += " host=%s" % database_host
+            if database_port:
+                conn_string += " port=%s" % database_port
 
             connection = Database.connect(conn_string)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
-            drop_query = 'DROP DATABASE %s' % settings.DATABASE_NAME
+            drop_query = 'DROP DATABASE %s;' % database_name
             logging.info('Executing... "' + drop_query + '"')
 
             try:
@@ -126,7 +129,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             except Database.ProgrammingError as e:
                 logging.info("Error: %s" % str(e))
 
-            create_query = "CREATE DATABASE %s" % settings.DATABASE_NAME
+            create_query = "CREATE DATABASE %s" % database_name
             create_query += " WITH OWNER = %s " % user
             create_query += " ENCODING = 'UTF8'"
 
