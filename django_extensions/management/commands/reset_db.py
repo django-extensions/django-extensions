@@ -34,25 +34,6 @@ class Command(BaseCommand):
     )
     help = "Resets the database for this project."
 
-    def set_db_settings(self, *args, **options):
-        if django.get_version() >= "1.2":
-            router = options.get('router')
-            if router is None:
-                return False
-
-            # retrieve this with the 'using' argument
-            dbinfo = settings.DATABASES.get(router)
-            settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
-            settings.DATABASE_USER = dbinfo.get('USER')
-            settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
-            settings.DATABASE_NAME = dbinfo.get('NAME')
-            settings.DATABASE_HOST = dbinfo.get('HOST')
-            settings.DATABASE_PORT = dbinfo.get('PORT')
-            return True
-        else:
-            # settings are set for django < 1.2 no modification needed
-            return True
-
     def handle(self, *args, **options):
         """
         Resets the database for this project.
@@ -61,11 +42,18 @@ class Command(BaseCommand):
         autocommit, anybody know how to do this the right way?
         """
 
-        if django.get_version() >= "1.2":
-            got_db_settings = self.set_db_settings(*args, **options)
-            if not got_db_settings:
-                raise CommandError("You are using Django %s which requires to specify the db-router.\nPlease specify the router by adding --router=<routername> to this command." % django.get_version())
-                return
+        router = options.get('router')
+        if router is None:
+            return False
+
+        # retrieve this with the 'using' argument
+        dbinfo = settings.DATABASES.get(router)
+        settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
+        settings.DATABASE_USER = dbinfo.get('USER')
+        settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
+        settings.DATABASE_NAME = dbinfo.get('NAME')
+        settings.DATABASE_HOST = dbinfo.get('HOST')
+        settings.DATABASE_PORT = dbinfo.get('PORT')
 
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
