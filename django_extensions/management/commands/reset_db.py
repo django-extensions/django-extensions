@@ -40,12 +40,10 @@ class Command(BaseCommand):
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-
-        # retrieve this with the 'using' argument
         dbinfo = settings.DATABASES.get(options.get('router'))
-        settings.DATABASE_ENGINE = dbinfo.get('ENGINE').split('.')[-1]
-        settings.DATABASE_USER = dbinfo.get('USER')
-        settings.DATABASE_PASSWORD = dbinfo.get('PASSWORD')
+        engine = dbinfo.get('ENGINE').split('.')[-1]
+        user = options.get('user', dbinfo.get('USER'))
+        password = options.get('password', dbinfo.get('PASSWORD'))
         settings.DATABASE_NAME = dbinfo.get('NAME')
         settings.DATABASE_HOST = dbinfo.get('HOST')
         settings.DATABASE_PORT = dbinfo.get('PORT')
@@ -67,13 +65,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             return
 
         postgis = re.compile('.*postgis')
-        engine = settings.DATABASE_ENGINE
-        user = options.get('user', settings.DATABASE_USER)
-        if user is None:
-            user = settings.DATABASE_USER
-        password = options.get('password', settings.DATABASE_PASSWORD)
-        if password is None:
-            password = settings.DATABASE_PASSWORD
 
         if engine in ('sqlite3', 'spatialite'):
             import os
@@ -118,9 +109,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             if options.get('dbname') is None:
                 database_name = 'template1'
             conn_string = "dbname=%s" % database_name
-            if settings.DATABASE_USER:
+            if user:
                 conn_string += " user=%s" % user
-            if settings.DATABASE_PASSWORD:
+            if password:
                 conn_string += " password='%s'" % password
             if settings.DATABASE_HOST:
                 conn_string += " host=%s" % settings.DATABASE_HOST
@@ -138,10 +129,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             except Database.ProgrammingError as e:
                 logging.info("Error: %s" % str(e))
 
-            # Encoding should be SQL_ASCII (7-bit postgres default) or prefered UTF8 (8-bit)
             create_query = "CREATE DATABASE %s" % settings.DATABASE_NAME
-            if settings.DATABASE_USER:
-                create_query += " WITH OWNER = %s " % settings.DATABASE_USER
+            create_query += " WITH OWNER = %s " % user
             create_query += " ENCODING = 'UTF8'"
 
             if postgis.match(engine):
