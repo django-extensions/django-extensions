@@ -1,14 +1,13 @@
 """
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
+import re
+import logging
+from optparse import make_option
 
-from six.moves import input
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
-import django
-import logging
-import re
-from optparse import make_option
+from six.moves import input
 
 
 class Command(BaseCommand):
