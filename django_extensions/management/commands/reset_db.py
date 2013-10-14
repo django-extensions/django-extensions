@@ -1,7 +1,6 @@
 """
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
-import re
 import logging
 from optparse import make_option
 
@@ -64,8 +63,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             print("Reset cancelled.")
             return
 
-        postgis = re.compile('.*postgis')
-
         if engine in ('sqlite3', 'spatialite'):
             import os
             try:
@@ -95,10 +92,10 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             logging.info('Executing... "' + create_query + '"')
             connection.query(create_query)
 
-        elif engine == 'postgresql' or engine == 'postgresql_psycopg2' or postgis.match(engine):
+        elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
             if engine == 'postgresql':
                 import psycopg as Database  # NOQA
-            elif engine == 'postgresql_psycopg2' or postgis.match(engine):
+            elif engine in ('postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
             if settings.DATABASE_NAME == '':
@@ -133,12 +130,14 @@ Type 'yes' to continue, or 'no' to cancel: """ % (settings.DATABASE_NAME,))
             create_query += " WITH OWNER = %s " % user
             create_query += " ENCODING = 'UTF8'"
 
-            if postgis.match(engine):
+            if engine == 'postgis':
                 create_query += ' TEMPLATE = template_postgis'
+
             if settings.DEFAULT_TABLESPACE:
                 create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
             else:
                 create_query += ';'
+
             logging.info('Executing... "' + create_query + '"')
             cursor.execute(create_query)
 
