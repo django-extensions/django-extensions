@@ -159,7 +159,6 @@ class Command(BaseCommand):
         except ImportError:  # Django 1.6
             wsgi_server_exc_cls = socket.error
 
-
         if args:
             raise CommandError('Usage is runserver %s' % self.args)
         if not addrport:
