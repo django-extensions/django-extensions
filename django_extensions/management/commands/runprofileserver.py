@@ -184,7 +184,10 @@ class Command(BaseCommand):
         def inner_run():
             import os
             import time
-            import hotshot
+            try:
+                import hotshot
+            except ImportError:
+                pass            # python 3.x
             USE_CPROFILE = options.get('use_cprofile', False)
             USE_LSPROF = options.get('use_lsprof', False)
             if USE_LSPROF:
