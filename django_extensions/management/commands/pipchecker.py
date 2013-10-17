@@ -7,20 +7,16 @@ import urllib2
 import urlparse
 import xmlrpclib
 from distutils.version import LooseVersion
+from django.core.management.base import NoArgsCommand
+from django_extensions.management.color import color_style
+from optparse import make_option
+from pip.req import parse_requirements
 
 try:
     import requests
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
-
-from optparse import make_option
-
-from django.core.management.base import NoArgsCommand
-
-from django_extensions.management.color import color_style
-
-from pip.req import parse_requirements
 
 
 class Command(NoArgsCommand):
@@ -171,7 +167,11 @@ class Command(NoArgsCommand):
         """
         for name, req in self.reqs.items():
             req_url = req["url"]
+            if not req_url:
+                continue
             if req_url.startswith("git") and "github.com/" not in req_url:
+                continue
+            if req_url.endswith(".tar.gz") or req_url.endswith(".tar.bz2") or req_url.endswith(".zip"):
                 continue
 
             headers = {
