@@ -108,7 +108,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             elif engine in ('postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
-            conn_string = "dbname=%s" % database_name
+            conn_string = "dbname=template1"
             if user:
                 conn_string += " user=%s" % user
             if password:
