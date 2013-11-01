@@ -1,4 +1,4 @@
-
+import traceback
 
 class ObjectImportError(Exception):
     pass
@@ -102,8 +102,10 @@ def import_objects(options, style):
                     model_labels.append("%s (as %s)" % (model_name, alias))
 
             except AttributeError as e:
+                if options.get("traceback"):
+                    traceback.print_exc()
                 if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_name, str(e))))
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__, str(e))))
                 continue
         if not quiet_load:
             print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels))))
