@@ -135,7 +135,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             create_query = "CREATE DATABASE %s" % database_name
             if owner:
-                create_query += " WITH OWNER = %s " % owner
+                create_query += " WITH OWNER = \"%s\" " % owner
             create_query += " ENCODING = 'UTF8'"
 
             if engine == 'postgis':
