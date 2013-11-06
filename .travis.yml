@@ -6,9 +6,9 @@ python:
   - 3.3
 
 env:
-  - DJANGO=Django==1.3 --use-mirrors
   - DJANGO=Django==1.4 --use-mirrors
   - DJANGO=Django==1.5 --use-mirrors
+  - DJANGO=Django==1.6 --use-mirrors
 
 install:
   - pip install -q $DJANGO
@@ -23,7 +23,5 @@ script:
 
 matrix:
   exclude:
-    - python: 3.3
-      env: DJANGO=Django==1.3 --use-mirrors
     - python: 3.3
       env: DJANGO=Django==1.4 --use-mirrors
