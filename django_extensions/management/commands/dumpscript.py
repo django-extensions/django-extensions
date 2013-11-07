@@ -329,9 +329,12 @@ class InstanceCode(Code):
             # TODO: check if batches are really needed. If not, remove them.
             sub_objects = sum([list(i) for i in collector.data.values()], [])
 
-            for batch in collector.batches.values():
-                # batch.values can be sets, which must be converted to lists
-                sub_objects += sum([list(i) for i in batch.values()], [])
+            if hasattr(collector, 'batches'):
+                # Django 1.6 removed batches for being dead code
+                # https://github.com/django/django/commit/a170c3f755351beb35f8166ec3c7e9d524d9602
+                for batch in collector.batches.values():
+                    # batch.values can be sets, which must be converted to lists
+                    sub_objects += sum([list(i) for i in batch.values()], [])
 
         sub_objects_parents = [so._meta.parents for so in sub_objects]
         if [self.model in p for p in sub_objects_parents].count(True) == 1:
