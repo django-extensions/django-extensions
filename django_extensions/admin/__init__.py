@@ -1,13 +1,6 @@
 #
 # Autocomplete feature for admin panel
 #
-# Most of the code has been written by Jannis Leidel and was updated a bit
-# for django_extensions.
-# http://jannisleidel.com/2008/11/autocomplete-form-widget-foreignkey-model-fields/
-#
-# to_string_function, Satchmo adaptation and some comments added by emes
-# (Michal Salaban)
-#
 
 import six
 import operator
@@ -84,6 +77,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         model_name = request.GET.get('model_name', None)
         search_fields = request.GET.get('search_fields', None)
         object_pk = request.GET.get('object_pk', None)
+        limit = request.GET.get('limit', None)
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
@@ -109,6 +103,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs.dup_select_related(queryset)
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
+
+                if limit:
+                    queryset = queryset[:limit]
+
                 data = ''.join([six.u('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset])
             elif object_pk:
                 try:
