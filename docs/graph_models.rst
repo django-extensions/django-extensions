@@ -25,17 +25,15 @@ the --pygraphviz or --pydot parameters depending on the library you want to use.
 When neither of the command line parameters are given the default is to try and load
 pygraphviz or pydot (in that order) to generate the image.
 
-To install pygraphviz you usually need to run this command:
+To install pygraphviz you usually need to run this command::
 
-::
   $ pip install pygraphviz
 
 It is possible you can't install it because it needs some C extensions to build, you
 can try other methods to install or you can use PyDot.
 
-To install pydot you need to run this command:
+To install pydot you need to run this command::
 
-::
   $ pip install pyparsing==1.5.7
   $ pip install pydot
 
