@@ -100,7 +100,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 for bit in query.split():
                     or_queries = [models.Q(**{construct_search(smart_str(field_name)): smart_str(bit)}) for field_name in search_fields.split(',')]
                     other_qs = QuerySet(model)
-                    other_qs.dup_select_related(queryset)
+                    other_qs.query.select_related = queryset.query.select_related
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
 
