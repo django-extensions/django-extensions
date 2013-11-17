@@ -1,7 +1,7 @@
 sqldiff
 =======
 
-:synopsis: Prints the ALTER TABLE statemens for the given appnames.
+:synopsis: Prints the ALTER TABLE statements for the given appnames.
 
 Django command that scans all models for the given appnames and compares
 their database schema with the real database tables.
