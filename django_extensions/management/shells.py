@@ -58,6 +58,13 @@ def import_objects(options, style):
     # models from installed apps. (this is fixed by now, but leaving it here
     # for people using 0.96 or older trunk (pre [5919]) versions.
     from django.db.models.loading import get_models, get_apps
+    mongoengine = False
+    try:
+        from mongoengine.base import _document_registry
+        mongoengine = True
+    except:
+        pass
+
     loaded_models = get_models()  # NOQA
 
     from django.conf import settings
@@ -75,6 +82,17 @@ def import_objects(options, style):
     for k, v in imports.items():
         imported_objects[k] = v
 
+    load_models = {}
+    if mongoengine:
+        for name, mod in _document_registry.items():
+            name = name.split('.')[-1]
+            app_name = mod.__module__.split('.')[-2]
+            if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
+                continue
+
+            load_models.setdefault(mod.__module__, [])
+            load_models[mod.__module__].append(name)
+
     for app_mod in get_apps():
         app_models = get_models(app_mod)
         if not app_models:
@@ -85,12 +103,21 @@ def import_objects(options, style):
             continue
 
         app_aliases = model_aliases.get(app_name, {})
+        for mod in app_models:
+            if "%s.%s" % (app_name, mod.__name__) in dont_load:
+                continue
+
+            load_models.setdefault(mod.__module__, [])
+            load_models[mod.__module__].append(mod.__name__)
+
+    for app_mod, models in load_models.items():
+        app_name = app_mod.split('.')[-2]
+        app_aliases = model_aliases.get(app_name, {})
         model_labels = []
 
-        for model in app_models:
+        for model_name in models:
             try:
-                imported_object = getattr(__import__(app_mod.__name__, {}, {}, model.__name__), model.__name__)
-                model_name = model.__name__
+                imported_object = getattr(__import__(app_mod, {}, {}, model_name), model_name)
 
                 if "%s.%s" % (app_name, model_name) in dont_load:
                     continue
@@ -106,10 +133,11 @@ def import_objects(options, style):
                 if options.get("traceback"):
                     traceback.print_exc()
                 if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model.__name__, app_mod.__name__, str(e))))
+                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model_name, app_mod, str(e))))
                 continue
+
         if not quiet_load:
-            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.__name__.split('.')[-2], ", ".join(model_labels))))
+            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.split('.')[-2], ", ".join(model_labels))))
 
     # Perform post-imports after any other imports
     imports = import_items(getattr(settings, 'SHELL_PLUS_POST_IMPORTS', {}))
