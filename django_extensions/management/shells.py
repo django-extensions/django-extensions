@@ -68,7 +68,7 @@ def import_objects(options, style):
     loaded_models = get_models()  # NOQA
 
     from django.conf import settings
-    imported_objects = {'settings': settings}
+    imported_objects = {}
 
     dont_load_cli = options.get('dont_load')  # optparse will set this to [] if it doensnt exists
     dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
@@ -79,12 +79,23 @@ def import_objects(options, style):
 
     # Perform pre-imports before any other imports
     imports = import_items(getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {}))
-    for k, v in imports.items():
+    for k, v in imports.iteritems():
         imported_objects[k] = v
 
     load_models = {}
+
+    if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
+        load_models.update({
+            'django.core.cache': ['cache'],
+            'django.core.urlresolvers': ['reverse'],
+            'django.conf': ['settings'],
+            'django.db': ['transaction'],
+            'django.db.models': ['Avg', 'Count', 'F', 'Max', 'Min', 'Sum', 'Q'],
+            'django.utils': ['timezone'],
+        })
+
     if mongoengine:
-        for name, mod in _document_registry.items():
+        for name, mod in _document_registry.iteritems():
             name = name.split('.')[-1]
             app_name = mod.__module__.split('.')[-2]
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
@@ -110,12 +121,12 @@ def import_objects(options, style):
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(mod.__name__)
 
-    for app_mod, models in load_models.items():
+    for app_mod, models in sorted(load_models.iteritems()):
         app_name = app_mod.split('.')[-2]
         app_aliases = model_aliases.get(app_name, {})
         model_labels = []
 
-        for model_name in models:
+        for model_name in sorted(models):
             try:
                 imported_object = getattr(__import__(app_mod, {}, {}, model_name), model_name)
 
@@ -137,11 +148,11 @@ def import_objects(options, style):
                 continue
 
         if not quiet_load:
-            print(style.SQL_COLTYPE("From '%s' autoload: %s" % (app_mod.split('.')[-2], ", ".join(model_labels))))
+            print(style.SQL_COLTYPE("from %s import %s" % (app_mod, ", ".join(model_labels))))
 
     # Perform post-imports after any other imports
     imports = import_items(getattr(settings, 'SHELL_PLUS_POST_IMPORTS', {}))
-    for k, v in imports.items():
+    for k, v in imports.iteritems():
         imported_objects[k] = v
 
     return imported_objects
