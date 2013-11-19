@@ -35,7 +35,7 @@ import datetime
 import six
 
 import django
-from django.db.models import AutoField, BooleanField, FileField, ForeignKey
+from django.db.models import AutoField, BooleanField, FileField, ForeignKey, DateField, DateTimeField
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
@@ -627,6 +627,12 @@ import datetime
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 
+try:
+    import dateutil.parser
+except ImportError:
+    print "Please install python-dateutil"
+    sys.exit(os.EX_USAGE)
+
 def run():
     importer.pre_import()
     importer.run_import(import_data)
@@ -708,6 +714,9 @@ def get_attribute_value(item, field, context, force=False):
             return item_locator
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
+
+    elif isinstance(field, (DateField, DateTimeField)):
+        return "dateutil.parser.parse(\"%s\")" % value.isoformat()
 
     # A normal field (e.g. a python built-in)
     else:
