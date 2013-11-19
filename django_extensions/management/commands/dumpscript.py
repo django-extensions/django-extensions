@@ -630,7 +630,7 @@ from django.contrib.contenttypes.models import ContentType
 try:
     import dateutil.parser
 except ImportError:
-    print "Please install python-dateutil"
+    print("Please install python-dateutil")
     sys.exit(os.EX_USAGE)
 
 def run():
