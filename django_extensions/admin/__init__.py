@@ -84,6 +84,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         model_name = request.GET.get('model_name', None)
         search_fields = request.GET.get('search_fields', None)
         object_pk = request.GET.get('object_pk', None)
+        limit = int(request.GET.get('limit', 10))
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
@@ -109,7 +110,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs.dup_select_related(queryset)
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
-                data = ''.join([six.u('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset])
+                    data = ''.join([six.u('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset[:limit]])
             elif object_pk:
                 try:
                     obj = queryset.get(pk=object_pk)
