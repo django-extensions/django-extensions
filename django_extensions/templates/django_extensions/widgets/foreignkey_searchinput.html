@@ -1,10 +1,10 @@
-{% load i18n %}
+{% load i18n staticfiles %}
 <input type="text" id="lookup_{{ name }}" value="{{ label }}" style="display:none;" />
 <a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);">
-  <img src="{{ admin_media_prefix }}img/{% if pre_django_14 %}admin/{% endif %}selector-search.gif" width="16" height="16" alt="{% trans "Lookup" %}" />
+    <img src="{% static "admin/img/selector-search.gif" %}" width="16" height="16" alt="{% trans "Lookup" %}" />
 </a>
 <script type="text/javascript">
-(function($){
+(function($) {
     // Show lookup input
     $("#lookup_{{ name }}").show();
     function reset() {
