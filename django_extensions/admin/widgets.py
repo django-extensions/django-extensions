@@ -1,4 +1,5 @@
 import six
+
 from django import forms
 from django.contrib.admin.sites import site
 from django.utils.safestring import mark_safe
@@ -65,8 +66,8 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             'related_url': related_url,
             'search_path': self.search_path,
             'search_fields': ','.join(self.search_fields),
-            'model_name': model_name,
             'app_label': app_label,
+            'model_name': model_name,
             'label': label,
             'name': name,
         }

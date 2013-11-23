@@ -45,16 +45,20 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
          take target model instance as only argument and return string
          representation. By default __unicode__() method of target
          object is used.
+
+    And also an optional additional field to set the limit on the
+    results returned by the autocomplete query. You can set this integer
+    value in your settings file using FOREIGNKEY_AUTOCOMPLETE_LIMIT or
+    you can set this per ForeignKeyAutocompleteAdmin basis. If any value
+    is set the results will not be limited.
     """
 
     related_search_fields = {}
     related_string_functions = {}
+    autocomplete_limit = settings.get('FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):
-        try:
-            from django.conf.urls import patterns, url
-        except ImportError:  # django < 1.4
-            from django.conf.urls.defaults import patterns, url
+        from django.conf.urls import patterns, url
 
         def wrap(view):
             def wrapper(*args, **kwargs):
@@ -77,11 +81,12 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         model_name = request.GET.get('model_name', None)
         search_fields = request.GET.get('search_fields', None)
         object_pk = request.GET.get('object_pk', None)
-        limit = request.GET.get('limit', None)
+
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
             to_string_function = lambda x: x.__unicode__()
+
         if search_fields and app_label and model_name and (query or object_pk):
             def construct_search(field_name):
                 # use different lookup methods depending on the notation
@@ -104,8 +109,8 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
 
-                if limit:
-                    queryset = queryset[:limit]
+                if self.autocomplete_limit:
+                    queryset = queryset[:self.autocomplete_limit]
 
                 data = ''.join([six.u('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset])
             elif object_pk:
