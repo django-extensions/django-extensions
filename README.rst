@@ -65,9 +65,6 @@ Documentation
 
 You can view documentation online at:
 
-- http://packages.python.org/django-extensions/
+- http://django-extensions.readthedocs.org
 
 Or you can look at the docs/ directory in the repository.
-
-__ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
-
