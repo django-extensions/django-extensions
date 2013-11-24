@@ -14,7 +14,7 @@ install:
   - pip install -q $DJANGO
   - pip install flake8 --use-mirrors
   - pip install python-dateutil --use-mirrors
-  - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install -q python-keyczar --use-mirrors; fi
+  - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install --pre -q python-keyczar --use-mirrors; fi
   - pip install -q PyYAML --use-mirrors
   - pip install -e . --use-mirrors
 
