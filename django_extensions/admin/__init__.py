@@ -55,7 +55,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
 
     related_search_fields = {}
     related_string_functions = {}
-    autocomplete_limit = settings.get('FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
+    autocomplete_limit = getattr(settings, 'FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):
         from django.conf.urls import patterns, url
