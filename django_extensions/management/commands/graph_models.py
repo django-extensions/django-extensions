@@ -1,3 +1,4 @@
+import six
 import sys
 from optparse import make_option, NO_DEFAULT
 from django.core.management.base import BaseCommand, CommandError
@@ -101,6 +102,9 @@ class Command(BaseCommand):
                             options[option.dest] = defaults[long_opt]
 
     def print_output(self, dotdata):
+        if six.PY3 and isinstance(dotdata, six.binary_type):
+            dotdata = dotdata.decode()
+
         print(dotdata)
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
