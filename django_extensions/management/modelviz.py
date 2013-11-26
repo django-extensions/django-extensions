@@ -25,7 +25,7 @@ import os
 import datetime
 from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe
-from django.template import Context, loader
+from django.template import Context, loader, Template
 from django.db import models
 from django.db.models import get_models
 from django.db.models.fields.related import ForeignKey, OneToOneField, ManyToManyField, RelatedField
@@ -269,6 +269,11 @@ def generate_dot(app_labels, **kwargs):
 
     now = datetime.datetime.now()
     t = loader.get_template('django_extensions/graph_models/digraph.dot')
+
+    if not isinstance(t, Template):
+        raise Exception("Default Django template loader isn't used. "
+                "This can lead to the incorrect template rendering. Please, check the settings.")
+
     c = Context({
         'created_at': now.strftime("%Y-%m-%d %H:%M"),
         'cli_options': cli_options,
