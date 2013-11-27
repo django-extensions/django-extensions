@@ -272,7 +272,8 @@ def generate_dot(app_labels, **kwargs):
 
     if not isinstance(t, Template):
         raise Exception("Default Django template loader isn't used. "
-                "This can lead to the incorrect template rendering. Please, check the settings.")
+                        "This can lead to the incorrect template rendering. "
+                        "Please, check the settings.")
 
     c = Context({
         'created_at': now.strftime("%Y-%m-%d %H:%M"),
