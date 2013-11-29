@@ -134,6 +134,8 @@ def generate_dot(app_labels, **kwargs):
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
                     label = field.verbose_name.decode("utf8")
+                    if label.islower():
+                        label = label.capitalize()
                 else:
                     label = field.name
 
