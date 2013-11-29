@@ -46,7 +46,7 @@ class Command(BaseCommand):
         make_option('--inheritance', '-e', action='store_true', dest='inheritance', default=True,
                     help='Include inheritance arrows (default)'),
         make_option('--no-inheritance', '-E', action='store_false', dest='inheritance',
-                    help='Include inheritance arrows'),
+                    help='Do not include inheritance arrows'),
         make_option('--hide-relations-from-fields', '-R', action='store_false', dest="relations_as_fields",
                     default=True, help="Do not show relations as fields in the graph."),
         make_option('--disable-sort-fields', '-S', action="store_false", dest="sort_fields",
