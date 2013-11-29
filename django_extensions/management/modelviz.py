@@ -126,14 +126,14 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
-                model['label'] = appmodel._meta.verbose_name
+                model['label'] = appmodel._meta.verbose_name.decode("utf8")
             else:
                 model['label'] = model['name']
 
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name
+                    label = field.verbose_name.decode("utf8")
                 else:
                     label = field.name
 
@@ -182,7 +182,7 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name
+                    label = field.verbose_name.decode("utf8")
                 else:
                     label = field.name
 
