@@ -185,12 +185,17 @@ def generate_dot(app_labels, **kwargs):
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
                     label = field.verbose_name.decode("utf8")
+                    if label.islower():
+                        label = label.capitalize()
                 else:
                     label = field.name
 
                 # show related field name
                 if hasattr(field, 'related_query_name'):
-                    label += ' (%s)' % field.related_query_name()
+                    related_query_name = field.related_query_name()
+                    if verbose_names and related_query_name.islower():
+                        related_query_name = related_query_name.replace('_',' ').capitalize()
+                    label += ' (%s)' % related_query_name
 
                 # handle self-relationships
                 if field.rel.to == 'self':
