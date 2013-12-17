@@ -22,6 +22,6 @@ Current Database Model Field Extensions
 * *UUIDField* - UUIDField for Django, supports all uuid versions which are
   natively supported by the uuid python module.
   
-* *EncryptedCharField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.KEYS_DIR`` set to the full path of your keys directory.
+* *EncryptedCharField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.ENCRYPTED_FIELD_KEYS_DIR`` set to the full path of your keys directory.
 
-* *EncryptedTextField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.KEYS_DIR`` set to the full path of your keys directory.
+* *EncryptedTextField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.ENCRYPTED_FIELD_KEYS_DIR`` set to the full path of your keys directory.
