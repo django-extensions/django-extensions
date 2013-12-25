@@ -3,7 +3,7 @@ RunProfileServer
 
 *First of all; we recommend that before you start profiling any language or
 framework you learn enough about it so that you feel comfortable with digging
-into it's internals.  Without sufficient knowledge it will not only be (very)
+into its internals.  Without sufficient knowledge it will not only be (very)
 hard but your likely to make wrong assumptions (and fixes). As a rule of thumb,
 clean well written code will help you a lot more then overzealous
 micro-optimizations will.*
