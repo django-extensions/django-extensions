@@ -12,7 +12,7 @@ This command can optionally do the following but it is off by default:
   * gzip compress any CSS and Javascript files it finds and adds the
     appropriate 'Content-Encoding' header.
   * set a far future 'Expires' header for optimal caching.
-  * uploads only media or static files.
+  * upload only media or static files.
 
 
 Example Usage
