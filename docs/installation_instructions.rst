@@ -46,7 +46,7 @@ provided by *django-extensions*.
 The next time you invoke *./manage.py help* you should be able to see all the
 newly available commands.
 
-Some command's or option's require additional applications or python libraries,
+Some commands or options require additional applications or python libraries,
 for example:
 
   * 'export_emails' will require the *python vobject* module to create vcard
@@ -77,16 +77,16 @@ Git::
   git clone git://github.com/django-extensions/django-extensions.git
 
 You should either install the resulting project with *python setup.py install*
-or put it the *extensions* directory into your PYTHONPATH. The most common way
+or put the *extensions* directory into your PYTHONPATH. The most common way
 is to symlink (junction, if you're on Windows) the extensions directory inside
-a directory which is on your PYTHONPATH, such as your Python installation's
+a directory which is on your PYTHONPATH, such as your python installation's
 site-packages directory.
 
 ::
 
   ln -sf /full/path/to/django-extensions/django_extensions /usr/lib/python2.7/site-packages/django_extensions
 
-You can verify that the application is available on your PYTHONPATH by opening a Python interpreter and entering the following commands:
+You can verify that the application is available on your PYTHONPATH by opening a python interpreter and entering the following commands:
 
 ::
 
