@@ -29,8 +29,8 @@ Example Usage
   $ ./manage.py export_emails --format=google google.csv
 
 
-Current Supported Formats
--------------------------
+Supported Formats
+-----------------
 
 address
 ^^^^^^^
@@ -46,20 +46,20 @@ This can be used with all known mail programs (that I know about anyway).
 google
 ^^^^^^
 
-A CSV (comma separated value) format which google applications can import.
+A CSV (comma separated value) format which Google applications can import.
 This can be used to import directly into GMail, a GMail mailing group, Google
 Docs invite (to read), Google Docs grant edit permissions, Google Calendar
-invites, etc, etc, etc.
+invites, etc.
 
-Only two columns are supplied. One for the persons name and the e-mail address.
+Only two columns are supplied. One for the person's name and one for the email address.
 This is also nice for importing into spreadsheets.
 
 
 outlook
 ^^^^^^^
 
-A CSV (comma separated value) format which outlook can parse and import.
-Supplies all the columns that Outlook 'requires', but only the name and e-mail
+A CSV (comma separated value) format which Outlook can parse and import.
+Supplies all the columns that Outlook 'requires', but only the name and email
 address are supplied.
 
 
@@ -69,7 +69,7 @@ linkedin
 A CSV (comma separated value) format which can be imported by `LinkedIn Groups`_
 to pre-approve a list of people for joining the group.
 
-This supplies 3 columns: First name, last name, and e-mail address. This is the
+This supplies 3 columns: first name, last name, and email address. This is the
 best generic csv file for importing into spreadsheets as well.
 
 
