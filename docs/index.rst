@@ -3,12 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to django-extensions's documentation!
-=============================================
+Welcome to the django-extensions documentation!
+===============================================
 
 Django Extensions is a collection of custom extensions for the Django Framework.
 
-These include management commands, additional database field, admin extensions and
+These include management commands, additional database fields, admin extensions and
 much more.
 
 `这篇文档当然还有中文版 <http://django-extensions-zh.readthedocs.org/en/latest/>`_
@@ -40,7 +40,7 @@ Compatibility with versions of Python and Django
 
 We try to follow the Django guidelines for supported Python and Django versions.
 
-This might mean the django-extensions may work with older or unsupported versions but we do not garantee it and most likely will not fix bugs related to incompatibilities with older versions.
+This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
 
 At the time of writing we require at least Python 2.5.
 
