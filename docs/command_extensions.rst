@@ -21,7 +21,7 @@ Current Command Extensions
 * *create_superuser* - Makes it easy to create a superuser for the
   django.contrib.auth.
 
-* *describe_form* - Used to display a form definition for a model.  Copy and
+* *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 
 * :doc:`dumpscript <dumpscript>` - Generates a Python script that will
@@ -71,7 +71,7 @@ Current Command Extensions
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
 
-* :doc:`sqldiff` - Prints the (approximated) difference between an apps models and
+* :doc:`sqldiff` - Prints the (approximated) difference between an app's models and
   what is in the database.  This is very nice, but also very experimental at
   the moment.  It can not catch everything but it's a great sanity check.
 
