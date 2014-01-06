@@ -7,9 +7,9 @@ RunScript
 Introduction
 ------------
 
-The runscript command lets you run any arbritrary set of python commands within
+The runscript command lets you run an arbritrary set of python commands within
 the django context. It offers the same usability and functionality as running a
-set of command in shell accessed by::
+set of commands in shell accessed by::
 
   $ python manage.py shell
 
@@ -49,7 +49,7 @@ For example::
 
 Note: You can put a script inside a *scripts* folder in any of your apps too.
 
-Using
+Usage
 -----
 
 To run any script you use the command *runscript* with the name of the script
