@@ -1,4 +1,5 @@
 import os
+import six
 import inspect
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -9,7 +10,7 @@ from django.utils import termcolors
 try:
     from django.utils.encoding import smart_text
 except ImportError:
-    smart_text = unicode
+    smart_text = six.u
 
 
 def color_style():
