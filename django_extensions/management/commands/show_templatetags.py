@@ -5,7 +5,11 @@ from django.core.management.base import BaseCommand
 from django.core.management import color
 from django.template import get_library
 from django.utils import termcolors
-from django.utils.encoding import smart_text
+
+try:
+    from django.utils.encoding import smart_text
+except ImportError:
+    smart_text = unicode
 
 
 def color_style():
