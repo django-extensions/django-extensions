@@ -14,7 +14,7 @@ class Command(AppCommand):
     )
 
     help = ("Creates a Django management command directory structure for the given app name"
-            " in the current directory.")
+            " in the app's directory.")
     args = "[appname]"
     label = 'application name'
 
