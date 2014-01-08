@@ -14,9 +14,8 @@ Current Command Extensions
   specified application.  This makes it easy to get started with adding a
   command extension to your application.
 
-* *create_template_tags* - Creates a command extension directory structure within the
-  specified application.  This makes it easy to get started with adding a
-  command extension to your application.
+* *create_template_tags* - Creates a template tag directory structure within the
+  specified application.
 
 * *create_jobs* - Creates a Django jobs command directory structure for the
   given app name in the current directory.  This is part of the impressive jobs
