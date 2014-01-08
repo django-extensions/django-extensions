@@ -7,14 +7,14 @@ from optparse import make_option
 
 class Command(AppCommand):
     option_list = AppCommand.option_list + (
-        make_option('--name', '-n', action='store', dest='command_name', default='sample',
-                    help='The name to use for the management command'),
+        make_option('--name', '-n', action='store', dest='tag_library_name', default='appname_tags',
+                    help='The name to use for the template tag base name. Defaults to `appname`_tags.'),
         make_option('--base', '-b', action='store', dest='base_command', default='Base',
                     help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
     )
 
-    help = ("Creates a Django management command directory structure for the given app name"
-            " in the app's directory.")
+    help = ("Creates a Django template tags directory structure for the given app name"
+            " in the apps's directory")
     args = "[appname]"
     label = 'application name'
 
@@ -25,23 +25,18 @@ class Command(AppCommand):
 
     def handle_app(self, app, **options):
         app_dir = os.path.dirname(app.__file__)
-        copy_template('command_template', app_dir, options.get('command_name'), '%sCommand' % options.get('base_command'))
+        tag_library_name = options.get('tag_library_name')
+        if tag_library_name == 'appname_tags':
+            tag_library_name = '%s_tags' % os.path.basename(app_dir)
+        copy_template('template_tags_template', app_dir, tag_library_name)
 
 
-def copy_template(template_name, copy_to, command_name, base_command):
+def copy_template(template_name, copy_to, tag_library_name):
     """copies the specified template directory to the copy_to location"""
     import django_extensions
     import shutil
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
-
-    handle_method = "handle(self, *args, **options)"
-    if base_command == 'AppCommand':
-        handle_method = "handle_app(self, app, **options)"
-    elif base_command == 'LabelCommand':
-        handle_method = "handle_label(self, label, **options)"
-    elif base_command == 'NoArgsCommand':
-        handle_method = "handle_noargs(self, **options)"
 
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(template_dir):
@@ -55,7 +50,7 @@ def copy_template(template_name, copy_to, command_name, base_command):
             if f.endswith('.pyc') or f.startswith('.DS_Store'):
                 continue
             path_old = os.path.join(d, f)
-            path_new = os.path.join(copy_to, relative_dir, f.replace('sample', command_name))
+            path_new = os.path.join(copy_to, relative_dir, f.replace('sample', tag_library_name))
             if os.path.exists(path_new):
                 path_new = os.path.join(copy_to, relative_dir, f)
                 if os.path.exists(path_new):
@@ -63,7 +58,7 @@ def copy_template(template_name, copy_to, command_name, base_command):
             path_new = path_new.rstrip(".tmpl")
             fp_old = open(path_old, 'r')
             fp_new = open(path_new, 'w')
-            fp_new.write(fp_old.read().replace('{{ command_name }}', command_name).replace('{{ base_command }}', base_command).replace('{{ handle_method }}', handle_method))
+            fp_new.write(fp_old.read())
             fp_old.close()
             fp_new.close()
             try:
