@@ -51,22 +51,32 @@ def fullsplit(path, result=None):
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
+
 # Compile the list of packages available, because distutils doesn't have
 # an easy way to do this.
-packages, data_files = [], []
+packages, package_data = [], {}
+
 root_dir = os.path.dirname(__file__)
 if root_dir != '':
     os.chdir(root_dir)
 extensions_dir = 'django_extensions'
 
 for dirpath, dirnames, filenames in os.walk(extensions_dir):
-    # Ignore dirnames that start with '.'
-    if os.path.basename(dirpath).startswith("."):
-        continue
+    # Ignore PEP 3147 cache dirs and those whose names start with '.'
+    dirnames[:] = [d for d in dirnames if not d.startswith('.') and d != '__pycache__']
+    parts = fullsplit(dirpath)
+    package_name = '.'.join(parts)
     if '__init__.py' in filenames:
-        packages.append('.'.join(fullsplit(dirpath)))
+        packages.append(package_name)
     elif filenames:
-        data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
+        relative_path = []
+        while '.'.join(parts) not in packages:
+            relative_path.append(parts.pop())
+        relative_path.reverse()
+        path = os.path.join(*relative_path)
+        package_files = package_data.setdefault('.'.join(parts), [])
+        package_files.extend([os.path.join(path, f) for f in filenames])
+
 
 version = __import__('django_extensions').__version__
 
@@ -86,7 +96,7 @@ additions for Django projects. See the project page for more information:
     platforms=['any'],
     packages=packages,
     cmdclass=cmdclasses,
-    data_files=data_files,
+    package_data=package_data,
     install_requires=['six'],
     tests_require=['Django'],
     test_suite='run_tests.main',
