@@ -46,11 +46,11 @@ class Command(NoArgsCommand):
             if update_kwargs:
                 Site.objects.filter(pk=1).update(**update_kwargs)
                 site = Site.objects.get(pk=1)
-                print "Updated default site. You might need to restart django as sites are cached aggressively."
+                print("Updated default site. You might need to restart django as sites are cached aggressively.")
             else:
-                print "Nothing to update (need --name, --domain and/or --system-fqdn)"
+                print("Nothing to update (need --name, --domain and/or --system-fqdn)")
 
-            print "Default Site:"
-            print "\tid = %s" % site.id
-            print "\tname = %s" % site.name
-            print "\tdomain = %s" % site.domain
+            print("Default Site:")
+            print("\tid = %s" % site.id)
+            print("\tname = %s" % site.name)
+            print("\tdomain = %s" % site.domain)
