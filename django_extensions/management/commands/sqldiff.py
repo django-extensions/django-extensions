@@ -20,6 +20,7 @@ KNOWN ISSUES:
      positives or false negatives.
 """
 
+import six
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
 from django.core.management import CommandError
@@ -274,7 +275,7 @@ class SQLDiff(object):
         # TODO: Postgresql does not list unique_togethers in table_indexes
         #       MySQL does
         fields = dict([(field.db_column or field.name, field.unique) for field in all_local_fields(meta)])
-        for att_name, att_opts in table_indexes.iteritems():
+        for att_name, att_opts in six.iteritems(table_indexes):
             if att_opts['unique'] and att_name in fields and not fields[att_name]:
                 if att_name in flatten(meta.unique_together):
                     continue
@@ -294,7 +295,7 @@ class SQLDiff(object):
 
     def find_index_missing_in_model(self, meta, table_indexes, table_name):
         fields = dict([(field.name, field) for field in all_local_fields(meta)])
-        for att_name, att_opts in table_indexes.iteritems():
+        for att_name, att_opts in six.iteritems(table_indexes):
             if att_name in fields:
                 field = fields[att_name]
                 if field.db_index:
@@ -317,7 +318,7 @@ class SQLDiff(object):
 
     def find_field_missing_in_db(self, fieldmap, table_description, table_name):
         db_fields = [row[0] for row in table_description]
-        for field_name, field in fieldmap.iteritems():
+        for field_name, field in six.iteritems(fieldmap):
             if field_name not in db_fields:
                 field_output = []
                 if field.rel:
