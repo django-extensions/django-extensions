@@ -79,7 +79,7 @@ def import_objects(options, style):
 
     # Perform pre-imports before any other imports
     imports = import_items(getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {}))
-    for k, v in imports.iteritems():
+    for k, v in imports.items():
         imported_objects[k] = v
 
     load_models = {}
@@ -95,7 +95,7 @@ def import_objects(options, style):
         })
 
     if mongoengine:
-        for name, mod in _document_registry.iteritems():
+        for name, mod in _document_registry.items():
             name = name.split('.')[-1]
             app_name = mod.__module__.split('.')[-2]
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
@@ -121,7 +121,7 @@ def import_objects(options, style):
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(mod.__name__)
 
-    for app_mod, models in sorted(load_models.iteritems()):
+    for app_mod, models in sorted(load_models.items()):
         app_name = app_mod.split('.')[-2]
         app_aliases = model_aliases.get(app_name, {})
         model_labels = []
@@ -152,7 +152,7 @@ def import_objects(options, style):
 
     # Perform post-imports after any other imports
     imports = import_items(getattr(settings, 'SHELL_PLUS_POST_IMPORTS', {}))
-    for k, v in imports.iteritems():
+    for k, v in imports.items():
         imported_objects[k] = v
 
     return imported_objects
