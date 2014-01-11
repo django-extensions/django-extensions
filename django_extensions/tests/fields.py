@@ -33,8 +33,9 @@ class FieldTestCase(unittest.TestCase):
 
 class AutoSlugFieldTest(FieldTestCase):
     def tearDown(self):
+        super(AutoSlugFieldTest, self).tearDown()
+
         SluggedTestModel.objects.all().delete()
-        settings.INSTALLED_APPS = self.old_installed_apps
 
     def testAutoCreateSlug(self):
         m = SluggedTestModel(title='foo')
@@ -63,15 +64,22 @@ class AutoSlugFieldTest(FieldTestCase):
     def testUpdateSlug(self):
         m = SluggedTestModel(title='foo')
         m.save()
+        self.assertEqual(m.slug, 'foo')
 
         # update m instance without using `save'
         SluggedTestModel.objects.filter(pk=m.pk).update(slug='foo-2012')
         # update m instance with new data from the db
         m = SluggedTestModel.objects.get(pk=m.pk)
-
         self.assertEqual(m.slug, 'foo-2012')
 
         m.save()
+        self.assertEqual(m.title, 'foo')
+        self.assertEqual(m.slug, 'foo-2012')
+
+        # Check slug is not overwrite
+        m.title = 'bar'
+        m.save()
+        self.assertEqual(m.title, 'bar')
         self.assertEqual(m.slug, 'foo-2012')
 
     def testSimpleSlugSource(self):
