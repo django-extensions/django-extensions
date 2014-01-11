@@ -1,4 +1,5 @@
 import six
+import django
 
 from django import forms
 from django.contrib.admin.sites import site
@@ -22,6 +23,12 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         js_files = ['django_extensions/js/jquery.bgiframe.min.js',
                     'django_extensions/js/jquery.ajaxQueue.js',
                     'django_extensions/js/jquery.autocomplete.js']
+
+        # Use a newer version of jquery if django version <= 1.5.x
+        # When removing this compatibility code also remove jquery-1.7.2.min.js file.
+        if int(django.get_version()[2]) <= 5:
+            js_files.insert(0, 'django_extensions/js/jquery-1.7.2.min.js')
+
         return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
                            js=js_files)
 
