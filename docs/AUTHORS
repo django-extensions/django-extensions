@@ -11,12 +11,12 @@ Michael Trier (empty)
 Doug Napoleone (dougn)
 Bas van Oostveen (trbs)
 David Krauth (dakrauth)
-Will Larson (lethain) - For syntax_color template filters.
-Patrick Altman (paltman) - Patched sync_media_s3
+Will Larson (lethain) - syntax_color template filters.
+Patrick Altman (paltman) - patched sync_media_s3
 Chris Beaven (smileychris) - widont filter
 qMax - various graph_model patches
-Tyson Clugg (tclugg) - Patched sqldiff
+Tyson Clugg (tclugg) - patched sqldiff
 Domen Kožar (iElectric) - staticfiles patch improvement
-quinox - original staticfiles patch
+Ceesjan Luiten (quinox) - original staticfiles patch
 Camilo Nova (camilonova)
-Wiktor Kołodziej (viciu) (http://deployed.pl)
+Wiktor Kołodziej (viciu)
