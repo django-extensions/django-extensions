@@ -16,14 +16,22 @@ class ChildSluggedTestModel(SluggedTestModel):
     pass
 
 
-class AutoSlugFieldTest(unittest.TestCase):
+class FieldTestCase(unittest.TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
         settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
         settings.INSTALLED_APPS.append('django_extensions.tests')
         loading.cache.loaded = False
-        call_command('syncdb', verbosity=0)
 
+        # Don't migrate if south is installed
+        migrate = 'south' not in settings.INSTALLED_APPS
+        call_command('syncdb', verbosity=0, migrate=migrate)
+
+    def tearDown(self):
+        settings.INSTALLED_APPS = self.old_installed_apps
+
+
+class AutoSlugFieldTest(FieldTestCase):
     def tearDown(self):
         SluggedTestModel.objects.all().delete()
         settings.INSTALLED_APPS = self.old_installed_apps
