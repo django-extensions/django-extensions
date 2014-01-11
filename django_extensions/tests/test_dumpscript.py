@@ -6,8 +6,6 @@ if sys.version_info[:2] >= (2, 6):
 else:
     import compiler  # NOQA
 
-from django.conf import settings
-from django.db.models import loading
 from django.core.management import call_command
 
 from django_extensions.tests.models import Name, Note, Person

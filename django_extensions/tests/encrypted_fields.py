@@ -2,10 +2,8 @@ from contextlib import contextmanager
 import functools
 
 from django.conf import settings
-from django.core.management import call_command
 from django.db import connection, models
 from django.db.models import loading
-from django.utils import unittest
 
 from django_extensions.tests.models import Secret
 from django_extensions.tests.fields import FieldTestCase

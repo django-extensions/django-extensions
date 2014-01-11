@@ -1,10 +1,10 @@
-from optparse import make_option
 import sys
 import socket
 
-import django
-from django.core.management.base import CommandError, BaseCommand
+from optparse import make_option
+
 from django.conf import settings
+from django.core.management.base import CommandError, BaseCommand
 
 
 class Command(BaseCommand):
