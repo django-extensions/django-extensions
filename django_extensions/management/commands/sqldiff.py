@@ -708,10 +708,6 @@ to check/debug ur models compared to the real database tables and columns."""
     args = '<appname appname ...>'
 
     def handle(self, *app_labels, **options):
-        from django import VERSION
-        if VERSION[:2] < (1, 0):
-            raise CommandError("SQLDiff only support Django 1.0 or higher!")
-
         from django.db import models
         from django.conf import settings
 
