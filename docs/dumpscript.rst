@@ -26,7 +26,7 @@ For example, an edited script can populate the database with test data::
       poll.pub_date = date(2001,01,01) + timedelta(days=i)
       poll.save()
 
-Real databases will probably be bigger and more complicated, and so it is useful
+Real databases will probably be bigger and more complicated so it is useful
 to enter some values using the admin interface and then edit the generated
 scripts.
 
@@ -71,3 +71,29 @@ To reset a given app, and reload with the saved data::
 
 Note: Runscript needs *scripts* to be a module, so create the directory and a
 *__init__.py* file.
+
+
+Caveats
+-------
+
+Naming conflicts
+~~~~~~~~~~~~~~~~
+
+Please take care that when naming the output files these filenames do not
+clash with other names in your import path. For instance, if the appname is
+the same as the script name, an importerror can occur because rather than importing 
+the application modules it tries to load the modules from the dumpscript file itself.
+
+Examples::
+
+  # Wrong
+  $ ./manage.py dumpscript appname > dumps/appname.py
+  
+  # Right
+  $ ./manage.py dumpscript appname > dumps/appname_all.py
+  
+  # Right
+  $ ./manage.py dumpscript appname.Somemodel > dumps/appname_somemodel.py
+
+
+

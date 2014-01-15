@@ -1,8 +1,12 @@
 *.pyc
+*.pyo
 *.egg-info
 MANIFEST
 build
 dist
 docs/_build
 docs/_static
+venv
 *.egg-info
+.tox
+*.bak

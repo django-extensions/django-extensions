@@ -5,17 +5,22 @@ import os
 import sys
 from distutils.command.install_data import install_data
 from distutils.command.install import INSTALL_SCHEMES
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup  # NOQA
+
 
 class osx_install_data(install_data):
-    # On MacOS, the platform-specific lib dir is /System/Library/Framework/Python/.../
-    # which is wrong. Python 2.5 supplied with MacOS 10.5 has an Apple-specific fix
-    # for this in distutils.command.install_data#306. It fixes install_lib but not
-    # install_data, which is why we roll our own install_data class.
+    # On MacOS, the platform-specific lib dir is at:
+    #   /System/Library/Framework/Python/.../
+    # which is wrong. Python 2.5 supplied with MacOS 10.5 has an Apple-specific
+    # fix for this in distutils.command.install_data#306. It fixes install_lib
+    # but not install_data, which is why we roll our own install_data class.
 
     def finalize_options(self):
-        # By the time finalize_options is called, install.install_lib is set to the
-        # fixed directory, so we set the installdir to install_lib. The
+        # By the time finalize_options is called, install.install_lib is set to
+        # the fixed directory, so we set the installdir to install_lib. The
         # install_data class uses ('install_data', 'install_dir') instead.
         self.set_undefined_options('install', ('install_lib', 'install_dir'))
         install_data.finalize_options(self)
@@ -24,6 +29,7 @@ if sys.platform == "darwin":
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
+
 
 def fullsplit(path, result=None):
     """
@@ -45,50 +51,65 @@ def fullsplit(path, result=None):
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
+
 # Compile the list of packages available, because distutils doesn't have
 # an easy way to do this.
-packages, data_files = [], []
+packages, package_data = [], {}
+
 root_dir = os.path.dirname(__file__)
 if root_dir != '':
     os.chdir(root_dir)
 extensions_dir = 'django_extensions'
 
 for dirpath, dirnames, filenames in os.walk(extensions_dir):
-    # Ignore dirnames that start with '.'
-    for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'):
-            del dirnames[i]
+    # Ignore PEP 3147 cache dirs and those whose names start with '.'
+    dirnames[:] = [d for d in dirnames if not d.startswith('.') and d != '__pycache__']
+    parts = fullsplit(dirpath)
+    package_name = '.'.join(parts)
     if '__init__.py' in filenames:
-        packages.append('.'.join(fullsplit(dirpath)))
+        packages.append(package_name)
     elif filenames:
-        data_files.append([dirpath, [os.path.join(dirpath, f) for f in filenames]])
+        relative_path = []
+        while '.'.join(parts) not in packages:
+            relative_path.append(parts.pop())
+        relative_path.reverse()
+        path = os.path.join(*relative_path)
+        package_files = package_data.setdefault('.'.join(parts), [])
+        package_files.extend([os.path.join(path, f) for f in filenames])
+
 
 version = __import__('django_extensions').__version__
 
 setup(
-    name = 'django-extensions',
-    version = version,
-    description = "Extensions for Django",
-    long_description = """django-extensions bundles several useful
+    name='django-extensions',
+    version=version,
+    description="Extensions for Django",
+    long_description="""django-extensions bundles several useful
 additions for Django projects. See the project page for more information:
-  http://code.google.com/p/django-command-extensions/""",
-    author = 'Michael Trier',
-    author_email = 'mtrier@gmail.com',
-    maintainer = 'Bas van Oostveen',
-    maintainer_email = 'v.oostveen@gmail.com',
-    url = 'http://code.google.com/p/django-command-extensions/',
-    license = 'New BSD License',
-    platforms = ['any'],
-    packages = packages,
-    cmdclass = cmdclasses,
-    data_files = data_files,
-    classifiers = ['Development Status :: 4 - Beta',
-                   'Environment :: Web Environment',
-                   'Framework :: Django',
-                   'Intended Audience :: Developers',
-                   'License :: OSI Approved :: BSD License',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Topic :: Utilities'],
+  http://github.com/django-extensions/django-extensions""",
+    author='Michael Trier',
+    author_email='mtrier@gmail.com',
+    maintainer='Bas van Oostveen',
+    maintainer_email='v.oostveen@gmail.com',
+    url='http://github.com/django-extensions/django-extensions',
+    license='MIT License',
+    platforms=['any'],
+    packages=packages,
+    cmdclass=cmdclasses,
+    package_data=package_data,
+    install_requires=['six'],
+    tests_require=['Django'],
+    test_suite='run_tests.main',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Topic :: Utilities',
+    ],
 )
-
