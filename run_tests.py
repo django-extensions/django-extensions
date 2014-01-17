@@ -3,6 +3,7 @@
 import sys
 import shutil
 import tempfile
+import django
 from django.conf import settings
 
 
@@ -54,7 +55,10 @@ def main():
 
         from django.test.utils import get_runner
         test_runner = get_runner(settings)(verbosity=2, interactive=True)
-        failures = test_runner.run_tests(['django_extensions', 'django_extensions.tests'])
+        apps = ['django_extensions']
+        if django.VERSION[:2] >= (1,6):
+            apps.append('django_extensions.tests')
+        failures = test_runner.run_tests(apps)
         sys.exit(failures)
 
     finally:
