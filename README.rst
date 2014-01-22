@@ -12,7 +12,7 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 Getting Started
 ===============
 
-The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__. In a couple minutes Eric walks you through a half a dozen command extensions.
+The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__. In a couple minutes Eric walks you through a half a dozen command extensions. There is also a `short screencast on GoDjango`__ to help show you even more. 
 
 
 Requirements
@@ -82,3 +82,4 @@ Or you can look at the docs/ directory in the repository.
 
 
 __ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
+__ https://godjango.com/39-be-more-productive-with-django_extensions/
