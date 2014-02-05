@@ -19,6 +19,7 @@ __contributors__ = [
     "Justin Findlay <jfindlay@gmail.com>",
     "Alexander Houben <alexander@houben.ch>",
     "Joern Hees <gitdev@joernhees.de>",
+    "Kevin Cherepski <cherepski@gmail.com>",
 ]
 
 import os
@@ -197,9 +198,12 @@ def generate_dot(app_labels, **kwargs):
                         related_query_name = related_query_name.replace('_', ' ').capitalize()
                     label += ' (%s)' % related_query_name
 
-                # handle self-relationships
-                if field.rel.to == 'self':
-                    target_model = field.model
+                # handle self-relationships and lazy-relationships
+                if isinstance(field.rel.to, basestring) :
+                    if field.rel.to == 'self':
+                        target_model = field.model
+                    else:
+                        raise Exception("Lazy relationship for model (%s) must be explicit for field (%s)" % (field.model.__name__, field.name))
                 else:
                     target_model = field.rel.to
 
