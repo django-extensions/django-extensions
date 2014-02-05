@@ -1,5 +1,3 @@
-import datetime
-
 from django.test import TestCase
 
 from django_extensions.db.models import ActivatorModel

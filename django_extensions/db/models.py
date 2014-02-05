@@ -67,7 +67,7 @@ class ActivatorModelManager(models.Manager):
         return ActivatorQuerySet(model=self.model, using=self._db)
 
     def active(self):
-        """ Returns active instances of ActivatorModel: SomeModel.objects.active(), 
+        """ Returns active instances of ActivatorModel: SomeModel.objects.active(),
         proxy to ActivatorQuerySet.active """
         return self.get_query_set().active()
 
