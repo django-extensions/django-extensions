@@ -41,17 +41,40 @@ class TitleSlugDescriptionModel(models.Model):
         abstract = True
 
 
+class ActivatorQuerySet(models.query.QuerySet):
+    """ ActivatorQuerySet
+    Query set that returns statused results
+    """
+    def active(self):
+        """ Returns active query set """
+        return self.filter(status=ActivatorModel.ACTIVE_STATUS)
+
+    def inactive(self):
+        """ Returns inactive query set """
+        return self.filter(status=ActivatorModel.INACTIVE_STATUS)
+
+
 class ActivatorModelManager(models.Manager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
+    def get_query_set(self):
+        """ Proxy to `get_queryset`, drop this when Django < 1.6 is no longer supported """
+        return self.get_queryset()
+
+    def get_queryset(self):
+        """ Use ActivatorQuerySet for all results """
+        return ActivatorQuerySet(model=self.model, using=self._db)
+
     def active(self):
-        """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
-        return self.get_query_set().filter(status=ActivatorModel.ACTIVE_STATUS)
+        """ Returns active instances of ActivatorModel: SomeModel.objects.active(),
+        proxy to ActivatorQuerySet.active """
+        return self.get_query_set().active()
 
     def inactive(self):
-        """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
-        return self.get_query_set().filter(status=ActivatorModel.INACTIVE_STATUS)
+        """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive(),
+        proxy to ActivatorQuerySet.inactive """
+        return self.get_query_set().inactive()
 
 
 class ActivatorModel(models.Model):
