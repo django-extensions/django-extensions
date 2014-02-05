@@ -199,7 +199,7 @@ def generate_dot(app_labels, **kwargs):
                     label += ' (%s)' % related_query_name
 
                 # handle self-relationships and lazy-relationships
-                if isinstance(field.rel.to, basestring) :
+                if isinstance(field.rel.to, basestring):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
