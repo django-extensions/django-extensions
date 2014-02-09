@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.core.management.base import BaseCommand
+from django.utils.translation import activate
 from optparse import make_option
 
 try:
@@ -55,6 +56,8 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option("--unsorted", "-u", action="store_true", dest="unsorted",
                     help="Show urls unsorted but same order as found in url patterns"),
+        make_option("--language", "-l", dest="language",
+                    help="Set the language code (useful for i18n_patterns)"),
     )
 
     help = "Displays all of the url matching routes for the project."
@@ -71,6 +74,10 @@ class Command(BaseCommand):
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
         else:
             settings_modules = [settings]
+
+        language = options.get('language', None)
+        if language is not None:
+            activate(language)
 
         views = []
         for settings_mod in settings_modules:
