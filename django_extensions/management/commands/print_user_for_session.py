@@ -62,5 +62,10 @@ class Command(BaseCommand):
             print("No user associated with that id.")
             return
 
-        for key in ['username', 'email', 'first_name', 'last_name']:
+        username_field = 'username'
+
+        if hasattr(User, 'USERNAME_FIELD') and User.USERNAME_FIELD is not None:
+            username_field = User.USERNAME_FIELD
+
+        for key in [username_field, 'email', 'first_name', 'last_name']:
             print("%s: %s" % (key, getattr(user, key)))
