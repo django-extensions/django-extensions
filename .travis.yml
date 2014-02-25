@@ -9,6 +9,7 @@ env:
   - DJANGO=Django==1.4 --use-mirrors
   - DJANGO=Django==1.5 --use-mirrors
   - DJANGO=Django==1.6 --use-mirrors
+  - DJANGO="git+git://github.com/django/django.git@master#egg=django"
 
 install:
   - pip install -q $DJANGO
@@ -26,3 +27,5 @@ matrix:
   exclude:
     - python: 3.3
       env: DJANGO=Django==1.4 --use-mirrors
+  allow_failures:
+      - env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
