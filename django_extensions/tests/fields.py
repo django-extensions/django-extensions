@@ -1,3 +1,4 @@
+import django
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
@@ -29,6 +30,17 @@ class FieldTestCase(unittest.TestCase):
 
     def tearDown(self):
         settings.INSTALLED_APPS = self.old_installed_apps
+
+    def safe_exec(self, string, value=None):
+        l = {}
+        try:
+            exec(string, globals(), l)
+        except Exception as e:
+            if value:
+                self.fail("Could not exec %r (from value %r): %s" % (string.strip(), value, e))
+            else:
+                self.fail("Could not exec %r: %s" % (string.strip(), e))
+        return l
 
 
 class AutoSlugFieldTest(FieldTestCase):
@@ -119,3 +131,34 @@ class AutoSlugFieldTest(FieldTestCase):
         o = SluggedTestModel(title='foo')
         o.save()
         self.assertEqual(o.slug, 'foo-3')
+
+    @unittest.skipIf(django.VERSION[0] <= 1 and django.VERSION[1] <= 6,
+                     "Migrations are handled by south in Django <1.7")
+    def test_17_migration(self):
+        """
+        Tests making migrations with Django 1.7+'s migration framework
+        """
+        from django.db import migrations
+        from django.db.migrations.writer import MigrationWriter
+        from django.utils import six
+
+        fields = {
+            'autoslugfield': AutoSlugField(),
+        }
+
+        migration = type(str("Migration"), (migrations.Migration,), {
+            "operations": [
+                migrations.CreateModel("MyModel", tuple(fields.items()),
+                                       {'populate_from': 'otherfield'},
+                                       (models.Model,)),
+            ],
+        })
+        writer = MigrationWriter(migration)
+        output = writer.as_string()
+        # It should NOT be unicode.
+        self.assertIsInstance(output, six.binary_type,
+                              "Migration as_string returned unicode")
+        # We don't test the output formatting - that's too fragile.
+        # Just make sure it runs for now, and that things look alright.
+        result = self.safe_exec(output)
+        self.assertIn("Migration", result)
