@@ -97,14 +97,16 @@ class Command(BaseCommand):
                     func_name = '%s()' % func.__class__.__name__
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
-                views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s" % {
+                views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s\t%(login_decorated)s" % {
                     'name': style.MODULE_NAME(func_name),
                     'module': style.MODULE(func.__module__),
                     'url_name': style.URL_NAME(url_name or ''),
-                    'url': style.URL(simplify_regex(regex))
+                    'url': style.URL(simplify_regex(regex)),
+                    'login_decorated': 'login_required' in func.func_globals,
                 })
 
         if not options.get('unsorted', False):
             views = sorted(views)
-
+        print 'Done'
+        print views
         return "\n".join([v for v in views]) + "\n"
