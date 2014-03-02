@@ -107,6 +107,4 @@ class Command(BaseCommand):
 
         if not options.get('unsorted', False):
             views = sorted(views)
-        print 'Done'
-        print views
         return "\n".join([v for v in views]) + "\n"
