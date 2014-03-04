@@ -57,6 +57,30 @@ It uses the same names as on the command line only with the leading two dashes r
 the other dashes replaced by underscores.
 
 
+Templates
+---------
+
+Django templates are used to generate the dot code. This in turn can be drawn into a image
+by libraries like *pygraphviz* or *pydot*. You can extend or override the templates if needed.
+
+Templates used:
+
+ - django_extensions/graph_models/digraph.dot
+ - django_extensions/graph_models/label.dot
+ - django_extensions/graph_models/relation.dot
+
+Documentation on how to create dot files can be found here: http://www.graphviz.org/Documentation.php
+
+.. warning::
+  Modifying Django's default templates behaviour might break *graph_models*
+
+  Please be aware that if you use any *template_loaders* or extensions that change the
+  way templates are rendered that this can cause *graph_models* to fail.
+
+  An example of this is
+  the Django app *django-template-minifier* this automatically removed the newlines before/after
+  template tags even for none-html templates which leads to a mallformed file.
+
 Example Usage
 -------------
 
