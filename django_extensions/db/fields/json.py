@@ -17,12 +17,12 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 
 try:
-    # Django <= 1.6 backwards compatibility
-    from django.utils import simplejson as json
-except ImportError:
     # Django >= 1.7
     import json
-
+except ImportError:
+    # Django <= 1.6 backwards compatibility
+    from django.utils import simplejson as json
+    
 
 def dumps(value):
     return DjangoJSONEncoder().encode(value)
