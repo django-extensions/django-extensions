@@ -9,7 +9,7 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
-
+from __future__ import absolute_import
 import six
 from decimal import Decimal
 from django.db import models
