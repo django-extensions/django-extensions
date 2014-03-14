@@ -12,4 +12,4 @@ class TemplateTagsTests(TestCase):
 
     def test_widont_html(self):
         widont_html('Test Value')
-        widont_html(six.u'Test Value'))
+        widont_html(six.u('Test Value'))
