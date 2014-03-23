@@ -1,5 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth.models import User, Group
+try:
+    from django.contrib.auth import get_user_model  # Django 1.5
+except ImportError:
+    from django_extensions.future_1_5 import get_user_model
+from django.contrib.auth.models import Group
 from optparse import make_option
 from sys import stdout
 from csv import writer
@@ -52,9 +56,10 @@ class Command(BaseCommand):
         else:
             outfile = stdout
 
+        User = get_user_model()
         qs = User.objects.all().order_by('last_name', 'first_name', 'username', 'email')
         if group:
-            qs = qs.filter(group__name=group).distinct()
+            qs = qs.filter(groups__name=group).distinct()
         qs = qs.values('last_name', 'first_name', 'username', 'email')
         getattr(self, options['format'])(qs, outfile)
 
@@ -62,7 +67,7 @@ class Command(BaseCommand):
         """simple single entry per line in the format of:
             "full name" <my@address.com>;
         """
-        out.write(six.u("\n").join(six.u('"%s" <%s>;' % (full_name(**ent), ent['email']))
+        out.write(six.u("\n").join('"%s" <%s>;' % (full_name(**ent), ent['email'])
                                    for ent in qs).encode(self.encoding))
         out.write("\n")
 
@@ -70,7 +75,7 @@ class Command(BaseCommand):
         """simpler single entry with email only in the format of:
             my@address.com,
         """
-        out.write(six.u(",\n").join(six.u('%s' % (ent['email'])) for ent in qs).encode(self.encoding))
+        out.write(six.u(",\n").join(ent['email'] for ent in qs).encode(self.encoding))
         out.write("\n")
 
     def google(self, qs, out):

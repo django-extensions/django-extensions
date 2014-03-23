@@ -23,7 +23,7 @@ Rough proposal for splitting into functional parts:
 * django_extensions.templates
 * django_extensions.jobs
 
-The db part should be okey where it is right now. Cause it's only used when
+The db part should be okay where it is right now. It's only used when
 somebody explicitly imports::
 
   from django_extensions.db.models import something

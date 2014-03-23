@@ -1,34 +1,36 @@
-#!/usr/bin/env python
 """
-Django model to DOT (Graphviz) converter
-by Antonio Cavedoni <antonio@cavedoni.org>
+modelviz.py - DOT file generator for Django Models
 
-Adapted to be used with django-extensions
+Based on:
+  Django model to DOT (Graphviz) converter
+  by Antonio Cavedoni <antonio@cavedoni.org>
+  Adapted to be used with django-extensions
 """
 
-__version__ = "0.9"
+__version__ = "1.0"
 __license__ = "Python"
-__author__ = "Antonio Cavedoni <http://cavedoni.com/>"
+__author__ = "Bas van Oostveen <v.oostveen@gmail.com>",
 __contributors__ = [
+    "Antonio Cavedoni <http://cavedoni.com/>"
     "Stefano J. Attardi <http://attardi.org/>",
     "limodou <http://www.donews.net/limodou/>",
     "Carlo C8E Miron",
     "Andre Campos <cahenan@gmail.com>",
     "Justin Findlay <jfindlay@gmail.com>",
     "Alexander Houben <alexander@houben.ch>",
-    "Bas van Oostveen <v.oostveen@gmail.com>",
     "Joern Hees <gitdev@joernhees.de>",
+    "Kevin Cherepski <cherepski@gmail.com>",
 ]
 
 import os
-
+import six
+import datetime
 from django.utils.translation import activate as activate_language
 from django.utils.safestring import mark_safe
-from django.template import Context, loader
+from django.template import Context, loader, Template
 from django.db import models
 from django.db.models import get_models
-from django.db.models.fields.related import \
-    ForeignKey, OneToOneField, ManyToManyField, RelatedField
+from django.db.models.fields.related import ForeignKey, OneToOneField, ManyToManyField, RelatedField
 
 try:
     from django.db.models.fields.generic import GenericRelation
@@ -46,12 +48,15 @@ def parse_file_or_list(arg):
 
 
 def generate_dot(app_labels, **kwargs):
+    cli_options = kwargs.get('cli_options', None)
     disable_fields = kwargs.get('disable_fields', False)
     include_models = parse_file_or_list(kwargs.get('include_models', ""))
     all_applications = kwargs.get('all_applications', False)
     use_subgraph = kwargs.get('group_models', False)
     verbose_names = kwargs.get('verbose_names', False)
-    inheritance = kwargs.get('inheritance', False)
+    inheritance = kwargs.get('inheritance', True)
+    relations_as_fields = kwargs.get("relations_as_fields", True)
+    sort_fields = kwargs.get("sort_fields", True)
     language = kwargs.get('language', None)
     if language is not None:
         activate_language(language)
@@ -66,10 +71,6 @@ def generate_dot(app_labels, **kwargs):
             if field.name in exclude_columns:
                 return True
         return False
-
-    t = loader.get_template('django_extensions/graph_models/head.html')
-    c = Context({})
-    dot = t.render(c)
 
     apps = []
     if all_applications:
@@ -86,8 +87,6 @@ def generate_dot(app_labels, **kwargs):
             'name': '"%s"' % app.__name__,
             'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
             'cluster_app_name': "cluster_%s" % app.__name__.replace(".", "_"),
-            'disable_fields': disable_fields,
-            'use_subgraph': use_subgraph,
             'models': []
         })
 
@@ -129,14 +128,16 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
-                model['label'] = appmodel._meta.verbose_name
+                model['label'] = appmodel._meta.verbose_name.decode("utf8")
             else:
                 model['label'] = model['name']
 
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name
+                    label = field.verbose_name.decode("utf8")
+                    if label.islower():
+                        label = label.capitalize()
                 else:
                     label = field.name
 
@@ -151,20 +152,29 @@ def generate_dot(app_labels, **kwargs):
                     'type': t,
                     'blank': field.blank,
                     'abstract': field in abstract_fields,
+                    'relation': isinstance(field, RelatedField),
+                    'primary_key': field.primary_key,
                 })
 
-            # Find all the real attributes. Relations are depicted as graph edges instead of attributes
-            attributes = [field for field in appmodel._meta.local_fields if not isinstance(field, RelatedField)]
+            attributes = [field for field in appmodel._meta.local_fields]
+            if not relations_as_fields:
+                # Find all the 'real' attributes. Relations are depicted as graph edges instead of attributes
+                attributes = [field for field in attributes if not isinstance(field, RelatedField)]
 
             # find primary key and print it first, ignoring implicit id if other pk exists
             pk = appmodel._meta.pk
-            if not appmodel._meta.abstract and pk in attributes:
+            if pk and not appmodel._meta.abstract and pk in attributes:
                 add_attributes(pk)
+
             for field in attributes:
                 if skip_field(field):
                     continue
-                if not field.primary_key:
-                    add_attributes(field)
+                if pk and field == pk:
+                    continue
+                add_attributes(field)
+
+            if sort_fields:
+                model['fields'] = sorted(model['fields'], key=lambda field: (not field['primary_key'], not field['relation'], field['label']))
 
             # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
             #if appmodel._meta.many_to_many:
@@ -176,17 +186,25 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name
+                    label = field.verbose_name.decode("utf8")
+                    if label.islower():
+                        label = label.capitalize()
                 else:
                     label = field.name
 
                 # show related field name
                 if hasattr(field, 'related_query_name'):
-                    label += ' (%s)' % field.related_query_name()
+                    related_query_name = field.related_query_name()
+                    if verbose_names and related_query_name.islower():
+                        related_query_name = related_query_name.replace('_', ' ').capitalize()
+                    label += ' (%s)' % related_query_name
 
-                # handle self-relationships
-                if field.rel.to == 'self':
-                    target_model = field.model
+                # handle self-relationships and lazy-relationships
+                if isinstance(field.rel.to, six.string_types):
+                    if field.rel.to == 'self':
+                        target_model = field.model
+                    else:
+                        raise Exception("Lazy relationship for model (%s) must be explicit for field (%s)" % (field.model.__name__, field.name))
                 else:
                     target_model = field.rel.to
 
@@ -241,34 +259,41 @@ def generate_dot(app_labels, **kwargs):
                             'name': "inheritance",
                             'label': l,
                             'arrows': '[arrowhead=empty, arrowtail=none, dir=both]',
-                            'needs_node': True
+                            'needs_node': True,
                         }
                         # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
                         if _rel not in model['relations'] and consider(_rel['target']):
                             model['relations'].append(_rel)
 
             graph['models'].append(model)
-        graphs.append(graph)
+        if graph['models']:
+            graphs.append(graph)
 
     nodes = []
     for graph in graphs:
         nodes.extend([e['name'] for e in graph['models']])
 
     for graph in graphs:
-        # don't draw duplication nodes because of relations
         for model in graph['models']:
             for relation in model['relations']:
                 if relation['target'] in nodes:
                     relation['needs_node'] = False
-        # render templates
-        t = loader.get_template('django_extensions/graph_models/body.html')
-        dot += '\n' + t.render(graph)
 
-    for graph in graphs:
-        t = loader.get_template('django_extensions/graph_models/rel.html')
-        dot += '\n' + t.render(graph)
+    now = datetime.datetime.now()
+    t = loader.get_template('django_extensions/graph_models/digraph.dot')
 
-    t = loader.get_template('django_extensions/graph_models/tail.html')
-    c = Context({})
-    dot += '\n' + t.render(c)
+    if not isinstance(t, Template):
+        raise Exception("Default Django template loader isn't used. "
+                        "This can lead to the incorrect template rendering. "
+                        "Please, check the settings.")
+
+    c = Context({
+        'created_at': now.strftime("%Y-%m-%d %H:%M"),
+        'cli_options': cli_options,
+        'disable_fields': disable_fields,
+        'use_subgraph': use_subgraph,
+        'graphs': graphs,
+    })
+    dot = t.render(c)
+
     return dot

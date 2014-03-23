@@ -3,20 +3,29 @@
 import sys
 import shutil
 import tempfile
+import django
 from django.conf import settings
 
 
 def main():
     # Dynamically configure the Django settings with the minimum necessary to
-    # get Django running tests
-    ENCRYPTED_FIELD_KEYS_DIR = None
+    # get Django running tests.
+    KEY_LOCS = {}
     try:
         try:
+            # If KeyCzar is available, set up the environment.
             from keyczar import keyczart, keyinfo
-            ENCRYPTED_FIELD_KEYS_DIR = tempfile.mkdtemp("django_extensions_tests_keyzcar_keys_dir")
-            # TODO: move this to the unit test for encrypted fields
-            keyczart.Create(ENCRYPTED_FIELD_KEYS_DIR, "test", keyinfo.DECRYPT_AND_ENCRYPT)
-            keyczart.AddKey(ENCRYPTED_FIELD_KEYS_DIR, "PRIMARY")
+
+            # Create an RSA private key.
+            keys_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_rsa_dir")
+            keyczart.Create(keys_dir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
+            keyczart.AddKey(keys_dir, "PRIMARY", size=4096)
+            KEY_LOCS['DECRYPT_AND_ENCRYPT'] = keys_dir
+
+            # Create an RSA public key.
+            pub_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_pub_dir")
+            keyczart.PubKey(keys_dir, pub_dir)
+            KEY_LOCS['ENCRYPT'] = pub_dir
         except ImportError:
             pass
 
@@ -41,18 +50,21 @@ def main():
             ROOT_URLCONF='django_extensions.tests.urls',
             DEBUG=True,
             TEMPLATE_DEBUG=True,
-            ENCRYPTED_FIELD_KEYS_DIR=ENCRYPTED_FIELD_KEYS_DIR,
+            ENCRYPTED_FIELD_KEYS_DIR=KEY_LOCS,
         )
 
         from django.test.utils import get_runner
         test_runner = get_runner(settings)(verbosity=2, interactive=True)
-        failures = test_runner.run_tests(['django_extensions'])
+        apps = ['django_extensions']
+        if django.VERSION[:2] >= (1, 6):
+            apps.append('django_extensions.tests')
+        failures = test_runner.run_tests(apps)
         sys.exit(failures)
 
     finally:
-        if ENCRYPTED_FIELD_KEYS_DIR:
-            # cleanup crypto key temp dir
-            shutil.rmtree(ENCRYPTED_FIELD_KEYS_DIR)
+        for name, path in KEY_LOCS.items():
+            # cleanup crypto key temp dirs
+            shutil.rmtree(path)
 
 
 if __name__ == '__main__':

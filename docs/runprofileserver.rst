@@ -1,11 +1,13 @@
 RunProfileServer
 ================
 
-*First of all; we recommend that before you start profiling any language or
+*We recommend that before you start profiling any language or
 framework you learn enough about it so that you feel comfortable with digging
-into it's internals.  Without sufficient knowledge it will not only be (very)
-hard but your likely to make wrong assumptions (and fixes). As a rule of thumb,
-clean well written code will help you a lot more then overzealous
+into its internals.*
+
+*Without sufficient knowledge it will not only be (very)
+hard but you're likely to make wrong assumptions (and fixes). As a rule of thumb,
+clean, well written code will help you a lot more than overzealous
 micro-optimizations will.*
 
 *This document is work in progress. If you feel you can help with
@@ -21,10 +23,10 @@ tools enabled. It will save .prof files containing the profiling information
 into the --prof-path directory. Note that for each request made one profile
 data file is saved.
 
-Per default the profile-data-files are saved in /tmp use the --prof-path option
+By default the profile-data-files are saved in /tmp use the --prof-path option
 to specify your own target directory. Saving the data in a meaningful directory
-structure helps to keep your profile data organized and /tmp uncluttered. (Yes
-this is probably a bug on windows and other systems where /tmp does not exist)
+structure helps to keep your profile data organized and keeps /tmp uncluttered. 
+(Yes this probably malfunctions systems such as Windows where /tmp does not exist)
 
 To define profile filenames use --prof-file option. Default format
 is "{path}.{duration:06d}ms.{time}" (Python

@@ -1,40 +1,31 @@
 import sys
+import six
 
-# conditional imports for python 3
-try:
-    import compiler  # NOQA
-    from StringIO import StringIO  # NOQA
-except ImportError:
+if sys.version_info[:2] >= (2, 6):
     import ast as compiler  # NOQA
-    from io import StringIO  # NOQA
-from django.test import TestCase
+else:
+    import compiler  # NOQA
 
 from django.core.management import call_command
+
 from django_extensions.tests.models import Name, Note, Person
-
-from django.conf import settings
-from django.db.models import loading
+from django_extensions.tests.fields import FieldTestCase
 
 
-class DumpScriptTests(TestCase):
+class DumpScriptTests(FieldTestCase):
     def setUp(self):
+        super(DumpScriptTests, self).setUp()
+
         self.real_stdout = sys.stdout
         self.real_stderr = sys.stderr
-        sys.stdout = StringIO()
-        sys.stderr = StringIO()
-
-        self.original_installed_apps = settings.INSTALLED_APPS
-        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
-        settings.INSTALLED_APPS.append('django_extensions.tests')
-        loading.cache.loaded = False
-        call_command('syncdb', verbosity=0)
+        sys.stdout = six.StringIO()
+        sys.stderr = six.StringIO()
 
     def tearDown(self):
+        super(DumpScriptTests, self).tearDown()
+
         sys.stdout = self.real_stdout
         sys.stderr = self.real_stderr
-        settings.INSTALLED_APPS.remove('django_extensions.tests')
-        settings.INSTALLED_APPS = self.original_installed_apps
-        loading.cache.loaded = False
 
     def test_runs(self):
         # lame test...does it run?
@@ -46,10 +37,10 @@ class DumpScriptTests(TestCase):
     #----------------------------------------------------------------------
     def test_replaced_stdout(self):
         # check if stdout can be replaced
-        sys.stdout = StringIO()
+        sys.stdout = six.StringIO()
         n = Name(name='Mike')
         n.save()
-        tmp_out = StringIO()
+        tmp_out = six.StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
         self.assertTrue('Mike' in tmp_out.getvalue())  # script should go to tmp_out
         self.assertEqual(0, len(sys.stdout.getvalue()))  # there should not be any output to sys.stdout
@@ -60,8 +51,8 @@ class DumpScriptTests(TestCase):
         # check if stderr can be replaced, without changing stdout
         n = Name(name='Fred')
         n.save()
-        tmp_err = StringIO()
-        sys.stderr = StringIO()
+        tmp_err = six.StringIO()
+        sys.stderr = six.StringIO()
         call_command('dumpscript', 'tests', stderr=tmp_err)
         self.assertTrue('Fred' in sys.stdout.getvalue())  # script should still go to stdout
         self.assertTrue('Name' in tmp_err.getvalue())  # error output should go to tmp_err
@@ -84,7 +75,7 @@ class DumpScriptTests(TestCase):
         note2 = Note(note="This is the second note.")
         note2.save()
         p2.notes.add(note1, note2)
-        tmp_out = StringIO()
+        tmp_out = six.StringIO()
         call_command('dumpscript', 'tests', stdout=tmp_out)
         ast_syntax_tree = compiler.parse(tmp_out.getvalue())
         if hasattr(ast_syntax_tree, 'body'):

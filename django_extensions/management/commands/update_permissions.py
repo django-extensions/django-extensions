@@ -17,5 +17,5 @@ class Command(BaseCommand):
             for arg in args:
                 apps.append(get_app(arg))
         for app in apps:
-            create_permissions(app, get_models(), options.get('verbosity', 0))
+            create_permissions(app, get_models(), int(options.get('verbosity', 0)))
 

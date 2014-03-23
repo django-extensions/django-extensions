@@ -14,6 +14,9 @@ Current Command Extensions
   specified application.  This makes it easy to get started with adding a
   command extension to your application.
 
+* *create_template_tags* - Creates a template tag directory structure within the
+  specified application.
+
 * *create_jobs* - Creates a Django jobs command directory structure for the
   given app name in the current directory.  This is part of the impressive jobs
   system.
@@ -21,7 +24,7 @@ Current Command Extensions
 * *create_superuser* - Makes it easy to create a superuser for the
   django.contrib.auth.
 
-* *describe_form* - Used to display a form definition for a model.  Copy and
+* *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 
 * :doc:`dumpscript <dumpscript>` - Generates a Python script that will
@@ -71,14 +74,14 @@ Current Command Extensions
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
 
-* :doc:`sqldiff` - Prints the (approximated) difference between an apps models and
+* :doc:`sqldiff` - Prints the (approximated) difference between an app's models and
   what is in the database.  This is very nice, but also very experimental at
   the moment.  It can not catch everything but it's a great sanity check.
 
 * :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
   in settings.py.
 
-* `sync_media_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
+* `sync_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser
   caching.
@@ -90,6 +93,6 @@ Current Command Extensions
 .. _`print_settings`: print_settings.html
 .. _`runscript`: runscript.html
 .. _`runserver_plus`: runserver_plus.html
-.. _`sync_media_s3`: sync_media_s3.html
+.. _`sync_s3`: sync_s3.html
 .. _GraphViz: http://www.graphviz.org/
 .. _Werkzeug: http://werkzeug.pocoo.org/

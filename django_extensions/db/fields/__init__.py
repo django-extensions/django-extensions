@@ -170,6 +170,16 @@ class AutoSlugField(SlugField):
         # That's our definition!
         return (field_class, args, kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
+        kwargs.update({
+            'populate_from': repr(self._populate_from),
+            'separator': repr(self.separator),
+            'overwrite': repr(self.overwrite),
+            'allow_duplicates': repr(self.allow_duplicates),
+        })
+        return name, path, args, kwargs
+
 
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
@@ -291,6 +301,11 @@ class UUIDField(CharField):
         args, kwargs = introspector(self)
         # That's our definition!
         return (field_class, args, kwargs)
+
+
+class PostgreSQLUUIDField(UUIDField):
+    def db_type(self, connection=None):
+        return "UUID"
 
 
 class ShortUUIDField(UUIDField):

@@ -38,10 +38,10 @@ You can also set the configuration option SHELL_PLUS to explicitly specify which
 Configuration
 -------------
 
-Sometimes, models from your own apps and other peoples apps have colliding names,
-or you may want to completly skip loading an apps models. Here are some examples of how to do that.
+Sometimes, models from your own apps and other people's apps have colliding names,
+or you may want to completely skip loading an app's models. Here are some examples of how to do that.
 
-Note: This settings are just used inside shell_plus and will not affect your envirnoment.
+Note: These settings are only used inside shell_plus and will not affect your environment.
 
 ::
 
@@ -58,12 +58,12 @@ Note: This settings are just used inside shell_plus and will not affect your env
 
 You can also combine model_aliases and dont_load.
 
-It is also possible to ignore autoloaded modules when using manage.py, like
+It is possible to ignore autoloaded modules when using manage.py, like
 
   $ ./manage.py shell_plus --dont-load app1 --dont-load app2.module1
 
-And, commandline parameters and settings in the configuration file is merged, so you can
-safely append modules to ignore from the commandline for one time usage.
+Commandline parameters and settings in the configuration file are merged, so you can
+safely append modules to ignore from the commandline for one-time usage.
 
 It is possible to use `IPython Notebook`_, an interactive Python shell which
 uses a web browser as its user interface, as an alternative shell::
@@ -86,11 +86,41 @@ the ``IPYTHON_ARGUMENTS`` setting.  For example::
         '--debug',
     ]
 
-To activate auto-loading, remember to either include django-extensions' default
-notebook extension or copy the auto-loading code from it into your own
-extension.
+To activate auto-loading, remember to either include the django-extensions' default
+notebook extension or copy its auto-loading code into your own extension.
 
 Note that the IPython Notebook feature doesn't currently honor the
 ``--dont-load`` option.
 
 .. _`IPython Notebook`: http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
+
+
+
+Additional Imports
+------------------
+
+In addition to importing the models you can specify other items to import by default.
+These are specified in SHELL_PLUS_PRE_IMPORTS and SHELL_PLUS_POST_IMPORTS. The former is imported
+before any other imports (such as the default models import) and the latter is imported after any
+other imports. Both have similar syntax. So in your settings.py file:
+
+::
+
+    SHELL_PLUS_PRE_IMPORTS = (
+        ('module.submodule1', ('class1', 'function2')),
+        ('module.submodule2', 'function3'),
+        ('module.submodule3', '*'),
+        'module.submodule4'
+    )
+
+The above example would directly translate to the following python code which would be executed before
+the automatic imports:
+
+::
+
+    from module.submodule1 import class1, function2
+    from module.submodule2 import function3
+    from module.submodule3 import *
+    import module.submodule4
+
+These symbols will be available as soon as the shell starts.
