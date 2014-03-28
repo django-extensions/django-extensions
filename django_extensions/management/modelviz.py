@@ -122,6 +122,8 @@ def generate_dot(app_labels, **kwargs):
             def consider(model_name):
                 if exclude_models and model_name in exclude_models:
                     return False
+                elif include_models and model_name not in include_models:
+                    return False
                 return not include_models or model_name in include_models
 
             if not consider(appmodel._meta.object_name):
