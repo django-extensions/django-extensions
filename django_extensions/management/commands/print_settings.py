@@ -5,30 +5,34 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from optparse import make_option
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     """print_settings command"""
 
     help = "Print the active Django settings."
 
-    option_list = NoArgsCommand.option_list + (
+    option_list = BaseCommand.option_list + (
         make_option('--format', default='simple', dest='format',
                     help='Specifies output format.'),
         make_option('--indent', default=4, dest='indent', type='int',
                     help='Specifies indent level for JSON and YAML'),
     )
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         a_dict = {}
 
         for attr in dir(settings):
-            if self.include_attr(attr):
+            if self.include_attr(attr, args):
                 value = getattr(settings, attr)
                 a_dict[attr] = value
+
+        for setting in args:
+            if setting not in a_dict:
+                raise CommandError('%s not found in settings.' % setting)
 
         output_format = options.get('format', 'json')
         indent = options.get('indent', 4)
@@ -46,13 +50,17 @@ class Command(NoArgsCommand):
             self.print_simple(a_dict)
 
     @staticmethod
-    def include_attr(attr):
+    def include_attr(attr, args):
         """Whether or not to include attribute in output"""
 
-        if attr.startswith('__'):
-            return False
+        if not attr.startswith('__'):
+            if args is not ():
+                if attr in args:
+                    return True
+            else:
+                return True
         else:
-            return True
+            return False
 
     @staticmethod
     def print_simple(a_dict):
