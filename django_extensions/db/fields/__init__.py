@@ -9,6 +9,12 @@ try:
 except ImportError:
     HAS_UUID = False
 
+try:
+    import shortuuid
+    HAS_SHORT_UUID = True
+except ImportError:
+    HAS_SHORT_UUID = False
+
 from django.core.exceptions import ImproperlyConfigured
 from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
@@ -300,3 +306,32 @@ class UUIDField(CharField):
 class PostgreSQLUUIDField(UUIDField):
     def db_type(self, connection=None):
         return "UUID"
+
+
+class ShortUUIDField(UUIDField):
+    """ ShortUUIDFied
+
+    Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
+
+    Based on `shortuuid`: https://github.com/stochastic-technologies/shortuuid
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ShortUUIDField, self).__init__(*args, **kwargs)
+        if not HAS_SHORT_UUID:
+            raise ImproperlyConfigured("'shortuuid' module is required for ShortUUIDField. (Do you have Python 2.5 or higher installed ?)")
+        kwargs['max_length'] = 22
+
+    def create_uuid(self):
+        if not self.version or self.version == 4:
+            return shortuuid.uuid()
+        elif self.version == 1:
+            return shortuuid.uuid()
+        elif self.version == 2:
+            raise UUIDVersionError("UUID version 2 is not supported.")
+        elif self.version == 3:
+            raise UUIDVersionError("UUID version 3 is not supported.")
+        elif self.version == 5:
+            return shortuuid.uuid(name=self.namespace)
+        else:
+            raise UUIDVersionError("UUID version %s is not valid." % self.version)
