@@ -38,11 +38,11 @@ For more detailed instructions check out our :doc:`installation_instructions`. E
 Compatibility with versions of Python and Django
 =================================================
 
-We try to follow the Django guidelines for supported Python and Django versions.
+We follow the Django guidelines for supported Python and Django versions. See more at `Django Supported Versions <https://docs.djangoproject.com/en/dev/internals/release-process/#supported-versions>`_
 
 This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
 
-At the time of writing we require at least Python 2.5.
+At the time of writing we support: Python 2.6, 2.7 and 3.3. Django supported versions are 1.4, 1.5 and 1.6.
 
 Contents
 ========
