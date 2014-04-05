@@ -13,7 +13,6 @@ env:
 
 install:
   - pip install -q $DJANGO
-<<<<<<< HEAD
   - pip install flake8
   - pip install python-dateutil
   - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install --pre -q python-keyczar; fi
