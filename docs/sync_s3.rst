@@ -64,7 +64,7 @@ It is possible to customize sync_s3 directly from django settings file, for exam
   # settings.py
   AWS_S3_HOST = 'cs.example.com'
   AWS_DEFAULT_ACL = 'private'
-  SYNC_MEDIA_S3_PREFIX = 'some_prefix'
+  SYNC_S3_PREFIX = 'some_prefix'
   FILTER_LIST = 'dir1, dir2'
   AWS_CLOUDFRONT_DISTRIBUTION = 'E27LVI50CSW06W'
   SYNC_S3_RENAME_GZIP_EXT = '.gz'

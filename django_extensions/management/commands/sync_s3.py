@@ -105,7 +105,7 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('-p', '--prefix',
                     dest='prefix',
-                    default=getattr(settings, 'SYNC_MEDIA_S3_PREFIX', ''),
+                    default=getattr(settings, 'SYNC_S3_PREFIX', ''),
                     help="The prefix to prepend to the path on S3."),
         make_option('-d', '--dir',
                     dest='dir',
