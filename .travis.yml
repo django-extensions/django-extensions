@@ -20,7 +20,7 @@ install:
   - pip install -e . --use-mirrors
 
 script:
-  - flake8 --ignore=E501,W391 .
+  - flake8 --ignore=E265,E501,W391 .
   - python setup.py test
 
 matrix:
