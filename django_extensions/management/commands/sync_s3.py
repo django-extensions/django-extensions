@@ -342,6 +342,9 @@ class Command(BaseCommand):
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
                 headers['Content-Type'] = content_type
+            else:
+                headers['Content-Type'] = 'application/octet-stream'
+
             file_obj = open(filename, 'rb')
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
