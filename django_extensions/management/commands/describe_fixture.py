@@ -42,3 +42,4 @@ def yield_field_names(model):
         if not isinstance(field, db.models.fields.related.RelatedField):
             yield field.name
 
+

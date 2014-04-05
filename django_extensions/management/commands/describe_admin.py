@@ -1,5 +1,3 @@
-import itertools
-
 from django.core.management.base import AppCommand
 import django.db.models as django_models
 from django.db.models import get_models
@@ -112,9 +110,9 @@ def yield_list_filter(model):
     # BooleanField, DateField, ChoiceField,
     # and relationships fields that have a limited number of options
     candidate_fields = set(field for field in model._meta.fields if
-                        isinstance(field, (django_models.BooleanField,
-                                           django_models.DateField,
-                                           )))
+                           isinstance(field, (django_models.BooleanField,
+                                              django_models.DateField,
+                                              )))
     choice_fields = set(yield_choice_fields(model))
     for field in sorted(candidate_fields.union(choice_fields)):
             yield field.name
@@ -128,14 +126,3 @@ def yield_choice_fields(model, choice_max_size=25):
         # elif field.choices:
         if field.choices:
             yield field
-
-
-
-
-
-
-
-
-
-
-

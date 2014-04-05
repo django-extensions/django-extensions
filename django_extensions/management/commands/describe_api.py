@@ -55,16 +55,18 @@ def yield_field_strings(model):
             options_str = ', ' + ', '.join(yield_field_options(field))
             if not options_str.strip(', '):
                 options_str = ''
-            yield FIELD_TEMPLATE.format(attribute_name=attribute_name, app_name=app_name,
-                foreign_model=foreign_model+RESOURCE_POSTFIX, options_str=options_str)
+            yield FIELD_TEMPLATE.format(attribute_name=attribute_name,
+                                        app_name=app_name,
+                                        foreign_model=foreign_model+RESOURCE_POSTFIX,
+                                        options_str=options_str)
 
 
 def yield_field_options(field):
     options = {'null': field.null,
-            'blank': field.blank,
-            'related_name': field.related_query_name().join("''"),
-            'help_text': bool(field.help_text) and repr(field.help_text) or '',
-            }
+               'blank': field.blank,
+               'related_name': field.related_query_name().join("''"),
+               'help_text': bool(field.help_text) and repr(field.help_text) or '',
+               }
     for key, val in options.items():
         if val:
             yield '='.join([key, str(val)])
