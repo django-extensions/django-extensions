@@ -1,7 +1,7 @@
 print_settings
 ==============
 
-:synopsis: Django managment command similar to ``diffsettings`` but shows *all* active Django settings.
+:synopsis: Django managment command similar to ``diffsettings`` but shows *selected* active Django settings or *all* if no args passed.
 
 
 Introduction
@@ -9,7 +9,7 @@ Introduction
 
 Django comes with a ``diffsettings`` command that shows how your project's
 settings differ from the Django defaults.  Sometimes it is useful to just see
-*all* the settings that are in effect for your project. This is particularly
+the settings that are in effect for your project. This is particularly
 true if you have a more complex system for settings than just a single
 :file:`settings.py` file. For example, you might have settings files that
 import other settings file, such as dev, test, and production settings files
@@ -28,6 +28,11 @@ Some variations::
 
     $ python manage.py print_settings --format=json
     $ python manage.py print_settings --format=yaml    # Requires PyYAML
+
+Show just selected settings::
+
+    $ python manage.py print_settings DEBUG INSTALLED_APPS
+    $ python manage.py print_settings DEBUG INSTALLED_APPS --format=pprint
 
 For more info, take a look at the built-in help::
 

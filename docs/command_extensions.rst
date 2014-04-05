@@ -48,7 +48,8 @@ Current Command Extensions
 
 * *passwd* - Makes it easy to reset a user's password.
 
-* `print_settings`_ - Similar to ``diffsettings`` but shows *all* active Django settings.
+* `print_settings`_ - Similar to ``diffsettings`` but shows *selected*
+  active Django settings or *all* if no args passed.
 
 * *print_user_for_session* - Print the user information for the provided
   session key. this is very helpful when trying to track down the person who
