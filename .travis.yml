@@ -6,18 +6,18 @@ python:
   - 3.3
 
 env:
-  - DJANGO=Django==1.4 --use-mirrors
-  - DJANGO=Django==1.5 --use-mirrors
-  - DJANGO=Django==1.6 --use-mirrors
+  - DJANGO=Django==1.4
+  - DJANGO=Django==1.5
+  - DJANGO=Django==1.6
   - DJANGO="git+git://github.com/django/django.git@master#egg=django"
 
 install:
   - pip install -q $DJANGO
-  - pip install flake8 --use-mirrors
-  - pip install python-dateutil --use-mirrors
-  - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install --pre -q python-keyczar --use-mirrors; fi
-  - pip install -q PyYAML --use-mirrors
-  - pip install -e . --use-mirrors
+  - pip install flake8
+  - pip install python-dateutil
+  - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install --pre -q python-keyczar; fi
+  - pip install -q PyYAML
+  - pip install -e .
 
 script:
   - flake8 --ignore=E265,E501,W391 .
@@ -26,6 +26,6 @@ script:
 matrix:
   exclude:
     - python: 3.3
-      env: DJANGO=Django==1.4 --use-mirrors
+      env: DJANGO=Django==1.4
   allow_failures:
       - env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
