@@ -42,7 +42,7 @@ except ImportError:
 def parse_file_or_list(arg):
     if not arg:
         return []
-    if not ',' in arg and os.path.isfile(arg):
+    if ',' not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
     return arg.split(',')
 
@@ -78,7 +78,7 @@ def generate_dot(app_labels, **kwargs):
 
     for app_label in app_labels:
         app = models.get_app(app_label)
-        if not app in apps:
+        if app not in apps:
             apps.append(app)
 
     graphs = []

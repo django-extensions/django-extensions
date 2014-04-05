@@ -138,7 +138,7 @@ class Command(BaseCommand):
                                     objects_per_fixture[-1] += 1
 
                                     class_ = obj.object.__class__
-                                    if not class_ in objects_to_keep:
+                                    if class_ not in objects_to_keep:
                                         objects_to_keep[class_] = set()
                                     objects_to_keep[class_].add(obj.object)
 

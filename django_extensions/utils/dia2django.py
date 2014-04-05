@@ -159,7 +159,7 @@ def dia2django(archivo):
                 if len(j.getAttribute("to")):
                     mycons[int(j.getAttribute("handle"))] = j.getAttribute("to")
             print(mycons)
-            if not 'A' in mycons:
+            if 'A' not in mycons:
                 herit.append(mycons)
         elif i.getAttribute("type") == "UML - SmallPackage":
             a = i.getElementsByTagName("dia:string")

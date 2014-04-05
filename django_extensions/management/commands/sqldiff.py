@@ -235,7 +235,7 @@ class SQLDiff(object):
 
         if description[6]:
             kwargs['blank'] = True
-            if not reverse_type in ('TextField', 'CharField'):
+            if reverse_type not in ('TextField', 'CharField'):
                 kwargs['null'] = True
 
         if '.' in reverse_type:
@@ -285,7 +285,7 @@ class SQLDiff(object):
         for field in all_local_fields(meta):
             if field.db_index:
                 attname = field.db_column or field.attname
-                if not attname in table_indexes:
+                if attname not in table_indexes:
                     self.add_difference('index-missing-in-db', table_name, attname, '', '')
                     db_type = field.db_type(connection=connection)
                     if db_type.startswith('varchar'):
@@ -393,8 +393,7 @@ class SQLDiff(object):
                 # Marker indicating start of difference scan for this table_name
                 self.add_app_model_marker(app_label, app_model.__name__)
 
-            #if not table_name in self.django_tables:
-            if not table_name in self.db_tables:
+            if table_name not in self.db_tables:
                 # Table is missing from database
                 self.add_difference('table-missing-in-db', table_name)
                 continue
