@@ -1,7 +1,6 @@
 #
 # Autocomplete feature for admin panel
 #
-
 import six
 import operator
 from six.moves import reduce
@@ -22,7 +21,6 @@ except ImportError:
     from django.utils.functional import update_wrapper
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
-
 
 
 class ForeignKeyAutocompleteAdmin(ModelAdmin):
