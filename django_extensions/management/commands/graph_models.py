@@ -43,6 +43,8 @@ class Command(BaseCommand):
                     help='Exclude specific column(s) from the graph. Can also load exclude list from file.'),
         make_option('--exclude-models', '-X', action='store', dest='exclude_models',
                     help='Exclude specific model(s) from the graph. Can also load exclude list from file.'),
+        make_option('--include-models', '-I', action='store', dest='include_models',
+                    help='Restrict the graph to specified models.'),
         make_option('--inheritance', '-e', action='store_true', dest='inheritance', default=True,
                     help='Include inheritance arrows (default)'),
         make_option('--no-inheritance', '-E', action='store_false', dest='inheritance',
