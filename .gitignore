@@ -10,3 +10,4 @@ venv
 *.egg-info
 .tox
 *.bak
+.DS_Store
