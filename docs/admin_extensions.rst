@@ -19,9 +19,7 @@ in your admin.py file:
 ::
 
     from django.contrib import admin
-
     from foo.models import Permission
-
     from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
 
@@ -37,3 +35,18 @@ in your admin.py file:
         ...
 
     admin.site.register(Permission, PermissionAdmin)
+
+
+If you are using django-reversion you should follow this code example:
+
+::
+    from django.contrib import admin
+    from foo.models import MyVersionModel
+    from reversion.admin import VersionAdmin
+    from django_extensions.admin import ForeignKeyAutocompleteAdmin
+
+
+    class MyVersionModelAdmin(VersionAdmin, ForeignKeyAutocompleteAdmin):
+        ...
+
+    admin.site.register(MyVersionModel, MyVersionModelAdmin)

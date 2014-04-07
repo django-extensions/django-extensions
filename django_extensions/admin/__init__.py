@@ -5,12 +5,16 @@
 import six
 import operator
 from six.moves import reduce
+
 from django.http import HttpResponse, HttpResponseNotFound
+from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
+from django.contrib.admin import ModelAdmin
+
 try:
     from functools import update_wrapper
     assert update_wrapper
@@ -19,13 +23,6 @@ except ImportError:
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
-from django.conf import settings
-
-if 'reversion' in settings.INSTALLED_APPS:
-    from reversion.admin import VersionAdmin as ModelAdmin
-    assert ModelAdmin
-else:
-    from django.contrib.admin import ModelAdmin
 
 
 class ForeignKeyAutocompleteAdmin(ModelAdmin):
