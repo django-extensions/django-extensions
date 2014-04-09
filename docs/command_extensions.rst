@@ -55,7 +55,7 @@ Current Command Extensions
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
 
-* *reset_db* - Resets a database (currently sqlite3, mysql, postgres).
+* *reset_db* - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
 
