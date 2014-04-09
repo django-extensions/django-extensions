@@ -307,6 +307,17 @@ class PostgreSQLUUIDField(UUIDField):
     def db_type(self, connection=None):
         return "UUID"
 
+    def get_db_prep_value(self, value, connection, prepared=False):
+        if isinstance(value, six.integer_types):
+            value = uuid.UUID(int=value)
+        elif isinstance(value, (six.string_types, six.binary_type)):
+            if len(value) == 16:
+                value = uuid.UUID(bytes=value)
+            else:
+                value = uuid.UUID(value)
+        return super(PostgreSQLUUIDField, self).get_db_prep_value(
+            value, connection, prepared=False)
+
 
 class ShortUUIDField(UUIDField):
     """ ShortUUIDFied
