@@ -1,8 +1,11 @@
+import re
+import uuid
+
 import six
 
 from django.db import models
 
-from django_extensions.db.fields import UUIDField
+from django_extensions.db.fields import UUIDField, PostgreSQLUUIDField
 from django_extensions.tests.fields import FieldTestCase
 
 
@@ -44,3 +47,19 @@ class UUIDFieldTest(FieldTestCase):
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440010'))
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440010'))
 
+
+class PostgreSQLUUIDFieldTest(FieldTestCase):
+    def test_uuid_casting(self):
+        # As explain by postgres documentation
+        # http://www.postgresql.org/docs/9.1/static/datatype-uuid.html
+        # an uuid needs to be a sequence of lower-case hexadecimal digits, in
+        # several groups separated by hyphens, specifically a group of 8 digits
+        # followed by three groups of 4 digits followed by a group of 12 digits
+        matcher = re.compile('^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}'
+                             '-[\da-f]{12}$')
+        field = PostgreSQLUUIDField()
+        for value in (str(uuid.uuid4()), uuid.uuid4().urn, uuid.uuid4().hex,
+                      uuid.uuid4().int, uuid.uuid4().bytes):
+            prepared_value = field.get_db_prep_value(value, None)
+            self.assertTrue(matcher.match(prepared_value) is not None,
+                            prepared_value)
