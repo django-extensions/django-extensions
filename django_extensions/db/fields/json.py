@@ -46,6 +46,14 @@ class JSONDict(dict):
         return dumps(self)
 
 
+class JSONUnicode(unicode):
+    """
+    As above
+    """
+    def __repr__(self):
+        return dumps(self)
+
+
 class JSONList(list):
     """
     As above
@@ -74,22 +82,22 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
             res = loads(value)
             if isinstance(res, dict):
                 return JSONDict(**res)
-            else:
+            elif isinstance(res, six.string_types):
+                return JSONUnicode(res)
+            elif isinstance(res, list):
                 return JSONList(res)
-
+            return res
         else:
             return value
 
-    def get_db_prep_save(self, value, connection):
+    def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
-        if not isinstance(value, (list, dict)):
-            return super(JSONField, self).get_db_prep_save("", connection=connection)
-        else:
-            return super(JSONField, self).get_db_prep_save(dumps(value),
-                                                           connection=connection)
+        if value is None and self.null:
+            return None
+        return super(JSONField, self).get_db_prep_save(dumps(value), connection=connection)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.TextField"
