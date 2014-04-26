@@ -12,7 +12,10 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 Getting Started
 ===============
 
-The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__. In a couple minutes Eric walks you through a half a dozen command extensions. There is also a `short screencast on GoDjango`__ to help show you even more.
+The easiest way to figure out what Django Extensions are all about is to watch the 
+`excellent screencast by Eric Holscher`__ (`watch the video on vimeo`__). In a couple 
+minutes Eric walks you through a half a dozen command extensions. There is also a 
+`short screencast on GoDjango`__ to help show you even more.
 
 
 Requirements
@@ -40,7 +43,8 @@ If you want to install it from source, grab the git repository from GitHub and r
 Installing It
 =============
 
-To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects `settings.py` file::
+To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects 
+`settings.py` file::
 
     INSTALLED_APPS = (
         ...
@@ -64,7 +68,8 @@ Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for 
 Getting Involved
 ================
 
-Open Source projects can always use more help. Fixing a problem, documenting a feature, adding translation in your language. If you have some time to spare and like to help us, here are the places to do so:
+Open Source projects can always use more help. Fixing a problem, documenting a feature, adding
+translation in your language. If you have some time to spare and like to help us, here are the places to do so:
 
 - GitHub: https://github.com/django-extensions/django-extensions
 - Mailing list: http://groups.google.com/group/django-extensions
@@ -82,4 +87,5 @@ Or you can look at the docs/ directory in the repository.
 
 
 __ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
+__ http://vimeo.com/1720508
 __ https://godjango.com/39-be-more-productive-with-django_extensions/
