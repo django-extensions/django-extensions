@@ -46,7 +46,7 @@ class JSONDict(dict):
         return dumps(self)
 
 
-class JSONUnicode(unicode):
+class JSONUnicode(six.text_type):
     """
     As above
     """
