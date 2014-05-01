@@ -18,10 +18,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 try:
     # Django >= 1.7
-    import json as _json
+    import json
 except ImportError:
     # Django <= 1.6 backwards compatibility
-    from django.utils import simplejson as _json
+    from django.utils import simplejson as json
 
 
 def dumps(value):
@@ -29,7 +29,7 @@ def dumps(value):
 
 
 def loads(txt):
-    value = _json.loads(
+    value = json.loads(
         txt,
         parse_float=Decimal,
         encoding=settings.DEFAULT_CHARSET
