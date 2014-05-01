@@ -98,7 +98,7 @@ additions for Django projects. See the project page for more information:
     cmdclass=cmdclasses,
     package_data=package_data,
     install_requires=['six>=1.2'],
-    tests_require=['Django'],
+    tests_require=['Django', 'shortuuid'],
     test_suite='run_tests.main',
     classifiers=[
         'Development Status :: 4 - Beta',
