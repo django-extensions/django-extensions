@@ -1,0 +1,57 @@
+Changelog
+=========
+
+1.3.4
+-----
+- Feature: Start maintaining a CHANGELOG file in the repository
+- Feature: ActivatorModelManager now has an ActivatorQuerySet
+- Feature: Add a deconstruct() method for future Django 1.7 migration compatibility
+- Feature: show_urls, now support --language for i18n_patterns
+- Feature: show_urls, now shows the decoraters set on a view function
+- Feature: graph_models, now support --include-models to restrict the graph to specified models
+- Feature: print_settings, allow to specify the settings you want to see
+- Improvement: graph_models, use '//' instead of '#' as comment character in dot files
+- Improvement: graph_models, added error message for abstract models without explicit relations
+- Improvement: JSONField, use python's buildin json support by default with fallback on django.utils.simplejson
+- Improvement: PostgreSQLUUIDField, parse value into UUID type before sending it to the database
+- Improvement: Use django.JQuery in autocomplete.js if available
+- Improvement: use "a not in b" instead of "not a in b" in the entire codebase
+- Removed: clean_pyc command since it does not work correctly in many cases
+- Removed: sync_media_s3 command in favor of sync_s3
+- BugFix: syncdata, use pk instead of id for identifying primary key of objects
+- BugFix: sync_s3, use safer content type per default
+- BugFix: export_emails, filtering on groups
+- BugFix: print_user_for_session, use USERNAME_FIELD if defined
+- BugFix: update_permission, fixed TypeError issue
+- BugFix: JSONField, do not coerse a json string into a python list
+- BugFix: import json issue by using absolute imports
+- BugFix: add minimal version number to six (>=1.2)
+- Docs: graph_models, Added some documentation about using dot templates
+- Docs: reset_db, short description on SQL DDL used
+- Docs: Added specific list of supported Python and Django versions
+- Docs: Add link to GoDjango screencast
+- Docs: Add ShortUUIDField to docs
+- Python3: fixes to graph_models and export_emails for Python3 compatibility
+
+1.3.3
+-----
+- Docs: Made it clearer that Django Extensions requires Django 1.4 or higher
+- Translations: FR Updated 
+- Python3: Fix for shell_plus
+
+1.3.0
+-----
+- Feature: SQLDiff much better notnull detection
+- Feature: reset_db add option to explicit set the PostGreSQL owner of the newly created DB
+- Feature: shell_plus added support for MongoEngine
+- Feature: sync_s3 enable syncing to other cloud providers compatible with s3 
+- Improvement: ForeignKeyAutocompleteAdmin add option to limit queryset 
+- BugFix: graph_models fix issue with models without primary key
+- BugFix: graph_models fix UnicodeDecodeError using --verbose-names 
+- BugFix: dumpscript fix problems with date/datetimes by saving them now as ISO8601
+- Docs: many improvements
+- Docs: Chinese translation !!!
+- Python3: various improvements
+- Tests: add Django 1.6
+
+
