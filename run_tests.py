@@ -3,7 +3,30 @@
 import sys
 import shutil
 import tempfile
-import django
+
+try:
+    import django
+except ImportError:
+    print("Error: missing test dependency:")
+    print("  django library is needed to run test suite")
+    print("  you can install it with 'pip install django'")
+    print("  or use tox to automatically handle test dependencies")
+    sys.exit(1)
+
+try:
+    import shortuuid
+except ImportError:
+    print("Error: missing test dependency:")
+    print("  shortuuid library is needed to run test suite")
+    print("  you can install it with 'pip install shortuuid'")
+    print("  or use tox to automatically handle test dependencies")
+    sys.exit(1)
+
+__test_libs__ = [
+    django,
+    shortuuid
+]
+
 from django.conf import settings
 
 
