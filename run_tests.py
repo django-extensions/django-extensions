@@ -87,7 +87,7 @@ def main():
             ENCRYPTED_FIELD_KEYS_DIR=KEY_LOCS,
         )
 
-        if django.VERSION[:2] >= (1,7):
+        if django.VERSION[:2] >= (1, 7):
             django.setup()
 
         apps = ['django_extensions']
@@ -106,6 +106,7 @@ def main():
             USERNAME_FIELD = get_user_model().USERNAME_FIELD
 
         DjangoTestRunner = get_runner(settings)
+
         class TestRunner(DjangoTestRunner):
             def setup_databases(self, *args, **kwargs):
                 result = super(TestRunner, self).setup_databases(*args, **kwargs)
