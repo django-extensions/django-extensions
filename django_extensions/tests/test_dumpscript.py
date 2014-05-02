@@ -77,7 +77,6 @@ class DumpScriptTests(FieldTestCase):
         p2.notes.add(note1, note2)
         tmp_out = six.StringIO()
         call_command('dumpscript', 'testapp', stdout=tmp_out)
-        open("/tmp/xxx.log","w").write(tmp_out.getvalue())
         ast_syntax_tree = compiler.parse(tmp_out.getvalue())
         if hasattr(ast_syntax_tree, 'body'):
             self.assertTrue(len(ast_syntax_tree.body) > 1)

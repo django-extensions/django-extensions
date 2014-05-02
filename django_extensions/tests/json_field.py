@@ -1,5 +1,3 @@
-from django.db import models
-
 from django_extensions.tests.fields import FieldTestCase
 from django_extensions.tests.testapp.models import JSONFieldTestModel
 

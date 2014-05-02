@@ -2,11 +2,9 @@ import six
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
-from django.db import models
 from django.utils import unittest
 
-from django_extensions.db.fields import ShortUUIDField
-from django_extensions.tests.testapp.models import  ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
+from django_extensions.tests.testapp.models import ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
 
 
 class ShortUUIDFieldTest(unittest.TestCase):

@@ -9,10 +9,10 @@ from django_extensions.db.fields import AutoSlugField
 from django_extensions.tests.testapp.models import SluggedTestModel, ChildSluggedTestModel
 
 if django.VERSION[:2] >= (1, 7):
-    from django.db import migrations
-    from django.db.migrations.writer import MigrationWriter
-    from django.utils import six
-    import django_extensions
+    from django.db import migrations  # NOQA
+    from django.db.migrations.writer import MigrationWriter  # NOQA
+    from django.utils import six  # NOQA
+    import django_extensions  # NOQA
 
 
 class FieldTestCase(unittest.TestCase):
@@ -136,9 +136,6 @@ class AutoSlugFieldTest(FieldTestCase):
         """
         Tests making migrations with Django 1.7+'s migration framework
         """
-        from django.db import migrations
-        from django.db.migrations.writer import MigrationWriter
-        from django.utils import six
 
         fields = {
             'autoslugfield': AutoSlugField(populate_from='otherfield'),

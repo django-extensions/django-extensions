@@ -3,11 +3,9 @@ import uuid
 
 import six
 
-from django.db import models
-
-from django_extensions.db.fields import UUIDField, PostgreSQLUUIDField
+from django_extensions.db.fields import PostgreSQLUUIDField
 from django_extensions.tests.fields import FieldTestCase
-from django_extensions.tests.testapp.models import  UUIDTestModel_field, UUIDTestModel_pk, UUIDTestAgregateModel, UUIDTestManyToManyModel
+from django_extensions.tests.testapp.models import UUIDTestModel_field, UUIDTestModel_pk, UUIDTestAgregateModel, UUIDTestManyToManyModel
 
 
 class UUIDFieldTest(FieldTestCase):
