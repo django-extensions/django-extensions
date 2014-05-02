@@ -483,7 +483,7 @@ class Script(Code):
         for model_class in self._queue_models(self.models, context=self.context):
             msg = 'Processing model: %s\n' % model_class.model.__name__
             self.stderr.write(msg)
-            code.append("    #" + msg)
+            code.append("    # " + msg)
             code.append(model_class.import_lines)
             code.append("")
             code.append(model_class.lines)
@@ -492,12 +492,12 @@ class Script(Code):
         for model in self.models:
             msg = 'Re-processing model: %s\n' % model.model.__name__
             self.stderr.write(msg)
-            code.append("    #" + msg)
+            code.append("    # " + msg)
             for instance in model.instances:
                 if instance.waiting_list or instance.many_to_many_waiting_list:
                     code.append(instance.get_lines(force=True))
 
-        code.insert(1, "    #initial imports")
+        code.insert(1, "    # Initial Imports")
         code.insert(2, "")
         for key, value in self.context["__extra_imports"].items():
             code.insert(2, "    from %s import %s" % (value, key))
@@ -554,36 +554,36 @@ class BasicImportHelper(object):
         pass
 
     def locate_similar(self, current_object, search_data):
-        #you will probably want to call this method from save_or_locate()
-        #example:
-        #new_obj = self.locate_similar(the_obj, {"national_id": the_obj.national_id } )
+        # You will probably want to call this method from save_or_locate()
+        # Example:
+        #   new_obj = self.locate_similar(the_obj, {"national_id": the_obj.national_id } )
 
         the_obj = current_object.__class__.objects.get(**search_data)
         return the_obj
 
     def locate_object(self, original_class, original_pk_name, the_class, pk_name, pk_value, obj_content):
-        #You may change this function to do specific lookup for specific objects
+        # You may change this function to do specific lookup for specific objects
         #
-        #original_class class of the django orm's object that needs to be located
-        #original_pk_name the primary key of original_class
-        #the_class      parent class of original_class which contains obj_content
-        #pk_name        the primary key of original_class
-        #pk_value       value of the primary_key
-        #obj_content    content of the object which was not exported.
+        # original_class class of the django orm's object that needs to be located
+        # original_pk_name the primary key of original_class
+        # the_class      parent class of original_class which contains obj_content
+        # pk_name        the primary key of original_class
+        # pk_value       value of the primary_key
+        # obj_content    content of the object which was not exported.
         #
-        #you should use obj_content to locate the object on the target db
+        # You should use obj_content to locate the object on the target db
         #
-        #and example where original_class and the_class are different is
-        #when original_class is Farmer and
-        #the_class is Person. The table may refer to a Farmer but you will actually
-        #need to locate Person in order to instantiate that Farmer
+        # An example where original_class and the_class are different is
+        # when original_class is Farmer and the_class is Person. The table
+        # may refer to a Farmer but you will actually need to locate Person
+        # in order to instantiate that Farmer
         #
-        #example:
-        #if the_class == SurveyResultFormat or the_class == SurveyType or the_class == SurveyState:
-        #    pk_name="name"
-        #    pk_value=obj_content[pk_name]
-        #if the_class == StaffGroup:
-        #    pk_value=8
+        # Example:
+        #   if the_class == SurveyResultFormat or the_class == SurveyType or the_class == SurveyState:
+        #       pk_name="name"
+        #       pk_value=obj_content[pk_name]
+        #   if the_class == StaffGroup:
+        #       pk_value=8
 
         search_data = { pk_name: pk_value }
         the_obj = the_class.objects.get(**search_data)
@@ -592,7 +592,7 @@ class BasicImportHelper(object):
 
 
     def save_or_locate(self, the_obj):
-        #change this if you want to locate the object in the database
+        # Change this if you want to locate the object in the database
         try:
             the_obj.save()
         except:
@@ -613,8 +613,8 @@ class BasicImportHelper(object):
 importer = None
 try:
     import import_helper
-    #we need this so ImportHelper can extend BasicImportHelper, although import_helper.py
-    #has no knowlodge of this class
+    # We need this so ImportHelper can extend BasicImportHelper, although import_helper.py
+    # has no knowlodge of this class
     importer = type("DynamicImportHelper", (import_helper.ImportHelper, BasicImportHelper ) , {} )()
 except ImportError as e:
     if str(e) == "No module named import_helper":
