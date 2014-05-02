@@ -6,23 +6,7 @@ from django.db import models
 from django.utils import unittest
 
 from django_extensions.db.fields import ShortUUIDField
-
-
-class TestModel_suuid_field(models.Model):
-    a = models.IntegerField()
-    uuid_field = ShortUUIDField()
-
-
-class TestModel_suuid_pk(models.Model):
-    uuid_field = ShortUUIDField(primary_key=True)
-
-
-class TestAgregateModel_suuid(TestModel_suuid_pk):
-    a = models.IntegerField()
-
-
-class TestManyToManyModel_suuid(TestModel_suuid_pk):
-    many = models.ManyToManyField(TestModel_suuid_field)
+from django_extensions.tests.testapp.models import  ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
 
 
 class ShortUUIDFieldTest(unittest.TestCase):
@@ -37,21 +21,21 @@ class ShortUUIDFieldTest(unittest.TestCase):
         settings.INSTALLED_APPS = self.old_installed_apps
 
     def testUUIDFieldCreate(self):
-        j = TestModel_suuid_field.objects.create(a=6, uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
+        j = ShortUUIDTestModel_field.objects.create(a=6, uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))
 
     def testUUIDField_pkCreate(self):
-        j = TestModel_suuid_pk.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
+        j = ShortUUIDTestModel_pk.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.pk, six.u('vytxeTZskVKR7C7WgdSP3d'))
 
     def testUUIDField_pkAgregateCreate(self):
-        j = TestAgregateModel_suuid.objects.create(a=6)
+        j = ShortUUIDTestAgregateModel.objects.create(a=6)
         self.assertEqual(j.a, 6)
         self.assertIsInstance(j.pk, six.string_types)
         self.assertTrue(len(j.pk) < 23)
 
     def testUUIDFieldManyToManyCreate(self):
-        j = TestManyToManyModel_suuid.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3e'))
+        j = ShortUUIDTestManyToManyModel.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3e'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3e'))
         self.assertEqual(j.pk, six.u('vytxeTZskVKR7C7WgdSP3e'))

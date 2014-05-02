@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from django_extensions.db.models import ActivatorModel
-from django_extensions.tests.models import Post
+from django_extensions.tests.testapp.models import Post
 
 
 class ActivatorModelTestCase(TestCase):

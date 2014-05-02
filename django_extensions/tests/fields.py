@@ -6,22 +6,20 @@ from django.db import models
 from django.utils import unittest
 
 from django_extensions.db.fields import AutoSlugField
+from django_extensions.tests.testapp.models import SluggedTestModel, ChildSluggedTestModel
 
-
-class SluggedTestModel(models.Model):
-    title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title')
-
-
-class ChildSluggedTestModel(SluggedTestModel):
-    pass
+if django.VERSION[:2] >= (1, 7):
+    from django.db import migrations
+    from django.db.migrations.writer import MigrationWriter
+    from django.utils import six
+    import django_extensions
 
 
 class FieldTestCase(unittest.TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
-        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
-        settings.INSTALLED_APPS.append('django_extensions.tests')
+        #settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
+        #settings.INSTALLED_APPS.append('django_extensions.tests.testapp')
         loading.cache.loaded = False
 
         # Don't migrate if south is installed
@@ -143,7 +141,7 @@ class AutoSlugFieldTest(FieldTestCase):
         from django.utils import six
 
         fields = {
-            'autoslugfield': AutoSlugField(),
+            'autoslugfield': AutoSlugField(populate_from='otherfield'),
         }
 
         migration = type(str("Migration"), (migrations.Migration,), {
