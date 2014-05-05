@@ -263,25 +263,31 @@ class SQLDiff(object):
             return field_type.split(" ")[0].split("(")[0].lower()
         return field_type
 
-    def find_unique_missing_in_db(self, meta, table_indexes, table_name):
+    def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
             if field.unique:
                 attname = field.db_column or field.attname
-                if attname in table_indexes and table_indexes[attname]['unique']:
+                db_field_unique = table_indexes[attname]['unique']
+                if not db_field_unique and table_constraints:
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if attname in constraint['columns'])
+                if attname in table_indexes and db_field_unique:
                     continue
                 self.add_difference('unique-missing-in-db', table_name, attname)
 
-    def find_unique_missing_in_model(self, meta, table_indexes, table_name):
+    def find_unique_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         # TODO: Postgresql does not list unique_togethers in table_indexes
         #       MySQL does
         fields = dict([(field.db_column or field.name, field.unique) for field in all_local_fields(meta)])
         for att_name, att_opts in six.iteritems(table_indexes):
-            if att_opts['unique'] and att_name in fields and not fields[att_name]:
+            db_field_unique = att_opts['unique']
+            if not db_field_unique and table_constraints:
+                db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
+            if db_field_unique and att_name in fields and not fields[att_name]:
                 if att_name in flatten(meta.unique_together):
                     continue
                 self.add_difference('unique-missing-in-model', table_name, att_name)
 
-    def find_index_missing_in_db(self, meta, table_indexes, table_name):
+    def find_index_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
             if field.db_index:
                 attname = field.db_column or field.attname
@@ -293,18 +299,21 @@ class SQLDiff(object):
                     if db_type.startswith('text'):
                         self.add_difference('index-missing-in-db', table_name, attname, 'like', ' text_pattern_ops')
 
-    def find_index_missing_in_model(self, meta, table_indexes, table_name):
+    def find_index_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         fields = dict([(field.name, field) for field in all_local_fields(meta)])
         for att_name, att_opts in six.iteritems(table_indexes):
             if att_name in fields:
                 field = fields[att_name]
+                db_field_unique = att_opts['unique']
+                if not db_field_unique and table_constraints:
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
                 if field.db_index:
                     continue
                 if att_opts['primary_key'] and field.primary_key:
                     continue
-                if att_opts['unique'] and field.unique:
+                if db_field_unique and field.unique:
                     continue
-                if att_opts['unique'] and att_name in flatten(meta.unique_together):
+                if db_field_unique and att_name in flatten(meta.unique_together):
                     continue
                 self.add_difference('index-missing-in-model', table_name, att_name)
                 db_type = field.db_type(connection=connection)
@@ -381,6 +390,9 @@ class SQLDiff(object):
                 action = field.null and 'DROP' or 'SET'
                 self.add_difference('notnull-differ', table_name, field.attname, action)
 
+    def get_constraints(self, cursor, table_name, introspection):
+        return {}
+
     @transaction.commit_manually
     def find_differences(self):
         cur_app_label = None
@@ -399,6 +411,11 @@ class SQLDiff(object):
                 continue
 
             table_indexes = self.introspection.get_indexes(self.cursor, table_name)
+            if hasattr(self.introspection, 'get_constraints'):
+                table_constraints = self.introspection.get_constraints(self.cursor, table_name)
+            else:
+                table_constraints = self.get_constraints(self.cursor, table_name, self.introspection)
+
             fieldmap = dict([(field.db_column or field.get_attname(), field) for field in all_local_fields(meta)])
 
             # add ordering field if model uses order_with_respect_to
@@ -416,9 +433,9 @@ class SQLDiff(object):
 
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
-            self.find_unique_missing_in_model(meta, table_indexes, table_name)
+            self.find_unique_missing_in_model(meta, table_indexes, table_constraints, table_name)
             # 2) find: 'index-missing-in-model'
-            self.find_index_missing_in_model(meta, table_indexes, table_name)
+            self.find_index_missing_in_model(meta, table_indexes, table_constraints, table_name)
             # 3) find: 'field-missing-in-model'
             self.find_field_missing_in_model(fieldmap, table_description, table_name)
 
@@ -426,9 +443,9 @@ class SQLDiff(object):
             # 4) find: 'field-missing-in-db'
             self.find_field_missing_in_db(fieldmap, table_description, table_name)
             # 5) find: 'unique-missing-in-db'
-            self.find_unique_missing_in_db(meta, table_indexes, table_name)
+            self.find_unique_missing_in_db(meta, table_indexes, table_constraints, table_name)
             # 6) find: 'index-missing-in-db'
-            self.find_index_missing_in_db(meta, table_indexes, table_name)
+            self.find_index_missing_in_db(meta, table_indexes, table_constraints, table_name)
 
             # Fields which have a different type or parameters
             # 7) find: 'type-differs'
@@ -553,7 +570,7 @@ class SqliteSQLDiff(SQLDiff):
     # Unique does not seem to be implied on Sqlite for Primary_key's
     # if this is more generic among databases this might be usefull
     # to add to the superclass's find_unique_missing_in_db method
-    def find_unique_missing_in_db(self, meta, table_indexes, table_name):
+    def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
             if field.unique:
                 attname = field.db_column or field.attname
@@ -565,10 +582,10 @@ class SqliteSQLDiff(SQLDiff):
 
     # Finding Indexes by using the get_indexes dictionary doesn't seem to work
     # for sqlite.
-    def find_index_missing_in_db(self, meta, table_indexes, table_name):
+    def find_index_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         pass
 
-    def find_index_missing_in_model(self, meta, table_indexes, table_name):
+    def find_index_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         pass
 
     def get_field_db_type(self, description, field=None, table_name=None):
@@ -633,6 +650,93 @@ class PostgresqlSQLDiff(SQLDiff):
             key = (dct['nspname'], dct['relname'], dct['attname'])
             if 'CHECK' in dct['pg_get_constraintdef']:
                 self.check_constraints[key] = dct
+
+    def get_constraints(self, cursor, table_name, introspection):
+        """ backport of django's introspection.get_constraints(...) """
+        constraints = {}
+        # Loop over the key table, collecting things as constraints
+        # This will get PKs, FKs, and uniques, but not CHECK
+        cursor.execute("""
+            SELECT
+                kc.constraint_name,
+                kc.column_name,
+                c.constraint_type,
+                array(SELECT table_name::text || '.' || column_name::text FROM information_schema.constraint_column_usage WHERE constraint_name = kc.constraint_name)
+            FROM information_schema.key_column_usage AS kc
+            JOIN information_schema.table_constraints AS c ON
+                kc.table_schema = c.table_schema AND
+                kc.table_name = c.table_name AND
+                kc.constraint_name = c.constraint_name
+            WHERE
+                kc.table_schema = %s AND
+                kc.table_name = %s
+        """, ["public", table_name])
+        for constraint, column, kind, used_cols in cursor.fetchall():
+            # If we're the first column, make the record
+            if constraint not in constraints:
+                constraints[constraint] = {
+                    "columns": [],
+                    "primary_key": kind.lower() == "primary key",
+                    "unique": kind.lower() in ["primary key", "unique"],
+                    "foreign_key": tuple(used_cols[0].split(".", 1)) if kind.lower() == "foreign key" else None,
+                    "check": False,
+                    "index": False,
+                }
+            # Record the details
+            constraints[constraint]['columns'].append(column)
+        # Now get CHECK constraint columns
+        cursor.execute("""
+            SELECT kc.constraint_name, kc.column_name
+            FROM information_schema.constraint_column_usage AS kc
+            JOIN information_schema.table_constraints AS c ON
+                kc.table_schema = c.table_schema AND
+                kc.table_name = c.table_name AND
+                kc.constraint_name = c.constraint_name
+            WHERE
+                c.constraint_type = 'CHECK' AND
+                kc.table_schema = %s AND
+                kc.table_name = %s
+        """, ["public", table_name])
+        for constraint, column in cursor.fetchall():
+            # If we're the first column, make the record
+            if constraint not in constraints:
+                constraints[constraint] = {
+                    "columns": [],
+                    "primary_key": False,
+                    "unique": False,
+                    "foreign_key": None,
+                    "check": True,
+                    "index": False,
+                }
+            # Record the details
+            constraints[constraint]['columns'].append(column)
+        # Now get indexes
+        cursor.execute("""
+            SELECT
+                c2.relname,
+                ARRAY(
+                    SELECT (SELECT attname FROM pg_catalog.pg_attribute WHERE attnum = i AND attrelid = c.oid)
+                    FROM unnest(idx.indkey) i
+                ),
+                idx.indisunique,
+                idx.indisprimary
+            FROM pg_catalog.pg_class c, pg_catalog.pg_class c2,
+                pg_catalog.pg_index idx
+            WHERE c.oid = idx.indrelid
+                AND idx.indexrelid = c2.oid
+                AND c.relname = %s
+        """, [table_name])
+        for index, columns, unique, primary in cursor.fetchall():
+            if index not in constraints:
+                constraints[index] = {
+                    "columns": list(columns),
+                    "primary_key": primary,
+                    "unique": unique,
+                    "foreign_key": None,
+                    "check": False,
+                    "index": True,
+                }
+        return constraints
 
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
