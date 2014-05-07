@@ -1,3 +1,4 @@
+import sys
 import six
 from django.db import models
 from django.core.exceptions import ImproperlyConfigured
@@ -68,8 +69,9 @@ class BaseEncryptedField(models.Field):
         elif value and (value.startswith(self.prefix)):
             if hasattr(self.crypt, 'Decrypt'):
                 retval = self.crypt.Decrypt(value[len(self.prefix):])
-                if retval:
-                    retval = retval.decode('utf-8')
+                if sys.version_info < (3,):
+                    if retval:
+                        retval = retval.decode('utf-8')
             else:
                 retval = value
         else:
@@ -80,8 +82,9 @@ class BaseEncryptedField(models.Field):
         if value and not value.startswith(self.prefix):
             # We need to encode a unicode string into a byte string, first.
             # keyczar expects a bytestring, not a unicode string.
-            if type(value) == six.types.UnicodeType:
-                value = value.encode('utf-8')
+            if sys.version_info < (3,):
+                if type(value) == six.types.UnicodeType:
+                    value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
             # so truncate before encryption
             max_length = self.unencrypted_length
