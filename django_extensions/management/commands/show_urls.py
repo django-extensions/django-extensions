@@ -1,3 +1,4 @@
+import six
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
@@ -103,12 +104,13 @@ class Command(BaseCommand):
                     func_name = '%s()' % func.__class__.__name__
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
+                func_globals = func.__globals__ if six.PY3 else func.func_globals
                 views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s\t%(decorator)s" % {
                     'name': style.MODULE_NAME(func_name),
                     'module': style.MODULE(func.__module__),
                     'url_name': style.URL_NAME(url_name or ''),
                     'url': style.URL(simplify_regex(regex)),
-                    'decorator': decorator if decorator in func.func_globals else '',
+                    'decorator': decorator if decorator in func_globals else '',
                 })
 
         if not options.get('unsorted', False):
