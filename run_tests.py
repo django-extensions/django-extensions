@@ -27,7 +27,16 @@ try:
 except ImportError:
     print("Error: missing test dependency:")
     print("  dateutil library is needed to run test suite")
-    print("  you can install it with 'pip install dateutil'")
+    print("  you can install it with 'pip install python-dateutil'")
+    print("  or use tox to automatically handle test dependencies")
+    sys.exit(1)
+
+try:
+    import six
+except ImportError:
+    print("Error: missing test dependency:")
+    print("  six library is needed to run test suite")
+    print("  you can install it with 'pip install six'")
     print("  or use tox to automatically handle test dependencies")
     sys.exit(1)
 
@@ -35,6 +44,7 @@ __test_libs__ = [
     django,
     shortuuid,
     dateutil,
+    six
 ]
 
 from django.conf import settings
