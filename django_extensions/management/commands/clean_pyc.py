@@ -34,7 +34,7 @@ class Command(NoArgsCommand):
                 self.stdout.write("""No path specified and settings.py does not contain BASE_DIR.
 Assuming '%s' is the project root.
 
-Please add BASE_DIR to your settings.py future versions 1.4.0 and higher of Django-Extensions 
+Please add BASE_DIR to your settings.py future versions 1.4.0 and higher of Django-Extensions
 will require either BASE_DIR or specifying the --path option.
 
 Waiting for 30 seconds. Press ctrl-c to abort.
