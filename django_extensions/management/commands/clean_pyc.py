@@ -39,11 +39,12 @@ will require either BASE_DIR or specifying the --path option.
 
 Waiting for 30 seconds. Press ctrl-c to abort.
 """ % project_root)
-                try:
-                    time.sleep(30)
-                except KeyboardInterrupt:
-                    self.stdout.write("Aborted\n")
-                    return
+                if getattr(settings, 'CLEAN_PYC_DEPRECATION_WAIT', True):
+                    try:
+                        time.sleep(30)
+                    except KeyboardInterrupt:
+                        self.stdout.write("Aborted\n")
+                        return
         exts = options.get("optimize", False) and "*.py[co]" or "*.pyc"
 
         for root, dirs, filenames in os.walk(project_root):

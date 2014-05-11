@@ -37,11 +37,12 @@ will require either BASE_DIR or specifying the --path option.
 
 Waiting for 30 seconds. Press ctrl-c to abort.
 """ % project_root)
-                try:
-                    time.sleep(30)
-                except KeyboardInterrupt:
-                    self.stdout.write("Aborted\n")
-                    return
+                if getattr(settings, 'COMPILE_PYC_DEPRECATION_WAIT', True):
+                    try:
+                        time.sleep(30)
+                    except KeyboardInterrupt:
+                        self.stdout.write("Aborted\n")
+                        return
 
         for root, dirs, filenames in os.walk(project_root):
             for filename in fnmatch.filter(filenames, '*.py'):
