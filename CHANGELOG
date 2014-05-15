@@ -1,6 +1,20 @@
 Changelog
 =========
 
+1.3.7
+-----
+
+Changes:
+ - Reinstated: clean_pyc and compile_pyc commands, these now depends on BASE_DIR
+               in settings.py as per Django 1.6. We urge everybody to include a
+               BASE_DIR settings in their project file! auto-detecting the
+               project-root is now deprecated and will be removed in 1.4.0.
+ - I18N: Added russian locale
+ - Docs: runscript, Add section about passing arguments to scripts
+ - Python3: show_url, Fixed to AttributeError 'func_globals'
+ - Deprecated: clean_pyc, compile_pyc, Auto-detecting project root
+
+
 1.3.6
 -----
 
