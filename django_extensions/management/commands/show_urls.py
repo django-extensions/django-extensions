@@ -18,6 +18,12 @@ import re
 from django_extensions.management.color import color_style
 
 
+FMTR = {
+    'dense': "%(url)s\t%(module)s.%(name)s\t%(url_name)s\t%(decorator)s",
+    'verbose': "%(url)s\n\tController: %(module)s.%(name)s\n\tURL Name: %(url_name)s\n\tDecorators: %(decorator)s\n",
+}
+
+
 def extract_views_from_urlpatterns(urlpatterns, base=''):
     """
     Return a list of views from a list of urlpatterns.
@@ -60,7 +66,9 @@ class Command(BaseCommand):
         make_option("--language", "-l", dest="language",
                     help="Set the language code (useful for i18n_patterns)"),
         make_option("--decorator", "-d", dest="decorator",
-                    help="Show the presence of given decorator on views")
+                    help="Show the presence of given decorator on views"),
+        make_option("--format", "-f", dest="format_style",
+                    help="Style of the output. Choices: %s" % FMTR.keys())
     )
 
     help = "Displays all of the url matching routes for the project."
@@ -86,6 +94,11 @@ class Command(BaseCommand):
         if decorator is None:
             decorator = 'login_required'
 
+        format_style = options.get('format_style', 'dense')
+        if format_style not in FMTR:
+            raise Exception("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
+        fmtr = FMTR[format_style]
+
         views = []
         for settings_mod in settings_modules:
             try:
@@ -105,7 +118,7 @@ class Command(BaseCommand):
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
                 func_globals = func.__globals__ if six.PY3 else func.func_globals
-                views.append("%(url)s\t%(module)s.%(name)s\t%(url_name)s\t%(decorator)s" % {
+                views.append(fmtr % {
                     'name': style.MODULE_NAME(func_name),
                     'module': style.MODULE(func.__module__),
                     'url_name': style.URL_NAME(url_name or ''),
