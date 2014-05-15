@@ -33,8 +33,7 @@ Prepare the release tarball::
 
 Upload release to pypi::
 
-  $ python ./setup.py register
-  $ python ./setup.py sdist upload -s
+  $ python ./setup.py sdist bdist_wheel upload -s
 
 Bumb version number to new in-development pre version::
 
