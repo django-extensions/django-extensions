@@ -22,7 +22,7 @@ class Command(LabelCommand):
             job = get_job(app_name, job_name)
         except KeyError:
             if app_name:
-                print("Error: Job %s for applabel %s not found" % (app_name, job_name))
+                print("Error: Job %s for applabel %s not found" % (job_name, app_name))
             else:
                 print("Error: Job %s not found" % job_name)
             print("Use -l option to view all the available jobs")
