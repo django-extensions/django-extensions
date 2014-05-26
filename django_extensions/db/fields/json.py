@@ -104,3 +104,9 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         args, kwargs = introspector(self)
         # That's our definition!
         return (field_class, args, kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(JSONField, self).deconstruct()
+        if self.default == '{}':
+            del kwargs['default']
+        return name, path, args, kwargs

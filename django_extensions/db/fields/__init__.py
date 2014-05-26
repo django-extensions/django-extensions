@@ -64,7 +64,11 @@ class AutoSlugField(SlugField):
             self._populate_from = populate_from
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
+        if not isinstance(self.overwrite, bool):
+            raise ValueError("'overwrite' argument must be True or False")
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
+        if not isinstance(self.allow_duplicates, bool):
+            raise ValueError("'allow_duplicates' argument must be True or False")
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -172,12 +176,13 @@ class AutoSlugField(SlugField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
-        kwargs.update({
-            'populate_from': repr(self._populate_from),
-            'separator': repr(self.separator),
-            'overwrite': repr(self.overwrite),
-            'allow_duplicates': repr(self.allow_duplicates),
-        })
+        kwargs['populate_from'] = self._populate_from
+        if not self.separator == six.u('-'):
+            kwargs['separator'] = self.separator
+        if self.overwrite is not False:
+            kwargs['overwrite'] = True
+        if self.allow_duplicates is not False:
+            kwargs['allow_duplicates'] = True
         return name, path, args, kwargs
 
 
@@ -203,6 +208,16 @@ class CreationDateTimeField(DateTimeField):
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
         return (field_class, args, kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(CreationDateTimeField, self).deconstruct()
+        if self.editable is not False:
+            kwargs['editable'] = True
+        if self.blank is not True:
+            kwargs['blank'] = False
+        if self.default is not datetime_now:
+            kwargs['default'] = self.default
+        return name, path, args, kwargs
 
 
 class ModificationDateTimeField(CreationDateTimeField):
@@ -242,21 +257,22 @@ class UUIDField(CharField):
     The field support all uuid versions which are natively supported by the uuid python module, except version 2.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
+    DEFAULT_MAX_LENGTH = 36
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, **kwargs):
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
-        kwargs.setdefault('max_length', 36)
+        kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)
         if auto:
             self.empty_strings_allowed = False
             kwargs['blank'] = True
             kwargs.setdefault('editable', False)
         self.auto = auto
         self.version = version
-        if version == 1:
-            self.node, self.clock_seq = node, clock_seq
-        elif version == 3 or version == 5:
-            self.namespace, self.name = namespace, name
+        self.node = node
+        self.clock_seq = clock_seq
+        self.namespace = namespace
+        self.name = name
         CharField.__init__(self, verbose_name, name, **kwargs)
 
     def get_internal_type(self):
@@ -302,6 +318,24 @@ class UUIDField(CharField):
         # That's our definition!
         return (field_class, args, kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(UUIDField, self).deconstruct()
+        if self.max_length == self.DEFAULT_MAX_LENGTH:
+            del kwargs['max_length']
+        if self.auto is not True:
+            kwargs['auto'] = self.auto
+        if self.version != 4:
+            kwargs['version'] = self.version
+        if self.node is not None:
+            kwargs['node'] = self.node
+        if self.clock_seq is not None:
+            kwargs['clock_seq'] = self.clock_seq
+        if self.namespace is not None:
+            kwargs['namespace'] = self.namespace
+        if self.name is not None:
+            kwargs['name'] = self.name
+        return name, path, args, kwargs
+
 
 class PostgreSQLUUIDField(UUIDField):
     def db_type(self, connection=None):
@@ -326,12 +360,13 @@ class ShortUUIDField(UUIDField):
 
     Based on `shortuuid`: https://github.com/stochastic-technologies/shortuuid
     """
+    DEFAULT_MAX_LENGTH = 22
 
     def __init__(self, *args, **kwargs):
         super(ShortUUIDField, self).__init__(*args, **kwargs)
         if not HAS_SHORT_UUID:
             raise ImproperlyConfigured("'shortuuid' module is required for ShortUUIDField. (Do you have Python 2.5 or higher installed ?)")
-        kwargs['max_length'] = 22
+        kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)
 
     def create_uuid(self):
         if not self.version or self.version == 4:

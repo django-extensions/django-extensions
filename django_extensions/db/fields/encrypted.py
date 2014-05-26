@@ -97,6 +97,11 @@ class BaseEncryptedField(models.Field):
             value = self.prefix + self.crypt.Encrypt(value)
         return value
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
+        kwargs['max_length'] = self.max_length
+        return name, path, args, kwargs
+
 
 class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
                                             BaseEncryptedField)):
