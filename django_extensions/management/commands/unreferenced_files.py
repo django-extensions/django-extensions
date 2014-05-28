@@ -33,7 +33,7 @@ class Command(NoArgsCommand):
 
         # Get a list of all files referenced in the database
         referenced = []
-        for model in model_dict.iterkeys():
+        for model in model_dict:
             all = model.objects.all().iterator()
             for object in all:
                 for field in model_dict[model]:
