@@ -1,4 +1,3 @@
-import six
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
@@ -117,7 +116,14 @@ class Command(BaseCommand):
                     func_name = '%s()' % func.__class__.__name__
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
-                func_globals = func.__globals__ if six.PY3 else func.func_globals
+
+                if hasattr(func, '__globals__'):
+                    func_globals = func.__globals__
+                elif hasattr(func, 'func_globals'):
+                    func_globals = func.func_globals
+                else:
+                    func_globals = {}
+
                 views.append(fmtr % {
                     'name': style.MODULE_NAME(func_name),
                     'module': style.MODULE(func.__module__),
