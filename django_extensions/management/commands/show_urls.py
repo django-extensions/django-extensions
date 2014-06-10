@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import activate
 from optparse import make_option
 
@@ -93,9 +93,11 @@ class Command(BaseCommand):
         if decorator is None:
             decorator = 'login_required'
 
-        format_style = options.get('format_style', 'dense')
+        format_style = options.get('format_style')
+        if format_style is None:
+            format_style = 'dense'
         if format_style not in FMTR:
-            raise Exception("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
+            raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
         fmtr = FMTR[format_style]
 
         views = []
