@@ -37,7 +37,6 @@ __author__ = 'Will Larson <lethain@gmail.com>'
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
-from django.core.exceptions import ImproperlyConfigured
 
 try:
     from pygments import highlight
