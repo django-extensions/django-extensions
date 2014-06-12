@@ -44,8 +44,7 @@ try:
     from pygments.formatters import HtmlFormatter
     from pygments.lexers import get_lexer_by_name, guess_lexer, ClassNotFound
 except ImportError:
-    raise ImproperlyConfigured(
-        "Please install 'pygments' library to use syntax_color.")
+    raise ImportError("Please install 'pygments' library to use syntax_color.")
 
 register = template.Library()
 
