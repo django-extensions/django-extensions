@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.3.8
+-----
+
+Changes:
+ - Feature: show_urls, add option to specify dense or verbose output format
+ - Improvement: better support for django 1.7 migrations
+ - Improvement: better support for django's admin docs
+ - BugFix: runjob, job_name and app_name was swapped in error message
+ - Docs: Update link to chinese docs
+ - Python3: unreferenced_files, fix python3 compatibility
+ - Python3: pipchecker, fix python3 compatibility
+
 1.3.7
 -----
 
