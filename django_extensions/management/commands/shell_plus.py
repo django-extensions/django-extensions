@@ -19,6 +19,8 @@ class Command(NoArgsCommand):
                     help='Tells Django to use IPython, not BPython.'),
         make_option('--notebook', action='store_true', dest='notebook',
                     help='Tells Django to use IPython Notebook.'),
+        make_option('--kernel', action='store_true', dest='kernel',
+                    help='Tells Django to start an IPython Kernel.'),
         make_option('--use-pythonrc', action='store_true', dest='use_pythonrc',
                     help='Tells Django to execute PYTHONSTARTUP file (BE CAREFULL WITH THIS!)'),
         make_option('--print-sql', action='store_true', default=False,
@@ -33,6 +35,7 @@ class Command(NoArgsCommand):
     requires_model_validation = True
 
     def handle_noargs(self, **options):
+        use_kernel = options.get('kernel', False)
         use_notebook = options.get('notebook', False)
         use_ipython = options.get('ipython', False)
         use_bpython = options.get('bpython', False)
@@ -65,6 +68,15 @@ class Command(NoArgsCommand):
                         print("")
 
             util.CursorDebugWrapper = PrintQueryWrapper
+
+        def run_kernel():
+            from IPython import release
+            if release.version_info[0] < 2:
+                print(self.style.ERROR("--kernel requires at least IPython version 2.0"))
+                return
+            from IPython import embed_kernel
+            imported_objects = import_objects(options, self.style)
+            embed_kernel(local_ns=imported_objects)
 
         def run_notebook():
             from django.conf import settings
@@ -140,7 +152,9 @@ class Command(NoArgsCommand):
         )
         SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
-        if use_notebook:
+        if use_kernel:
+            run_kernel()
+        elif use_notebook:
             run_notebook()
         elif use_plain:
             run_plain()
