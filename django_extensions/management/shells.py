@@ -103,7 +103,7 @@ def import_objects(options, style):
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
 
     # Perform pre-imports before any other imports
-    SHELL_PLUS_PRE_IMPORTS = getattr(settings, '', {})
+    SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
     if SHELL_PLUS_PRE_IMPORTS:
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus User Imports"))
