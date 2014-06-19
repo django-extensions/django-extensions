@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.9-DEV
+-----
+
+Changes:
+ - Feature: shell_plus, add --kernel option to start as standalone IPython kernel
+
+
 1.3.8
 -----
 
