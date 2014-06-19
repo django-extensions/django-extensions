@@ -6,6 +6,7 @@ Changelog
 
 Changes:
  - Feature: shell_plus, add --kernel option to start as standalone IPython kernel
+ - Fix: show_urls, add support for functions that use functools.partial
 
 
 1.3.8
