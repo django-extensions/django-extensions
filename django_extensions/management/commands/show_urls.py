@@ -4,6 +4,7 @@ from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import activate
 from optparse import make_option
+import functools
 
 try:
     # 2008-05-30 admindocs found in newforms-admin brand
@@ -110,14 +111,9 @@ class Command(BaseCommand):
                     traceback.print_exc()
                 print(style.ERROR("Error occurred while trying to load %s: %s" % (settings_mod.ROOT_URLCONF, str(e))))
                 continue
+
             view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
             for (func, regex, url_name) in view_functions:
-                if hasattr(func, '__name__'):
-                    func_name = func.__name__
-                elif hasattr(func, '__class__'):
-                    func_name = '%s()' % func.__class__.__name__
-                else:
-                    func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
                 if hasattr(func, '__globals__'):
                     func_globals = func.__globals__
@@ -126,12 +122,25 @@ class Command(BaseCommand):
                 else:
                     func_globals = {}
 
+                decorators = [decorator] if decorator in func_globals else []
+
+                if isinstance(func, functools.partial):
+                    func = func.func
+                    decorators.insert(0, 'functools.partial')
+
+                if hasattr(func, '__name__'):
+                    func_name = func.__name__
+                elif hasattr(func, '__class__'):
+                    func_name = '%s()' % func.__class__.__name__
+                else:
+                    func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
+
                 views.append(fmtr % {
                     'name': style.MODULE_NAME(func_name),
                     'module': style.MODULE(func.__module__),
                     'url_name': style.URL_NAME(url_name or ''),
                     'url': style.URL(simplify_regex(regex)),
-                    'decorator': decorator if decorator in func_globals else '',
+                    'decorator': ', '.join(decorators),
                 })
 
         if not options.get('unsorted', False):
