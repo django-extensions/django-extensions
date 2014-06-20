@@ -143,7 +143,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             create_query += " ENCODING = 'UTF8'"
 
             if engine == 'postgis':
-                create_query += ' TEMPLATE = template_postgis'
+                # fetch postgis template name if it exists
+                from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
+                postgis_template = PostGISCreation(connection).template_postgis
+                if postgis_template is not None:
+                    create_query += ' TEMPLATE = %s' % postgis_template
 
             if settings.DEFAULT_TABLESPACE:
                 create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
