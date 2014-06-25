@@ -79,9 +79,6 @@ def import_items(import_directives, style, quiet_load=False):
 
 
 def import_objects(options, style):
-    # XXX: (Temporary) workaround for ticket #1796: force early loading of all
-    # models from installed apps. (this is fixed by now, but leaving it here
-    # for people using 0.96 or older trunk (pre [5919]) versions.
     from django.db.models.loading import get_models, get_apps
     mongoengine = False
     try:
@@ -89,8 +86,6 @@ def import_objects(options, style):
         mongoengine = True
     except:
         pass
-
-    loaded_models = get_models()  # NOQA
 
     from django.conf import settings
     imported_objects = {}
