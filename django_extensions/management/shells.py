@@ -79,9 +79,21 @@ def import_items(import_directives, style, quiet_load=False):
 
 
 def import_objects(options, style):
-    # XXX: (Temporary) workaround for ticket #1796: force early loading of all
-    # models from installed apps. (this is fixed by now, but leaving it here
-    # for people using 0.96 or older trunk (pre [5919]) versions.
+    # Django 1.7 introduced the app registry which must be initialized before we
+    # can call get_apps(). Django already does this for us when we are invoked
+    # as manage.py command, but we have to do it ourselves if when running as
+    # iPython notebook extension, so we call django.setup() if the app registry
+    # isn't initialized yet. The try/except can be removed when support for
+    # Django 1.6 is dropped.
+    try:
+        from django.apps import apps
+        from django import setup
+    except ImportError:
+        pass
+    else:
+        if not apps.ready:
+            setup()
+
     from django.db.models.loading import get_models, get_apps
     mongoengine = False
     try:
@@ -89,8 +101,6 @@ def import_objects(options, style):
         mongoengine = True
     except:
         pass
-
-    loaded_models = get_models()  # NOQA
 
     from django.conf import settings
     imported_objects = {}
