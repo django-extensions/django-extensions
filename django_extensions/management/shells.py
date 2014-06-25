@@ -79,6 +79,21 @@ def import_items(import_directives, style, quiet_load=False):
 
 
 def import_objects(options, style):
+    # Django 1.7 introduced the app registry which must be initialized before we
+    # can call get_apps(). Django already does this for us when we are invoked
+    # as manage.py command, but we have to do it ourselves if when running as
+    # iPython notebook extension, so we call django.setup() if the app registry
+    # isn't initialized yet. The try/except can be removed when support for
+    # Django 1.6 is dropped.
+    try:
+        from django.apps import apps
+        from django import setup
+    except ImportError:
+        pass
+    else:
+        if not apps.ready:
+            setup()
+
     from django.db.models.loading import get_models, get_apps
     mongoengine = False
     try:
