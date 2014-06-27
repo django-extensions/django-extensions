@@ -40,6 +40,7 @@ in your admin.py file:
 If you are using django-reversion you should follow this code example:
 
 ::
+
     from django.contrib import admin
     from foo.models import MyVersionModel
     from reversion.admin import VersionAdmin
