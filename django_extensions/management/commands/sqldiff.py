@@ -222,6 +222,9 @@ class SQLDiff(object):
                     return None
 
         kwargs = {}
+        if type_code == 16946 and field and getattr(field, 'geom_type', None) == 'POINT':
+            reverse_type = 'django.contrib.gis.db.models.fields.PointField'
+
         if isinstance(reverse_type, tuple):
             kwargs.update(reverse_type[1])
             reverse_type = reverse_type[0]
@@ -237,6 +240,9 @@ class SQLDiff(object):
             kwargs['blank'] = True
             if reverse_type not in ('TextField', 'CharField'):
                 kwargs['null'] = True
+
+        if field and getattr(field, 'geography', False):
+            kwargs['geography'] = True
 
         if '.' in reverse_type:
             from django.utils import importlib
@@ -308,6 +314,8 @@ class SQLDiff(object):
                 if not db_field_unique and table_constraints:
                     db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
                 if field.db_index:
+                    continue
+                if getattr(field, 'spatial_index', False):
                     continue
                 if att_opts['primary_key'] and field.primary_key:
                     continue
@@ -607,7 +615,9 @@ class PostgresqlSQLDiff(SQLDiff):
         1042: 'CharField',
         # postgis types (TODO: support is very incomplete)
         17506: 'django.contrib.gis.db.models.fields.PointField',
+        16392: 'django.contrib.gis.db.models.fields.PointField',
         55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
+        16946: 'django.contrib.gis.db.models.fields.MultiPolygonField'
     }
 
     DATA_TYPES_REVERSE_NAME = {
@@ -739,7 +749,10 @@ class PostgresqlSQLDiff(SQLDiff):
         return constraints
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
+        if getattr(field, 'geography', False):
+            db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field=field)
+        else:
+            db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
         if not db_type:
             return
         if field:
