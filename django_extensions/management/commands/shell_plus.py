@@ -44,14 +44,20 @@ class Command(NoArgsCommand):
 
         if options.get("print_sql", False):
             # Code from http://gist.github.com/118990
-            from django.db.backends import util
+            try:
+                # Django 1.7 onwards
+                from django.db.backends import utils
+            except ImportError:
+                # Django 1.6 and below
+                from django.db.backends import util as utils
+
             sqlparse = None
             try:
                 import sqlparse
             except ImportError:
                 pass
 
-            class PrintQueryWrapper(util.CursorDebugWrapper):
+            class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
@@ -67,7 +73,7 @@ class Command(NoArgsCommand):
                         print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
                         print("")
 
-            util.CursorDebugWrapper = PrintQueryWrapper
+            utils.CursorDebugWrapper = PrintQueryWrapper
 
         def run_kernel():
             from IPython import release
