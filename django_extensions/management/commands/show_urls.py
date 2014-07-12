@@ -1,19 +1,13 @@
+import re
+import functools
+from optparse import make_option
+
 from django.conf import settings
 from django.core.exceptions import ViewDoesNotExist
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.core.management.base import BaseCommand, CommandError
+from django.contrib.admindocs.views import simplify_regex
 from django.utils.translation import activate
-from optparse import make_option
-import functools
-
-try:
-    # 2008-05-30 admindocs found in newforms-admin brand
-    from django.contrib.admindocs.views import simplify_regex
-    assert simplify_regex
-except ImportError:
-    # fall back to trunk, pre-NFA merge
-    from django.contrib.admin.views.doc import simplify_regex
-import re
 
 from django_extensions.management.color import color_style
 
