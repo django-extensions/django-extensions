@@ -61,7 +61,7 @@ class Command(BaseCommand):
                     help="Set the language code (useful for i18n_patterns)"),
         make_option("--decorator", "-d", dest="decorator",
                     help="Show the presence of given decorator on views"),
-        make_option("--format", "-f", dest="format_style",
+        make_option("--format", "-f", dest="format_style", default="dense",
                     help="Style of the output. Choices: %s" % FMTR.keys())
     )
 
@@ -89,8 +89,6 @@ class Command(BaseCommand):
             decorator = 'login_required'
 
         format_style = options.get('format_style')
-        if format_style is None:
-            format_style = 'dense'
         if format_style not in FMTR:
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
         fmtr = FMTR[format_style]
