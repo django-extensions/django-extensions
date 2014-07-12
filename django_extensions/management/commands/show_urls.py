@@ -13,8 +13,8 @@ from django_extensions.management.color import color_style
 
 
 FMTR = {
-    'dense': "%(url)s\t%(module)s.%(name)s\t%(url_name)s\t%(decorator)s",
-    'verbose': "%(url)s\n\tController: %(module)s.%(name)s\n\tURL Name: %(url_name)s\n\tDecorators: %(decorator)s\n",
+    'dense': "{url}\t{module}.{name}\t{url_name}\t{decorator}",
+    'verbose': "{url}\n\tController: {module}.{name}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
 }
 
 
@@ -129,13 +129,13 @@ class Command(BaseCommand):
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
-                views.append(fmtr % {
-                    'name': style.MODULE_NAME(func_name),
-                    'module': style.MODULE(func.__module__),
-                    'url_name': style.URL_NAME(url_name or ''),
-                    'url': style.URL(simplify_regex(regex)),
-                    'decorator': ', '.join(decorators),
-                })
+                views.append(fmtr.format(
+                    name=style.MODULE_NAME(func_name),
+                    module=style.MODULE(func.__module__),
+                    url_name=style.URL_NAME(url_name or ''),
+                    url=style.URL(simplify_regex(regex)),
+                    decorator=', '.join(decorators),
+                ))
 
         if not options.get('unsorted', False):
             views = sorted(views)
