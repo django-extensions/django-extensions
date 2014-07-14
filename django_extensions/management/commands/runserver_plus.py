@@ -84,13 +84,19 @@ class Command(BaseCommand):
         werklogger.propagate = False
 
         if options.get("print_sql", False):
-            from django.db.backends import util
+            try:
+                # Django 1.7 onwards
+                from django.db.backends import utils
+            except ImportError:
+                # Django 1.6 below
+                from django.db.backends import util as utils
+
             try:
                 import sqlparse
             except ImportError:
                 sqlparse = None  # noqa
 
-            class PrintQueryWrapper(util.CursorDebugWrapper):
+            class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
@@ -104,7 +110,7 @@ class Command(BaseCommand):
                         else:
                             logger.info(raw_sql + therest)
 
-            util.CursorDebugWrapper = PrintQueryWrapper
+            utils.CursorDebugWrapper = PrintQueryWrapper
 
         try:
             from django.core.servers.basehttp import AdminMediaHandler
