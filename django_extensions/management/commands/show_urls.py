@@ -13,8 +13,9 @@ from django_extensions.management.color import color_style
 
 
 FMTR = {
-    'dense': "{url}\t{module}.{name}\t{url_name}\t{decorator}",
-    'verbose': "{url}\n\tController: {module}.{name}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
+    'dense': "{url}\t{module}\t{url_name}\t{decorator}",
+    'table': "{url},{module},{url_name},{decorator}",
+    'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
 }
 
 
@@ -128,8 +129,7 @@ class Command(BaseCommand):
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
                 views.append(fmtr.format(
-                    name=style.MODULE_NAME(func_name),
-                    module=style.MODULE(func.__module__),
+                    module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
                     url_name=style.URL_NAME(url_name or ''),
                     url=style.URL(simplify_regex(regex)),
                     decorator=', '.join(decorators),
@@ -137,5 +137,26 @@ class Command(BaseCommand):
 
         if not options.get('unsorted', False):
             views = sorted(views)
+
+        if format_style == 'table':
+            # Reformat all data and show in a table format
+
+            views = [row.split(',') for row in views]
+            widths = [ len(max(columns, key=len)) for columns in zip(*views) ]
+            table_views = []
+
+            header = ('URL', 'Module', 'Name', 'Decorator')
+            table_views.append(
+                ' | '.join( '{0:{1}}'.format(title, width) for width, title in zip(widths, header) )
+            )
+            table_views.append( '-+-'.join( '-' * width for width in widths ) )
+
+            for row in views:
+                table_views.append(
+                    ' | '.join( '{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row) )
+                )
+
+            # Replace original views so we can return the same object
+            views = table_views
 
         return "\n".join([v for v in views]) + "\n"
