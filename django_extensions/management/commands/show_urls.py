@@ -142,18 +142,18 @@ class Command(BaseCommand):
             # Reformat all data and show in a table format
 
             views = [row.split(',') for row in views]
-            widths = [ len(max(columns, key=len)) for columns in zip(*views) ]
+            widths = [len(max(columns, key=len)) for columns in zip(*views)]
             table_views = []
 
             header = ('URL', 'Module', 'Name', 'Decorator')
             table_views.append(
-                ' | '.join( '{0:{1}}'.format(title, width) for width, title in zip(widths, header) )
+                ' | '.join('{0:{1}}'.format(title, width) for width, title in zip(widths, header))
             )
-            table_views.append( '-+-'.join( '-' * width for width in widths ) )
+            table_views.append('-+-'.join('-' * width for width in widths))
 
             for row in views:
                 table_views.append(
-                    ' | '.join( '{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row) )
+                    ' | '.join('{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 )
 
             # Replace original views so we can return the same object
