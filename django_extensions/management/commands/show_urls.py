@@ -15,6 +15,7 @@ from django_extensions.management.color import color_style
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
     'table': "{url},{module},{url_name},{decorator}",
+    'aligned': "{url},{module},{url_name},{decorator}",
     'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
 }
 
@@ -138,14 +139,21 @@ class Command(BaseCommand):
         if not options.get('unsorted', False):
             views = sorted(views)
 
-        if format_style == 'table':
+        if format_style == 'aligned':
+            views = [row.split(',') for row in views]
+            widths = [len(max(columns, key=len)) for columns in zip(*views)]
+            views = [
+                ' '.join('{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+                for row in views
+            ]
+        elif format_style == 'table':
             # Reformat all data and show in a table format
 
             views = [row.split(',') for row in views]
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             table_views = []
 
-            header = ('URL', 'Module', 'Name', 'Decorator')
+            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
             table_views.append(
                 ' | '.join('{0:{1}}'.format(title, width) for width, title in zip(widths, header))
             )
