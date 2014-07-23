@@ -11,17 +11,17 @@ There is support for three different types of interactive python shells.
 
 IPython::
 
-  $ ./manage.py shell_plus --use-ipython
+  $ ./manage.py shell_plus --ipython
 
 
 BPython::
 
-  $ ./manage.py shell_plus --use-bpython
+  $ ./manage.py shell_plus --bpython
 
 
 Python::
 
-  $ ./manage.py shell_plus --use-plain
+  $ ./manage.py shell_plus --plain
 
 
 The default resolution order is: bpython, ipython, python.
