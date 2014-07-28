@@ -58,7 +58,7 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
 You can also combine model_aliases and dont_load.
 
-It is possible to ignore autoloaded modules when using manage.py, like
+It is possible to ignore autoloaded modules when using manage.py, like::
 
   $ ./manage.py shell_plus --dont-load app1 --dont-load app2.module1
 
