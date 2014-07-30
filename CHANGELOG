@@ -1,12 +1,21 @@
 Changelog
 =========
 
-1.3.9-DEV
+1.3.9
 -----
 
 Changes:
  - Feature: shell_plus, add --kernel option to start as standalone IPython kernel
+ - Feature: reset_db, Programatically determine PostGIS template 
+ - Feature: sqldiff, add support for PointField and MultiPolygonField
+ - Test: renamed test app
+ - Fix: runserver_plus, --print-sql for Django 1.7
+ - Fix: shell_plus, --print-sql for Django 1.7
  - Fix: show_urls, add support for functions that use functools.partial
+ - Fix: show_urls, add formatter for aligned output (will most likely become future default)
+ - Fix: shell_plus / notebook, support for Django 1.7
+ - Docs: various fixes and improvements
+ - Cleanup: Remove work arounds for Django 0.96 and earlier
 
 
 1.3.8
