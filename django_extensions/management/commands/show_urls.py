@@ -143,7 +143,7 @@ class Command(BaseCommand):
             views = [row.split(',') for row in views]
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             views = [
-                ' '.join('{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+                ' '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 for row in views
             ]
         elif format_style == 'table':
@@ -155,13 +155,13 @@ class Command(BaseCommand):
 
             header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
             table_views.append(
-                ' | '.join('{0:{1}}'.format(title, width) for width, title in zip(widths, header))
+                ' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header))
             )
             table_views.append('-+-'.join('-' * width for width in widths))
 
             for row in views:
                 table_views.append(
-                    ' | '.join('{0:{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+                    ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 )
 
             # Replace original views so we can return the same object
