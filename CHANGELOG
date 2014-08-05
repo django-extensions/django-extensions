@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.10
+------
+
+Changes:
+ - Fix: show_urls, fix bug in new formatter when column is empty
+
+
 1.3.9
 -----
 
