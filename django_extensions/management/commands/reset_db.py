@@ -129,7 +129,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection = Database.connect(conn_string)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
-            drop_query = 'DROP DATABASE %s;' % database_name
+            drop_query = "DROP DATABASE \"%s\";" % database_name
             logging.info('Executing... "' + drop_query + '"')
 
             try:
@@ -137,7 +137,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             except Database.ProgrammingError as e:
                 logging.info("Error: %s" % str(e))
 
-            create_query = "CREATE DATABASE %s" % database_name
+            create_query = "CREATE DATABASE \"%s\"" % database_name
             if owner:
                 create_query += " WITH OWNER = \"%s\" " % owner
             create_query += " ENCODING = 'UTF8'"
