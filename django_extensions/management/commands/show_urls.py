@@ -143,7 +143,7 @@ class Command(BaseCommand):
             views = [row.split(',') for row in views]
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             views = [
-                ' '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+                '   '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 for row in views
             ]
         elif format_style == 'table':
