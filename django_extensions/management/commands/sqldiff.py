@@ -95,7 +95,7 @@ class SQLDiff(object):
         'unique-missing-in-model': "field '%(1)s' UNIQUE defined in database schema but missing in model",
         'field-type-differ': "field '%(1)s' not of same type: db='%(3)s', model='%(2)s'",
         'field-parameter-differ': "field '%(1)s' parameters differ: db='%(3)s', model='%(2)s'",
-        'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
+        'notnull-differ': "field '%(1)s' null constraint should be '%(2)s' in the database",
     }
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_FIELD(qn(args[1])), ' '.join(style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a) for i, a in enumerate(args[2:])))
