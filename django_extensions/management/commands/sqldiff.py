@@ -50,16 +50,15 @@ def flatten(l, ltypes=(list, tuple)):
 
 def all_local_fields(meta):
     all_fields = []
-    if meta.managed:
-        if meta.proxy:
-            for parent in meta.parents:
-                all_fields.extend(all_local_fields(parent._meta))
-        else:
-            for f in meta.local_fields:
-                col_type = f.db_type(connection=connection)
-                if col_type is None:
-                    continue
-                all_fields.append(f)
+    if meta.proxy:
+        for parent in meta.parents:
+            all_fields.extend(all_local_fields(parent._meta))
+    else:
+        for f in meta.local_fields:
+            col_type = f.db_type(connection=connection)
+            if col_type is None:
+                continue
+            all_fields.append(f)
     return all_fields
 
 
@@ -271,7 +270,7 @@ class SQLDiff(object):
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
-            if field.unique:
+            if field.unique and meta.managed:
                 attname = field.db_column or field.attname
                 db_field_unique = table_indexes[attname]['unique']
                 if not db_field_unique and table_constraints:
