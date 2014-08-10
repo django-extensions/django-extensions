@@ -9,6 +9,7 @@ from django.core.management.base import CommandError, BaseCommand
 from six.moves import input
 from ConfigParser import SafeConfigParser
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noinput', action='store_false',
