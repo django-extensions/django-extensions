@@ -50,16 +50,15 @@ def flatten(l, ltypes=(list, tuple)):
 
 def all_local_fields(meta):
     all_fields = []
-    if meta.managed:
-        if meta.proxy:
-            for parent in meta.parents:
-                all_fields.extend(all_local_fields(parent._meta))
-        else:
-            for f in meta.local_fields:
-                col_type = f.db_type(connection=connection)
-                if col_type is None:
-                    continue
-                all_fields.append(f)
+    if meta.proxy:
+        for parent in meta.parents:
+            all_fields.extend(all_local_fields(parent._meta))
+    else:
+        for f in meta.local_fields:
+            col_type = f.db_type(connection=connection)
+            if col_type is None:
+                continue
+            all_fields.append(f)
     return all_fields
 
 
@@ -96,7 +95,7 @@ class SQLDiff(object):
         'unique-missing-in-model': "field '%(1)s' UNIQUE defined in database schema but missing in model",
         'field-type-differ': "field '%(1)s' not of same type: db='%(3)s', model='%(2)s'",
         'field-parameter-differ': "field '%(1)s' parameters differ: db='%(3)s', model='%(2)s'",
-        'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
+        'notnull-differ': "field '%(1)s' null constraint should be '%(2)s' in the database",
     }
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_FIELD(qn(args[1])), ' '.join(style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a) for i, a in enumerate(args[2:])))
@@ -271,7 +270,7 @@ class SQLDiff(object):
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
-            if field.unique:
+            if field.unique and meta.managed:
                 attname = field.db_column or field.attname
                 db_field_unique = table_indexes[attname]['unique']
                 if not db_field_unique and table_constraints:
