@@ -7,6 +7,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 from six.moves import input
+from ConfigParser import SafeConfigParser
 
 
 class Command(BaseCommand):
@@ -52,11 +53,22 @@ class Command(BaseCommand):
             raise CommandError("Unknown database router %s" % router)
 
         engine = dbinfo.get('ENGINE').split('.')[-1]
-        user = options.get('user') or dbinfo.get('USER')
-        password = options.get('password') or dbinfo.get('PASSWORD')
+
+        user = password = database_name = ''
+        if engine == 'mysql':
+            read_default_file = dbinfo.get('OPTIONS', {}).get('read_default_file')
+            if read_default_file:
+                config = SafeConfigParser()
+                config.read(read_default_file)
+                user = config.get('client', 'user')
+                password = config.get('client', 'password')
+                database_name = config.get('client', 'database')
+
+        user = options.get('user') or dbinfo.get('USER') or user
+        password = options.get('password') or dbinfo.get('PASSWORD') or password
         owner = options.get('owner') or user
 
-        database_name = options.get('dbname') or dbinfo.get('NAME')
+        database_name = options.get('dbname') or dbinfo.get('NAME') or database_name
         if database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
 
