@@ -714,7 +714,7 @@ def get_attribute_value(item, field, context, force=False):
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
-    elif isinstance(field, (DateField, DateTimeField)):
+    elif isinstance(field, (DateField, DateTimeField)) and value is not None:
         return "dateutil.parser.parse(\"%s\")" % value.isoformat()
 
     # A normal field (e.g. a python built-in)
