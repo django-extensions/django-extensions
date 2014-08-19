@@ -6,8 +6,7 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
-from six.moves import input
-from ConfigParser import SafeConfigParser
+from six.moves import input, configparser
 
 
 class Command(BaseCommand):
@@ -58,7 +57,7 @@ class Command(BaseCommand):
         if engine == 'mysql':
             read_default_file = dbinfo.get('OPTIONS', {}).get('read_default_file')
             if read_default_file:
-                config = SafeConfigParser()
+                config = configparser.ConfigParser()
                 config.read(read_default_file)
                 user = config.get('client', 'user')
                 password = config.get('client', 'password')
