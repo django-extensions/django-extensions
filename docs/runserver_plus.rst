@@ -137,7 +137,7 @@ To install OpenSSL::
   $ pip install pyOpenSSL
 
 Configuration
-^^^
+^^^^^^^^^^^^^
 
 The `RUNSERVERPLUS_SERVER_ADDRESS_PORT` setting can be configured to specify
 which address and port the development server should bind to.
@@ -146,6 +146,7 @@ If you find yourself frequently starting the server with::
 
   $ python manage.py runserver_plus 0.0.0.0:8000 
 
-You can use use setting to default your development to an address/port::
+You can use settings to automatically default your development to an address/port::
 
     RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
+
