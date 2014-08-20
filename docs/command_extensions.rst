@@ -6,6 +6,9 @@ Current Command Extensions
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
 
+* *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
+  source code at STDOUT.
+
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
   can indicate a template directory structure to use as your default.
