@@ -27,7 +27,7 @@ from django.core.management import sql as _sql
 from django.core.management import CommandError
 from django.core.management.color import no_style
 from django.db import transaction, connection
-from django.db.models.fields import IntegerField
+from django.db.models.fields import IntegerField, AutoField
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
@@ -755,7 +755,7 @@ class PostgresqlSQLDiff(SQLDiff):
         if not db_type:
             return
         if field:
-            if field.primary_key:
+            if field.primary_key and isinstance(field, AutoField):
                 if db_type == 'integer':
                     db_type = 'serial'
                 elif db_type == 'bigint':
