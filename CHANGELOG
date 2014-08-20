@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.3.11
+------
+
+Changes:
+ - Improvement: sqldiff, show differences for not managed tables
+ - Improvement: show_urls -f aligned, 3 spaces between columns
+ - Improvement: reset_db, support mysql options files in reset_db
+ - Fix: sqldiff, Fixed bug with --output_text option and notnull-differ text
+ - Fix: reset_db, Fix for PostgreSQL databases with dashes, dots, etc in the name
+ - Fix: dumpscript, AttributeError for datefields that are None
+ - Docs: Adding RUNSERVERPLUS_SERVER_ADDRESS_PORT to docs
+
+
 1.3.10
 ------
 
