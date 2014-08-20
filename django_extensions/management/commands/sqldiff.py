@@ -21,10 +21,12 @@ KNOWN ISSUES:
 """
 
 import six
+import sys
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
 from django.core.management import CommandError
+from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import transaction, connection
 from django.db.models.fields import IntegerField, AutoField
@@ -117,6 +119,7 @@ class SQLDiff(object):
     can_detect_notnull_differ = False
 
     def __init__(self, app_models, options):
+        self.has_differences = None
         self.app_models = app_models
         self.options = options
         self.dense = options.get('dense_output', False)
@@ -461,6 +464,7 @@ class SQLDiff(object):
             self.find_field_parameter_differ(meta, table_description, table_name)
             # 9) find: 'field-notnull'
             self.find_field_notnull_differ(meta, table_description, table_name)
+        self.has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
 
     def print_diff(self, style=no_style()):
         """ print differences to stdout """
@@ -822,6 +826,10 @@ to check/debug ur models compared to the real database tables and columns."""
     output_transaction = False
     args = '<appname appname ...>'
 
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.exit_code = 1
+
     def handle(self, *app_labels, **options):
         from django.db import models
         from django.conf import settings
@@ -868,5 +876,22 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
         cls = DATABASE_SQLDIFF_CLASSES.get(engine, GenericSQLDiff)
         sqldiff_instance = cls(app_models, options)
         sqldiff_instance.find_differences()
+        if not sqldiff_instance.has_differences:
+            self.exit_code = 0
         sqldiff_instance.print_diff(self.style)
-        return
+
+    def execute(self, *args, **options):
+        try:
+            super(Command, self).execute(*args, **options)
+        except CommandError as e:
+            if options.get('traceback', False):
+                raise
+
+            # self.stderr is not guaranteed to be set here
+            stderr = getattr(self, 'stderr', OutputWrapper(sys.stderr, self.style.ERROR))
+            stderr.write('%s: %s' % (e.__class__.__name__, e))
+            sys.exit(2)
+
+    def run_from_argv(self, argv):
+        super(Command, self).run_from_argv(argv)
+        sys.exit(self.exit_code)
