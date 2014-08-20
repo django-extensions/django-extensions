@@ -21,13 +21,13 @@ KNOWN ISSUES:
 """
 
 import six
+from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
 from django.core.management import CommandError
 from django.core.management.color import no_style
 from django.db import transaction, connection
 from django.db.models.fields import IntegerField
-from optparse import make_option
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
