@@ -464,7 +464,7 @@ class SQLDiff(object):
             self.find_field_parameter_differ(meta, table_description, table_name)
             # 9) find: 'field-notnull'
             self.find_field_notnull_differ(meta, table_description, table_name)
-        self.has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
+        self.has_differences = max([len(diffs) for _app_label, _model_name, diffs in self.differences])
 
     def print_diff(self, style=no_style()):
         """ print differences to stdout """
@@ -503,8 +503,7 @@ class SQLDiff(object):
 
         cur_app_label = None
         qn = connection.ops.quote_name
-        has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
-        if not has_differences:
+        if not self.has_differences:
             if not self.dense:
                 print(style.SQL_KEYWORD("-- No differences"))
         else:
