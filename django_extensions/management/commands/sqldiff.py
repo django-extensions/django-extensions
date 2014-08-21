@@ -12,7 +12,7 @@ TODO:
 KNOWN ISSUES:
  - MySQL has by far the most problems with introspection. Please be
    carefull when using MySQL with sqldiff.
-   - Booleans are reported back as Integers, so there's know way to know if
+   - Booleans are reported back as Integers, so there's no way to know if
      there was a real change.
    - Varchar sizes are reported back without unicode support so their size
      may change in comparison to the real length of the varchar.
