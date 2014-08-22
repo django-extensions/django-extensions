@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 import logging
 
 try:
@@ -58,3 +59,19 @@ class ShowTemplateTagsTests(TestCase):
         self.assertIn('django_extensions', output)
         # let's check at least one
         self.assertIn('truncate_letters', output)
+
+
+class UpdatePermissionsTests(TestCase):
+    def test_works(self):
+        from django.db import models
+
+        class PermModel(models.Model):
+            class Meta:
+                app_label = 'django_extensions'
+                permissions = (('test_permission', 'test_permission'),)
+
+        original_stdout = sys.stdout
+        out = sys.stdout = StringIO()
+        call_command('update_permissions', stdout=out, verbosity=3)
+        sys.stdout = original_stdout
+        self.assertIn("Can change perm model", out.getvalue())
