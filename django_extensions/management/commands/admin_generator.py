@@ -7,53 +7,52 @@ import optparse
 from django.db.models.loading import get_models
 from django.db import models
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from django_extensions.management.color import color_style
 
+# Configurable constants
+MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
+INDENT_WIDTH = getattr(settings, 'INDENT_WIDTH', 4)
+LIST_FILTER_THRESHOLD = getattr(settings, 'LIST_FILTER_THRESHOLD', 25)
+RAW_ID_THRESHOLD = getattr(settings, 'RAW_ID_THRESHOLD', 100)
 
-MAX_LINE_WIDTH = 78
-INDENT_WIDTH = 4
-
-LIST_FILTER = (
+LIST_FILTER = getattr(settings, 'LIST_FILTER', (
     models.DateField,
     models.DateTimeField,
     models.ForeignKey,
     models.BooleanField,
-)
+))
 
-SEARCH_FIELD_NAMES = (
+SEARCH_FIELD_NAMES = getattr(settings, 'SEARCH_FIELD_NAMES', (
     'name',
     'slug',
-)
+))
 
-DATE_HIERARCHY_NAMES = (
+DATE_HIERARCHY_NAMES = getattr(settings, 'DATE_HIERARCHY_NAMES', (
     'joined_at',
     'updated_at',
     'created_at',
-)
+))
 
-PREPOPULATED_FIELD_NAMES = (
+PREPOPULATED_FIELD_NAMES = getattr(settings, 'PREPOPULATED_FIELD_NAMES', (
     'slug=name',
-)
+))
 
-LIST_FILTER_THRESHOLD = 25
-RAW_ID_THRESHOLD = 100
-
-PRINT_IMPORTS = '''# -*- coding: utf-8 -*-
+PRINT_IMPORTS = getattr(settings, 'PRINT_IMPORTS', '''# -*- coding: utf-8 -*-
 from django.contrib import admin
 
 from .models import %(models)s
-'''
+''')
 
-PRINT_ADMIN_CLASS = '''
+PRINT_ADMIN_CLASS = getattr(settings, 'PRINT_ADMIN_CLASS', '''
 
 class %(name)sAdmin(admin.ModelAdmin):%(class_)s
 admin.site.register(%(name)s, %(name)sAdmin)
-'''
+''')
 
-
-PRINT_ADMIN_PROPERTY = '''
-    %(key)s = %(value)s'''
+PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
+    %(key)s = %(value)s''')
 
 
 class AdminApp(object):
