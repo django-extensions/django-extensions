@@ -80,7 +80,10 @@ class AdminApp(object):
         return ''.join(self._unicode_generator())
 
     def __str__(self):
-        return unicode(self).encode('utf-8', 'replace')
+        try:
+            return unicode(self).encode('utf-8', 'replace')
+        except NameError:
+            return str(self).encode('utf-8', 'replace')
 
     def _unicode_generator(self):
         models_list = [admin_model.name for admin_model in self]
@@ -186,7 +189,10 @@ class AdminModel(object):
         return field.name
 
     def __str__(self):
-        return unicode(self).encode('utf-8', 'replace')
+        try:
+            return unicode(self).encode('utf-8', 'replace')
+        except NameError:
+            return str(self).encode('utf-8', 'replace')
 
     def __unicode__(self):
         return ''.join(self._unicode_generator())
@@ -196,7 +202,7 @@ class AdminModel(object):
             return self._yield_tuple(key, tuple(value))
         elif isinstance(value, dict):
             return self._yield_dict(key, value)
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return self._yield_string(key, value)
         else:  # pragma: no cover
             raise TypeError('%s is not supported in %r' % (type(value), value))
@@ -212,7 +218,7 @@ class AdminModel(object):
         row = self._yield_string(key, value)
         if len(row) > MAX_LINE_WIDTH:
             row_parts.append(self._yield_string(key, '{', str))
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 row_parts.append('%s%r: %r' % (2 * INDENT_WIDTH * ' ', k, v))
 
             row_parts.append(INDENT_WIDTH * ' ' + '}')
