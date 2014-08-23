@@ -550,9 +550,21 @@ class GenericSQLDiff(SQLDiff):
 
 
 class MySQLDiff(SQLDiff):
-    can_detect_notnull_differ = False
+    can_detect_notnull_differ = True
     can_detect_unsigned_differ = True
     unsigned_suffix = 'UNSIGNED'
+
+    def load_null(self):
+        tablespace = 'public'
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name, is_nullable
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                    AND table_name = %s""", [table_name])
+            for table_info in result:
+                key = (tablespace, table_name, table_info['column_name'])
+                self.null[key] = table_info['is_nullable'] == 'YES'
 
     def load_unsigned(self):
         tablespace = 'public'
