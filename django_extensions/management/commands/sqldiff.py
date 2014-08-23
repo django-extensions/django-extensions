@@ -537,13 +537,6 @@ class MySQLDiff(SQLDiff):
     # that this is way unreliable for MySQL atm.
     def get_field_db_type(self, description, field=None, table_name=None):
         from MySQLdb.constants import FIELD_TYPE
-        # weird bug? in mysql db-api where it returns three times the correct value for field length
-        # if i remember correctly it had something todo with unicode strings
-        # TODO: Fix this is a more meaningful and better understood manner
-        description = list(description)
-        if description[1] not in [FIELD_TYPE.TINY, FIELD_TYPE.SHORT]:  # exclude tinyints from conversion.
-            description[3] = description[3] / 3
-            description[4] = description[4] / 3
         db_type = super(MySQLDiff, self).get_field_db_type(description)
         if not db_type:
             return
