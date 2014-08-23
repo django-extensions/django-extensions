@@ -42,4 +42,3 @@ matrix:
       env: DJANGO=Django==1.5
   allow_failures:
       - env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
-      - python: pypy
