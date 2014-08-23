@@ -117,6 +117,8 @@ class SQLDiff(object):
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
 
     can_detect_notnull_differ = False
+    can_detect_unsigned_differ = False
+    unsigned_suffix = None
 
     def __init__(self, app_models, options):
         self.has_differences = None
@@ -137,6 +139,7 @@ class SQLDiff(object):
         self.unknown_db_fields = {}
         self.new_db_fields = set()
         self.null = {}
+        self.unsigned = {}
 
         self.DIFF_SQL = {
             'error': self.SQL_ERROR,
@@ -158,8 +161,14 @@ class SQLDiff(object):
         if self.can_detect_notnull_differ:
             self.load_null()
 
+        if self.can_detect_unsigned_differ:
+            self.load_unsigned()
+
     def load_null(self):
         raise NotImplementedError("load_null functions must be implemented if diff backend has 'can_detect_notnull_differ' set to True")
+
+    def load_unsigned(self):
+        raise NotImplementedError("load_unsigned function must be implemented if diff backend has 'can_detect_unsigned_differ' set to True")
 
     def add_app_model_marker(self, app_label, model_name):
         self.differences.append((app_label, model_name, []))
@@ -255,6 +264,13 @@ class SQLDiff(object):
             field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
         else:
             field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
+
+        tablespace = field.db_tablespace
+        if not tablespace:
+            tablespace = "public"
+        if self.unsigned.get((tablespace, table_name, field.column), False):
+            field_db_type = '%s %s' % (field_db_type, self.unsigned_suffix)
+
         return field_db_type
 
     def get_field_db_type_lookup(self, type_code):
@@ -478,6 +494,10 @@ class SQLDiff(object):
             print(style.NOTICE("# Detecting notnull changes not implemented for this database backend"))
             print("")
 
+        if not self.can_detect_unsigned_differ:
+            print(style.NOTICE("# Detecting unsigned changes not implemented for this database backend"))
+            print("")
+
         cur_app_label = None
         for app_label, model_name, diffs in self.differences:
             if not diffs:
@@ -531,17 +551,35 @@ class GenericSQLDiff(SQLDiff):
 
 class MySQLDiff(SQLDiff):
     can_detect_notnull_differ = False
+    can_detect_unsigned_differ = True
+    unsigned_suffix = 'UNSIGNED'
+
+    def load_unsigned(self):
+        tablespace = 'public'
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                    AND table_name = %s
+                    AND column_type LIKE '%%unsigned'""", [table_name])
+            for table_info in result:
+                key = (tablespace, table_name, table_info['column_name'])
+                self.unsigned[key] = True
 
     # All the MySQL hacks together create something of a problem
     # Fixing one bug in MySQL creates another issue. So just keep in mind
     # that this is way unreliable for MySQL atm.
     def get_field_db_type(self, description, field=None, table_name=None):
         from MySQLdb.constants import FIELD_TYPE
-        db_type = super(MySQLDiff, self).get_field_db_type(description)
+        db_type = super(MySQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
-            numeric_types = ['integer', 'smallint', 'bool', 'bigint']
+            parts = db_type.split(' ', 1)
+            db_data_type = parts.pop(0)
+            if field.primary_key and (db_data_type == 'integer' or db_type == 'bigint'):
+                db_type += ' AUTO_INCREMENT'
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
@@ -552,25 +590,9 @@ class MySQLDiff(SQLDiff):
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
                 db_type = 'bool'
             if db_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
-                db_type = 'smallint'
-            if db_type in numeric_types:
-                if self.get_field_db_unsigned(field, table_name):
-                    db_type += ' UNSIGNED'
-                if field.primary_key:
-                    db_type += ' AUTO_INCREMENT'
+                parts.insert(0, 'smallint')
+                db_type = ' '.join(parts)
         return db_type
-
-    @transaction.autocommit
-    def get_field_db_unsigned(self, field, table_name):
-        cursor = connection.cursor()
-        cursor.execute("""
-            SELECT column_type
-            FROM information_schema.columns
-            WHERE table_schema = DATABASE()
-                AND table_name = %s
-                AND column_name = %s""", [table_name, field.column])
-        column_type = cursor.fetchall()[0][0]
-        return column_type.endswith('unsigned')
 
 
 class SqliteSQLDiff(SQLDiff):
@@ -608,7 +630,7 @@ class SqliteSQLDiff(SQLDiff):
         pass
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(SqliteSQLDiff, self).get_field_db_type(description)
+        db_type = super(SqliteSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
@@ -621,6 +643,7 @@ class SqliteSQLDiff(SQLDiff):
 
 class PostgresqlSQLDiff(SQLDiff):
     can_detect_notnull_differ = True
+    can_detect_unsigned_differ = True
 
     DATA_TYPES_REVERSE_OVERRIDE = {
         1042: 'CharField',
@@ -665,6 +688,11 @@ class PostgresqlSQLDiff(SQLDiff):
         for dct in self.sql_to_dict(self.SQL_LOAD_NULL, []):
             key = (dct['nspname'], dct['relname'], dct['attname'])
             self.null[key] = not dct['attnotnull']
+
+    def load_unsigned(self):
+        # PostgreSQL does not support unsigned, so no columns are
+        # unsigned. Nothing to do.
+        pass
 
     def load_constraints(self):
         for dct in self.sql_to_dict(self.SQL_LOAD_CONSTRAINTS, []):
@@ -760,10 +788,7 @@ class PostgresqlSQLDiff(SQLDiff):
         return constraints
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        if getattr(field, 'geography', False):
-            db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field=field)
-        else:
-            db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
+        db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
