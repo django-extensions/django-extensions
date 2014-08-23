@@ -359,7 +359,7 @@ class SQLDiff(object):
             description = db_fields[field.name]
 
             model_type = self.get_field_model_type(field)
-            db_type = self.get_field_db_type(description, field)
+            db_type = self.get_field_db_type(description, field, table_name)
 
             # use callback function if defined
             if func:
@@ -541,8 +541,7 @@ class MySQLDiff(SQLDiff):
         if not db_type:
             return
         if field:
-            if field.primary_key and (db_type == 'integer' or db_type == 'bigint'):
-                db_type += ' AUTO_INCREMENT'
+            numeric_types = ['integer', 'smallint', 'bool', 'bigint']
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
@@ -553,8 +552,25 @@ class MySQLDiff(SQLDiff):
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
                 db_type = 'bool'
             if db_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
-                db_type = 'smallint UNSIGNED'  # FIXME: what about if it's not UNSIGNED ?
+                db_type = 'smallint'
+            if db_type in numeric_types:
+                if self.get_field_db_unsigned(field, table_name):
+                    db_type += ' UNSIGNED'
+                if field.primary_key:
+                    db_type += ' AUTO_INCREMENT'
         return db_type
+
+    @transaction.autocommit
+    def get_field_db_unsigned(self, field, table_name):
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT column_type
+            FROM information_schema.columns
+            WHERE table_schema = DATABASE()
+                AND table_name = %s
+                AND column_name = %s""", [table_name, field.column])
+        column_type = cursor.fetchall()[0][0]
+        return column_type.endswith('unsigned')
 
 
 class SqliteSQLDiff(SQLDiff):
