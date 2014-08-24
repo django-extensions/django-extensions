@@ -590,7 +590,7 @@ class MySQLDiff(SQLDiff):
         if field:
             parts = db_type.split(' ', 1)
             db_data_type = parts.pop(0)
-            if field.primary_key and (db_data_type == 'integer' or db_type == 'bigint'):
+            if field.primary_key and (db_data_type == 'integer' or db_data_type == 'bigint'):
                 db_type += ' AUTO_INCREMENT'
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
@@ -601,7 +601,7 @@ class MySQLDiff(SQLDiff):
             # just convert it back to it's proper type, a bool is a bool and nothing else.
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
                 db_type = 'bool'
-            if db_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
+            if db_data_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
                 parts.insert(0, 'smallint')
                 db_type = ' '.join(parts)
         return db_type
