@@ -555,7 +555,7 @@ class MySQLDiff(SQLDiff):
     unsigned_suffix = 'UNSIGNED'
 
     def __init__(self, app_models, options):
-        SQLDiff.__init__(self, app_models, options)
+        super(MySQLDiff, self).__init__(app_models, options)
         self.auto_increment = set()
         self.load_auto_increment()
 
@@ -709,7 +709,7 @@ class PostgresqlSQLDiff(SQLDiff):
     SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
     def __init__(self, app_models, options):
-        SQLDiff.__init__(self, app_models, options)
+        super(PostgresqlSQLDiff, self).__init__(app_models, options)
         self.check_constraints = {}
         self.load_constraints()
 
