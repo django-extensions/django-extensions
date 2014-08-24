@@ -139,7 +139,7 @@ class SQLDiff(object):
         self.unknown_db_fields = {}
         self.new_db_fields = set()
         self.null = {}
-        self.unsigned = {}
+        self.unsigned = set()
 
         self.DIFF_SQL = {
             'error': self.SQL_ERROR,
@@ -268,7 +268,7 @@ class SQLDiff(object):
         tablespace = field.db_tablespace
         if not tablespace:
             tablespace = "public"
-        if self.unsigned.get((tablespace, table_name, field.column), False):
+        if (tablespace, table_name, field.column) in self.unsigned:
             field_db_type = '%s %s' % (field_db_type, self.unsigned_suffix)
 
         return field_db_type
@@ -554,6 +554,11 @@ class MySQLDiff(SQLDiff):
     can_detect_unsigned_differ = True
     unsigned_suffix = 'UNSIGNED'
 
+    def __init__(self, app_models, options):
+        SQLDiff.__init__(self, app_models, options)
+        self.auto_increment = set()
+        self.load_auto_increment()
+
     def load_null(self):
         tablespace = 'public'
         for table_name in self.db_tables:
@@ -577,7 +582,19 @@ class MySQLDiff(SQLDiff):
                     AND column_type LIKE '%%unsigned'""", [table_name])
             for table_info in result:
                 key = (tablespace, table_name, table_info['column_name'])
-                self.unsigned[key] = True
+                self.unsigned.add(key)
+
+    def load_auto_increment(self):
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                   AND table_name = %s
+                   AND extra = 'auto_increment'""", [table_name])
+            for table_info in result:
+                key = (table_name, table_info['column_name'])
+                self.auto_increment.add(key)
 
     # All the MySQL hacks together create something of a problem
     # Fixing one bug in MySQL creates another issue. So just keep in mind
@@ -590,8 +607,6 @@ class MySQLDiff(SQLDiff):
         if field:
             parts = db_type.split(' ', 1)
             db_data_type = parts.pop(0)
-            if field.primary_key and (db_data_type == 'integer' or db_data_type == 'bigint'):
-                db_type += ' AUTO_INCREMENT'
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
@@ -604,6 +619,8 @@ class MySQLDiff(SQLDiff):
             if db_data_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
                 parts.insert(0, 'smallint')
                 db_type = ' '.join(parts)
+            if (table_name, field.column) in self.auto_increment:
+                db_type += ' AUTO_INCREMENT'
         return db_type
 
 
