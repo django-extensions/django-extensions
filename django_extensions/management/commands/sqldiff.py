@@ -22,6 +22,7 @@ KNOWN ISSUES:
 
 import six
 import sys
+import warnings
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
@@ -558,6 +559,13 @@ class MySQLDiff(SQLDiff):
         super(MySQLDiff, self).__init__(app_models, options)
         self.auto_increment = set()
         self.load_auto_increment()
+        if not getattr(connection.features, 'can_introspect_small_integer_field', False):
+            from MySQLdb.constants import FIELD_TYPE
+            warnings.warn(
+                'Django version < 1.8 does not support MySQL small ' +
+                'integer introspection, adding override',
+                DeprecationWarning)
+            self.DATA_TYPES_REVERSE_OVERRIDE[FIELD_TYPE.SHORT] = 'SmallIntegerField'
 
     def load_null(self):
         tablespace = 'public'
@@ -616,9 +624,6 @@ class MySQLDiff(SQLDiff):
             # just convert it back to it's proper type, a bool is a bool and nothing else.
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
                 db_type = 'bool'
-            if db_data_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
-                parts.insert(0, 'smallint')
-                db_type = ' '.join(parts)
             if (table_name, field.column) in self.auto_increment:
                 db_type += ' AUTO_INCREMENT'
         return db_type
