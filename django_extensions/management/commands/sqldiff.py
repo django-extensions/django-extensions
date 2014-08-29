@@ -613,8 +613,6 @@ class MySQLDiff(SQLDiff):
         if not db_type:
             return
         if field:
-            parts = db_type.split(' ', 1)
-            db_data_type = parts.pop(0)
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
