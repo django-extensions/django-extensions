@@ -22,7 +22,6 @@ KNOWN ISSUES:
 
 import six
 import sys
-import warnings
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
@@ -561,10 +560,7 @@ class MySQLDiff(SQLDiff):
         self.load_auto_increment()
         if not getattr(connection.features, 'can_introspect_small_integer_field', False):
             from MySQLdb.constants import FIELD_TYPE
-            warnings.warn(
-                'Django version < 1.8 does not support MySQL small ' +
-                'integer introspection, adding override',
-                DeprecationWarning)
+            # Django version < 1.8 does not support MySQL small integer introspection, adding override.
             self.DATA_TYPES_REVERSE_OVERRIDE[FIELD_TYPE.SHORT] = 'SmallIntegerField'
 
     def load_null(self):
