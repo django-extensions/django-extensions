@@ -71,6 +71,7 @@ class SQLDiff(object):
         'error',
         'comment',
         'table-missing-in-db',
+        'table-missing-in-model',
         'field-missing-in-db',
         'field-missing-in-model',
         'fkey-missing-in-db',
@@ -87,6 +88,7 @@ class SQLDiff(object):
         'error': 'error: %(0)s',
         'comment': 'comment: %(0)s',
         'table-missing-in-db': "table '%(0)s' missing in database",
+        'table-missing-in-model': "table '%(0)s' missing in models",
         'field-missing-in-db': "field '%(1)s' defined in model but missing in database",
         'field-missing-in-model': "field '%(1)s' defined in database but missing in model",
         'fkey-missing-in-db': "field '%(1)s' FOREIGN KEY defined in model but missing in database",
@@ -115,6 +117,7 @@ class SQLDiff(object):
     SQL_ERROR = lambda self, style, qn, args: style.NOTICE('-- Error: %s' % style.ERROR(args[0]))
     SQL_COMMENT = lambda self, style, qn, args: style.NOTICE('-- Comment: %s' % style.SQL_TABLE(args[0]))
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
+    SQL_TABLE_MISSING_IN_MODEL = lambda self, style, qn, args: style.NOTICE('-- Model missing for table: %s' % args[0])
 
     can_detect_notnull_differ = False
     can_detect_unsigned_differ = False
@@ -145,6 +148,7 @@ class SQLDiff(object):
             'error': self.SQL_ERROR,
             'comment': self.SQL_COMMENT,
             'table-missing-in-db': self.SQL_TABLE_MISSING_IN_DB,
+            'table-missing-in-model': self.SQL_TABLE_MISSING_IN_MODEL,
             'field-missing-in-db': self.SQL_FIELD_MISSING_IN_DB,
             'field-missing-in-model': self.SQL_FIELD_MISSING_IN_MODEL,
             'fkey-missing-in-db': self.SQL_FKEY_MISSING_IN_DB,
@@ -421,6 +425,12 @@ class SQLDiff(object):
 
     @transaction.commit_manually
     def find_differences(self):
+        if self.options['all_applications']:
+            self.add_app_model_marker(None, None)
+            for table in self.db_tables:
+                if table not in self.django_tables:
+                    self.add_difference('table-missing-in-model', table)
+
         cur_app_label = None
         for app_model in self.app_models:
             meta = app_model._meta
@@ -502,10 +512,10 @@ class SQLDiff(object):
         for app_label, model_name, diffs in self.differences:
             if not diffs:
                 continue
-            if not self.dense and cur_app_label != app_label:
+            if not self.dense and app_label and cur_app_label != app_label:
                 print("%s %s" % (style.NOTICE("+ Application:"), style.SQL_TABLE(app_label)))
                 cur_app_label = app_label
-            if not self.dense:
+            if not self.dense and model_name:
                 print("%s %s" % (style.NOTICE("|-+ Differences for model:"), style.SQL_TABLE(model_name)))
             for diff in diffs:
                 diff_type, diff_args = diff
@@ -514,7 +524,10 @@ class SQLDiff(object):
                 if not self.dense:
                     print("%s %s" % (style.NOTICE("|--+"), text))
                 else:
-                    print("%s %s %s %s %s" % (style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text))
+                    if app_label:
+                        print("%s %s %s %s %s" % (style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text))
+                    else:
+                        print(text)
 
     def print_diff_sql(self, style):
         if not self.can_detect_notnull_differ:
