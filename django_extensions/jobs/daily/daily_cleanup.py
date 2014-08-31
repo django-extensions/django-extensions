@@ -13,4 +13,7 @@ class Job(DailyJob):
 
     def execute(self):
         from django.core import management
-        management.call_command("cleanup")
+        try:
+            management.call_command('clearsessions')
+        except management.CommandError:
+            management.call_command("cleanup")  # Django <1.5
