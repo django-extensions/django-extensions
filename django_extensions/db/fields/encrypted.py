@@ -30,12 +30,16 @@ class BaseEncryptedField(models.Field):
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
-            max_length = len(self.prefix) + len(self.crypt.Encrypt('x' * max_length))
-            # TODO: Re-examine if this logic will actually make a large-enough
-            # max-length for unicode strings that have non-ascii characters in them.
-            kwargs['max_length'] = max_length
+            kwargs['max_length'] = self.calculate_crypt_max_length(max_length)
 
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
+
+    def calculate_crypt_max_length(self, unencrypted_length):
+        # TODO: Re-examine if this logic will actually make a large-enough
+        # max-length for unicode strings that have non-ascii characters in them.
+        # For PostGreSQL we might as well always use textfield since there is little
+        # difference (except for length checking) between varchar and text in PG.
+        return len(self.prefix) + len(self.crypt.Encrypt('x' * unencrypted_length))
 
     def get_crypt_class(self):
         """
@@ -99,7 +103,7 @@ class BaseEncryptedField(models.Field):
 
     def deconstruct(self):
         name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
-        kwargs['max_length'] = self.max_length
+        kwargs['max_length'] = self.unencrypted_length
         return name, path, args, kwargs
 
 
