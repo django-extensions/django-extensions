@@ -1,6 +1,25 @@
 Changelog
 =========
 
+
+1.3.12
+------
+
+Changes:
+ - New admin_generator, can generate a admin.py file from models
+ - Improvement: sqldiff, use the same exit codes as diff uses
+ - Improvement: sqldiff, add support for unsigned numeric fields
+ - Improvement: sqldiff, add NOT NULL support for MySQL
+ - Improvement: sqldiff, add proper AUTO_INCREMENT support for MySQL
+ - Improvement: sqldiff, detect tables for which no model exists
+ - Improvement: travis.yml, add pypy to tests
+ - Fix: sqldiff, fix for mysql misreported field lengths
+ - Fix: sqldiff, in PG custom int primary keys would be mistaking for serial
+ - Fix: sqldiff, use Django 1.7 db_parameters() for detect check constraints
+ - Fix: update_permissions, Django 1.7 support
+ - Fix: encrypted fields, fix for Django 1.7 migrations
+
+
 1.3.11
 ------
 
