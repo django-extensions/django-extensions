@@ -23,6 +23,8 @@ KNOWN ISSUES:
 import six
 import sys
 from optparse import make_option
+
+import django
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
 from django.core.management import CommandError
@@ -66,6 +68,11 @@ def all_local_fields(meta):
 
 class SQLDiff(object):
     DATA_TYPES_REVERSE_OVERRIDE = {}
+
+    IGNORE_MISSING_TABLES = [
+        "django_migrations",
+        "south_migrationhistory",
+    ]
 
     DIFF_TYPES = [
         'error',
@@ -405,8 +412,20 @@ class SQLDiff(object):
             if func:
                 model_type, db_type = func(field, description, model_type, db_type)
 
-            if not model_type == db_type:
-                self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
+            if django.VERSION[:2] >= (1, 7):
+                # Django >=1.7
+                model_check = field.db_parameters(connection=connection)['check']
+                if ' CHECK' in db_type:
+                    db_type, db_check = db_type.split(" CHECK", 1)
+                    db_check = db_check.strip().lstrip("(").rstrip(")")
+                else:
+                    db_check = None
+                if not model_type == db_type and not model_check == db_check:
+                    self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
+            else:
+                # Django <1.7
+                if not model_type == db_type:
+                    self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
 
     def find_field_notnull_differ(self, meta, table_description, table_name):
         if not self.can_detect_notnull_differ:
@@ -428,7 +447,7 @@ class SQLDiff(object):
         if self.options['all_applications']:
             self.add_app_model_marker(None, None)
             for table in self.db_tables:
-                if table not in self.django_tables:
+                if table not in self.django_tables and table not in self.IGNORE_MISSING_TABLES:
                     self.add_difference('table-missing-in-model', table)
 
         cur_app_label = None
@@ -547,7 +566,7 @@ class SQLDiff(object):
                 if not self.dense and cur_app_label != app_label:
                     print(style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label)))
                     cur_app_label = app_label
-                if not self.dense:
+                if not self.dense and model_name:
                     print(style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name)))
                 for diff in diffs:
                     diff_type, diff_args = diff
