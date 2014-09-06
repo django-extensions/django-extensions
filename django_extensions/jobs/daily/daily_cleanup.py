@@ -13,4 +13,9 @@ class Job(DailyJob):
 
     def execute(self):
         from django.core import management
-        management.call_command("cleanup")
+        from django import VERSION
+
+        if VERSION[:2] < (1, 5):
+            management.call_command("cleanup")
+        else:
+            management.call_command("clearsessions")
