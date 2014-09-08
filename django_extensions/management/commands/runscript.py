@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from optparse import make_option
-import imp
+import importlib
 
 
 def vararg_callback(option, opt_str, opt_value, parser):
@@ -86,10 +86,7 @@ class Command(BaseCommand):
             # check if module exists before importing
             try:
                 path = None
-                for package in mod.split('.')[:-1]:
-                    module_tuple = imp.find_module(package, path)
-                    path = imp.load_module(package, *module_tuple).__path__
-                imp.find_module(mod.split('.')[-1], path)
+                importlib.import_module(mod)
                 t = __import__(mod, [], [], [" "])
             except (ImportError, AttributeError):
                 return False
