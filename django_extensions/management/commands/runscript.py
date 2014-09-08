@@ -85,10 +85,14 @@ class Command(BaseCommand):
                 print(NOTICE("Check for %s" % mod))
             # check if module exists before importing
             try:
-                path = None
                 importlib.import_module(mod)
                 t = __import__(mod, [], [], [" "])
             except (ImportError, AttributeError):
+                if str(e).startswith('No module named'):
+                    return False
+                else:
+                    if verbosity > 1:
+                        print(ERROR("Cannot import module '%s': %s." % (mod, e)))
                 return False
 
             #if verbosity > 1:
