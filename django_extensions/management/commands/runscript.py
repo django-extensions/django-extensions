@@ -87,7 +87,7 @@ class Command(BaseCommand):
             try:
                 importlib.import_module(mod)
                 t = __import__(mod, [], [], [" "])
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as e:
                 if str(e).startswith('No module named'):
                     return False
                 else:
