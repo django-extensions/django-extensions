@@ -67,7 +67,7 @@ class Command(BaseCommand):
                     help="Show urls unsorted but same order as found in url patterns"),
         make_option("--language", "-l", dest="language",
                     help="Set the language code (useful for i18n_patterns)"),
-        make_option("--decorator", "-d", dest="decorator",
+        make_option("--decorator", "-d", action="append", dest="decorator", default=[],
                     help="Show the presence of given decorator on views"),
         make_option("--format", "-f", dest="format_style", default="dense",
                     help="Style of the output. Choices: %s" % FMTR.keys())
@@ -93,8 +93,8 @@ class Command(BaseCommand):
             activate(language)
 
         decorator = options.get('decorator')
-        if decorator is None:
-            decorator = 'login_required'
+        if not decorator:
+            decorator = ['login_required']
 
         format_style = options.get('format_style')
         if format_style not in FMTR:
@@ -122,7 +122,7 @@ class Command(BaseCommand):
                 else:
                     func_globals = {}
 
-                decorators = [decorator] if decorator in func_globals else []
+                decorators = [d for d in decorator if d in func_globals]
 
                 if isinstance(func, functools.partial):
                     func = func.func
@@ -146,7 +146,7 @@ class Command(BaseCommand):
             views = sorted(views)
 
         if format_style == 'aligned':
-            views = [row.split(',') for row in views]
+            views = [row.split(',', 3) for row in views]
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             views = [
                 '   '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
@@ -155,7 +155,7 @@ class Command(BaseCommand):
         elif format_style == 'table':
             # Reformat all data and show in a table format
 
-            views = [row.split(',') for row in views]
+            views = [row.split(',', 3) for row in views]
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             table_views = []
 
