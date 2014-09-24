@@ -218,7 +218,7 @@ class Command(NoArgsCommand):
 
         if not callable(shell):
             if shell:
-                print shell
+                print(shell)
             print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
             return
 
