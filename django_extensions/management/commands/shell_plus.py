@@ -212,7 +212,7 @@ class Command(NoArgsCommand):
         else:
             for shell_name, func in shells:
                 shell = func()
-                if shell:
+                if callable(shell):
                     break
 
         if not callable(shell):
