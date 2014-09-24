@@ -161,6 +161,7 @@ class Command(NoArgsCommand):
         def get_ipython():
             try:
                 from IPython import embed
+
                 def run_ipython():
                     imported_objects = import_objects(options, self.style)
                     embed(user_ns=imported_objects)
