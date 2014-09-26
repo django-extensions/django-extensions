@@ -153,7 +153,11 @@ def import_objects(options, style):
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports"))
     for app_mod, models in sorted(six.iteritems(load_models)):
-        app_name = app_mod.split('.')[-2]
+        try:
+            app_name = app_mod.split('.')[-2]
+        except IndexError:
+            # Some weird model naming scheme like in Sentry.
+            app_name = app_mod
         app_aliases = model_aliases.get(app_name, {})
         model_labels = []
 
