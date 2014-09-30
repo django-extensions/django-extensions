@@ -117,6 +117,7 @@ def get_models(app_labels):
     if not app_labels:
         for app in get_apps():
             models += [m for m in get_all_models(app) if m not in EXCLUDED_MODELS]
+        return models
 
     # Get all relevant apps
     for app_label in app_labels:
