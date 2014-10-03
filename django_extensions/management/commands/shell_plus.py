@@ -18,6 +18,8 @@ class Command(NoArgsCommand):
                     help='Tells Django to use BPython, not IPython.'),
         make_option('--ptpython', action='store_true', dest='ptpython',
                     help='Tells Django to use PTPython, not IPython.'),
+        make_option('--ptipython', action='store_true', dest='ptipython',
+                    help='Tells Django to use PT-IPython, not IPython.'),
         make_option('--ipython', action='store_true', dest='ipython',
                     help='Tells Django to use IPython, not BPython.'),
         make_option('--notebook', action='store_true', dest='notebook',
@@ -33,7 +35,7 @@ class Command(NoArgsCommand):
         make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
                     help='Do not display loaded models messages'),
         make_option('--vi', action='store_true', default=False, dest='vi_mode',
-                    help='Load Vi key bindings (for --ptpython)'),
+                    help='Load Vi key bindings (for --ptpython and --ptipython)'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -46,6 +48,7 @@ class Command(NoArgsCommand):
         use_bpython = options.get('bpython', False)
         use_plain = options.get('plain', False)
         use_ptpython = options.get('ptpython', False)
+        use_ptipython = options.get('ptipython', False)
         use_pythonrc = options.get('use_pythonrc', True)
 
         if options.get("print_sql", False):
@@ -201,7 +204,21 @@ class Command(NoArgsCommand):
                       vi_mode=options.get('vi_mode', False))
             return run_ptpython
 
+        def get_ptipython():
+            try:
+                from prompt_toolkit.contrib.ipython import embed
+            except ImportError:
+                return traceback.format_exc()
+
+            def run_ptipython():
+                imported_objects = import_objects(options, self.style)
+                history_filename = os.path.expanduser('~/.ptpython_history')
+                embed(user_ns=imported_objects, history_filename=history_filename,
+                      vi_mode=options.get('vi_mode', False))
+            return run_ptipython
+
         shells = (
+            ('ptipython', get_ptipython),
             ('ptpython', get_ptpython),
             ('bpython', get_bpython),
             ('ipython', get_ipython),
@@ -229,6 +246,9 @@ class Command(NoArgsCommand):
         elif use_ptpython:
             shell = get_ptpython()
             shell_name = "ptpython"
+        elif use_ptipython:
+            shell = get_ptipython()
+            shell_name = "ptipython"
         elif SETTINGS_SHELL_PLUS:
             shell_name = SETTINGS_SHELL_PLUS
             shell = dict(shells)[shell_name]()
