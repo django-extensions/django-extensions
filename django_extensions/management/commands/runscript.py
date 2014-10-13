@@ -1,8 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from optparse import make_option
-import importlib
-
+try:
+    import importlib
+except ImportError:
+    print("Runscript needs the importlib module to work. You can install it via 'pip install importlib'")
+    import sys
+    sys.exit(1)
 
 def vararg_callback(option, opt_str, opt_value, parser):
     parser.rargs.insert(0, opt_value)
