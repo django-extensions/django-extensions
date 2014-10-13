@@ -1,9 +1,24 @@
 Changelog
 =========
 
+1.4.1
+-----
+
+Changes:
+ - New: shell_plus, Added python-prompt-toolkit integration for shell_plus
+ - New: shell_plus, Added --ptipython (PYPython + IPython)
+ - Improvement: reset_db, output traceback to easy debugging in case of error
+ - Improvement: dumpscript, add --autofield to dumpscript to include autofields in export
+ - Improvement: show_urls, Include namespace in URL name
+ - Improvement: show_urls, Allow multiple decorators on the show_urls command
+ - Improvement: runscript, show script errors with verbosity > 1
+ - Fix: jobs, daily_cleanup job use clearsessions for Django 1.5 and later
+ - Fix: shell_plus, refactored importing and selecting shells to avoid poluted exception
+ - Fix: shell_plus, Fix model loading for sentry
+
 
 1.4.0
-------
+-----
 
 Changes:
  - New admin_generator, can generate a admin.py file from models
