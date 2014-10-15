@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.4.4
+-----
+ - Fix: admin_geneartor, fix ImproperlyConfigured exception on Django 1.7
+ - Improvement: Remove "requires_model_validation" and "requires_system_checks" in commands which set the default value
+
+
 1.4.1
 -----
 
