@@ -60,7 +60,6 @@ class Command(BaseCommand):
     args = "[appname]"
     label = 'application name'
 
-    requires_model_validation = True
     can_import_settings = True
 
     def handle(self, *args, **options):

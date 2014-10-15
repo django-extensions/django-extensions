@@ -303,8 +303,6 @@ class Command(BaseCommand):
             'it will be added to `list_filter` [default: %default]'),
     )
     can_import_settings = True
-    requires_system_checks = True
-    requires_model_validation = True
 
     def handle(self, *args, **kwargs):
         self.style = color_style()

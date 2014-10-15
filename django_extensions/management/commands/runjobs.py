@@ -12,8 +12,6 @@ class Command(LabelCommand):
     args = "[minutely quarter_hourly hourly daily weekly monthly yearly]"
     label = ""
 
-    requires_model_validation = True
-
     def usage_msg(self):
         print("Run scheduled jobs. Please specify 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'")
 

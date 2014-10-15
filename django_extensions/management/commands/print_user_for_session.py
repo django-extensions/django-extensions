@@ -20,7 +20,6 @@ class Command(BaseCommand):
     args = "session_key"
     label = 'session key for the user'
 
-    requires_model_validation = True
     can_import_settings = True
 
     def handle(self, *args, **options):

@@ -12,8 +12,6 @@ class Command(LabelCommand):
     args = "[app_name] job_name"
     label = ""
 
-    requires_model_validation = True
-
     def runjob(self, app_name, job_name, options):
         verbosity = int(options.get('verbosity', 1))
         if verbosity > 1:
