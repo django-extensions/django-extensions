@@ -57,8 +57,13 @@ class AutoSlugField(SlugField):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
 
+        populate_from = kwargs.pop('populate_from', None)
+        if populate_from is None:
+            raise ValueError("missing 'populate_from' argument")
+        else:
+            self._populate_from = populate_from
+
         self.slugify_function = kwargs.pop('slugify_function', slugify)
-        self._populate_from = kwargs.pop('populate_from', 'name')
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         if not isinstance(self.overwrite, bool):
