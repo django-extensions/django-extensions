@@ -5,13 +5,13 @@ These fields are essentially identical to existing Extensions fields, but South 
 
 """
 
-import six
-from django.template.defaultfilters import slugify
-from django import forms
-from mongoengine.fields import StringField, DateTimeField
-import datetime
 import re
+import six
+import datetime
+from django import forms
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
+from mongoengine.fields import StringField, DateTimeField
 
 try:
     import uuid
@@ -69,7 +69,6 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
-
 
         self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
