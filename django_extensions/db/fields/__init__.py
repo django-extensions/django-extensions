@@ -62,6 +62,8 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
+
+        self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         if not isinstance(self.overwrite, bool):
@@ -91,7 +93,7 @@ class AutoSlugField(SlugField):
 
     def slugify_func(self, content):
         if content:
-            return slugify(content)
+            return self.slugify_function(content)
         return ''
 
     def create_slug(self, model_instance, add):
