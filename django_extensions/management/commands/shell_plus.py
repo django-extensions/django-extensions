@@ -111,6 +111,15 @@ class Command(NoArgsCommand):
             def run_notebook():
                 app = NotebookApp.instance()
                 ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', ['--ext', 'django_extensions.management.notebook_extension'])
+                if 'django_extensions.management.notebook_extension' not in ipython_arguments:
+                    print(self.style.ERROR("""WARNING:
+IPython Notebook Extension 'django_extensions.management.notebook_extension' not
+found in IPYTHON_ARGUMENTS. Without it the IPython Notebook will not initialize
+Django and will not automatically load your models.
+
+Please read the documentation carefully:
+  http://django-extensions.readthedocs.org/en/latest/shell_plus.html#configuration
+"""))
                 app.initialize(ipython_arguments)
                 app.start()
             return run_notebook
