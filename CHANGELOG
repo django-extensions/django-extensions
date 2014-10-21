@@ -1,8 +1,18 @@
 Changelog
 =========
 
+1.4.5
+-----
+
+Changes:
+ - Improvement: AutoSlugField, add the possibility to define a custom slugify function
+ - Fix: admin_generator, Fixed Python 3 __unicode__/__str__ compatibility
+
+
 1.4.4
 -----
+
+Changes:
  - Fix: admin_geneartor, fix ImproperlyConfigured exception on Django 1.7
  - Improvement: Remove "requires_model_validation" and "requires_system_checks" in commands which set the default value
 
