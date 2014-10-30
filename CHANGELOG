@@ -5,7 +5,11 @@ Changelog
 -----
 
 Changes:
+ - New: clear_cache, Clear django cache, useful when testing or deploying
  - Improvement: AutoSlugField, add the possibility to define a custom slugify function
+ - Improvement: shell_plus --notebook, add a big warning when the notebook extension is not going to be loaded
+ - Improvement: setup.py, add pypy classifier
+ - Improvement: readme, add pypy badges
  - Fix: admin_generator, Fixed Python 3 __unicode__/__str__ compatibility
 
 
