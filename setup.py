@@ -110,6 +110,7 @@ additions for Django projects. See the project page for more information:
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
     ],
 )
