@@ -6,6 +6,14 @@
     :alt: Build Status
     :target: http://travis-ci.org/django-extensions/django-extensions
 
+.. image:: https://pypip.in/v/django-extensions/badge.png
+    :target: https://pypi.python.org/django-extensions/pid/
+    :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/django-extensions/badge.png
+    :target: https://pypi.python.org/pypi/django-extensions/
+    :alt: Number of PyPI downloads
+
 Django Extensions is a collection of custom extensions for the Django Framework.
 
 
