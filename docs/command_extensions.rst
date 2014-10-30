@@ -27,6 +27,8 @@ Current Command Extensions
 * *create_superuser* - Makes it easy to create a superuser for the
   django.contrib.auth.
 
+* *clear_cache* - Clear django cache, useful when testing or deploying.
+
 * *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 
