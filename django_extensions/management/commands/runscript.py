@@ -1,9 +1,12 @@
 import sys
-from django.core.management.base import BaseCommand
-from django.conf import settings
+import traceback
 from optparse import make_option
 
+from django.conf import settings
 
+from django_extensions.management.email_notifications import (
+    EmailNotificationCommand
+)
 try:
     import importlib
 except ImportError:
@@ -27,8 +30,8 @@ def vararg_callback(option, opt_str, opt_value, parser):
     setattr(parser.values, option.dest, value)
 
 
-class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
+class Command(EmailNotificationCommand):
+    option_list = EmailNotificationCommand.option_list + (
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
                     help='Only look in app.fixtures subdir'),
         make_option('--noscripts', action='store_true', dest='noscripts', default=False,
@@ -67,6 +70,7 @@ class Command(BaseCommand):
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
+        email_notification = options.get('email_notification', False)
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -79,11 +83,18 @@ class Command(BaseCommand):
         def run_script(mod, *script_args):
             try:
                 mod.run(*script_args)
+                if email_notification:
+                    self.send_email_notification(notification_id=mod.__name__)
             except Exception:
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
+                if email_notification:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    trb = ''.join(traceback.format_tb(exc_traceback))
+                    self.send_email_notification(
+                        notification_id=mod.__name__, trb=trb)
                 if show_traceback:
                     raise
 
