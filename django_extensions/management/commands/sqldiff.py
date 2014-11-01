@@ -864,7 +864,7 @@ class PostgresqlSQLDiff(SQLDiff):
                 if tablespace == "":
                     tablespace = "public"
                 attname = field.db_column or field.attname
-                check_constraint = self.check_constraints.get((tablespace, table_name, attname    ), {}).get('pg_get_constraintdef', None)
+                check_constraint = self.check_constraints.get((tablespace, table_name, attname), {}).get('pg_get_constraintdef', None)
                 if check_constraint:
                     check_constraint = check_constraint.replace("((", "(")
                     check_constraint = check_constraint.replace("))", ")")
