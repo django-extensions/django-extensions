@@ -291,7 +291,8 @@ class SQLDiff(object):
         tablespace = field.db_tablespace
         if tablespace == "":
             tablespace = "public"
-        return self.null.get((tablespace, table_name, field.attname), 'fixme')
+        attname = field.db_column or field.attname
+        return self.null.get((tablespace, table_name, attname), 'fixme')
 
     def strip_parameters(self, field_type):
         if field_type and field_type != 'double precision':
@@ -432,12 +433,13 @@ class SQLDiff(object):
             return
 
         for field in all_local_fields(meta):
-            if (table_name, field.attname) in self.new_db_fields:
+            attname = field.db_column or field.attname
+            if (table_name, attname) in self.new_db_fields:
                 continue
             null = self.get_field_db_nullable(field, table_name)
             if field.null != null:
                 action = field.null and 'DROP' or 'SET'
-                self.add_difference('notnull-differ', table_name, field.attname, action)
+                self.add_difference('notnull-differ', table_name, attname, action)
 
     def get_constraints(self, cursor, table_name, introspection):
         return {}
@@ -861,7 +863,8 @@ class PostgresqlSQLDiff(SQLDiff):
                 tablespace = field.db_tablespace
                 if tablespace == "":
                     tablespace = "public"
-                check_constraint = self.check_constraints.get((tablespace, table_name, field.attname), {}).get('pg_get_constraintdef', None)
+                attname = field.db_column or field.attname
+                check_constraint = self.check_constraints.get((tablespace, table_name, attname), {}).get('pg_get_constraintdef', None)
                 if check_constraint:
                     check_constraint = check_constraint.replace("((", "(")
                     check_constraint = check_constraint.replace("))", ")")
