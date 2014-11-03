@@ -7,7 +7,7 @@
     :target: http://travis-ci.org/django-extensions/django-extensions
 
 .. image:: https://pypip.in/v/django-extensions/badge.png
-    :target: https://pypi.python.org/django-extensions/pid/
+    :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Latest PyPI version
 
 .. image:: https://pypip.in/d/django-extensions/badge.png
