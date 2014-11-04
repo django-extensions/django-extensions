@@ -80,7 +80,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
-            to_string_function = lambda x: x.__unicode__()
+            if six.PY3:
+                to_string_function = lambda x: x.__str__()
+            else:
+                to_string_function = lambda x: x.__unicode__()
 
         if search_fields and app_label and model_name and (query or object_pk):
             def construct_search(field_name):
