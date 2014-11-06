@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.4.6
+-----
+
+Changes:
+ - Improvement: sqldiff, fix for dbcolumn not used in few places when generating the sqldiff
+ - Fix: sqldiff, backwards compatiblity fix for Django 1.4
+ - Fix: ForeignKey Field, handling of __str__ instead of __unicode__ in python3
+
+
 1.4.5
 -----
 
