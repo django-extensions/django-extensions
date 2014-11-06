@@ -28,10 +28,16 @@ import django
 from django.core.management.base import BaseCommand
 from django.core.management import sql as _sql
 from django.core.management import CommandError
-from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import transaction, connection
 from django.db.models.fields import IntegerField, AutoField
+
+try:
+    from django.core.management.base import OutputWrapper
+    HAS_OUTPUTWRAPPER = True
+except ImportError:
+    HAS_OUTPUTWRAPPER = False
+
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
@@ -984,7 +990,12 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
                 raise
 
             # self.stderr is not guaranteed to be set here
-            stderr = getattr(self, 'stderr', OutputWrapper(sys.stderr, self.style.ERROR))
+            stderr = getattr(self, 'stderr', None)
+            if not stderr:
+                if HAS_OUTPUTWRAPPER:
+                    stderr = OutputWrapper(sys.stderr, self.style.ERROR)
+                else:
+                    stderr = sys.stderr
             stderr.write('%s: %s' % (e.__class__.__name__, e))
             sys.exit(2)
 
