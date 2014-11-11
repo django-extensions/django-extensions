@@ -12,12 +12,42 @@ class EmailNotificationCommand(BaseCommand):
     and will be able to send emails by calling ``send_email_notification()``
     if SMTP host and port are specified in settings. The handling of the
     command line option is left to the management command implementation.
+    Configuration is done in settings.EMAIL_NOTIFICATIONS dict.
+
+    Configuration example::
+
+        EMAIL_NOTIFICATIONS = {
+            'scripts.my_script': {
+                'subject': 'my_script subject',
+                'body': 'my_script body',
+                'from_email': 'from_email@example.com',
+                'recipients': ('recipient0@example.com',),
+                'no_admins': False,
+                'no_traceback': False,
+                'notification_level': 0,
+                'fail_silently': False
+            },
+            'scripts.another_script': {
+                ...
+            },
+            ...
+        }
+
+    Configuration explained:
+        subject:            Email subject.
+        body:               Email body.
+        from_email:         Email from address.
+        recipients:         Sequence of email recipient addresses.
+        no_admins:          When True do not include ADMINS to recipients.
+        no_traceback:       When True do not include traceback to email body.
+        notification_level: 0: send email on fail, 1: send email always.
+        fail_silently:      Parameter passed to django's send_mail().
 
     """
     option_list = BaseCommand.option_list + (
         make_option('--email-notifications',
                     action='store_true',
-                    dest='email_notification',
+                    dest='email_notifications',
                     help='Send email notifications for command.'),
     )
 
@@ -47,7 +77,7 @@ class EmailNotificationCommand(BaseCommand):
 
         # Exit if no traceback found and not in 'notify always' mode.
         if trb is None and not email_settings.get('notification_level', 0):
-            print(self.style.ERROR("Exiting, not in 'notify always' mode."))
+            print (self.style.ERROR("Exiting, not in 'notify always' mode."))
             return
 
         # Set email fields.
