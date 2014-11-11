@@ -1,4 +1,5 @@
 import sys
+import traceback
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from optparse import make_option
@@ -96,10 +97,21 @@ class Command(BaseCommand):
                 t = __import__(mod, [], [], [" "])
             except (ImportError, AttributeError) as e:
                 if str(e).startswith('No module named'):
-                    return False
-                else:
-                    if verbosity > 1:
-                        print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+                    try:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        try:
+                            if exc_traceback.tb_next.tb_next is None:
+                                return False
+                        except AttributeError:
+                            pass
+                    finally:
+                        exc_traceback = None
+
+                if verbosity > 1:
+                    if verbosity > 2:
+                        traceback.print_exc()
+                    print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+
                 return False
 
             #if verbosity > 1:
@@ -148,7 +160,9 @@ class Command(BaseCommand):
             modules = find_modules_for_script(script)
             if not modules:
                 if verbosity > 0 and not silent:
-                    print(ERROR("No module for script '%s' found" % script))
+                    print(ERROR("No (valid) module for script '%s' found" % script))
+                    if verbosity < 2:
+                        print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
             for mod in modules:
                 if verbosity > 1:
                     print(NOTICE2("Running script '%s' ..." % mod.__name__))
