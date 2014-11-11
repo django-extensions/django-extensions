@@ -70,7 +70,7 @@ class Command(EmailNotificationCommand):
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
-        email_notification = options.get('email_notification', False)
+        email_notifications = options.get('email_notifications', False)
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -83,14 +83,14 @@ class Command(EmailNotificationCommand):
         def run_script(mod, *script_args):
             try:
                 mod.run(*script_args)
-                if email_notification:
+                if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
             except Exception:
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
-                if email_notification:
+                if email_notifications:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     trb = ''.join(traceback.format_tb(exc_traceback))
                     self.send_email_notification(
