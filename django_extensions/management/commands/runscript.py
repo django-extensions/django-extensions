@@ -1,5 +1,4 @@
 import sys
-import traceback
 from optparse import make_option
 
 from django.conf import settings
@@ -91,10 +90,8 @@ class Command(EmailNotificationCommand):
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
                 if email_notifications:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    trb = ''.join(traceback.format_tb(exc_traceback))
                     self.send_email_notification(
-                        notification_id=mod.__name__, trb=trb)
+                        notification_id=mod.__name__, include_traceback=True)
                 if show_traceback:
                     raise
 

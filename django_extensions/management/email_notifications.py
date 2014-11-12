@@ -1,3 +1,5 @@
+import sys
+import traceback
 from optparse import make_option
 
 from django.conf import settings
@@ -49,6 +51,10 @@ class EmailNotificationCommand(BaseCommand):
                     action='store_true',
                     dest='email_notifications',
                     help='Send email notifications for command.'),
+        make_option('--email-exception',
+                    action='store_true',
+                    dest='email_exception',
+                    help='Send email for command exceptions.'),
     )
 
     def run_from_argv(self, argv):
@@ -56,8 +62,25 @@ class EmailNotificationCommand(BaseCommand):
         self.argv_string = ' '.join(argv)
         super(EmailNotificationCommand, self).run_from_argv(argv)
 
+    def execute(self, *args, **options):
+        """Overriden in order to send emails on unhandled exception.
+
+        If an unhandled exception in ``def handle(self, *args, **options)``
+        occurs and `--email-exception` is set or `self.email_exception` is
+        set to True send an email to ADMINS with the traceback and then
+        reraise the exception.
+
+        """
+        try:
+            super(EmailNotificationCommand, self).execute(*args, **options)
+        except Exception as e:
+            if (options.get('email_exception', False) or
+                getattr(self, 'email_exception', False)):
+                self.send_email_notification(include_traceback=True)
+            raise e
+
     def send_email_notification(self, notification_id=None,
-                                trb=None, verbosity=1):
+                                include_traceback=False, verbosity=1):
         """Send email notifications.
 
         Reads settings from settings.EMAIL_NOTIFICATIONS dict, if available,
@@ -76,7 +99,8 @@ class EmailNotificationCommand(BaseCommand):
             email_settings = {}
 
         # Exit if no traceback found and not in 'notify always' mode.
-        if trb is None and not email_settings.get('notification_level', 0):
+        if (not include_traceback and
+            not email_settings.get('notification_level', 0)):
             print (self.style.ERROR("Exiting, not in 'notify always' mode."))
             return
 
@@ -87,9 +111,14 @@ class EmailNotificationCommand(BaseCommand):
             'body',
             "Reporting execution of command: '%s'" % self.argv_string)
         # Include traceback.
-        if (trb is not None and
+        if (include_traceback and
             not email_settings.get('no_traceback', False)):
-            body += "\n\nTraceback:\n\n%s\n" % trb
+            try:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                trb = ''.join(traceback.format_tb(exc_traceback))
+                body += "\n\nTraceback:\n\n%s\n" % trb
+            finally:
+                del exc_traceback
         # Set from address.
         from_email = email_settings.get('from_email',
                                         settings.DEFAULT_FROM_EMAIL)
