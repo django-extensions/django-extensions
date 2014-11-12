@@ -74,8 +74,7 @@ class EmailNotificationCommand(BaseCommand):
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
         except Exception as e:
-            if (options.get('email_exception', False) or
-                getattr(self, 'email_exception', False)):
+            if (options.get('email_exception', False) or getattr(self, 'email_exception', False)):
                 self.send_email_notification(include_traceback=True)
             raise e
 
@@ -88,41 +87,40 @@ class EmailNotificationCommand(BaseCommand):
         defaults.
 
         """
-        # Load email notification settings if available.
+        # Load email notification settings if available
         if notification_id is not None:
             try:
-                email_settings = settings.EMAIL_NOTIFICATIONS.get(
-                    notification_id, {})
+                email_settings = settings.EMAIL_NOTIFICATIONS.get(notification_id, {})
             except AttributeError:
                 email_settings = {}
         else:
             email_settings = {}
 
-        # Exit if no traceback found and not in 'notify always' mode.
-        if (not include_traceback and
-            not email_settings.get('notification_level', 0)):
-            print (self.style.ERROR("Exiting, not in 'notify always' mode."))
+        # Exit if no traceback found and not in 'notify always' mode
+        if (not include_traceback and not email_settings.get('notification_level', 0)):
+            print(self.style.ERROR("Exiting, not in 'notify always' mode."))
             return
 
         # Set email fields.
-        subject = email_settings.get('subject',
-                                     "Django extensions email notification.")
+        subject = email_settings.get('subject', "Django extensions email notification.")
         body = email_settings.get(
             'body',
-            "Reporting execution of command: '%s'" % self.argv_string)
-        # Include traceback.
-        if (include_traceback and
-            not email_settings.get('no_traceback', False)):
+            "Reporting execution of command: '%s'" % self.argv_string
+        )
+
+        # Include traceback
+        if (include_traceback and not email_settings.get('no_traceback', False)):
             try:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 trb = ''.join(traceback.format_tb(exc_traceback))
                 body += "\n\nTraceback:\n\n%s\n" % trb
             finally:
                 del exc_traceback
-        # Set from address.
-        from_email = email_settings.get('from_email',
-                                        settings.DEFAULT_FROM_EMAIL)
-        # Calculate recipients.
+
+        # Set from address
+        from_email = email_settings.get('from_email', settings.DEFAULT_FROM_EMAIL)
+
+        # Calculate recipients
         recipients = list(email_settings.get('recipients', []))
 
         if not email_settings.get('no_admins', False):
@@ -130,7 +128,7 @@ class EmailNotificationCommand(BaseCommand):
 
         if not recipients:
             if verbosity > 0:
-                print (self.style.ERROR("No email recipients available."))
+                print(self.style.ERROR("No email recipients available."))
             return
 
         # Send email...
