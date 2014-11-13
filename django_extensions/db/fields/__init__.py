@@ -3,6 +3,8 @@ Django Extensions additional model fields
 """
 import re
 import six
+import warnings
+
 try:
     import uuid
     HAS_UUID = True
@@ -261,7 +263,9 @@ class UUIDField(CharField):
     """
     DEFAULT_MAX_LENGTH = 36
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, **kwargs):
+    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, uuid_name=None, *args, **kwargs):
+        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
+
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
         kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)
@@ -274,11 +278,8 @@ class UUIDField(CharField):
         self.node = node
         self.clock_seq = clock_seq
         self.namespace = namespace
-        self.name = name
-        CharField.__init__(self, verbose_name, name, **kwargs)
-
-    def get_internal_type(self):
-        return CharField.__name__
+        self.uuid_name = uuid_name or name
+        super(UUIDField, self).__init__(verbose_name=verbose_name, *args, **kwargs)
 
     def create_uuid(self):
         if not self.version or self.version == 4:
@@ -288,9 +289,9 @@ class UUIDField(CharField):
         elif self.version == 2:
             raise UUIDVersionError("UUID version 2 is not supported.")
         elif self.version == 3:
-            return uuid.uuid3(self.namespace, self.name)
+            return uuid.uuid3(self.namespace, self.uuid_name)
         elif self.version == 5:
-            return uuid.uuid5(self.namespace, self.name)
+            return uuid.uuid5(self.namespace, self.uuid_name)
         else:
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
 
@@ -322,7 +323,7 @@ class UUIDField(CharField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(UUIDField, self).deconstruct()
-        if self.max_length == self.DEFAULT_MAX_LENGTH:
+        if kwargs.get('max_length', None) == self.DEFAULT_MAX_LENGTH:
             del kwargs['max_length']
         if self.auto is not True:
             kwargs['auto'] = self.auto
@@ -334,12 +335,16 @@ class UUIDField(CharField):
             kwargs['clock_seq'] = self.clock_seq
         if self.namespace is not None:
             kwargs['namespace'] = self.namespace
-        if self.name is not None:
-            kwargs['name'] = self.name
+        if self.uuid_name is not None:
+            kwargs['uuid_name'] = self.name
         return name, path, args, kwargs
 
 
 class PostgreSQLUUIDField(UUIDField):
+    def __init__(self, *args, **kwargs):
+        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
+        super(PostgreSQLUUIDField, self).__init__(*args, **kwargs)
+
     def db_type(self, connection=None):
         return "UUID"
 
