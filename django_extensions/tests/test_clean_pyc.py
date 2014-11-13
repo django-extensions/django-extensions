@@ -24,14 +24,6 @@ class CleanPycTests(TestCase):
                 pyc_glob.append(os.path.join(root, filename))
         return pyc_glob
 
-    @override_settings(CLEAN_PYC_DEPRECATION_WAIT=False)
-    def test_assumes_project_root(self):
-        out = six.StringIO()
-        call_command('clean_pyc', stdout=out)
-        expected = "Assuming '%s' is the project root." % get_project_root()
-        output = out.getvalue()
-        self.assertIn(expected, output)
-
     def test_removes_pyc_files(self):
         with self.settings(BASE_DIR=get_project_root()):
             call_command('compile_pyc')
