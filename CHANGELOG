@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.4.8
+-----
+
+Changes:
+ - Bugfix: validators, fix NoWhitespaceValidator __eq__ check
+
+
 1.4.7
 -----
 
