@@ -32,6 +32,7 @@ Improvements:
 import sys
 import datetime
 import six
+from optparse import make_option
 
 import django
 from django.db.models import AutoField, BooleanField, FileField, ForeignKey, DateField, DateTimeField
@@ -80,6 +81,11 @@ def orm_item_locator(orm_obj):
 
 
 class Command(BaseCommand):
+    option_list = BaseCommand.option_list + (
+        make_option('--autofield', action='store_false', dest='skip_autofield',
+                    default=True, help='Include Autofields (like pk fields)'),
+    )
+
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
 
@@ -94,7 +100,14 @@ class Command(BaseCommand):
         context = {}
 
         # Create a dumpscript object and let it format itself as a string
-        self.stdout.write(str(Script(models=models, context=context, stdout=self.stdout, stderr=self.stderr)))
+        script = Script(
+            models=models,
+            context=context,
+            stdout=self.stdout,
+            stderr=self.stderr,
+            options=options,
+        )
+        self.stdout.write(str(script))
         self.stdout.write("\n")
 
 
@@ -117,6 +130,7 @@ def get_models(app_labels):
     if not app_labels:
         for app in get_apps():
             models += [m for m in get_all_models(app) if m not in EXCLUDED_MODELS]
+        return models
 
     # Get all relevant apps
     for app_label in app_labels:
@@ -171,12 +185,13 @@ class Code(object):
 class ModelCode(Code):
     " Produces a python script that can recreate data for a given model class. "
 
-    def __init__(self, model, context=None, stdout=None, stderr=None):
+    def __init__(self, model, context=None, stdout=None, stderr=None, options=None):
         super(ModelCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
         self.model = model
         if context is None:
             context = {}
         self.context = context
+        self.options = options
         self.instances = []
 
     def get_imports(self):
@@ -193,7 +208,7 @@ class ModelCode(Code):
         code = []
 
         for counter, item in enumerate(self.model._default_manager.all()):
-            instance = InstanceCode(instance=item, id=counter + 1, context=self.context, stdout=self.stdout, stderr=self.stderr)
+            instance = InstanceCode(instance=item, id=counter + 1, context=self.context, stdout=self.stdout, stderr=self.stderr, options=self.options)
             self.instances.append(instance)
             if instance.waiting_list:
                 code += instance.lines
@@ -212,12 +227,13 @@ class ModelCode(Code):
 class InstanceCode(Code):
     " Produces a python script that can recreate data for a given model instance. "
 
-    def __init__(self, instance, id, context=None, stdout=None, stderr=None):
+    def __init__(self, instance, id, context=None, stdout=None, stderr=None, options=None):
         """ We need the instance in question and an id """
 
         super(InstanceCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
         self.imports = {}
 
+        self.options = options
         self.instance = instance
         self.model = self.instance.__class__
         if context is None:
@@ -368,12 +384,13 @@ class InstanceCode(Code):
         " Add lines for any waiting fields that can be completed now. "
 
         code_lines = []
+        skip_autofield = self.options.get('skip_autofield', True)
 
         # Process normal fields
         for field in list(self.waiting_list):
             try:
                 # Find the value, add the line, remove from waiting list and move on
-                value = get_attribute_value(self.instance, field, self.context, force=force)
+                value = get_attribute_value(self.instance, field, self.context, force=force, skip_autofield=skip_autofield)
                 code_lines.append('%s.%s = %s' % (self.variable_name, field.name, value))
                 self.waiting_list.remove(field)
             except SkipValue:
@@ -415,7 +432,7 @@ class InstanceCode(Code):
 class Script(Code):
     " Produces a complete python script that can recreate data for the given apps. "
 
-    def __init__(self, models, context=None, stdout=None, stderr=None):
+    def __init__(self, models, context=None, stdout=None, stderr=None, options=None):
         super(Script, self).__init__(stdout=stdout, stderr=stderr)
         self.imports = {}
 
@@ -426,6 +443,8 @@ class Script(Code):
 
         self.context["__avaliable_models"] = set(models)
         self.context["__extra_imports"] = {}
+
+        self.options = options
 
     def _queue_models(self, models, context):
         """ Works an an appropriate ordering for the models.
@@ -447,7 +466,7 @@ class Script(Code):
 
             # If the model is ready to be processed, add it to the list
             if check_dependencies(model, model_queue, context["__avaliable_models"]):
-                model_class = ModelCode(model=model, context=context, stdout=self.stdout, stderr=self.stderr)
+                model_class = ModelCode(model=model, context=context, stdout=self.stdout, stderr=self.stderr, options=self.options)
                 model_queue.append(model_class)
 
             # Otherwise put the model back at the end of the list
@@ -462,7 +481,7 @@ class Script(Code):
                 allowed_cycles -= 1
                 if allowed_cycles <= 0:
                     # Add the remaining models, but do not remove them from the model list
-                    missing_models = [ModelCode(model=m, context=context, stdout=self.stdout, stderr=self.stderr) for m in models]
+                    missing_models = [ModelCode(model=m, context=context, stdout=self.stdout, stderr=self.stderr, options=self.options) for m in models]
                     model_queue += missing_models
                     # Replace the models with the model class objects
                     # (sure, this is a little bit of hackery)
@@ -664,7 +683,7 @@ def flatten_blocks(lines, num_indents=-1):
     return "\n".join([flatten_blocks(line, num_indents + 1) for line in lines])
 
 
-def get_attribute_value(item, field, context, force=False):
+def get_attribute_value(item, field, context, force=False, skip_autofield=True):
     """ Gets a string version of the given attribute's value, like repr() might. """
 
     # Find the value of the field, catching any database issues
@@ -674,7 +693,7 @@ def get_attribute_value(item, field, context, force=False):
         raise SkipValue('Could not find object for %s.%s, ignoring.\n' % (item.__class__.__name__, field.name))
 
     # AutoField: We don't include the auto fields, they'll be automatically recreated
-    if isinstance(field, AutoField):
+    if skip_autofield and isinstance(field, AutoField):
         raise SkipValue()
 
     # Some databases (eg MySQL) might store boolean values as 0/1, this needs to be cast as a bool

@@ -172,7 +172,7 @@ def dia2django(archivo):
     #First we make a list of the classes each classs is related to.
     ordered = []
     for j, k in six.iteritems(clases):
-        k[2] = k[2] + "\n    def __unicode__(self):\n        return u\"\"\n"
+        k[2] = k[2] + "\n    def %s(self):\n        return u\"\"\n" % (("__str__" if six.PY3 else "__unicode__"), )
         for fk in k[0]:
             if fk not in dependclasses:
                 clases[fk][3] += 1

@@ -7,7 +7,6 @@ class Command(LabelCommand):
     args = "[app.model]"
     label = 'application name and model name'
 
-    requires_model_validation = True
     can_import_settings = True
 
     def handle_label(self, label, **options):

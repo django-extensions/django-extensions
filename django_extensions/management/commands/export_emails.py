@@ -38,7 +38,6 @@ class Command(BaseCommand):
     args = "[output file]"
     label = 'filename to save to'
 
-    requires_model_validation = True
     can_import_settings = True
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 

@@ -146,7 +146,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             try:
                 cursor.execute(drop_query)
             except Database.ProgrammingError as e:
-                logging.info("Error: %s" % str(e))
+                logging.exception("Error: %s" % str(e))
 
             create_query = "CREATE DATABASE \"%s\"" % database_name
             if owner:

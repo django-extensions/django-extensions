@@ -75,8 +75,6 @@ class Command(BaseCommand):
 
     help = "Displays all of the url matching routes for the project."
 
-    requires_model_validation = True
-
     def handle(self, *args, **options):
         if args:
             appname, = args

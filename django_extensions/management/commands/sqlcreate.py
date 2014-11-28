@@ -26,7 +26,6 @@ The envisioned use case is something like this:
     can_import_settings = True
 
     def handle(self, *args, **options):
-
         router = options.get('router')
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:

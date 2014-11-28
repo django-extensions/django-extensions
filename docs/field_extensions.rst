@@ -22,6 +22,14 @@ Current Database Model Field Extensions
 * *UUIDField* - UUIDField for Django, supports all uuid versions that are
   natively supported by the uuid python module.
 
+  .. deprecated:: 1.4.7
+     Django 1.8 features a native UUIDField. Django-Extensions will support *UUIDField* at the very least until Django 1.7 becomes unsupported.
+
+* *PostgreSQLUUIDField* - UUIDField for Django, uses PostgreSQL uuid type.
+
+  .. deprecated:: 1.4.7
+     Django 1.8 features a native UUIDField. Django-Extensions will support *UUIDField* at the very least until Django 1.7 becomes unsupported.
+
 * *EncryptedCharField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.ENCRYPTED_FIELD_KEYS_DIR`` set to the full path of your keys directory.
 
 * *EncryptedTextField* - CharField which transparently encrypts its value as it goes in and out of the database.  Encryption is handled by `Keyczar <http://www.keyczar.org/>`_.  To use this field you must have Keyczar installed, have generated a primary encryption key, and have ``settings.ENCRYPTED_FIELD_KEYS_DIR`` set to the full path of your keys directory.
