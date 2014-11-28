@@ -1,7 +1,6 @@
 import unicodedata
 
 from django.core.exceptions import ValidationError
-from django.core.validators import BaseValidator
 from django.utils.deconstruct import deconstructible
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
@@ -54,7 +53,6 @@ class NoWhitespaceValidator(object):
 
     def __call__(self, value):
         value = force_text(value)
-        category = unicodedata.category
         if value != value.strip():
             params = {'value': value}
             raise ValidationError(self.message, code=self.code, params=params)
