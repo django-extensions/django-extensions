@@ -60,7 +60,6 @@ class NoWhitespaceValidator(object):
     def __eq__(self, other):
         return (
             isinstance(other, NoWhitespaceValidator) and
-            (self.whitelist == other.whitelist) and
             (self.message == other.message) and
             (self.code == other.code)
         )
