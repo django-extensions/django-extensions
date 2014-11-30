@@ -1,7 +1,15 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
+import sys
+import traceback
 from optparse import make_option
-import importlib
+from django_extensions.management.email_notifications import EmailNotificationCommand
+from django.conf import settings
+
+
+try:
+    import importlib
+except ImportError:
+    print("Runscript needs the importlib module to work. You can install it via 'pip install importlib'")
+    sys.exit(1)
 
 
 def vararg_callback(option, opt_str, opt_value, parser):
@@ -20,8 +28,8 @@ def vararg_callback(option, opt_str, opt_value, parser):
     setattr(parser.values, option.dest, value)
 
 
-class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
+class Command(EmailNotificationCommand):
+    option_list = EmailNotificationCommand.option_list + (
         make_option('--fixtures', action='store_true', dest='infixtures', default=False,
                     help='Only look in app.fixtures subdir'),
         make_option('--noscripts', action='store_true', dest='noscripts', default=False,
@@ -60,6 +68,7 @@ class Command(BaseCommand):
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
+        email_notifications = options.get('email_notifications', False)
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -72,11 +81,16 @@ class Command(BaseCommand):
         def run_script(mod, *script_args):
             try:
                 mod.run(*script_args)
+                if email_notifications:
+                    self.send_email_notification(notification_id=mod.__name__)
             except Exception:
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
+                if email_notifications:
+                    self.send_email_notification(
+                        notification_id=mod.__name__, include_traceback=True)
                 if show_traceback:
                     raise
 
@@ -89,10 +103,21 @@ class Command(BaseCommand):
                 t = __import__(mod, [], [], [" "])
             except (ImportError, AttributeError) as e:
                 if str(e).startswith('No module named'):
-                    return False
-                else:
-                    if verbosity > 1:
-                        print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+                    try:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        try:
+                            if exc_traceback.tb_next.tb_next is None:
+                                return False
+                        except AttributeError:
+                            pass
+                    finally:
+                        exc_traceback = None
+
+                if verbosity > 1:
+                    if verbosity > 2:
+                        traceback.print_exc()
+                    print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+
                 return False
 
             #if verbosity > 1:
@@ -141,7 +166,9 @@ class Command(BaseCommand):
             modules = find_modules_for_script(script)
             if not modules:
                 if verbosity > 0 and not silent:
-                    print(ERROR("No module for script '%s' found" % script))
+                    print(ERROR("No (valid) module for script '%s' found" % script))
+                    if verbosity < 2:
+                        print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
             for mod in modules:
                 if verbosity > 1:
                     print(NOTICE2("Running script '%s' ..." % mod.__name__))

@@ -48,6 +48,8 @@ class Command(BaseCommand):
                     help='Tells Django to open a browser.'),
         make_option('--adminmedia', dest='admin_media_path', default='',
                     help='Specifies the directory from which to serve admin media.'),
+        make_option('--nothreading', action='store_false', dest='threaded',
+                    help='Do not run in multithreaded mode.'),
         make_option('--threaded', action='store_true', dest='threaded',
                     help='Run in multithreaded mode.'),
         make_option('--output', dest='output_file', default=None,
@@ -173,7 +175,7 @@ class Command(BaseCommand):
         if not self.addr:
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
 
-        threaded = options.get('threaded', False)
+        threaded = options.get('threaded', True)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
         cert_path = options.get("cert_path")

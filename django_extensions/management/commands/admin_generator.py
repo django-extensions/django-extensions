@@ -55,7 +55,19 @@ PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
     %(key)s = %(value)s''')
 
 
-class AdminApp(object):
+class UnicodeMixin(object):
+    """Mixin class to handle defining the proper __str__/__unicode__
+    methods in Python 2 or 3."""
+
+    if sys.version_info[0] >= 3:  # Python 3
+        def __str__(self):
+            return self.__unicode__()
+    else:  # Python 2
+        def __str__(self):
+            return self.__unicode__().encode('utf8')
+
+
+class AdminApp(UnicodeMixin):
     def __init__(self, app, model_res, **options):
         self.app = app
         self.model_res = model_res
@@ -64,7 +76,6 @@ class AdminApp(object):
     def __iter__(self):
         for model in get_models(self.app):
             admin_model = AdminModel(model, **self.options)
-            #assert self.app == admin_model.name
 
             for model_re in self.model_res:
                 if model_re.search(admin_model.name):
@@ -77,12 +88,6 @@ class AdminApp(object):
 
     def __unicode__(self):
         return ''.join(self._unicode_generator())
-
-    def __str__(self):
-        try:
-            return unicode(self).encode('utf-8', 'replace')
-        except NameError:
-            return str(self).encode('utf-8', 'replace')
 
     def _unicode_generator(self):
         models_list = [admin_model.name for admin_model in self]
@@ -103,7 +108,7 @@ class AdminApp(object):
         )
 
 
-class AdminModel(object):
+class AdminModel(UnicodeMixin):
     PRINTABLE_PROPERTIES = (
         'list_display',
         'list_filter',
@@ -186,12 +191,6 @@ class AdminModel(object):
             self.search_fields.append(field.name)
 
         return field.name
-
-    def __str__(self):
-        try:
-            return unicode(self).encode('utf-8', 'replace')
-        except NameError:
-            return str(self).encode('utf-8', 'replace')
 
     def __unicode__(self):
         return ''.join(self._unicode_generator())
@@ -303,15 +302,11 @@ class Command(BaseCommand):
             'it will be added to `list_filter` [default: %default]'),
     )
     can_import_settings = True
-    requires_system_checks = True
-    requires_model_validation = True
 
     def handle(self, *args, **kwargs):
         self.style = color_style()
 
-        installed_apps = dict(
-            (a.__name__.rsplit('.', 1)[0], a)
-            for a in models.get_apps())
+        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in models.get_apps())
 
         # Make sure we always have args
         if not args:
@@ -333,5 +328,3 @@ class Command(BaseCommand):
 
     def handle_app(self, app, model_res, **options):
         print(AdminApp(app, model_res, **options))
-
-

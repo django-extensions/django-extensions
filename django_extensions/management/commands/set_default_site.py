@@ -17,7 +17,6 @@ class Command(NoArgsCommand):
                     action="store_true", help='Use the systems FQDN (Fully Qualified Domain Name) as name and domain. Can be used in combination with --name'),
     )
     help = "Set parameters of the default django.contrib.sites Site"
-    requires_model_validation = True
 
     def handle_noargs(self, **options):
         from django.contrib.sites.models import Site
