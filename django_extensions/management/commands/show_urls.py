@@ -10,6 +10,7 @@ from django.contrib.admindocs.views import simplify_regex
 from django.utils.translation import activate
 
 from django_extensions.management.color import color_style
+from django_extensions.management.utils import signalcommand
 
 
 FMTR = {
@@ -75,6 +76,7 @@ class Command(BaseCommand):
 
     help = "Displays all of the url matching routes for the project."
 
+    @signalcommand
     def handle(self, *args, **options):
         if args:
             appname, = args

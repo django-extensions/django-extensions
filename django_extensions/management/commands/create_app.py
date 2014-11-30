@@ -8,7 +8,7 @@ from django.core.management.base import CommandError, LabelCommand
 from django.template import Template, Context
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
-from django_extensions.management.utils import _make_writeable
+from django_extensions.management.utils import _make_writeable, signalcommand
 from optparse import make_option
 
 
@@ -31,6 +31,7 @@ class Command(LabelCommand):
     requires_model_validation = False
     can_import_settings = True
 
+    @signalcommand
     def handle_label(self, label, **options):
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]

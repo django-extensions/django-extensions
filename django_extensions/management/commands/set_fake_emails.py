@@ -13,6 +13,8 @@ from django.core.management.base import NoArgsCommand, CommandError
 
 DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -34,6 +36,7 @@ class Command(NoArgsCommand):
     help = '''DEBUG only: give all users a new email based on their account data ("%s" by default). Possible parameters are: username, first_name, last_name''' % (DEFAULT_FAKE_EMAIL, )
     requires_model_validation = False
 
+    @signalcommand
     def handle_noargs(self, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')

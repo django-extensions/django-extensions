@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django_extensions.management.utils import signalcommand
 try:
     from django.contrib.auth import get_user_model  # Django 1.5
 except ImportError:
@@ -11,6 +12,7 @@ class Command(BaseCommand):
 
     requires_model_validation = False
 
+    @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("need exactly one or zero arguments for username")

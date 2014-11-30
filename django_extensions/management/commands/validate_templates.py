@@ -5,6 +5,7 @@ from django.core.management.color import color_style
 from django.template.base import add_to_builtins
 from django.template.loaders.filesystem import Loader
 from django_extensions.utils import validatingtemplatetags
+from django_extensions.management.utils import signalcommand
 
 #
 # TODO: Render the template with fake request object ?
@@ -25,6 +26,7 @@ class Command(BaseCommand):
                     default=[], help="Append these paths to TEMPLATE_DIRS")
     )
 
+    @signalcommand
     def handle(self, *args, **options):
         from django.conf import settings
         style = color_style()

@@ -1,6 +1,7 @@
 from importlib import import_module
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django_extensions.management.utils import signalcommand
 
 try:
     from django.contrib.auth import get_user_model  # Django 1.5
@@ -22,6 +23,7 @@ class Command(BaseCommand):
 
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("extra arguments supplied")

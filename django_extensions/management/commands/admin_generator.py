@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from django_extensions.management.color import color_style
+from django_extensions.management.utils import signalcommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
@@ -303,6 +304,7 @@ class Command(BaseCommand):
     )
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
 

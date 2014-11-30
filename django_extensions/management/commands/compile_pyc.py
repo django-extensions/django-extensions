@@ -6,6 +6,8 @@ from django.conf import settings
 from optparse import make_option
 from os.path import join as _j
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -16,6 +18,7 @@ class Command(NoArgsCommand):
 
     requires_model_validation = False
 
+    @signalcommand
     def handle_noargs(self, **options):
         project_root = options.get("path", None)
         if not project_root:

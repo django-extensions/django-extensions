@@ -8,7 +8,8 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django_extensions.management.utils import setup_logger, RedirectHandler
+from django_extensions.management.utils import setup_logger, RedirectHandler,\
+    signalcommand
 from django_extensions.management.technical_response import null_technical_500_response
 
 
@@ -73,6 +74,7 @@ class Command(BaseCommand):
     # Validation is called explicitly each time the server is reloaded.
     requires_model_validation = False
 
+    @signalcommand
     def handle(self, addrport='', *args, **options):
         import django
 

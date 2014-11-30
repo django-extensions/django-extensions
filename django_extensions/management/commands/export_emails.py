@@ -9,6 +9,8 @@ from sys import stdout
 from csv import writer
 import six
 
+from django_extensions.management.utils import signalcommand
+
 FORMATS = [
     'address',
     'emails',
@@ -41,6 +43,7 @@ class Command(BaseCommand):
     can_import_settings = True
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 
+    @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("extra arguments supplied")

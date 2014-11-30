@@ -8,6 +8,7 @@ from django.core.management.base import NoArgsCommand
 from django_extensions.management.color import color_style
 from optparse import make_option
 from pip.req import parse_requirements
+from django_extensions.management.utils import signalcommand
 try:
     from urllib.parse import urlparse
     from urllib.error import HTTPError
@@ -45,6 +46,7 @@ class Command(NoArgsCommand):
     )
     help = "Scan pip requirement files for out-of-date packages."
 
+    @signalcommand
     def handle_noargs(self, **options):
         self.style = color_style()
 

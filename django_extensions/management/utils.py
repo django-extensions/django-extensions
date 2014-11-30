@@ -2,6 +2,7 @@ from django.conf import settings
 import os
 import sys
 import logging
+from django_extensions.management.signals import pre_command, post_command
 
 try:
     from importlib import import_module
@@ -67,3 +68,13 @@ class RedirectHandler(logging.Handler):
 
     def emit(self, record):
         self.logger.handle(record)
+
+
+def signalcommand(func):
+    """A decorator for management command handle defs that sends out a pre/post signal."""
+    def inner(self, *args, **kwargs):
+        pre_command.send(self.__class__, args=args, kwargs=kwargs)
+        ret = func(self, *args, **kwargs)
+        post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
+        return ret
+    return inner

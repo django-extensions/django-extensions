@@ -21,6 +21,8 @@ try:
 except ImportError as e:
     USE_STATICFILES = False
 
+from django_extensions.management.utils import signalcommand
+
 try:
     any
 except NameError:
@@ -135,6 +137,7 @@ class Command(BaseCommand):
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
 
+    @signalcommand
     def handle(self, addrport='', *args, **options):
         import django
         import socket

@@ -6,6 +6,8 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -25,6 +27,7 @@ The envisioned use case is something like this:
     requires_model_validation = False
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **options):
         router = options.get('router')
         dbinfo = settings.DATABASES.get(router)

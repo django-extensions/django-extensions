@@ -8,6 +8,7 @@ from django.core.management.base import NoArgsCommand
 from django.conf import settings
 
 from django_extensions.management.shells import import_objects
+from django_extensions.management.utils import signalcommand
 
 
 class Command(NoArgsCommand):
@@ -39,6 +40,7 @@ class Command(NoArgsCommand):
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
+    @signalcommand
     def handle_noargs(self, **options):
         use_kernel = options.get('kernel', False)
         use_notebook = options.get('notebook', False)

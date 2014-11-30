@@ -4,12 +4,13 @@ from optparse import make_option
 from django_extensions.management.email_notifications import EmailNotificationCommand
 from django.conf import settings
 
-
 try:
     import importlib
 except ImportError:
     print("Runscript needs the importlib module to work. You can install it via 'pip install importlib'")
     sys.exit(1)
+
+from django_extensions.management.utils import signalcommand
 
 
 def vararg_callback(option, opt_str, opt_value, parser):
@@ -45,6 +46,7 @@ class Command(EmailNotificationCommand):
     help = 'Runs a script in django context.'
     args = "script [script ...]"
 
+    @signalcommand
     def handle(self, *scripts, **options):
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD

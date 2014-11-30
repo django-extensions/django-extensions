@@ -1,4 +1,4 @@
-from django_extensions.management.utils import setup_logger
+from django_extensions.management.utils import setup_logger, signalcommand
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 from smtpd import SMTPServer
@@ -40,6 +40,7 @@ class Command(BaseCommand):
 
     requires_model_validation = False
 
+    @signalcommand
     def handle(self, addrport='', *args, **options):
         if args:
             raise CommandError('Usage is mail_debug %s' % self.args)

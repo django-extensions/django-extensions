@@ -5,10 +5,13 @@ from django.core.management.base import NoArgsCommand
 from django.db import models
 from django.db.models.loading import cache
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(NoArgsCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
+    @signalcommand
     def handle_noargs(self, **options):
 
         if settings.MEDIA_ROOT == '':
