@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 import os
 import re
+from django_extensions.management.utils import signalcommand
 
 ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
 ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")
@@ -13,6 +14,7 @@ class Command(BaseCommand):
     args = 'tag'
     label = 'annotation tag (TODO, FIXME, BUG, HACK, WARNING, NOTE, XXX)'
 
+    @signalcommand
     def handle(self, *args, **options):
         # don't add django internal code
         apps = filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)

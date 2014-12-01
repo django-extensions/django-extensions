@@ -14,6 +14,8 @@ import six
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(BaseCommand):
     """ syncdata command """
@@ -49,6 +51,7 @@ class Command(BaseCommand):
 
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
+    @signalcommand
     def handle(self, *fixture_labels, **options):
         """ Main method of a Django command """
         from django.db.models import get_apps

@@ -6,6 +6,8 @@ from optparse import make_option
 
 from django.core.management.base import NoArgsCommand, CommandError
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -18,6 +20,7 @@ class Command(NoArgsCommand):
     )
     help = "Set parameters of the default django.contrib.sites Site"
 
+    @signalcommand
     def handle_noargs(self, **options):
         from django.contrib.sites.models import Site
 

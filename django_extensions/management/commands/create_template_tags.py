@@ -1,7 +1,7 @@
 import os
 import sys
 from django.core.management.base import AppCommand
-from django_extensions.management.utils import _make_writeable
+from django_extensions.management.utils import _make_writeable, signalcommand
 from optparse import make_option
 
 
@@ -23,6 +23,7 @@ class Command(AppCommand):
     # necessarily been created.
     can_import_settings = True
 
+    @signalcommand
     def handle_app(self, app, **options):
         app_dir = os.path.dirname(app.__file__)
         tag_library_name = options.get('tag_library_name')

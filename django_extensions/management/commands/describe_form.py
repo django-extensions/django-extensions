@@ -1,5 +1,6 @@
 from django.core.management.base import LabelCommand, CommandError
 from django.utils.encoding import force_unicode
+from django_extensions.management.utils import signalcommand
 
 
 class Command(LabelCommand):
@@ -9,6 +10,7 @@ class Command(LabelCommand):
 
     can_import_settings = True
 
+    @signalcommand
     def handle_label(self, label, **options):
         return describe_form(label)
 

@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 from six.moves import input, configparser
 
+from django_extensions.management.utils import signalcommand
+
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -35,6 +37,7 @@ class Command(BaseCommand):
     )
     help = "Resets the database for this project."
 
+    @signalcommand
     def handle(self, *args, **options):
         """
         Resets the database for this project.

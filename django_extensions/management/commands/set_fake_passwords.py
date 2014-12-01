@@ -11,6 +11,8 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import NoArgsCommand, CommandError
 
+from django_extensions.management.utils import signalcommand
+
 DEFAULT_FAKE_PASSWORD = 'password'
 
 
@@ -24,6 +26,7 @@ class Command(NoArgsCommand):
     help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
     requires_model_validation = False
 
+    @signalcommand
     def handle_noargs(self, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')

@@ -32,6 +32,8 @@ from django.core.management.color import no_style
 from django.db import transaction, connection
 from django.db.models.fields import IntegerField, AutoField
 
+from django_extensions.management.utils import signalcommand
+
 try:
     from django.core.management.base import OutputWrapper
     HAS_OUTPUTWRAPPER = True
@@ -932,6 +934,7 @@ to check/debug ur models compared to the real database tables and columns."""
         super(Command, self).__init__(*args, **kwargs)
         self.exit_code = 1
 
+    @signalcommand
     def handle(self, *app_labels, **options):
         from django.db import models
         from django.conf import settings

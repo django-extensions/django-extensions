@@ -4,6 +4,7 @@ from optparse import make_option, NO_DEFAULT
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django_extensions.management.modelviz import generate_dot
+from django_extensions.management.utils import signalcommand
 
 
 try:
@@ -62,6 +63,7 @@ class Command(BaseCommand):
 
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **options):
         self.options_from_settings(options)
 

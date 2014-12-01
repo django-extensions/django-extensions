@@ -7,6 +7,8 @@ from django.core.management import color
 from django.template import get_library
 from django.utils import termcolors
 
+from django_extensions.management.utils import signalcommand
+
 try:
     from django.utils.encoding import smart_text
 except ImportError:
@@ -66,6 +68,7 @@ class Command(BaseCommand):
     def add_result(self, s, depth=0):
         self.results += '%s\n' % s.rjust(depth * 4 + len(s))
 
+    @signalcommand
     def handle(self, *args, **options):
         if args:
             appname, = args

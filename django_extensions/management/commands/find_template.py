@@ -3,6 +3,8 @@ from django.template import loader
 from django.template import TemplateDoesNotExist
 import sys
 
+from django_extensions.management.utils import signalcommand
+
 
 def get_template_path(path):
     try:
@@ -26,6 +28,7 @@ class Command(LabelCommand):
     args = "[template_path]"
     label = 'template path'
 
+    @signalcommand
     def handle_label(self, template_path, **options):
         path = get_template_path(template_path)
         if path is None:

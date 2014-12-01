@@ -1,6 +1,7 @@
 from django.core.management.base import LabelCommand
 from optparse import make_option
 from django_extensions.management.jobs import get_job, print_jobs
+from django_extensions.management.utils import signalcommand
 
 
 class Command(LabelCommand):
@@ -34,6 +35,7 @@ class Command(LabelCommand):
             traceback.print_exc()
             print("END TRACEBACK\n")
 
+    @signalcommand
     def handle(self, *args, **options):
         app_name = None
         job_name = None

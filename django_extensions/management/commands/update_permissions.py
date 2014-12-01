@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.management import create_permissions as _create_permissions
 
+from django_extensions.management.utils import signalcommand
+
 try:
     from django.apps import apps as django_apps
     get_models = lambda: None
@@ -26,6 +28,7 @@ class Command(BaseCommand):
     args = '<app app ...>'
     help = 'reloads permissions for specified apps, or all apps if no args are specified'
 
+    @signalcommand
     def handle(self, *args, **options):
         apps = set()
         if not args:

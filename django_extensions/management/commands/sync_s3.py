@@ -72,6 +72,8 @@ except ImportError:
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from django_extensions.management.utils import signalcommand
+
 # Make sure boto is available
 try:
     import boto
@@ -149,6 +151,7 @@ class Command(BaseCommand):
 
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **options):
         if not HAS_BOTO:
             raise ImportError("The boto Python library is not installed.")
