@@ -122,7 +122,6 @@ class AutoSlugField(SlugField):
         if slug_len:
             slug = slug[:slug_len]
         slug = self._slug_strip(slug)
-        original_slug = slug
 
         if self.allow_duplicates:
             return slug
@@ -139,21 +138,30 @@ class AutoSlugField(SlugField):
             if self.attname in params:
                 for param in params:
                     kwargs[param] = getattr(model_instance, param, None)
-        kwargs[self.attname] = slug
 
-        # increases the number while searching for the next valid slug
-        # depending on the given slug, clean-up
-        while not slug or queryset.filter(**kwargs):
-            slug = original_slug
+        kwargs['%s__regex' % self.attname] = r'^%s(%s)?(\d+)?$' % (
+            slug, self.separator)
+        slugs = list(queryset.filter(**kwargs).values_list(
+            self.attname, flat=True))
+        try:
+            # remove existing non indexed slug
+            slugs.remove(slug)
+            if slugs:
+                # already created more than 2 times, so find the max index
+                max_index = max(
+                    map(lambda s: int(s.split(self.separator)[-1]), slugs))
+                next = max_index + 1
+
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
             if slug_len and len(slug) + end_len > slug_len:
                 slug = slug[:slug_len - end_len]
                 slug = self._slug_strip(slug)
-            slug = '%s%s' % (slug, end)
-            kwargs[self.attname] = slug
-            next += 1
-        return slug
+
+            return '%s%s' % (slug, end)
+        except ValueError:
+            # it means this slug is created for the first time
+            return slug
 
     def pre_save(self, model_instance, add):
         value = force_unicode(self.create_slug(model_instance, add))
