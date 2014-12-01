@@ -49,6 +49,7 @@ except ImportError:
 
 from django_extensions.management.utils import signalcommand
 
+
 def orm_item_locator(orm_obj):
     """
     This function is called every time an object that will not be exported is required.

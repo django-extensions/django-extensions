@@ -13,8 +13,8 @@ from django_extensions.tests.test_clean_pyc import CleanPycTests
 from django_extensions.tests.test_compile_pyc import CompilePycTests
 
 __test_classes__ = [
-    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest, 
-    CommandTest, ShowTemplateTagsTests, TruncateLetterTests, TemplateTagsTests, 
+    DumpScriptTests, JsonFieldTest, UUIDFieldTest, AutoSlugFieldTest,
+    CommandTest, ShowTemplateTagsTests, TruncateLetterTests, TemplateTagsTests,
     ShortUUIDFieldTest, PostgreSQLUUIDFieldTest, CleanPycTests, CompilePycTests,
     UpdatePermissionsTests, CommandSignalTests
 ]
