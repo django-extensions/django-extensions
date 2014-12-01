@@ -7,8 +7,7 @@ import time
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, OutputWrapper
-from django.core.management.color import no_style
+from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.utils import setup_logger, RedirectHandler
 from django_extensions.management.technical_response import null_technical_500_response
 
@@ -74,66 +73,11 @@ class Command(BaseCommand):
     # Validation is called explicitly each time the server is reloaded.
     requires_model_validation = False
 
-    def execute(self, *args, **options):
-        """
-        Try to execute this command, performing system checks if needed (as
-        controlled by attributes ``self.requires_system_checks`` and
-        ``self.requires_model_validation``, except if force-skipped).
-        """
-        self.stdout = OutputWrapper(options.get('stdout', sys.stdout))
-        if options.get('no_color'):
-            self.style = no_style()
-            # Do not use default ending='\n', because StreamHandler() takes care of it
-            self.stderr = OutputWrapper(options.get('stderr', sys.stderr), ending=None)
-            os.environ[str("DJANGO_COLORS")] = str("nocolor")
-        else:
-            # Do not use default ending='\n', because StreamHandler() takes care of it
-            self.stderr = OutputWrapper(options.get('stderr', sys.stderr), self.style.ERROR, ending=None)
-
-        if self.can_import_settings:
-            from django.conf import settings  # NOQA
-
-        saved_locale = None
-        if not self.leave_locale_alone:
-            # Only mess with locales if we can assume we have a working
-            # settings file, because django.utils.translation requires settings
-            # (The final saying about whether the i18n machinery is active will be
-            # found in the value of the USE_I18N setting)
-            if not self.can_import_settings:
-                raise CommandError("Incompatible values of 'leave_locale_alone' "
-                                   "(%s) and 'can_import_settings' (%s) command "
-                                   "options." % (self.leave_locale_alone,
-                                                 self.can_import_settings))
-            # Switch to US English, because django-admin.py creates database
-            # content like permissions, and those shouldn't contain any
-            # translations.
-            from django.utils import translation
-            saved_locale = translation.get_language()
-            translation.activate('en-us')
-
-        try:
-            if (self.requires_system_checks and
-                    not options.get('skip_validation') and  # This will be removed at the end of deprecation process for `skip_validation`.
-                    not options.get('skip_checks')):
-                self.check()
-            output = self.handle(*args, **options)
-            if output:
-                if self.output_transaction:
-                    # This needs to be imported here, because it relies on
-                    # settings.
-                    from django.db import connections, DEFAULT_DB_ALIAS
-                    connection = connections[options.get('database', DEFAULT_DB_ALIAS)]
-                    if connection.ops.start_transaction_sql():
-                        self.stdout.write(self.style.SQL_KEYWORD(connection.ops.start_transaction_sql()))
-                self.stdout.write(output)
-                if self.output_transaction:
-                    self.stdout.write('\n' + self.style.SQL_KEYWORD(connection.ops.end_transaction_sql()))
-        finally:
-            if saved_locale is not None:
-                translation.activate(saved_locale)
-
     def handle(self, addrport='', *args, **options):
         import django
+
+        # Do not use default ending='\n', because StreamHandler() takes care of it
+        self.stderr.ending = None
 
         setup_logger(logger, self.stderr, filename=options.get('output_file', None))  # , fmt="[%(name)s] %(message)s")
         logredirect = RedirectHandler(__name__)
