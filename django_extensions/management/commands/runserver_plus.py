@@ -78,6 +78,10 @@ class Command(BaseCommand):
     def handle(self, addrport='', *args, **options):
         import django
 
+        # Do not use default ending='\n', because StreamHandler() takes care of it
+        if hasattr(self.stderr, 'ending'):
+            self.stderr.ending = None
+
         setup_logger(logger, self.stderr, filename=options.get('output_file', None))  # , fmt="[%(name)s] %(message)s")
         logredirect = RedirectHandler(__name__)
 
