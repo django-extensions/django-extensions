@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.4.9
+-----
+
+Changes:
+ - Bugfix: runserver_plus, removed empty lines when logging on Python 3
+
+
 1.4.8
 -----
 
