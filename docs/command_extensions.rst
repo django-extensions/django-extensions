@@ -60,6 +60,10 @@ Current Command Extensions
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
 
+* *drop_test_database* - Drops the test database. Usefull when running Django
+  test via some automated system (BuildBot, Jenkins, etc) and making sure that
+  the test database is always dropped at the end.
+
 * *reset_db* - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
