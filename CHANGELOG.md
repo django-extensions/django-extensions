@@ -5,6 +5,8 @@ Changelog
 -----
 
 Changes:
+ - New: drop_test_database, drops the test database
+ - New: command_signals, git commit -a -m 'bumped version number' (see docs)
  - Bugfix: runserver_plus, removed empty lines when logging on Python 3
 
 
