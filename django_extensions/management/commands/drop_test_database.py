@@ -17,9 +17,6 @@ class Command(BaseCommand):
         make_option('-U', '--user', action='store',
                     dest='user', default=None,
                     help='Use another user for the database then defined in settings.py'),
-        make_option('-O', '--owner', action='store',
-                    dest='owner', default=None,
-                    help='Use another owner for creating the database then the user defined in settings or via --user'),
         make_option('-P', '--password', action='store',
                     dest='password', default=None,
                     help='Use another password for the database then defined in settings.py'),
@@ -60,7 +57,6 @@ class Command(BaseCommand):
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password
-        owner = options.get('owner') or user
 
         try:
             database_name = dbinfo['TEST']['NAME']
@@ -115,6 +111,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 kwargs['port'] = int(database_port)
 
             connection = Database.connect(**kwargs)
+            drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
             logging.info('Executing: "' + drop_query + '"')
             connection.query(drop_query)
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
