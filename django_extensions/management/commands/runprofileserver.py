@@ -243,7 +243,8 @@ class Command(BaseCommand):
                         elapms = elap.seconds * 1000.0 + elap.microseconds / 1000.0
                         if USE_LSPROF:
                             kg = KCacheGrind(prof)
-                            kg.output(open(profname, 'w'))
+                            with open(profname, 'w') as f:
+                                kg.output(f)
                         elif USE_CPROFILE:
                             prof.dump_stats(profname)
                         profname2 = prof_file.format(path=path_name, duration=int(elapms), time=int(time.time()))
