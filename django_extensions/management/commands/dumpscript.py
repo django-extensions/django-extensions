@@ -640,7 +640,8 @@ try:
     # has no knowlodge of this class
     importer = type("DynamicImportHelper", (import_helper.ImportHelper, BasicImportHelper ) , {} )()
 except ImportError as e:
-    if str(e) == "No module named import_helper":
+    # From Python 3.3 we can check e.name - string match is for backward compatibility.
+    if 'import_helper' in str(e):
         importer = BasicImportHelper()
     else:
         raise
