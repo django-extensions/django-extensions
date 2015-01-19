@@ -50,6 +50,7 @@ class Command(NoArgsCommand):
         use_ptpython = options.get('ptpython', False)
         use_ptipython = options.get('ptipython', False)
         use_pythonrc = options.get('use_pythonrc', True)
+        verbosity = int(options.get('verbosity', 1))
 
         if options.get("print_sql", False):
             # Code from http://gist.github.com/118990
@@ -265,6 +266,8 @@ Please read the documentation carefully:
             for shell_name, func in shells:
                 shell = func()
                 if callable(shell):
+                    if verbosity > 0:
+                        print(self.style.NOTICE("Using shell %s." % shell_name))
                     break
 
         if not callable(shell):
