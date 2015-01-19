@@ -12,6 +12,10 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(NoArgsCommand):
+    def use_vi_mode():
+        editor = os.path.basename(os.environ.get('EDITOR'))
+        return editor.startswith('vi') or editor.endswith('vim')
+
     option_list = NoArgsCommand.option_list + (
         make_option('--plain', action='store_true', dest='plain',
                     help='Tells Django to use plain Python, not BPython nor IPython.'),
@@ -35,7 +39,7 @@ class Command(NoArgsCommand):
                     help='Ignore autoloading of some apps/models. Can be used several times.'),
         make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
                     help='Do not display loaded models messages'),
-        make_option('--vi', action='store_true', default=False, dest='vi_mode',
+        make_option('--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
                     help='Load Vi key bindings (for --ptpython and --ptipython)'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
