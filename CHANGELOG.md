@@ -55,7 +55,7 @@ Changes:
 -----
 
 Changes:
- - Fix: admin_geneartor, fix ImproperlyConfigured exception on Django 1.7
+ - Fix: admin_generator, fix ImproperlyConfigured exception on Django 1.7
  - Improvement: Remove "requires_model_validation" and "requires_system_checks" in commands which set the default value
 
 
@@ -71,7 +71,7 @@ Changes:
  - Improvement: show_urls, Allow multiple decorators on the show_urls command
  - Improvement: runscript, show script errors with verbosity > 1
  - Fix: jobs, daily_cleanup job use clearsessions for Django 1.5 and later
- - Fix: shell_plus, refactored importing and selecting shells to avoid poluted exception
+ - Fix: shell_plus, refactored importing and selecting shells to avoid polluted exception
  - Fix: shell_plus, Fix model loading for sentry
 
 
