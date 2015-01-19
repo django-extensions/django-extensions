@@ -74,7 +74,8 @@ class Command(BaseCommand):
         use_pydot = options.get('pydot', False)
         cli_options = ' '.join(sys.argv[2:])
         dotdata = generate_dot(args, cli_options=cli_options, **options)
-        dotdata = dotdata.encode('utf-8')
+        if not six.PY3:
+            dotdata = dotdata.encode('utf-8')
         if options['outputfile']:
             if not use_pygraphviz and not use_pydot:
                 if HAS_PYGRAPHVIZ:
