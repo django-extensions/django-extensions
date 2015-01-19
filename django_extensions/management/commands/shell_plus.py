@@ -270,7 +270,7 @@ Please read the documentation carefully:
             for shell_name, func in shells:
                 shell = func()
                 if callable(shell):
-                    if verbosity > 0:
+                    if verbosity > 1:
                         print(self.style.NOTICE("Using shell %s." % shell_name))
                     break
 
