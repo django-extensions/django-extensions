@@ -44,6 +44,8 @@ class Command(NoArgsCommand):
                     help='Do not display loaded models messages'),
         make_option('--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
                     help='Load Vi key bindings (for --ptpython and --ptipython)'),
+        make_option('--no-browser', action='store_true', default=False, dest='no_browser',
+                    help='Don\'t open the notebook in a browser after startup.'),
     )
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
@@ -57,6 +59,7 @@ class Command(NoArgsCommand):
         use_ptpython = options.get('ptpython', False)
         use_ptipython = options.get('ptipython', False)
         use_pythonrc = options.get('use_pythonrc', True)
+        no_browser = options.get('no_browser', False)
         verbosity = int(options.get('verbosity', 1))
 
         if options.get("print_sql", False):
@@ -121,6 +124,8 @@ class Command(NoArgsCommand):
             def run_notebook():
                 app = NotebookApp.instance()
                 ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', ['--ext', 'django_extensions.management.notebook_extension'])
+                if no_browser and not '--no-browser' in ipython_arguments:
+                    ipython_arguments.append('--no-browser')
                 if 'django_extensions.management.notebook_extension' not in ipython_arguments:
                     print(self.style.ERROR("""WARNING:
 IPython Notebook Extension 'django_extensions.management.notebook_extension' not
