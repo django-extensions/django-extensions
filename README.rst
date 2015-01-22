@@ -72,15 +72,15 @@ Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for 
 
     $ python manage.py show_urls
 
-Check templates for rendering errors:
+Check templates for rendering errors::
 
     $ python manage.py validate_templates
 
-Run the enchanced django shell:
+Run the enchanced django shell::
 
     $ python manage.py shell_plus
     
-Run the enchanced django runserver, (requires Werkzeug install):
+Run the enchanced django runserver, (requires Werkzeug install)::
 
     $ python manage.py runserver_plus
     
