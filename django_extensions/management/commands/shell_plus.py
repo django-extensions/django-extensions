@@ -13,7 +13,10 @@ from django_extensions.management.utils import signalcommand
 
 class Command(NoArgsCommand):
     def use_vi_mode():
-        editor = os.path.basename(os.environ.get('EDITOR'))
+        editor = os.environ.get('EDITOR')
+        if not editor:
+            return False
+        editor = os.path.basename(editor)
         return editor.startswith('vi') or editor.endswith('vim')
 
     option_list = NoArgsCommand.option_list + (
