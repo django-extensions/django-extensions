@@ -21,7 +21,7 @@ class Command(LabelCommand):
         verbosity = int(options.get('verbosity', 1))
         jobs = get_jobs(when, only_scheduled=True)
         if six.PY2:
-            # The underscore prefix was added to avoid confusion with the 
+            # The underscore prefix was added to avoid confusion with the
             # biult-in list function.
             _list = jobs.keys()
         else:
