@@ -106,5 +106,5 @@ image by using the *graph_models* command::
 
 
 .. _GraphViz: http://www.graphviz.org/
-.. _pygraphviz: https://networkx.lanl.gov/wiki/pygraphviz
+.. _pygraphviz: https://pygraphviz.github.io/
 .. _pydot: https://pypi.python.org/pypi/pydot
