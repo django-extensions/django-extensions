@@ -1,4 +1,3 @@
-from django.utils import six
 from django.core.management.base import LabelCommand
 from optparse import make_option
 from django_extensions.management.jobs import get_jobs, print_jobs
@@ -20,14 +19,7 @@ class Command(LabelCommand):
     def runjobs(self, when, options):
         verbosity = int(options.get('verbosity', 1))
         jobs = get_jobs(when, only_scheduled=True)
-        if six.PY2:
-            # The underscore prefix was added to avoid confusion with the
-            # biult-in list function.
-            _list = jobs.keys()
-        else:
-            _list = list(jobs.keys())
-        _list.sort()
-        for app_name, job_name in _list:
+        for app_name, job_name in sorted(jobs.keys()):
             job = jobs[(app_name, job_name)]
             if verbosity > 1:
                 print("Executing %s job: %s (app: %s)" % (when, job_name, app_name))
