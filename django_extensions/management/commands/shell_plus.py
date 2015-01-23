@@ -124,7 +124,7 @@ class Command(NoArgsCommand):
             def run_notebook():
                 app = NotebookApp.instance()
                 ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', ['--ext', 'django_extensions.management.notebook_extension'])
-                if no_browser and not '--no-browser' in ipython_arguments:
+                if no_browser and '--no-browser' not in ipython_arguments:
                     ipython_arguments.append('--no-browser')
                 if 'django_extensions.management.notebook_extension' not in ipython_arguments:
                     print(self.style.ERROR("""WARNING:
