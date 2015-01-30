@@ -6,6 +6,7 @@ python:
   - 3.3
   - 3.4
   - pypy
+  - pypy3
 
 env:
   - DJANGO=Django==1.4
@@ -42,6 +43,10 @@ matrix:
     - python: pypy
       env: DJANGO=Django==1.4
     - python: pypy
+      env: DJANGO=Django==1.5
+    - python: pypy3
+      env: DJANGO=Django==1.4
+    - python: pypy3
       env: DJANGO=Django==1.5
   allow_failures:
       - env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
