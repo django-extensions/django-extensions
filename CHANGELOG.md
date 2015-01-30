@@ -13,6 +13,7 @@ Changes:
  - Docs: add reference to JSONField in documentation
  - Docs: fixed various typo's and links in docs and changelog
  - Docs: added some basic use cases to README
+ - Docs: added information for companies or people wanting to donate towards the project
  - Fix: graphmodels, fix for python3
  - Fix: dumpscript, fix check for missing import_helper module in Python 3
  - Fix: runprofileserver, explicitly close file to avoid error on windows
