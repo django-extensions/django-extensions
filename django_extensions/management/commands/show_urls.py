@@ -83,7 +83,7 @@ class Command(BaseCommand):
 
         style = color_style()
 
-        if settings.ADMIN_FOR:
+        if getattr(settings, 'ADMIN_FOR', None):
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
         else:
             settings_modules = [settings]
