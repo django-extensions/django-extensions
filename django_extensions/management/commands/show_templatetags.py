@@ -4,7 +4,7 @@ import inspect
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import color
-from django.template import get_library
+from django.template.base import get_library
 from django.utils import termcolors
 
 from django_extensions.management.utils import signalcommand
@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
         style = color_style()
 
-        if settings.ADMIN_FOR:
+        if getattr(settings, 'ADMIN_FOR', None):
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
         else:
             settings_modules = [settings]
