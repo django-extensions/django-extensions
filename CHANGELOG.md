@@ -1,6 +1,25 @@
 Changelog
 =========
 
+1.5.0
+-----
+
+Changes:
+ - Fix: various fixes for Django 1.8
+ - Improvement: shell_plus, autodetect vi mode by looking at $EDITOR shell env setting
+ - Improvement: shell_plus, print which shell is being used at verbosity > 1
+ - Improvement: shell_plus, added --no-browser option for IPython notebooks
+ - Improvement: tox.ini, updated to latest Django versions
+ - Docs: add reference to JSONField in documentation
+ - Docs: fixed various typo's and links in docs and changelog
+ - Docs: added some basic use cases to README
+ - Fix: graphmodels, fix for python3
+ - Fix: dumpscript, fix check for missing import_helper module in Python 3
+ - Fix: runprofileserver, explicitly close file to avoid error on windows
+ - Fix: json field, migration issues when adding new JSONField to existing model
+ - Fix: runjobs, fix python3 issues
+
+
 1.4.9
 -----
 
