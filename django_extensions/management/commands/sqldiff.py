@@ -452,7 +452,6 @@ class SQLDiff(object):
     def get_constraints(self, cursor, table_name, introspection):
         return {}
 
-    @transaction.commit_manually
     def find_differences(self):
         if self.options['all_applications']:
             self.add_app_model_marker(None, None)
@@ -493,8 +492,6 @@ class SQLDiff(object):
                 self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
-            else:
-                transaction.commit()
 
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
@@ -881,7 +878,6 @@ class PostgresqlSQLDiff(SQLDiff):
                     db_type += ' ' + check_constraint
         return db_type
 
-    @transaction.autocommit
     def get_field_db_type_lookup(self, type_code):
         try:
             name = self.sql_to_dict("SELECT typname FROM pg_type WHERE typelem=%s;", [type_code])[0]['typname']

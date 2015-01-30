@@ -6,6 +6,7 @@ sessions at the moment).
 """
 
 import six
+from contextlib import contextmanager
 from django_extensions.management.jobs import DailyJob
 
 
@@ -22,6 +23,14 @@ class Job(DailyJob):
         except ImportError:
             timezone = None
 
+        if hasattr(transaction, 'atomic'):
+            atomic = transaction.atomic
+        else:
+            @contextmanager
+            def atomic(using=None):
+                yield
+                transaction.commit_unless_managed(using=using)
+
         if hasattr(settings, 'CACHES') and timezone:
             from django.core.cache import get_cache
             from django.db import router, connections
@@ -30,10 +39,10 @@ class Job(DailyJob):
                 if cache_options['BACKEND'].endswith("DatabaseCache"):
                     cache = get_cache(cache_name)
                     db = router.db_for_write(cache.cache_model_class)
-                    cursor = connections[db].cursor()
-                    now = timezone.now()
-                    cache._cull(db, cursor, now)
-                    transaction.commit_unless_managed(using=db)
+                    with atomic(using=db):
+                        cursor = connections[db].cursor()
+                        now = timezone.now()
+                        cache._cull(db, cursor, now)
             return
 
         if hasattr(settings, 'CACHE_BACKEND'):
@@ -41,11 +50,12 @@ class Job(DailyJob):
                 from django.db import connection
                 os.environ['TZ'] = settings.TIME_ZONE
                 table_name = settings.CACHE_BACKEND[5:]
-                cursor = connection.cursor()
-                cursor.execute(
-                    "DELETE FROM %s WHERE %s < current_timestamp;" % (
-                        connection.ops.quote_name(table_name),
-                        connection.ops.quote_name('expires')
+
+                with atomic():
+                    cursor = connection.cursor()
+                    cursor.execute(
+                        "DELETE FROM %s WHERE %s < current_timestamp;" % (
+                            connection.ops.quote_name(table_name),
+                            connection.ops.quote_name('expires')
+                        )
                     )
-                )
-                transaction.commit_unless_managed()

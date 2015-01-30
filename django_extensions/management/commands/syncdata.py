@@ -11,10 +11,37 @@ and anything extra will of been deleted.
 import os
 import sys
 import six
+from contextlib import contextmanager
+from functools import wraps
+
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
+from django.db import connection, transaction
 
 from django_extensions.management.utils import signalcommand
+
+if hasattr(transaction, 'set_autocommit'):
+    @contextmanager
+    def _custom_transaction(using=None):
+        transaction.set_autocommit(False)
+        yield
+        transaction.set_autocommit(True)
+else:
+    @contextmanager
+    def _custom_transaction(using=None):
+        transaction.commit_unless_managed()
+        transaction.enter_transaction_management()
+        transaction.managed(True)
+        yield
+        transaction.leave_transaction_management()
+
+
+def custom_transaction(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with _custom_transaction():
+            return func(*args, **kwargs)
+    return wrapper
 
 
 class Command(BaseCommand):
@@ -52,11 +79,11 @@ class Command(BaseCommand):
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
     @signalcommand
+    @custom_transaction
     def handle(self, *fixture_labels, **options):
         """ Main method of a Django command """
         from django.db.models import get_apps
         from django.core import serializers
-        from django.db import connection, transaction
         from django.conf import settings
 
         self.style = no_style()
@@ -77,12 +104,6 @@ class Command(BaseCommand):
         # it isn't already initialized).
         cursor = connection.cursor()
 
-        # Start transaction management. All fixtures are installed in a
-        # single transaction to ensure that all references are resolved.
-        transaction.commit_unless_managed()
-        transaction.enter_transaction_management()
-        transaction.managed(True)
-
         app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in get_apps()]
         for fixture_label in fixture_labels:
             parts = fixture_label.split('.')
@@ -102,7 +123,6 @@ class Command(BaseCommand):
             else:
                 sys.stderr.write(self.style.ERROR("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format)))
                 transaction.rollback()
-                transaction.leave_transaction_management()
                 return
 
             if os.path.isabs(fixture_name):
@@ -126,7 +146,6 @@ class Command(BaseCommand):
                             fixture.close()
                             print(self.style.ERROR("Multiple fixtures named '%s' in %s. Aborting." % (fixture_name, humanize(fixture_dir))))
                             transaction.rollback()
-                            transaction.leave_transaction_management()
                             return
                         else:
                             fixture_count += 1
@@ -157,7 +176,6 @@ class Command(BaseCommand):
                                 import traceback
                                 fixture.close()
                                 transaction.rollback()
-                                transaction.leave_transaction_management()
                                 if show_traceback:
                                     traceback.print_exc()
                                 else:
@@ -174,7 +192,6 @@ class Command(BaseCommand):
             sys.stderr.write(
                 self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % (fixture_name)))
             transaction.rollback()
-            transaction.leave_transaction_management()
             return
 
         # If we found even one object in a fixture, we need to reset the
@@ -188,7 +205,6 @@ class Command(BaseCommand):
                     cursor.execute(line)
 
         transaction.commit()
-        transaction.leave_transaction_management()
 
         if object_count == 0:
             if verbosity > 1:
