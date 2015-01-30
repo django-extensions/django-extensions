@@ -1,6 +1,10 @@
 from django.core.management.base import LabelCommand, CommandError
-from django.utils.encoding import force_unicode
 from django_extensions.management.utils import signalcommand
+
+try:
+    from django.utils.encoding import force_text
+except:
+    from django.utils.encoding import force_unicode as force_text
 
 
 class Command(LabelCommand):
@@ -48,7 +52,7 @@ def describe_form(label, fields=None):
                 if k == 'widget':
                     attrs[k] = v.__class__
                 elif k in ['help_text', 'label']:
-                    attrs[k] = force_unicode(v).strip()
+                    attrs[k] = force_text(v).strip()
                 else:
                     attrs[k] = v
 
