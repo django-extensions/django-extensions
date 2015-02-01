@@ -74,4 +74,3 @@ class JSONField(StringField):
             return super(JSONField, self).get_db_prep_save("")
         else:
             return super(JSONField, self).get_db_prep_save(dumps(value))
-
