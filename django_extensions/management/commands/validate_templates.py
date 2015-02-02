@@ -70,4 +70,3 @@ class Command(BaseCommand):
         if errors:
             raise CommandError("%s errors found" % errors)
         print("%s errors found" % errors)
-

@@ -255,4 +255,3 @@ class EncryptedFieldsTestCase(FieldTestCase):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)
-

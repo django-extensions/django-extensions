@@ -83,4 +83,3 @@ class DumpScriptTests(FieldTestCase):
         else:
             self.assertTrue(len(ast_syntax_tree.asList()) > 1)
         tmp_out.close()
-

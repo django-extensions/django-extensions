@@ -25,4 +25,3 @@ else:
     truncateletters.is_safe = True
     truncateletters = stringfilter(truncateletters)
     register.filter(truncateletters)
-
