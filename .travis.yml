@@ -1,52 +1,53 @@
 language: python
 
-python:
-  - 2.6
-  - 2.7
-  - 3.3
-  - 3.4
-  - pypy
-  - pypy3
+sudo: false
 
 env:
-  - DJANGO=Django==1.4
-  - DJANGO=Django==1.5
-  - DJANGO=Django==1.6
-  - DJANGO=Django==1.7
-  - DJANGO=Django==1.8a1
-  - DJANGO="git+git://github.com/django/django.git@master#egg=django"
-
-install:
-  - pip install -q $DJANGO
-  - pip install flake8
-  - pip install python-dateutil
-  - if [[ $TRAVIS_PYTHON_VERSION < '3.0' ]]; then pip install --pre -q python-keyczar; fi
-  - pip install -q PyYAML shortuuid
-  - pip install -e .
-
-script:
-  - flake8 --ignore=E265,E501,W391 .
-  - python setup.py test
+    - TOX_ENV=py27-flake8
+    - TOX_ENV=py34-flake8
+    - TOX_ENV=py26-django14
+    - TOX_ENV=py27-django14
+    - TOX_ENV=py26-django15
+    - TOX_ENV=py26-django16
+    - TOX_ENV=py27-django15
+    - TOX_ENV=py27-django16
+    - TOX_ENV=py32-django15
+    - TOX_ENV=py32-django16
+    - TOX_ENV=py33-django15
+    - TOX_ENV=py33-django16
+    - TOX_ENV=py34-django15
+    - TOX_ENV=py34-django16
+    - TOX_ENV=py27-django17
+    - TOX_ENV=py27-django18alpha
+    - TOX_ENV=py27-djangomaster
+    - TOX_ENV=py32-django17
+    - TOX_ENV=py32-django18alpha
+    - TOX_ENV=py32-djangomaster
+    - TOX_ENV=py33-django17
+    - TOX_ENV=py33-django18alpha
+    - TOX_ENV=py33-djangomaster
+    - TOX_ENV=py34-django17
+    - TOX_ENV=py34-django18alpha
+    - TOX_ENV=py34-djangomaster
+    - TOX_ENV=pypy-django17
+    - TOX_ENV=pypy-django18alpha
+    - TOX_ENV=pypy-djangomaster
+    - TOX_ENV=pypy3-django17
+    - TOX_ENV=pypy3-django18alpha
+    - TOX_ENV=pypy3-djangomaster
 
 matrix:
-  exclude:
-    - python: 2.6
-      env: DJANGO=Django==1.7
-    - python: 2.6
-      env: DJANGO=Django==1.8a1
-    - python: 2.6
-      env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
-    - python: 3.3
-      env: DJANGO=Django==1.4
-    - python: 3.4
-      env: DJANGO=Django==1.4
-    - python: pypy
-      env: DJANGO=Django==1.4
-    - python: pypy
-      env: DJANGO=Django==1.5
-    - python: pypy3
-      env: DJANGO=Django==1.4
-    - python: pypy3
-      env: DJANGO=Django==1.5
+  fast_finish: true
   allow_failures:
-      - env: DJANGO="git+git://github.com/django/django.git@master#egg=django"
+    - env: TOX_ENV=py34-djangomaster
+    - env: TOX_ENV=py33-djangomaster
+    - env: TOX_ENV=py32-djangomaster
+    - env: TOX_ENV=py27-djangomaster
+    - env: TOX_ENV=pypy-djangomaster
+    - env: TOX_ENV=pypy3-djangomaster
+
+install:
+  - pip install tox
+
+script:
+    - tox -e $TOX_ENV
