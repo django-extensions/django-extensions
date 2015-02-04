@@ -81,6 +81,11 @@ def main():
                 'django_extensions.tests.testapp',
                 'django_extensions',
             ],
+            MIDDLEWARE_CLASSES=(
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
+                'django.contrib.messages.middleware.MessageMiddleware',
+            ),
             # Django replaces this, but it still wants it. *shrugs*
             DATABASE_ENGINE='django.db.backends.sqlite3',
             DATABASES={
@@ -97,11 +102,11 @@ def main():
             ENCRYPTED_FIELD_KEYS_DIR=KEY_LOCS,
         )
 
-        if django.VERSION[:2] >= (1, 7):
+        if django.VERSION >= (1, 7):
             django.setup()
 
         apps = ['django_extensions']
-        if django.VERSION[:2] >= (1, 6):
+        if django.VERSION >= (1, 6):
             apps.append('django_extensions.tests.testapp')
             apps.append('django_extensions.tests')
 
