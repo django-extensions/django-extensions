@@ -59,6 +59,8 @@ Current Command Extensions
 * *print_user_for_session* - Print the user information for the provided
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
+  It seems this works only if setting ``SESSION_ENGINE`` is
+  ``'django.contrib.sessions.backends.db'`` (default value).
 
 * *drop_test_database* - Drops the test database. Usefull when running Django
   test via some automated system (BuildBot, Jenkins, etc) and making sure that
