@@ -11,3 +11,4 @@ venv
 .tox
 *.bak
 .DS_Store
+.eggs/
