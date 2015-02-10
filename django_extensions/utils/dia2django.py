@@ -9,14 +9,14 @@
 #  Python 2.4.4 (#2, Jul 17 2007, 11:56:54)
 #  [GCC 4.1.3 20070629 (prerelease) (Debian 4.1.2-13)] on linux2
 
-dependclasses = ["User", "Group", "Permission", "Message"]
-
 import re
 import six
 import sys
 import gzip
 import codecs
 from xml.dom.minidom import *  # NOQA
+
+dependclasses = ["User", "Group", "Permission", "Message"]
 
 #Type dictionary translation types SQL -> Django
 tsd = {

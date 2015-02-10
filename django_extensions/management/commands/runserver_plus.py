@@ -1,8 +1,9 @@
 import os
 import re
-import socket
 import sys
 import time
+import socket
+import logging
 
 from optparse import make_option
 
@@ -35,7 +36,6 @@ naiveip_re = re.compile(r"""^(?:
 DEFAULT_PORT = "8000"
 
 
-import logging
 logger = logging.getLogger(__name__)
 
 

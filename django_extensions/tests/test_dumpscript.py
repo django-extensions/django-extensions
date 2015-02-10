@@ -1,15 +1,15 @@
 import sys
 import six
 
-if sys.version_info[:2] >= (2, 6):
-    import ast as compiler  # NOQA
-else:
-    import compiler  # NOQA
-
 from django.core.management import call_command
 
 from django_extensions.tests.testapp.models import Name, Note, Person
 from django_extensions.tests.fields import FieldTestCase
+
+if sys.version_info[:2] >= (2, 6):
+    import ast as compiler  # NOQA
+else:
+    import compiler  # NOQA
 
 
 class DumpScriptTests(FieldTestCase):

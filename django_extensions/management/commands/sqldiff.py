@@ -962,7 +962,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
             for app in app_list:
                 app_models.extend(models.get_models(app, include_auto_created=True))
 
-        ## remove all models that are not managed by Django
+        # remove all models that are not managed by Django
         #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
 
         if not app_models:

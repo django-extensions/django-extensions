@@ -11,9 +11,9 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import NoArgsCommand, CommandError
 
-DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
-
 from django_extensions.management.utils import signalcommand
+
+DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
 
 
 class Command(NoArgsCommand):

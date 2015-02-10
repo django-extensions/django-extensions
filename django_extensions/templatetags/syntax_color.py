@@ -31,9 +31,6 @@ you will need to add the ``django_extensions.utils`` application to the
 ``INSTALLED_APPS``setting in your project's ``settings.py`` file.
 """
 
-__author__ = 'Will Larson <lethain@gmail.com>'
-
-
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
@@ -44,6 +41,9 @@ try:
     from pygments.lexers import get_lexer_by_name, guess_lexer, ClassNotFound
 except ImportError:
     raise ImportError("Please install 'pygments' library to use syntax_color.")
+
+__author__ = 'Will Larson <lethain@gmail.com>'
+
 
 register = template.Library()
 
