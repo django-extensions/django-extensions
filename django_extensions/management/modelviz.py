@@ -7,21 +7,6 @@ Based on:
   Adapted to be used with django-extensions
 """
 
-__version__ = "1.0"
-__license__ = "Python"
-__author__ = "Bas van Oostveen <v.oostveen@gmail.com>",
-__contributors__ = [
-    "Antonio Cavedoni <http://cavedoni.com/>"
-    "Stefano J. Attardi <http://attardi.org/>",
-    "limodou <http://www.donews.net/limodou/>",
-    "Carlo C8E Miron",
-    "Andre Campos <cahenan@gmail.com>",
-    "Justin Findlay <jfindlay@gmail.com>",
-    "Alexander Houben <alexander@houben.ch>",
-    "Joern Hees <gitdev@joernhees.de>",
-    "Kevin Cherepski <cherepski@gmail.com>",
-]
-
 import os
 import six
 import datetime
@@ -37,6 +22,22 @@ try:
     assert GenericRelation
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
+
+
+__version__ = "1.0"
+__license__ = "Python"
+__author__ = "Bas van Oostveen <v.oostveen@gmail.com>",
+__contributors__ = [
+    "Antonio Cavedoni <http://cavedoni.com/>"
+    "Stefano J. Attardi <http://attardi.org/>",
+    "limodou <http://www.donews.net/limodou/>",
+    "Carlo C8E Miron",
+    "Andre Campos <cahenan@gmail.com>",
+    "Justin Findlay <jfindlay@gmail.com>",
+    "Alexander Houben <alexander@houben.ch>",
+    "Joern Hees <gitdev@joernhees.de>",
+    "Kevin Cherepski <cherepski@gmail.com>",
+]
 
 
 def parse_file_or_list(arg):
