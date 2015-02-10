@@ -251,12 +251,23 @@ class Command(BaseCommand):
 
             else:
                 ssl_context = None
+
+            extra_files = []
+            if use_reloader and settings.USE_I18N:
+                try:
+                    from django.utils.autoreload import gen_filenames
+                except ImportError:
+                    pass
+                else:
+                    extra_files = filter(lambda filename: filename.endswith('.mo'), gen_filenames())
+
             run_simple(
                 self.addr,
                 int(self.port),
                 DebuggedApplication(handler, True),
                 use_reloader=use_reloader,
                 use_debugger=True,
+                extra_files=extra_files,
                 threaded=threaded,
                 ssl_context=ssl_context
             )
