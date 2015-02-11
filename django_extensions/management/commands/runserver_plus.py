@@ -59,8 +59,8 @@ class Command(BaseCommand):
                     help="Print SQL queries as they're executed"),
         make_option('--cert', dest='cert_path', action="store", type="string",
                     help='To use SSL, specify certificate path.'),
-        make_option('--extra-files', dest='extra_files', action="store", type="string",
-                    help='auto-reload whenever the given file changes too'),
+        make_option('--extra-file', dest='extra_files', action="append", type="string",
+                    help='auto-reload whenever the given file changes too (can be specified multiple times)'),
 
     )
     if USE_STATICFILES:
@@ -190,7 +190,7 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
         bind_url = "http://%s:%s/" % (
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
-        extra_files = [options.get('extra_files')] if options.get('extra_files') else []
+        extra_files = options.get('extra_files', None) or []
 
         def inner_run():
             print("Validating models...")
@@ -255,14 +255,13 @@ class Command(BaseCommand):
             else:
                 ssl_context = None
 
-            extra_files = []
             if use_reloader and settings.USE_I18N:
                 try:
                     from django.utils.autoreload import gen_filenames
                 except ImportError:
                     pass
                 else:
-                    extra_files = filter(lambda filename: filename.endswith('.mo'), gen_filenames())
+                    extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
 
             run_simple(
                 self.addr,
@@ -273,7 +272,6 @@ class Command(BaseCommand):
                 extra_files=extra_files,
                 threaded=threaded,
                 ssl_context=ssl_context,
-                extra_files=extra_files
             )
         inner_run()
 
