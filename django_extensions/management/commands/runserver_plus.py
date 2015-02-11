@@ -59,6 +59,8 @@ class Command(BaseCommand):
                     help="Print SQL queries as they're executed"),
         make_option('--cert', dest='cert_path', action="store", type="string",
                     help='To use SSL, specify certificate path.'),
+        make_option('--extra-files', dest='extra_files', action="store", type="string",
+                    help='auto-reload whenever the given file changes too'),
 
     )
     if USE_STATICFILES:
@@ -188,6 +190,7 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
         bind_url = "http://%s:%s/" % (
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
+        extra_files = [options.get('extra_files')] if options.get('extra_files') else []
 
         def inner_run():
             print("Validating models...")
@@ -269,7 +272,8 @@ class Command(BaseCommand):
                 use_debugger=True,
                 extra_files=extra_files,
                 threaded=threaded,
-                ssl_context=ssl_context
+                ssl_context=ssl_context,
+                extra_files=extra_files
             )
         inner_run()
 
