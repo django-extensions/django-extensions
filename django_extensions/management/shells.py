@@ -147,8 +147,10 @@ def import_objects(options, style):
             if "%s.%s" % (app_name, mod.__name__) in dont_load:
                 continue
 
-            load_models.setdefault(mod.__module__, [])
-            load_models[mod.__module__].append(mod.__name__)
+            if mod.__module__:
+                # Only add the module to the dict if `__module__` is not empty.
+                load_models.setdefault(mod.__module__, [])
+                load_models[mod.__module__].append(mod.__name__)
 
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports"))
