@@ -1,5 +1,5 @@
-from django_extensions.tests.fields import FieldTestCase
-from django_extensions.tests.testapp.models import JSONFieldTestModel
+from .test_fields import FieldTestCase
+from .testapp.models import JSONFieldTestModel
 
 
 class JsonFieldTest(FieldTestCase):

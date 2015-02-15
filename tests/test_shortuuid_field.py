@@ -4,7 +4,7 @@ from django.core.management import call_command
 from django.db.models import loading
 from django.utils import unittest
 
-from django_extensions.tests.testapp.models import ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
+from .testapp.models import ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
 
 
 class ShortUUIDFieldTest(unittest.TestCase):

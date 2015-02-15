@@ -1,12 +1,14 @@
+import pytest
+
 import django
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models import loading
 from django.db import models
-from django.utils import unittest
+from django.test import TestCase
 
 from django_extensions.db.fields import AutoSlugField
-from django_extensions.tests.testapp.models import SluggedTestModel, ChildSluggedTestModel
+from .testapp.models import SluggedTestModel, ChildSluggedTestModel
 
 if django.VERSION[:2] >= (1, 7):
     from django.db import migrations  # NOQA
@@ -15,7 +17,7 @@ if django.VERSION[:2] >= (1, 7):
     import django_extensions  # NOQA
 
 
-class FieldTestCase(unittest.TestCase):
+class FieldTestCase(TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
         #settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
@@ -129,9 +131,9 @@ class AutoSlugFieldTest(FieldTestCase):
         o = SluggedTestModel(title='foo')
         o.save()
         self.assertEqual(o.slug, 'foo-3')
-
-    @unittest.skipIf(django.VERSION[0] <= 1 and django.VERSION[1] <= 6,
-                     "Migrations are handled by south in Django <1.7")
+    
+    @pytest.mark.skipif(django.VERSION < (1, 7),
+                        reason="Migrations are handled by south in Django <1.7")
     def test_17_migration(self):
         """
         Tests making migrations with Django 1.7+'s migration framework

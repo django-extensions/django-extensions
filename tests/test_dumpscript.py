@@ -3,8 +3,8 @@ import six
 
 from django.core.management import call_command
 
-from django_extensions.tests.testapp.models import Name, Note, Person
-from django_extensions.tests.fields import FieldTestCase
+from .testapp.models import Name, Note, Person
+from .test_fields import FieldTestCase
 
 if sys.version_info[:2] >= (2, 6):
     import ast as compiler  # NOQA
