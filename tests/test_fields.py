@@ -3,11 +3,11 @@ import pytest
 import django
 from django.conf import settings
 from django.core.management import call_command
-from django.db.models import loading
 from django.db import models
 from django.test import TestCase
 
 from django_extensions.db.fields import AutoSlugField
+
 from .testapp.models import SluggedTestModel, ChildSluggedTestModel
 
 if django.VERSION[:2] >= (1, 7):
@@ -17,12 +17,24 @@ if django.VERSION[:2] >= (1, 7):
     import django_extensions  # NOQA
 
 
+@pytest.mark.django_db
 class FieldTestCase(TestCase):
     def setUp(self):
         self.old_installed_apps = settings.INSTALLED_APPS
         #settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
         #settings.INSTALLED_APPS.append('django_extensions.tests.testapp')
-        loading.cache.loaded = False
+
+        # Create a superuser
+        try:
+            from django.contrib.auth import get_user_model  # NOQA
+        except ImportError:
+            from django.contrib.auth.models import User  # NOQA
+        else:
+            User = get_user_model()
+
+        User.objects.create_superuser(username='admin',
+                                      email='admin@admin.com',
+                                      password='password')
 
         # Don't migrate if south is installed
         migrate = 'south' not in settings.INSTALLED_APPS
@@ -131,7 +143,7 @@ class AutoSlugFieldTest(FieldTestCase):
         o = SluggedTestModel(title='foo')
         o.save()
         self.assertEqual(o.slug, 'foo-3')
-    
+
     @pytest.mark.skipif(django.VERSION < (1, 7),
                         reason="Migrations are handled by south in Django <1.7")
     def test_17_migration(self):

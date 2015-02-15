@@ -1,23 +1,10 @@
 import six
-from django.conf import settings
-from django.core.management import call_command
-from django.db.models import loading
-from django.utils import unittest
+from .test_fields import FieldTestCase
 
 from .testapp.models import ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
 
 
-class ShortUUIDFieldTest(unittest.TestCase):
-    def setUp(self):
-        self.old_installed_apps = settings.INSTALLED_APPS
-        settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
-        settings.INSTALLED_APPS.append('django_extensions.tests')
-        loading.cache.loaded = False
-        call_command('syncdb', verbosity=0)
-
-    def tearDown(self):
-        settings.INSTALLED_APPS = self.old_installed_apps
-
+class ShortUUIDFieldTest(FieldTestCase):
     def testUUIDFieldCreate(self):
         j = ShortUUIDTestModel_field.objects.create(a=6, uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))

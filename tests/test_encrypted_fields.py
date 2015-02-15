@@ -1,9 +1,9 @@
 from contextlib import contextmanager
 import functools
+import pytest
 
 from django.conf import settings
 from django.db import connection, models
-from django.db.models import loading
 
 from .testapp.models import Secret
 from .test_fields import FieldTestCase
@@ -94,21 +94,12 @@ def secret_model():
         #differences-between-proxy-inheritance-and-unmanaged-models
     """
 
-    # Store Django's cached model, if present, so we can restore when the
-    # manager exits.
-    orig_model = None
-    try:
-        orig_model = loading.cache.app_models['tests']['secret']
-        del loading.cache.app_models['tests']['secret']
-    except KeyError:
-        pass
-
     try:
         # Create a new class that shadows tests.models.Secret.
         attrs = {
             'name': EncryptedCharField("Name", max_length=Secret._meta.get_field('name').max_length),
             'text': EncryptedTextField("Text"),
-            '__module__': 'django_extensions.tests.models',
+            '__module__': 'tests.testapp.models',
             'Meta': type('Meta', (object, ), {
                 'managed': False,
                 'db_table': Secret._meta.db_table
@@ -119,14 +110,9 @@ def secret_model():
     except:
         raise  # Reraise any exceptions.
 
-    finally:
-        # Restore Django's model cache.
-        try:
-            loading.cache.app_models['tests']['secret'] = orig_model
-        except KeyError:
-            pass
 
-
+@pytest.mark.skipif(keyczar_active is False,
+                    reason="Encrypted fields needs that keyczar is installed")
 class EncryptedFieldsTestCase(FieldTestCase):
     @run_if_active
     def testCharFieldCreate(self):
