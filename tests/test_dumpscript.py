@@ -3,25 +3,15 @@ import sys
 import six
 
 from django.core.management import call_command
+from django.test import TestCase
 
 from .testapp.models import Name, Note, Person
-from .test_fields import FieldTestCase
 
 
-class DumpScriptTests(FieldTestCase):
+class DumpScriptTests(TestCase):
     def setUp(self):
-        super(DumpScriptTests, self).setUp()
-
-        self.real_stdout = sys.stdout
-        self.real_stderr = sys.stderr
         sys.stdout = six.StringIO()
         sys.stderr = six.StringIO()
-
-    def tearDown(self):
-        super(DumpScriptTests, self).tearDown()
-
-        sys.stdout = self.real_stdout
-        sys.stderr = self.real_stderr
 
     def test_runs(self):
         # lame test...does it run?
