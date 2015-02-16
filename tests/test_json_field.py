@@ -1,8 +1,9 @@
-from .utils import FieldTestCase
+from django.test import TestCase
+
 from .testapp.models import JSONFieldTestModel
 
 
-class JsonFieldTest(FieldTestCase):
+class JsonFieldTest(TestCase):
     def testCharFieldCreate(self):
         j = JSONFieldTestModel.objects.create(a=6, j_field=dict(foo='bar'))
         self.assertEqual(j.a, 6)
