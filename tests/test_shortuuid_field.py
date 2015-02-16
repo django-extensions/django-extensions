@@ -1,10 +1,11 @@
 import six
-from .utils import FieldTestCase
+
+from django.test import TestCase
 
 from .testapp.models import ShortUUIDTestModel_field, ShortUUIDTestModel_pk, ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel
 
 
-class ShortUUIDFieldTest(FieldTestCase):
+class ShortUUIDFieldTest(TestCase):
     def testUUIDFieldCreate(self):
         j = ShortUUIDTestModel_field.objects.create(a=6, uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))
