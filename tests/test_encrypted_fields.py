@@ -22,6 +22,16 @@ except ImportError:
 KEY_LOCS = getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', {})
 
 
+@pytest.fixture(scope="class")
+def clean(request):
+    def cleanup():
+        import shutil
+        for name, path in KEY_LOCS.items():
+            # cleanup crypto key temp dirs
+            shutil.rmtree(path)
+    request.addfinalizer(cleanup)
+
+
 @contextmanager
 def keys(purpose, mode=None):
     """
@@ -102,7 +112,7 @@ def secret_model():
 
 @pytest.mark.skipif(keyczar_active is False or django.VERSION < (1, 7),
                     reason="Encrypted fields needs that keyczar is installed")
-@pytest.mark.usefixtures("admin_user")
+@pytest.mark.usefixtures("admin_user", "clean")
 class EncryptedFieldsTestCase(TestCase):
     def setUp(self):
         pass
