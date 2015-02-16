@@ -5,9 +5,9 @@ import pytest
 import django
 from django.conf import settings
 from django.db import connection, models
+from django.test import TestCase
 
 from .testapp.models import Secret
-from .utils import FieldTestCase
 
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
@@ -102,7 +102,14 @@ def secret_model():
 
 @pytest.mark.skipif(keyczar_active is False or django.VERSION < (1, 7),
                     reason="Encrypted fields needs that keyczar is installed")
-class EncryptedFieldsTestCase(FieldTestCase):
+@pytest.mark.usefixtures("admin_user")
+class EncryptedFieldsTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
     def testCharFieldCreate(self):
         """
         Uses a private key to encrypt data on model creation.

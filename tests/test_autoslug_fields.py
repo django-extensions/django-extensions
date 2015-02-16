@@ -7,7 +7,6 @@ from django.test import TestCase
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import SluggedTestModel, ChildSluggedTestModel
-from .utils import FieldTestCase
 
 if django.VERSION >= (1, 7):
     from django.db import migrations  # NOQA
@@ -16,7 +15,8 @@ if django.VERSION >= (1, 7):
     import django_extensions  # NOQA
 
 
-class AutoSlugFieldTest(FieldTestCase):
+@pytest.mark.usefixtures("admin_user")
+class AutoSlugFieldTest(TestCase):
     def tearDown(self):
         super(AutoSlugFieldTest, self).tearDown()
 
@@ -105,6 +105,7 @@ class AutoSlugFieldTest(FieldTestCase):
         o.save()
         self.assertEqual(o.slug, 'foo-3')
 
+
 @pytest.mark.skipif(django.VERSION < (1, 7),
                     reason="Migrations are handled by south in Django <1.7")
 class TestMigration(TestCase):
@@ -118,7 +119,6 @@ class TestMigration(TestCase):
             else:
                 self.fail("Could not exec %r: %s" % (string.strip(), e))
         return l
-
 
     def test_17_migration(self):
         """
