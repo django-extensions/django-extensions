@@ -73,10 +73,10 @@ class EmailNotificationCommand(BaseCommand):
         """
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
-        except Exception as e:
+        except Exception:
             if (options.get('email_exception', False) or getattr(self, 'email_exception', False)):
                 self.send_email_notification(include_traceback=True)
-            raise e
+            raise
 
     def send_email_notification(self, notification_id=None,
                                 include_traceback=False, verbosity=1):
