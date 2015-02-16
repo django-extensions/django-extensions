@@ -3,12 +3,14 @@ import uuid
 
 import six
 
+from django.test import TestCase
+
 from django_extensions.db.fields import PostgreSQLUUIDField
-from .utils import FieldTestCase
+
 from .testapp.models import UUIDTestModel_field, UUIDTestModel_pk, UUIDTestAgregateModel, UUIDTestManyToManyModel
 
 
-class UUIDFieldTest(FieldTestCase):
+class UUIDFieldTest(TestCase):
     def testUUIDFieldCreate(self):
         j = UUIDTestModel_field.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440000'))
@@ -30,7 +32,7 @@ class UUIDFieldTest(FieldTestCase):
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440010'))
 
 
-class PostgreSQLUUIDFieldTest(FieldTestCase):
+class PostgreSQLUUIDFieldTest(TestCase):
     def test_uuid_casting(self):
         # As explain by postgres documentation
         # http://www.postgresql.org/docs/9.1/static/datatype-uuid.html
