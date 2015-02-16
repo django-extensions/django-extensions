@@ -4,7 +4,7 @@ from .test_utils import TruncateLetterTests
 from .test_json_field import JsonFieldTest
 from .test_uuid_field import (UUIDFieldTest, PostgreSQLUUIDFieldTest)
 from .test_shortuuid_field import ShortUUIDFieldTest
-from .test_fields import AutoSlugFieldTest
+from .test_autoslug_fields import AutoSlugFieldTest
 from .test_management_command import (CommandTest, ShowTemplateTagsTests,
                                       UpdatePermissionsTests,
                                       CommandSignalTests)

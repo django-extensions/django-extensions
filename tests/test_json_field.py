@@ -1,4 +1,4 @@
-from .test_fields import FieldTestCase
+from .utils import FieldTestCase
 from .testapp.models import JSONFieldTestModel
 
 

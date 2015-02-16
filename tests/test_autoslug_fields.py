@@ -1,58 +1,19 @@
 import pytest
 
 import django
-from django.conf import settings
-from django.core.management import call_command
 from django.db import models
 from django.test import TestCase
 
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import SluggedTestModel, ChildSluggedTestModel
+from .utils import FieldTestCase
 
-if django.VERSION[:2] >= (1, 7):
+if django.VERSION >= (1, 7):
     from django.db import migrations  # NOQA
     from django.db.migrations.writer import MigrationWriter  # NOQA
     from django.utils import six  # NOQA
     import django_extensions  # NOQA
-
-
-@pytest.mark.django_db
-class FieldTestCase(TestCase):
-    def setUp(self):
-        self.old_installed_apps = settings.INSTALLED_APPS
-        #settings.INSTALLED_APPS = list(settings.INSTALLED_APPS)
-        #settings.INSTALLED_APPS.append('django_extensions.tests.testapp')
-
-        # Create a superuser
-        try:
-            from django.contrib.auth import get_user_model  # NOQA
-        except ImportError:
-            from django.contrib.auth.models import User  # NOQA
-        else:
-            User = get_user_model()
-
-        User.objects.create_superuser(username='admin',
-                                      email='admin@admin.com',
-                                      password='password')
-
-        # Don't migrate if south is installed
-        migrate = 'south' not in settings.INSTALLED_APPS
-        call_command('syncdb', verbosity=0, migrate=migrate)
-
-    def tearDown(self):
-        settings.INSTALLED_APPS = self.old_installed_apps
-
-    def safe_exec(self, string, value=None):
-        l = {}
-        try:
-            exec(string, globals(), l)
-        except Exception as e:
-            if value:
-                self.fail("Could not exec %r (from value %r): %s" % (string.strip(), value, e))
-            else:
-                self.fail("Could not exec %r: %s" % (string.strip(), e))
-        return l
 
 
 class AutoSlugFieldTest(FieldTestCase):
@@ -144,8 +105,21 @@ class AutoSlugFieldTest(FieldTestCase):
         o.save()
         self.assertEqual(o.slug, 'foo-3')
 
-    @pytest.mark.skipif(django.VERSION < (1, 7),
-                        reason="Migrations are handled by south in Django <1.7")
+@pytest.mark.skipif(django.VERSION < (1, 7),
+                    reason="Migrations are handled by south in Django <1.7")
+class TestMigration(TestCase):
+    def safe_exec(self, string, value=None):
+        l = {}
+        try:
+            exec(string, globals(), l)
+        except Exception as e:
+            if value:
+                self.fail("Could not exec %r (from value %r): %s" % (string.strip(), value, e))
+            else:
+                self.fail("Could not exec %r: %s" % (string.strip(), e))
+        return l
+
+
     def test_17_migration(self):
         """
         Tests making migrations with Django 1.7+'s migration framework

@@ -4,7 +4,7 @@ import uuid
 import six
 
 from django_extensions.db.fields import PostgreSQLUUIDField
-from .test_fields import FieldTestCase
+from .utils import FieldTestCase
 from .testapp.models import UUIDTestModel_field, UUIDTestModel_pk, UUIDTestAgregateModel, UUIDTestManyToManyModel
 
 

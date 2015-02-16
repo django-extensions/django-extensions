@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import connection, models
 
 from .testapp.models import Secret
-from .test_fields import FieldTestCase
+from .utils import FieldTestCase
 
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
