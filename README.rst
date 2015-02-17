@@ -17,6 +17,9 @@
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Number of PyPI downloads
 
+.. image:: https://coveralls.io/repos/django-extensions/django-extensions/badge.png?branch=master
+   :target: https://coveralls.io/r/django-extensions/django-extensions?branch=master
+   :alt: Coverage
 
 Django Extensions is a collection of custom extensions for the Django Framework.
 
