@@ -11,22 +11,22 @@ from .testapp.models import (
 
 
 class ShortUUIDFieldTest(TestCase):
-    def testUUIDFieldCreate(self):
+    def test_UUID_field_create(self):
         j = ShortUUIDTestModel_field.objects.create(a=6, uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))
 
-    def testUUIDField_pkCreate(self):
+    def test_UUID_field_pk_create(self):
         j = ShortUUIDTestModel_pk.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3d'))
         self.assertEqual(j.pk, six.u('vytxeTZskVKR7C7WgdSP3d'))
 
-    def testUUIDField_pkAgregateCreate(self):
+    def test_UUID_field_pk_agregate_create(self):
         j = ShortUUIDTestAgregateModel.objects.create(a=6)
         self.assertEqual(j.a, 6)
         self.assertIsInstance(j.pk, six.string_types)
         self.assertTrue(len(j.pk) < 23)
 
-    def testUUIDFieldManyToManyCreate(self):
+    def test_UUID_field_manytomany_create(self):
         j = ShortUUIDTestManyToManyModel.objects.create(uuid_field=six.u('vytxeTZskVKR7C7WgdSP3e'))
         self.assertEqual(j.uuid_field, six.u('vytxeTZskVKR7C7WgdSP3e'))
         self.assertEqual(j.pk, six.u('vytxeTZskVKR7C7WgdSP3e'))

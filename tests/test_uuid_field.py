@@ -14,22 +14,22 @@ from .testapp.models import (
 
 
 class UUIDFieldTest(TestCase):
-    def testUUIDFieldCreate(self):
+    def test_UUID_field_create(self):
         j = UUIDTestModel_field.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440000'))
 
-    def testUUIDField_pkCreate(self):
+    def test_UUID_field_pk_create(self):
         j = UUIDTestModel_pk.objects.create(uuid_field=six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440000'))
 
-    def testUUIDField_pkAgregateCreate(self):
+    def test_UUID_field_pk_agregate_create(self):
         j = UUIDTestAgregateModel.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440001'))
         self.assertEqual(j.a, 6)
         self.assertIsInstance(j.pk, six.string_types)
         self.assertEqual(len(j.pk), 36)
 
-    def testUUIDFieldManyToManyCreate(self):
+    def test_UUID_field_manytomany_create(self):
         j = UUIDTestManyToManyModel.objects.create(uuid_field=six.u('550e8400-e29b-41d4-a716-446655440010'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440010'))
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440010'))

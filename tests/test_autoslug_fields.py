@@ -22,12 +22,12 @@ class AutoSlugFieldTest(TestCase):
 
         SluggedTestModel.objects.all().delete()
 
-    def testAutoCreateSlug(self):
+    def test_auto_create_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
         self.assertEqual(m.slug, 'foo')
 
-    def testAutoCreateNextSlug(self):
+    def test_auto_create_next_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
 
@@ -35,18 +35,18 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         self.assertEqual(m.slug, 'foo-2')
 
-    def testAutoCreateSlugWithNumber(self):
+    def test_auto_create_slug_with_number(self):
         m = SluggedTestModel(title='foo 2012')
         m.save()
         self.assertEqual(m.slug, 'foo-2012')
 
-    def testAutoUpdateSlugWithNumber(self):
+    def test_auto_update_slug_with_number(self):
         m = SluggedTestModel(title='foo 2012')
         m.save()
         m.save()
         self.assertEqual(m.slug, 'foo-2012')
 
-    def testUpdateSlug(self):
+    def test_update_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
         self.assertEqual(m.slug, 'foo')
@@ -67,7 +67,7 @@ class AutoSlugFieldTest(TestCase):
         self.assertEqual(m.title, 'bar')
         self.assertEqual(m.slug, 'foo-2012')
 
-    def testSimpleSlugSource(self):
+    def test_simple_slug_source(self):
         m = SluggedTestModel(title='-foo')
         m.save()
         self.assertEqual(m.slug, 'foo')
@@ -79,7 +79,7 @@ class AutoSlugFieldTest(TestCase):
         n.save()
         self.assertEqual(n.slug, 'foo-2')
 
-    def testEmptySlugSource(self):
+    def test_empty_slug_source(self):
         # regression test
 
         m = SluggedTestModel(title='')
@@ -93,7 +93,7 @@ class AutoSlugFieldTest(TestCase):
         n.save()
         self.assertEqual(n.slug, '-3')
 
-    def testInheritanceCreatesNextSlug(self):
+    def test_inheritance_creates_next_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
 
@@ -108,7 +108,7 @@ class AutoSlugFieldTest(TestCase):
 
 @pytest.mark.skipif(django.VERSION < (1, 7),
                     reason="Migrations are handled by south in Django <1.7")
-class TestMigration(TestCase):
+class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
         l = {}
         try:

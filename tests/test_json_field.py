@@ -4,15 +4,15 @@ from .testapp.models import JSONFieldTestModel
 
 
 class JsonFieldTest(TestCase):
-    def testCharFieldCreate(self):
+    def test_char_field_create(self):
         j = JSONFieldTestModel.objects.create(a=6, j_field=dict(foo='bar'))
         self.assertEqual(j.a, 6)
 
-    def testDefault(self):
+    def test_default(self):
         j = JSONFieldTestModel.objects.create(a=1)
         self.assertEqual(j.j_field, {})
 
-    def testEmptyList(self):
+    def test_empty_list(self):
         j = JSONFieldTestModel.objects.create(a=6, j_field=[])
         self.assertTrue(isinstance(j.j_field, list))
         self.assertEqual(j.j_field, [])
