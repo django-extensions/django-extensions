@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
-import sys
 import logging
+import sys
+
+from django.core.management import call_command
+from django.test import TestCase
+
 
 try:
     from cStringIO import StringIO  # NOQA
@@ -12,8 +16,6 @@ try:
 except ImportError:
     from django.utils import importlib  # NOQA
 
-from django.core.management import call_command
-from django.test import TestCase
 
 
 class MockLoggingHandler(logging.Handler):
@@ -41,7 +43,7 @@ class CommandTest(TestCase):
         # Ensure command errors are properly logged and reraised
         from django_extensions.management.base import logger
         logger.addHandler(MockLoggingHandler())
-        module_path = "django_extensions.tests.management.commands.error_raising_command"
+        module_path = "tests.management.commands.error_raising_command"
         module = importlib.import_module(module_path)
         error_raising_command = module.Command()
         self.assertRaises(Exception, error_raising_command.execute)

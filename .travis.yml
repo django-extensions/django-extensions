@@ -5,46 +5,46 @@ sudo: false
 env:
     - TOX_ENV=py27-flake8
     - TOX_ENV=py34-flake8
-    - TOX_ENV=py26-django14
-    - TOX_ENV=py27-django14
-    - TOX_ENV=py26-django15
-    - TOX_ENV=py26-django16
-    - TOX_ENV=py27-django15
-    - TOX_ENV=py27-django16
-    - TOX_ENV=py32-django15
-    - TOX_ENV=py32-django16
-    - TOX_ENV=py33-django15
-    - TOX_ENV=py33-django16
-    - TOX_ENV=py34-django15
-    - TOX_ENV=py34-django16
-    - TOX_ENV=py27-django17
-    - TOX_ENV=py27-django18alpha
-    - TOX_ENV=py27-djangomaster
-    - TOX_ENV=py32-django17
-    - TOX_ENV=py32-django18alpha
-    - TOX_ENV=py32-djangomaster
-    - TOX_ENV=py33-django17
-    - TOX_ENV=py33-django18alpha
-    - TOX_ENV=py33-djangomaster
-    - TOX_ENV=py34-django17
-    - TOX_ENV=py34-django18alpha
-    - TOX_ENV=py34-djangomaster
-    - TOX_ENV=pypy-django17
-    - TOX_ENV=pypy-django18alpha
-    - TOX_ENV=pypy-djangomaster
-    - TOX_ENV=pypy3-django17
-    - TOX_ENV=pypy3-django18alpha
-    - TOX_ENV=pypy3-djangomaster
+    - TOX_ENV=py26-dj14
+    - TOX_ENV=py27-dj14
+    - TOX_ENV=py26-dj15
+    - TOX_ENV=py26-dj16
+    - TOX_ENV=py27-dj15
+    - TOX_ENV=py27-dj16
+    - TOX_ENV=py32-dj15
+    - TOX_ENV=py32-dj16
+    - TOX_ENV=py33-dj15
+    - TOX_ENV=py33-dj16
+    - TOX_ENV=py34-dj15
+    - TOX_ENV=py34-dj16
+    - TOX_ENV=py27-dj17
+    - TOX_ENV=py27-dj18a
+    - TOX_ENV=py27-djmaster
+    - TOX_ENV=py32-dj17
+    - TOX_ENV=py32-dj18a
+    - TOX_ENV=py32-djmaster
+    - TOX_ENV=py33-dj17
+    - TOX_ENV=py33-dj18a
+    - TOX_ENV=py33-djmaster
+    - TOX_ENV=py34-dj17
+    - TOX_ENV=py34-dj18a
+    - TOX_ENV=py34-djmaster
+    - TOX_ENV=pypy-dj17
+    - TOX_ENV=pypy-dj18a
+    - TOX_ENV=pypy-djmaster
+    - TOX_ENV=pypy3-dj17
+    - TOX_ENV=pypy3-dj18a
+    - TOX_ENV=pypy3-djmaster
 
 matrix:
   fast_finish: true
   allow_failures:
-    - env: TOX_ENV=py34-djangomaster
-    - env: TOX_ENV=py33-djangomaster
-    - env: TOX_ENV=py32-djangomaster
-    - env: TOX_ENV=py27-djangomaster
-    - env: TOX_ENV=pypy-djangomaster
-    - env: TOX_ENV=pypy3-djangomaster
+    - env: TOX_ENV=py34-djmaster
+    - env: TOX_ENV=py33-djmaster
+    - env: TOX_ENV=py32-djmaster
+    - env: TOX_ENV=py27-djmaster
+    - env: TOX_ENV=pypy-djmaster
+    - env: TOX_ENV=pypy3-djmaster
 
 install:
   - pip install tox

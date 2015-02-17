@@ -1,12 +1,15 @@
+import tempfile
 from contextlib import contextmanager
-import functools
 
+import pytest
+
+import django
 from django.conf import settings
 from django.db import connection, models
-from django.db.models import loading
+from django.test import TestCase
 
-from django_extensions.tests.models import Secret
-from django_extensions.tests.fields import FieldTestCase
+from .testapp.models import Secret
+
 
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
@@ -17,20 +20,31 @@ try:
 except ImportError:
     keyczar_active = False
 
-
-def run_if_active(func):
-    "Method decorator that only runs a test if KeyCzar is available."
-
-    @functools.wraps(func)
-    def inner(self):
-        if not keyczar_active:
-            return
-        return func(self)
-    return inner
-
-
 # Locations of both private and public keys.
-KEY_LOCS = getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', {})
+KEY_LOCS = {}
+
+
+@pytest.fixture(scope="class")
+def keyczar_keys(request):
+    # If KeyCzar is available, set up the environment.
+    if keyczar_active:
+        # Create an RSA private key.
+        keys_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_rsa_dir")
+        keyczart.Create(keys_dir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
+        keyczart.AddKey(keys_dir, "PRIMARY", size=4096)
+        KEY_LOCS['DECRYPT_AND_ENCRYPT'] = keys_dir
+
+        # Create an RSA public key.
+        pub_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_pub_dir")
+        keyczart.PubKey(keys_dir, pub_dir)
+        KEY_LOCS['ENCRYPT'] = pub_dir
+
+    # cleanup crypto key temp dirs
+    def cleanup():
+        import shutil
+        for name, path in KEY_LOCS.items():
+            shutil.rmtree(path)
+    request.addfinalizer(cleanup)
 
 
 @contextmanager
@@ -94,21 +108,12 @@ def secret_model():
         #differences-between-proxy-inheritance-and-unmanaged-models
     """
 
-    # Store Django's cached model, if present, so we can restore when the
-    # manager exits.
-    orig_model = None
-    try:
-        orig_model = loading.cache.app_models['tests']['secret']
-        del loading.cache.app_models['tests']['secret']
-    except KeyError:
-        pass
-
     try:
         # Create a new class that shadows tests.models.Secret.
         attrs = {
             'name': EncryptedCharField("Name", max_length=Secret._meta.get_field('name').max_length),
             'text': EncryptedTextField("Text"),
-            '__module__': 'django_extensions.tests.models',
+            '__module__': 'tests.testapp.models',
             'Meta': type('Meta', (object, ), {
                 'managed': False,
                 'db_table': Secret._meta.db_table
@@ -119,17 +124,12 @@ def secret_model():
     except:
         raise  # Reraise any exceptions.
 
-    finally:
-        # Restore Django's model cache.
-        try:
-            loading.cache.app_models['tests']['secret'] = orig_model
-        except KeyError:
-            pass
 
-
-class EncryptedFieldsTestCase(FieldTestCase):
-    @run_if_active
-    def testCharFieldCreate(self):
+@pytest.mark.skipif(keyczar_active is False or django.VERSION < (1, 7),
+                    reason="Encrypted fields needs that keyczar is installed")
+@pytest.mark.usefixtures("admin_user", "keyczar_keys")
+class EncryptedFieldsTestCase(TestCase):
+    def test_char_field_create(self):
         """
         Uses a private key to encrypt data on model creation.
         Verifies the data is encrypted in the database and can be decrypted.
@@ -146,8 +146,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
                 self.assertEqual(test_val, decrypted_val)
 
-    @run_if_active
-    def testCharFieldRead(self):
+    def test_char_field_read(self):
         """
         Uses a private key to encrypt data on model creation.
         Verifies the data is decrypted when reading the value back from the
@@ -160,8 +159,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)
 
-    @run_if_active
-    def testTextFieldCreate(self):
+    def test_text_field_create(self):
         """
         Uses a private key to encrypt data on model creation.
         Verifies the data is encrypted in the database and can be decrypted.
@@ -177,8 +175,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
                 self.assertEqual(test_val, decrypted_val)
 
-    @run_if_active
-    def testTextFieldRead(self):
+    def test_text_field_read(self):
         """
         Uses a private key to encrypt data on model creation.
         Verifies the data is decrypted when reading the value back from the
@@ -191,8 +188,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.text)
 
-    @run_if_active
-    def testCannotDecrypt(self):
+    def test_cannot_decrypt(self):
         """
         Uses a public key to encrypt data on model creation.
         Verifies that the data cannot be decrypted using the same key.
@@ -205,8 +201,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 self.assertNotEqual(test_val, retrieved_secret.name)
                 self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
 
-    @run_if_active
-    def testUnacceptablePurpose(self):
+    def test_unacceptable_purpose(self):
         """
         Tries to create an encrypted field with a mode mismatch.
         A purpose of "DECRYPT_AND_ENCRYPT" cannot be used with a public key,
@@ -220,8 +215,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                     # definition time, so any code in here would never get run.
                     pass
 
-    @run_if_active
-    def testDecryptionForbidden(self):
+    def test_decryption_forbidden(self):
         """
         Uses a private key to encrypt data, but decryption is not allowed.
         ENCRYPTED_FIELD_MODE is explicitly set to ENCRYPT, meaning data should
@@ -235,8 +229,7 @@ class EncryptedFieldsTestCase(FieldTestCase):
                 self.assertNotEqual(test_val, retrieved_secret.name)
                 self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
 
-    @run_if_active
-    def testEncryptPublicDecryptPrivate(self):
+    def test_encrypt_public_decrypt_private(self):
         """
         Uses a public key to encrypt, and a private key to decrypt data.
         """

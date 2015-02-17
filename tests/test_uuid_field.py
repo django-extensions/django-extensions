@@ -1,36 +1,41 @@
 import re
+import six
 import uuid
 
-import six
-
+from django.test import TestCase
 from django_extensions.db.fields import PostgreSQLUUIDField
-from django_extensions.tests.fields import FieldTestCase
-from django_extensions.tests.testapp.models import UUIDTestModel_field, UUIDTestModel_pk, UUIDTestAgregateModel, UUIDTestManyToManyModel
+
+from .testapp.models import (
+    UUIDTestAgregateModel,
+    UUIDTestManyToManyModel,
+    UUIDTestModel_field,
+    UUIDTestModel_pk,
+)
 
 
-class UUIDFieldTest(FieldTestCase):
-    def testUUIDFieldCreate(self):
+class UUIDFieldTest(TestCase):
+    def test_UUID_field_create(self):
         j = UUIDTestModel_field.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440000'))
 
-    def testUUIDField_pkCreate(self):
+    def test_UUID_field_pk_create(self):
         j = UUIDTestModel_pk.objects.create(uuid_field=six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440000'))
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440000'))
 
-    def testUUIDField_pkAgregateCreate(self):
+    def test_UUID_field_pk_agregate_create(self):
         j = UUIDTestAgregateModel.objects.create(a=6, uuid_field=six.u('550e8400-e29b-41d4-a716-446655440001'))
         self.assertEqual(j.a, 6)
         self.assertIsInstance(j.pk, six.string_types)
         self.assertEqual(len(j.pk), 36)
 
-    def testUUIDFieldManyToManyCreate(self):
+    def test_UUID_field_manytomany_create(self):
         j = UUIDTestManyToManyModel.objects.create(uuid_field=six.u('550e8400-e29b-41d4-a716-446655440010'))
         self.assertEqual(j.uuid_field, six.u('550e8400-e29b-41d4-a716-446655440010'))
         self.assertEqual(j.pk, six.u('550e8400-e29b-41d4-a716-446655440010'))
 
 
-class PostgreSQLUUIDFieldTest(FieldTestCase):
+class PostgreSQLUUIDFieldTest(TestCase):
     def test_uuid_casting(self):
         # As explain by postgres documentation
         # http://www.postgresql.org/docs/9.1/static/datatype-uuid.html

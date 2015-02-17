@@ -1,9 +1,10 @@
-import os
-import six
-import shutil
 import fnmatch
-from django.test import TestCase
+import os
+import shutil
+import six
+
 from django.core.management import call_command
+from django.test import TestCase
 from django_extensions.management.utils import get_project_root
 
 
@@ -35,7 +36,7 @@ class CleanPycTests(TestCase):
 
     def test_takes_path(self):
         out = six.StringIO()
-        project_root = os.path.join(get_project_root(), 'tests', 'testapp')
+        project_root = os.path.join('tests', 'testapp')
         call_command('compile_pyc', path=project_root)
         pyc_glob = self._find_pyc(project_root)
         self.assertTrue(len(pyc_glob) > 0)
@@ -45,7 +46,7 @@ class CleanPycTests(TestCase):
 
     def test_removes_pyo_files(self):
         out = six.StringIO()
-        project_root = os.path.join(get_project_root(), 'tests', 'testapp')
+        project_root = os.path.join('tests', 'testapp')
         call_command('compile_pyc', path=project_root)
         pyc_glob = self._find_pyc(project_root)
         self.assertTrue(len(pyc_glob) > 0)

@@ -1,31 +1,17 @@
-import sys
+import ast
 import six
+import sys
 
 from django.core.management import call_command
+from django.test import TestCase
 
-from django_extensions.tests.testapp.models import Name, Note, Person
-from django_extensions.tests.fields import FieldTestCase
-
-if sys.version_info[:2] >= (2, 6):
-    import ast as compiler  # NOQA
-else:
-    import compiler  # NOQA
+from .testapp.models import Name, Note, Person
 
 
-class DumpScriptTests(FieldTestCase):
+class DumpScriptTests(TestCase):
     def setUp(self):
-        super(DumpScriptTests, self).setUp()
-
-        self.real_stdout = sys.stdout
-        self.real_stderr = sys.stderr
         sys.stdout = six.StringIO()
         sys.stderr = six.StringIO()
-
-    def tearDown(self):
-        super(DumpScriptTests, self).tearDown()
-
-        sys.stdout = self.real_stdout
-        sys.stderr = self.real_stderr
 
     def test_runs(self):
         # lame test...does it run?
@@ -34,7 +20,6 @@ class DumpScriptTests(FieldTestCase):
         call_command('dumpscript', 'django_extensions')
         self.assertTrue('Gabriel' in sys.stdout.getvalue())
 
-    #----------------------------------------------------------------------
     def test_replaced_stdout(self):
         # check if stdout can be replaced
         sys.stdout = six.StringIO()
@@ -46,7 +31,6 @@ class DumpScriptTests(FieldTestCase):
         self.assertEqual(0, len(sys.stdout.getvalue()))  # there should not be any output to sys.stdout
         tmp_out.close()
 
-    #----------------------------------------------------------------------
     def test_replaced_stderr(self):
         # check if stderr can be replaced, without changing stdout
         n = Name(name='Fred')
@@ -59,7 +43,6 @@ class DumpScriptTests(FieldTestCase):
         self.assertEqual(0, len(sys.stderr.getvalue()))  # there should not be any output to sys.stderr
         tmp_err.close()
 
-    #----------------------------------------------------------------------
     def test_valid_syntax(self):
         n1 = Name(name='John')
         n1.save()
@@ -77,7 +60,7 @@ class DumpScriptTests(FieldTestCase):
         p2.notes.add(note1, note2)
         tmp_out = six.StringIO()
         call_command('dumpscript', 'django_extensions', stdout=tmp_out)
-        ast_syntax_tree = compiler.parse(tmp_out.getvalue())
+        ast_syntax_tree = ast.parse(tmp_out.getvalue())
         if hasattr(ast_syntax_tree, 'body'):
             self.assertTrue(len(ast_syntax_tree.body) > 1)
         else:
