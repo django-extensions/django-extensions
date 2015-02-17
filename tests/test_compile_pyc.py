@@ -1,8 +1,9 @@
+import fnmatch
 import os
 import six
-import fnmatch
-from django.test import TestCase
+
 from django.core.management import call_command
+from django.test import TestCase
 from django_extensions.management.utils import get_project_root
 
 

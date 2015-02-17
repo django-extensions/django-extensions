@@ -1,6 +1,6 @@
 import ast
-import sys
 import six
+import sys
 
 from django.core.management import call_command
 from django.test import TestCase

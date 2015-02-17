@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
-import sys
 import logging
+import sys
+
+from django.core.management import call_command
+from django.test import TestCase
+
 
 try:
     from cStringIO import StringIO  # NOQA
@@ -12,8 +16,6 @@ try:
 except ImportError:
     from django.utils import importlib  # NOQA
 
-from django.core.management import call_command
-from django.test import TestCase
 
 
 class MockLoggingHandler(logging.Handler):

@@ -10,6 +10,7 @@ from django.test import TestCase
 
 from .testapp.models import Secret
 
+
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
 try:
