@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 import sys
 
-from django.core.management import call_command
+from django.core.management import (call_command,
+                                    find_commands,
+                                    load_command_class)
 from django.test import TestCase
 
 
@@ -15,7 +18,6 @@ try:
     import importlib  # NOQA
 except ImportError:
     from django.utils import importlib  # NOQA
-
 
 
 class MockLoggingHandler(logging.Handler):
@@ -107,3 +109,16 @@ class CommandSignalTests(TestCase):
         self.assertIn('args', CommandSignalTests.post)
         self.assertIn('kwargs', CommandSignalTests.post)
         self.assertIn('outcome', CommandSignalTests.post)
+
+
+class CommandClassTests(TestCase):
+    """Try to load every management commands to catch exceptions."""
+    def test_load_commands(self):
+        try:
+
+            management_dir = os.path.join('django_extensions', 'management')
+            commands = find_commands(management_dir)
+            for command in commands:
+                load_command_class('django_extensions', command)
+        except Exception as e:
+            self.fail("Can't load command class of {0}\n{1}".format(command, e))
