@@ -43,24 +43,6 @@ def pytest_configure():
 
     # Dynamically configure the Django settings with the minimum necessary to
     # get Django running tests.
-    KEY_LOCS = {}
-    try:
-        # If KeyCzar is available, set up the environment.
-        from keyczar import keyczart, keyinfo
-
-        # Create an RSA private key.
-        keys_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_rsa_dir")
-        keyczart.Create(keys_dir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
-        keyczart.AddKey(keys_dir, "PRIMARY", size=4096)
-        KEY_LOCS['DECRYPT_AND_ENCRYPT'] = keys_dir
-
-        # Create an RSA public key.
-        pub_dir = tempfile.mkdtemp("django_extensions_tests_keyzcar_pub_dir")
-        keyczart.PubKey(keys_dir, pub_dir)
-        KEY_LOCS['ENCRYPT'] = pub_dir
-    except ImportError:
-        pass
-
     settings.configure(
         INSTALLED_APPS=[
             'django.contrib.auth',
@@ -88,5 +70,4 @@ def pytest_configure():
         ROOT_URLCONF='tests.urls',
         DEBUG=True,
         TEMPLATE_DEBUG=True,
-        ENCRYPTED_FIELD_KEYS_DIR=KEY_LOCS,
     )
