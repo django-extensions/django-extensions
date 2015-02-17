@@ -10,6 +10,33 @@ try:
 except ImportError:
     from distutils.core import setup  # NOQA
 
+try:
+    from setuptools.command.test import test as TestCommand
+
+    class ToxTestCommand(TestCommand):
+        user_options = [('tox-args=', 'a', "Arguments to pass to tox")]
+
+        def initialize_options(self):
+            TestCommand.initialize_options(self)
+            self.tox_args = None
+
+        def finalize_options(self):
+            TestCommand.finalize_options(self)
+            self.test_args = []
+            self.test_suite = True
+
+        def run_tests(self):
+            # import here, cause outside the eggs aren't loaded
+            import tox
+            import shlex
+            args = [""]
+            if self.tox_args:
+                args = shlex.split(self.tox_args)
+            errno = tox.cmdline(args=args)
+            sys.exit(errno)
+except ImportError:
+    ToxTestCommand = None
+
 
 class osx_install_data(install_data):
     # On MacOS, the platform-specific lib dir is at:
@@ -29,6 +56,9 @@ if sys.platform == "darwin":
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
+
+if ToxTestCommand:
+    cmdclasses['test'] = ToxTestCommand
 
 
 def fullsplit(path, result=None):
@@ -98,8 +128,7 @@ additions for Django projects. See the project page for more information:
     cmdclass=cmdclasses,
     package_data=package_data,
     install_requires=['six>=1.2'],
-    tests_require=['Django', 'shortuuid', 'python-dateutil'],
-    test_suite='run_tests.main',
+    tests_require=['Django', 'shortuuid', 'python-dateutil', 'pytest', 'tox'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',
