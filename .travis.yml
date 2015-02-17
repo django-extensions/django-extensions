@@ -47,7 +47,10 @@ matrix:
     - env: TOX_ENV=pypy3-djmaster
 
 install:
-  - pip install tox
+  - pip install tox coveralls
 
 script:
-    - tox -e $TOX_ENV
+  - tox -e $TOX_ENV
+
+after_success:
+  - coveralls
