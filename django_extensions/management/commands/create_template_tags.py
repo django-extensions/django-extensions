@@ -9,8 +9,6 @@ class Command(AppCommand):
     option_list = AppCommand.option_list + (
         make_option('--name', '-n', action='store', dest='tag_library_name', default='appname_tags',
                     help='The name to use for the template tag base name. Defaults to `appname`_tags.'),
-        make_option('--base', '-b', action='store', dest='base_command', default='Base',
-                    help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
     )
 
     help = ("Creates a Django template tags directory structure for the given app name"
