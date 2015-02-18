@@ -1,6 +1,7 @@
-from importlib import import_module
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.compat import importlib
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -36,7 +37,7 @@ class Command(BaseCommand):
         if not set(key).issubset(set(VALID_KEY_CHARS)):
             raise CommandError("malformed session key")
 
-        engine = import_module(settings.SESSION_ENGINE)
+        engine = importlib.import_module(settings.SESSION_ENGINE)
 
         if not engine.SessionStore().exists(key):
             print("Session Key does not exist. Expired?")

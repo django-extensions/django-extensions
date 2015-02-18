@@ -8,16 +8,7 @@ from django.core.management import (call_command,
                                     load_command_class)
 from django.test import TestCase
 
-
-try:
-    from cStringIO import StringIO  # NOQA
-except ImportError:
-    from io import StringIO  # NOQA
-
-try:
-    import importlib  # NOQA
-except ImportError:
-    from django.utils import importlib  # NOQA
+from django_extensions.compat import importlib, StringIO
 
 
 class MockLoggingHandler(logging.Handler):
@@ -112,7 +103,7 @@ class CommandSignalTests(TestCase):
 
 
 class CommandClassTests(TestCase):
-    """Try to load every management commands to catch exceptions."""
+    """Try to load every management command to catch exceptions."""
     def test_load_commands(self):
         try:
 

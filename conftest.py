@@ -3,7 +3,6 @@ from django.conf import settings
 
 def pytest_configure():
     import sys
-    import tempfile
 
     try:
         import django  # NOQA

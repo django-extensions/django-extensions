@@ -4,14 +4,7 @@ import sys
 import logging
 from django_extensions.management.signals import pre_command, post_command
 
-try:
-    from importlib import import_module
-except ImportError:
-    try:
-        from django.utils.importlib import import_module
-    except ImportError:
-        def import_module(module):
-            return __import__(module, {}, {}, [''])
+from django_extensions.compat import importlib
 
 
 def get_project_root():
@@ -21,7 +14,7 @@ def get_project_root():
         module_str = settings.SETTINGS_MODULE
     else:
         module_str = django_settings_module.split(".")[0]
-    mod = import_module(module_str)
+    mod = importlib.import_module(module_str)
     return os.path.dirname(os.path.abspath(mod.__file__))
 
 

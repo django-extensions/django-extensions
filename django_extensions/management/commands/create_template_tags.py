@@ -1,8 +1,9 @@
 import os
 import sys
+from optparse import make_option
+
 from django.core.management.base import AppCommand
 from django_extensions.management.utils import _make_writeable, signalcommand
-from optparse import make_option
 
 
 class Command(AppCommand):

@@ -1,15 +1,11 @@
 import sys
 import traceback
 from optparse import make_option
-from django_extensions.management.email_notifications import EmailNotificationCommand
+
 from django.conf import settings
 
-try:
-    import importlib
-except ImportError:
-    print("Runscript needs the importlib module to work. You can install it via 'pip install importlib'")
-    sys.exit(1)
-
+from django_extensions.compat import importlib
+from django_extensions.management.email_notifications import EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
 
 
