@@ -275,9 +275,7 @@ class SQLDiff(object):
             kwargs['geography'] = True
 
         if '.' in reverse_type:
-            from django.utils import importlib
-            # TODO: when was importlib added to django.utils ? and do we
-            # need to add backwards compatibility code ?
+            from django_extensions.compat import importlib
             module_path, package_name = reverse_type.rsplit('.', 1)
             module = importlib.import_module(module_path)
             field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
