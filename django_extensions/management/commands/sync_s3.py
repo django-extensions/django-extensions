@@ -62,17 +62,15 @@ from optparse import make_option
 import os
 import time
 import gzip
-try:
-    from cStringIO import StringIO
-    assert StringIO
-except ImportError:
-    from StringIO import StringIO
-
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from django_extensions.compat import StringIO
 from django_extensions.management.utils import signalcommand
+
+
+
 
 # Make sure boto is available
 try:

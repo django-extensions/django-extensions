@@ -1,12 +1,16 @@
 import logging
 from optparse import make_option
+from six.moves import configparser, input
 
 from django.conf import settings
-from django.core.management.base import CommandError, BaseCommand
-from django.db.backends.creation import TEST_DATABASE_PREFIX
-from six.moves import input, configparser
-
+from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.utils import signalcommand
+
+try:
+    from django.db.backends.base.creation import TEST_DATABASE_PREFIX
+except ImportError:
+    # Django < 1.7
+    from django.db.backends.creation import TEST_DATABASE_PREFIX
 
 
 class Command(BaseCommand):
