@@ -7,8 +7,8 @@ RunServerPlus
 Introduction
 ------------
 
-This item requires that you have the `Werkzeug WSGI utilities` (version 0.3)
-installed.  Included with Werkzeug is a kick ass debugger that renders nice
+This item requires that you have the `Werkzeug WSGI utilities` installed.
+Included with Werkzeug_ is a kick ass debugger that renders nice
 debugging tracebacks and adds an AJAX based debugger (which allows code execution 
 in the context of the traceback’s frames).  Additionally it provides a nice 
 access view to the source code.
@@ -150,3 +150,25 @@ You can use settings to automatically default your development to an address/por
 
     RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
 
+
+IO Calls and CPU Usage
+^^^^^^^^^^^^^^^^^^^^^^
+
+As noted in gh625_ `runserver_plus` can be seen to use a lot of CPU and generate many
+I/O when idle.
+
+This is due to the way Werkzeug_ has implemented the auto reload capability.
+It supports two ways of doing auto reloading either via `stat polling` or `file system events`.
+
+The `stat polling` approach is pretty brute force and continously issues `stat` system calls which
+causes the CPU and IO load.
+
+If possible try to install the Watchdog_ package, this should automatically cause Werkzeug_ to use
+`file system events` whenever possible.
+
+You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/0.10/serving/#reloader>`_
+
+
+.. _gh625: https://github.com/django-extensions/django-extensions/issues/625
+.. _Werkzeug: http://werkzeug.pocoo.org/
+.. _Watchdog: https://pypi.python.org/pypi/watchdog
