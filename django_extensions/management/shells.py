@@ -1,5 +1,6 @@
 import six
 import traceback
+import django
 
 
 class ObjectImportError(Exception):
@@ -191,15 +192,17 @@ def import_objects(options, style):
     if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus Django Imports"))
-        SHELL_PLUS_DJANGO_IMPORTS = (
-            ('django.core.cache', ['cache']),
-            ('django.core.urlresolvers', ['reverse']),
-            ('django.conf', ['settings']),
-            ('django.db', ['transaction']),
-            ('django.db.models', ['Avg', 'Count', 'F', 'Max', 'Min', 'Sum', 'Q']),
-            ('django.utils', ['timezone']),
-        )
-        imports = import_items(SHELL_PLUS_DJANGO_IMPORTS, style, quiet_load=quiet_load)
+        SHELL_PLUS_DJANGO_IMPORTS = {
+            'django.core.cache': ['cache'],
+            'django.core.urlresolvers': ['reverse'],
+            'django.conf': ['settings'],
+            'django.db': ['transaction'],
+            'django.db.models': ['Avg', 'Count', 'F', 'Max', 'Min', 'Sum', 'Q'],
+            'django.utils': ['timezone'],
+        }
+        if django.VERSION[:2] >= (1, 7):
+            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].append("Prefetch")
+        imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v
 
