@@ -18,22 +18,22 @@ env:
     - TOX_ENV=py34-dj15
     - TOX_ENV=py34-dj16
     - TOX_ENV=py27-dj17
-    - TOX_ENV=py27-dj18a
+    - TOX_ENV=py27-dj18
     - TOX_ENV=py27-djmaster
     - TOX_ENV=py32-dj17
-    - TOX_ENV=py32-dj18a
+    - TOX_ENV=py32-dj18
     - TOX_ENV=py32-djmaster
     - TOX_ENV=py33-dj17
-    - TOX_ENV=py33-dj18a
+    - TOX_ENV=py33-dj18
     - TOX_ENV=py33-djmaster
     - TOX_ENV=py34-dj17
-    - TOX_ENV=py34-dj18a
+    - TOX_ENV=py34-dj18
     - TOX_ENV=py34-djmaster
     - TOX_ENV=pypy-dj17
-    - TOX_ENV=pypy-dj18a
+    - TOX_ENV=pypy-dj18
     - TOX_ENV=pypy-djmaster
     - TOX_ENV=pypy3-dj17
-    - TOX_ENV=pypy3-dj18a
+    - TOX_ENV=pypy3-dj18
     - TOX_ENV=pypy3-djmaster
 
 matrix:
