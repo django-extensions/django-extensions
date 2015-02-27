@@ -34,7 +34,7 @@ naiveip_re = re.compile(r"""^(?:
     (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
 ):)?(?P<port>\d+)$""", re.X)
 DEFAULT_PORT = "8000"
-
+DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,8 @@ class Command(BaseCommand):
                     help='To use SSL, specify certificate path.'),
         make_option('--extra-file', dest='extra_files', action="append", type="string",
                     help='auto-reload whenever the given file changes too (can be specified multiple times)'),
-
+        make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
+                    help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
     )
     if USE_STATICFILES:
         option_list += (
@@ -191,6 +192,7 @@ class Command(BaseCommand):
         bind_url = "http://%s:%s/" % (
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
         extra_files = options.get('extra_files', None) or []
+        reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
             print("Validating models...")
@@ -270,6 +272,7 @@ class Command(BaseCommand):
                 use_reloader=use_reloader,
                 use_debugger=True,
                 extra_files=extra_files,
+                reloader_interval=reloader_interval,
                 threaded=threaded,
                 ssl_context=ssl_context,
             )
