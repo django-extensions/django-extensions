@@ -68,7 +68,7 @@ Being able to view the source file is handy because it provides more
 context information around the error.  The actual traceback areas are 
 highlighted so they are easy to spot.
 
-One awkward aspect of th UI is that the page is not scrolled to the bottom.
+One awkward aspect of the UI is that the page is not scrolled to the bottom.
 At first I thought nothing was happening because of this.
 
 
