@@ -31,10 +31,7 @@ class Command(NoArgsCommand):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
 
-        try:
-            from django.contrib.auth import get_user_model  # Django 1.5
-        except ImportError:
-            from django_extensions.future_1_5 import get_user_model
+        from django_extensions.compat import get_user_model
 
         if options.get('prompt_passwd', False):
             from getpass import getpass
