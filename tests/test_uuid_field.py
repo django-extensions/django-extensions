@@ -1,14 +1,13 @@
 import re
-import six
 import uuid
 
+import six
 from django.test import TestCase
+
 from django_extensions.db.fields import PostgreSQLUUIDField
 
 from .testapp.models import (
-    UUIDTestAgregateModel,
-    UUIDTestManyToManyModel,
-    UUIDTestModel_field,
+    UUIDTestAgregateModel, UUIDTestManyToManyModel, UUIDTestModel_field,
     UUIDTestModel_pk,
 )
 

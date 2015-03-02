@@ -1,18 +1,19 @@
+import logging
 import os
 import re
+import socket
 import sys
 import time
-import socket
-import logging
-
 from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django_extensions.management.utils import setup_logger, RedirectHandler,\
-    signalcommand
-from django_extensions.management.technical_response import null_technical_500_response
 
+from django_extensions.management.technical_response import \
+    null_technical_500_response
+from django_extensions.management.utils import (
+    RedirectHandler, setup_logger, signalcommand,
+)
 
 try:
     if 'django.contrib.staticfiles' in settings.INSTALLED_APPS:

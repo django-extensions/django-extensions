@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import optparse
 import re
 import sys
-import optparse
 
-from django.db.models.loading import get_models
-from django.db import models
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.db import models
+from django.db.models.loading import get_models
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand

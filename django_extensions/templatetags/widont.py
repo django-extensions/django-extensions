@@ -1,5 +1,7 @@
 import re
+
 from django.template import Library
+
 try:
     from django.utils.encoding import force_text
 except ImportError:

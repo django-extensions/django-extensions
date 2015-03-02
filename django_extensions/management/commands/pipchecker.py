@@ -1,14 +1,16 @@
-import os
-import pip
-import sys
 import json
-
+import os
+import sys
 from distutils.version import LooseVersion
-from django.core.management.base import NoArgsCommand
-from django_extensions.management.color import color_style
 from optparse import make_option
+
+import pip
+from django.core.management.base import NoArgsCommand
 from pip.req import parse_requirements
+
+from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+
 try:
     from urllib.parse import urlparse
     from urllib.error import HTTPError

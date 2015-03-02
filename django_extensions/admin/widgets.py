@@ -1,12 +1,11 @@
-import six
 import django
-
+import six
 from django import forms
 from django.contrib.admin.sites import site
+from django.contrib.admin.widgets import ForeignKeyRawIdWidget
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django.template.loader import render_to_string
-from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 
 
 class ForeignKeySearchInput(ForeignKeyRawIdWidget):

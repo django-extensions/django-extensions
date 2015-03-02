@@ -1,4 +1,5 @@
 from random import choice
+
 from django.core.management.base import NoArgsCommand
 
 from django_extensions.management.utils import signalcommand

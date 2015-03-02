@@ -1,6 +1,7 @@
-from django.template.base import Library, Node
 from django.template import defaulttags
+from django.template.base import Library, Node
 from django.templatetags import future
+
 register = Library()
 
 error_on_old_style_url_tag = False

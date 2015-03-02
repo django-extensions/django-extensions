@@ -5,8 +5,8 @@ import logging
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import CommandError, BaseCommand
-from six.moves import input, configparser
+from django.core.management.base import BaseCommand, CommandError
+from six.moves import configparser, input
 
 from django_extensions.management.utils import signalcommand
 

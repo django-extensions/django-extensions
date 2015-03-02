@@ -1,9 +1,10 @@
-import os
 import fnmatch
-from django.core.management.base import NoArgsCommand, CommandError
-from django.conf import settings
+import os
 from optparse import make_option
 from os.path import join as _j
+
+from django.conf import settings
+from django.core.management.base import CommandError, NoArgsCommand
 
 from django_extensions.management.utils import signalcommand
 

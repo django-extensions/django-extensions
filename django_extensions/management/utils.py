@@ -1,10 +1,11 @@
-from django.conf import settings
+import logging
 import os
 import sys
-import logging
-from django_extensions.management.signals import pre_command, post_command
+
+from django.conf import settings
 
 from django_extensions.compat import importlib
+from django_extensions.management.signals import post_command, pre_command
 
 
 def get_project_root():

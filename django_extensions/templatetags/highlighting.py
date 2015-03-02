@@ -30,9 +30,12 @@ Example:
 """
 
 from django import template
-from django.template import Template, Context, Node, Variable, TemplateSyntaxError
+from django.template import (
+    Context, Node, Template, TemplateSyntaxError, Variable,
+)
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
+
 try:
     from pygments import highlight as pyghighlight
     from pygments.lexers import get_lexer_by_name

@@ -1,12 +1,11 @@
-import pytest
-
 import django
+import pytest
 from django.db import models
 from django.test import TestCase
+
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel
-
 
 if django.VERSION >= (1, 7):
     from django.db import migrations  # NOQA

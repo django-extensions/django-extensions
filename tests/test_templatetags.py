@@ -1,6 +1,6 @@
 import six
-
 from django.test import TestCase
+
 from django_extensions.templatetags.widont import widont, widont_html
 
 

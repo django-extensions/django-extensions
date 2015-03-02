@@ -1,5 +1,6 @@
-from collections import defaultdict
 import os
+from collections import defaultdict
+
 from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from django.db import models

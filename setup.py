@@ -3,8 +3,9 @@ Based entirely on Django's own ``setup.py``.
 """
 import os
 import sys
-from distutils.command.install_data import install_data
 from distutils.command.install import INSTALL_SCHEMES
+from distutils.command.install_data import install_data
+
 try:
     from setuptools import setup
 except ImportError:

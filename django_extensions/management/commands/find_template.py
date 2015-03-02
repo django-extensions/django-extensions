@@ -1,7 +1,7 @@
-from django.core.management.base import LabelCommand
-from django.template import loader
-from django.template import TemplateDoesNotExist
 import sys
+
+from django.core.management.base import LabelCommand
+from django.template import TemplateDoesNotExist, loader
 
 from django_extensions.management.utils import signalcommand
 

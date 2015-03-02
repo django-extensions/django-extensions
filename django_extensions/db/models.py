@@ -3,8 +3,10 @@ Django Extensions abstract base model classes.
 """
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.db.fields import (ModificationDateTimeField,
-                                         CreationDateTimeField, AutoSlugField)
+
+from django_extensions.db.fields import (
+    AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
+)
 
 try:
     from django.utils.timezone import now as datetime_now

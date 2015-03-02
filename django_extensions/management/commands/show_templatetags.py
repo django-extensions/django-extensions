@@ -1,9 +1,10 @@
-import os
-import six
 import inspect
+import os
+
+import six
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.core.management import color
+from django.core.management.base import BaseCommand
 from django.template.base import get_library
 from django.utils import termcolors
 

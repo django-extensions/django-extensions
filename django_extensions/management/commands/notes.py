@@ -1,8 +1,11 @@
 from __future__ import with_statement
-from django.core.management.base import BaseCommand
-from django.conf import settings
+
 import os
 import re
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
 from django_extensions.management.utils import signalcommand
 
 ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")

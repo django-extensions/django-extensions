@@ -6,6 +6,7 @@ from os.path import join as _j
 
 from django.conf import settings
 from django.core.management.base import CommandError, NoArgsCommand
+
 from django_extensions.management.utils import signalcommand
 
 

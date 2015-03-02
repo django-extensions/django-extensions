@@ -1,12 +1,9 @@
 import six
-
 from django.test import TestCase
 
 from .testapp.models import (
-    ShortUUIDTestAgregateModel,
-    ShortUUIDTestManyToManyModel,
-    ShortUUIDTestModel_field,
-    ShortUUIDTestModel_pk,
+    ShortUUIDTestAgregateModel, ShortUUIDTestManyToManyModel,
+    ShortUUIDTestModel_field, ShortUUIDTestModel_pk,
 )
 
 

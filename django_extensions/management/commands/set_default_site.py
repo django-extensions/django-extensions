@@ -4,7 +4,7 @@ set_default_site.py
 import socket
 from optparse import make_option
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import CommandError, NoArgsCommand
 
 from django_extensions.management.utils import signalcommand
 

@@ -1,9 +1,10 @@
 import fnmatch
 import os
-import six
 
+import six
 from django.core.management import call_command
 from django.test import TestCase
+
 from django_extensions.management.utils import get_project_root
 
 

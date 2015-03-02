@@ -1,11 +1,12 @@
-import six
 import sys
-from optparse import make_option, NO_DEFAULT
-from django.core.management.base import BaseCommand, CommandError
+from optparse import NO_DEFAULT, make_option
+
+import six
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
 from django_extensions.management.modelviz import generate_dot
 from django_extensions.management.utils import signalcommand
-
 
 try:
     import pygraphviz

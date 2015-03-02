@@ -1,10 +1,10 @@
 from django.db import models
 
-from django_extensions.db.models import ActivatorModel
-from django_extensions.db.fields import AutoSlugField
-from django_extensions.db.fields import UUIDField
-from django_extensions.db.fields import ShortUUIDField
+from django_extensions.db.fields import (
+    AutoSlugField, ShortUUIDField, UUIDField,
+)
 from django_extensions.db.fields.json import JSONField
+from django_extensions.db.models import ActivatorModel
 
 
 class Secret(models.Model):
