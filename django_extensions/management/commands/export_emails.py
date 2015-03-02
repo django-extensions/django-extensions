@@ -1,8 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-try:
-    from django.contrib.auth import get_user_model  # Django 1.5
-except ImportError:
-    from django_extensions.future_1_5 import get_user_model
+from django_extensions.compat import get_user_model
 from django.contrib.auth.models import Group
 from optparse import make_option
 from sys import stdout

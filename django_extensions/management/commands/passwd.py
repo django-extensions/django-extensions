@@ -1,9 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.utils import signalcommand
-try:
-    from django.contrib.auth import get_user_model  # Django 1.5
-except ImportError:
-    from django_extensions.future_1_5 import get_user_model
+from django_extensions.compat import get_user_model
 import getpass
 
 
