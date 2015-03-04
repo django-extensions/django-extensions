@@ -1,5 +1,7 @@
-from django.core.management.base import LabelCommand
 from optparse import make_option
+
+from django.core.management.base import LabelCommand
+
 from django_extensions.management.jobs import get_jobs, print_jobs
 from django_extensions.management.utils import signalcommand
 

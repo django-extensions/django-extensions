@@ -1,7 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
-from django_extensions.management.utils import signalcommand
-from django_extensions.compat import get_user_model
 import getpass
+
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.compat import get_user_model
+from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import six
-
 from django.test import TestCase
+
 from django_extensions.utils.text import truncate_letters
 
 

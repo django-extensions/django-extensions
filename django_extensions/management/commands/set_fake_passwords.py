@@ -9,7 +9,7 @@ set_fake_passwords.py
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import CommandError, NoArgsCommand
 
 from django_extensions.management.utils import signalcommand
 

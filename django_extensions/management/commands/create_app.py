@@ -1,16 +1,18 @@
 import os
 import re
 import sys
-import django_extensions
+from optparse import make_option
+
 from django import VERSION
 from django.conf import settings
-from django.db import connection
 from django.core.management.base import CommandError, LabelCommand
-from django.template import Template, Context
+from django.db import connection
+from django.template import Context, Template
+
+import django_extensions
+from django_extensions.management.utils import _make_writeable, signalcommand
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
-from django_extensions.management.utils import _make_writeable, signalcommand
-from optparse import make_option
 
 
 class Command(LabelCommand):

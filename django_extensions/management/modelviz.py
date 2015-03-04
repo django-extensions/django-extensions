@@ -7,15 +7,18 @@ Based on:
   Adapted to be used with django-extensions
 """
 
-import os
-import six
 import datetime
-from django.utils.translation import activate as activate_language
-from django.utils.safestring import mark_safe
-from django.template import Context, loader, Template
+import os
+
+import six
 from django.db import models
 from django.db.models import get_models
-from django.db.models.fields.related import ForeignKey, OneToOneField, ManyToManyField, RelatedField
+from django.db.models.fields.related import (
+    ForeignKey, ManyToManyField, OneToOneField, RelatedField,
+)
+from django.template import Context, Template, loader
+from django.utils.safestring import mark_safe
+from django.utils.translation import activate as activate_language
 
 try:
     from django.db.models.fields.generic import GenericRelation

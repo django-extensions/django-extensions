@@ -10,10 +10,10 @@ and anything extra will of been deleted.
 
 import os
 import sys
-import six
 from contextlib import contextmanager
 from functools import wraps
 
+import six
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.db import connection, transaction

@@ -1,5 +1,4 @@
 import six
-
 from django.utils.functional import allow_lazy
 
 # conditional import, force_unicode was renamed in Django 1.5

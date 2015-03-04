@@ -9,12 +9,13 @@
 #  Python 2.4.4 (#2, Jul 17 2007, 11:56:54)
 #  [GCC 4.1.3 20070629 (prerelease) (Debian 4.1.2-13)] on linux2
 
-import re
-import six
-import sys
-import gzip
 import codecs
+import gzip
+import re
+import sys
 from xml.dom.minidom import *  # NOQA
+
+import six
 
 dependclasses = ["User", "Group", "Permission", "Message"]
 

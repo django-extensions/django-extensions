@@ -5,7 +5,8 @@ from optparse import make_option
 from django.conf import settings
 
 from django_extensions.compat import importlib
-from django_extensions.management.email_notifications import EmailNotificationCommand
+from django_extensions.management.email_notifications import \
+    EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
 
 

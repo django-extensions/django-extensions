@@ -29,25 +29,27 @@ Improvements:
 
 """
 
-import sys
 import datetime
-import six
+import sys
 from optparse import make_option
 
 import django
-from django.db.models import AutoField, BooleanField, FileField, ForeignKey, DateField, DateTimeField
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
-
+import six
 # conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.management.base import BaseCommand
+from django.db.models import (
+    AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
+)
+
+from django_extensions.management.utils import signalcommand
 
 try:
     from django.utils.encoding import smart_unicode, force_unicode  # NOQA
 except ImportError:
     from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
 
-from django_extensions.management.utils import signalcommand
 
 
 def orm_item_locator(orm_obj):

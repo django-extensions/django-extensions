@@ -1,5 +1,6 @@
+from django.contrib.auth.management import \
+    create_permissions as _create_permissions
 from django.core.management.base import BaseCommand
-from django.contrib.auth.management import create_permissions as _create_permissions
 
 from django_extensions.management.utils import signalcommand
 

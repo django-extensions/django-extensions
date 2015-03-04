@@ -9,11 +9,14 @@ Credits for kcachegrind support taken from lsprofcalltree.py go to:
  Johan Dahlin
 """
 
-from django.core.management.base import BaseCommand, CommandError
-from optparse import make_option
-from datetime import datetime
-from django.conf import settings
 import sys
+from datetime import datetime
+from optparse import make_option
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
@@ -21,7 +24,6 @@ try:
 except ImportError as e:
     USE_STATICFILES = False
 
-from django_extensions.management.utils import signalcommand
 
 try:
     any

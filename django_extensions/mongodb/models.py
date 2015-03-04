@@ -2,11 +2,15 @@
 Django Extensions abstract base mongoengine Document classes.
 """
 import datetime
-from mongoengine.document import Document
-from mongoengine.fields import StringField, IntField, DateTimeField
-from mongoengine.queryset import QuerySetManager
+
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.mongodb.fields import ModificationDateTimeField, CreationDateTimeField, AutoSlugField
+from mongoengine.document import Document
+from mongoengine.fields import DateTimeField, IntField, StringField
+from mongoengine.queryset import QuerySetManager
+
+from django_extensions.mongodb.fields import (
+    AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
+)
 
 
 class TimeStampedModel(Document):

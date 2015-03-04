@@ -1,10 +1,11 @@
 import sys
+import warnings
+
 import six
-from django.db import models
-from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
-import warnings
+from django.core.exceptions import ImproperlyConfigured
+from django.db import models
 
 try:
     from keyczar import keyczar

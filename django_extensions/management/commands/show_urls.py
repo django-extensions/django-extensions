@@ -1,17 +1,16 @@
-import re
 import functools
+import re
 from optparse import make_option
 
 from django.conf import settings
-from django.core.exceptions import ViewDoesNotExist
-from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
-from django.core.management.base import BaseCommand, CommandError
 from django.contrib.admindocs.views import simplify_regex
+from django.core.exceptions import ViewDoesNotExist
+from django.core.management.base import BaseCommand, CommandError
+from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
 from django.utils.translation import activate
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",

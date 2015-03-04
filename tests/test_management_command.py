@@ -3,12 +3,12 @@ import logging
 import os
 import sys
 
-from django.core.management import (call_command,
-                                    find_commands,
-                                    load_command_class)
+from django.core.management import (
+    call_command, find_commands, load_command_class,
+)
 from django.test import TestCase
 
-from django_extensions.compat import importlib, StringIO
+from django_extensions.compat import StringIO, importlib
 
 
 class MockLoggingHandler(logging.Handler):

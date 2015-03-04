@@ -5,9 +5,11 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
 from optparse import make_option
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
 from django_extensions.management.utils import signalcommand
 
 

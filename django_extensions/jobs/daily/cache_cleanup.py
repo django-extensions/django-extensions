@@ -5,8 +5,10 @@ Can be run as a cronjob to clean out old data from the database (only expired
 sessions at the moment).
 """
 
-import six
 from contextlib import contextmanager
+
+import six
+
 from django_extensions.management.jobs import DailyJob
 
 

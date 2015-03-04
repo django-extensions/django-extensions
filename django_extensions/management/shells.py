@@ -1,6 +1,7 @@
-import six
 import traceback
+
 import django
+import six
 
 
 class ObjectImportError(Exception):

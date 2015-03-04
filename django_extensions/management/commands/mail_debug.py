@@ -1,11 +1,12 @@
-from django_extensions.management.utils import setup_logger, signalcommand
-from django.core.management.base import BaseCommand, CommandError
+import asyncore
+import sys
+from logging import getLogger
 from optparse import make_option
 from smtpd import SMTPServer
-import sys
-import asyncore
-from logging import getLogger
 
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import setup_logger, signalcommand
 
 logger = getLogger(__name__)
 

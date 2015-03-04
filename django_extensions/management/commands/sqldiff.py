@@ -20,17 +20,16 @@ KNOWN ISSUES:
      positives or false negatives.
 """
 
-import six
 import sys
 from optparse import make_option
 
 import django
+import six
+from django.core.management import CommandError, sql as _sql
 from django.core.management.base import BaseCommand
-from django.core.management import sql as _sql
-from django.core.management import CommandError
 from django.core.management.color import no_style
-from django.db import transaction, connection
-from django.db.models.fields import IntegerField, AutoField
+from django.db import connection, transaction
+from django.db.models.fields import AutoField, IntegerField
 
 from django_extensions.management.utils import signalcommand
 

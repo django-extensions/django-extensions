@@ -10,9 +10,10 @@ more information.
      extra = json.JSONField()
 """
 
-import six
 import datetime
 from decimal import Decimal
+
+import six
 from django.conf import settings
 from django.utils import simplejson
 from mongoengine.fields import StringField

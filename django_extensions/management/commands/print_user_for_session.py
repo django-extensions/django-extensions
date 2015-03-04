@@ -1,9 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from django_extensions.compat import importlib
+from django_extensions.compat import get_user_model, importlib
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import get_user_model
 
 try:
     from django.contrib.sessions.backends.base import VALID_KEY_CHARS  # Django 1.5

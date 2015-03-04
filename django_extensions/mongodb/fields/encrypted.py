@@ -1,10 +1,10 @@
 """
 Encrypted fields from Django Extensions, modified for use with mongoDB
 """
-from mongoengine.base import BaseField
-from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from mongoengine.base import BaseField
 
 try:
     from keyczar import keyczar

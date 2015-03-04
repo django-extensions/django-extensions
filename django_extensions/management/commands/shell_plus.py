@@ -1,11 +1,11 @@
 import os
-import six
 import time
 import traceback
 from optparse import make_option
 
-from django.core.management.base import NoArgsCommand
+import six
 from django.conf import settings
+from django.core.management.base import NoArgsCommand
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand

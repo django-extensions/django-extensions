@@ -1,11 +1,12 @@
-from django.core.management.base import BaseCommand, CommandError
-from django_extensions.compat import get_user_model
-from django.contrib.auth.models import Group
+from csv import writer
 from optparse import make_option
 from sys import stdout
-from csv import writer
-import six
 
+import six
+from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.compat import get_user_model
 from django_extensions.management.utils import signalcommand
 
 FORMATS = [

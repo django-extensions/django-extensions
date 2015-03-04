@@ -10,11 +10,13 @@ more information.
      extra = json.JSONField()
 """
 from __future__ import absolute_import
-import six
+
 from decimal import Decimal
-from django.db import models
+
+import six
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
 
 try:
     # Django >= 1.7
