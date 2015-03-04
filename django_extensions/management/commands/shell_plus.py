@@ -135,16 +135,13 @@ class Command(NoArgsCommand):
 
             def run_notebook():
                 app = NotebookApp.instance()
-                ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', ['--ext', 'django_extensions.management.notebook_extension'])
-                if 'django_extensions.management.notebook_extension' not in ipython_arguments:
-                    print(self.style.ERROR("""WARNING:
-IPython Notebook Extension 'django_extensions.management.notebook_extension' not
-found in IPYTHON_ARGUMENTS. Without it the IPython Notebook will not initialize
-Django and will not automatically load your models.
 
-Please read the documentation carefully:
-  http://django-extensions.readthedocs.org/en/latest/shell_plus.html#configuration
-"""))
+                # Treat IPYTHON_ARGUMENTS from settings
+                ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                if 'django_extensions.management.notebook_extension' not in ipython_arguments:
+                    ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
+
+                # Treat NOTEBOOK_ARGUMENTS from settings
                 notebook_arguments = getattr(settings, 'NOTEBOOK_ARGUMENTS', [])
                 if no_browser and '--no-browser' not in notebook_arguments:
                     notebook_arguments.append('--no-browser')
@@ -157,7 +154,7 @@ Please read the documentation carefully:
                     notebook_arguments.extend(ipython_arguments)
 
                 app.initialize(notebook_arguments)
-                
+
                 # IPython >= 3 uses kernelspecs to specify kernel CLI args
                 if release.version_info[0] >= 3:
                     install_kernel_spec(app, ipython_arguments)
