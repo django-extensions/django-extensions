@@ -121,21 +121,44 @@ class Command(NoArgsCommand):
                 except ImportError:
                     return traceback.format_exc()
 
+            def install_kernel_spec(app, ipython_arguments):
+                """install an IPython >= 3.0 kernelspec that loads django extensions"""
+                ksm = app.kernel_spec_manager
+                ks = ksm.get_kernel_spec('python')
+                ks.argv.extend(ipython_arguments)
+                ks.display_name = 'Django Admin'
+                kernel_dir = os.path.join(ksm.user_kernel_dir, 'django')
+                if not os.path.exists(kernel_dir):
+                    os.makedirs(kernel_dir)
+                with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
+                    f.write(ks.to_json())
+
             def run_notebook():
                 app = NotebookApp.instance()
-                ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', ['--ext', 'django_extensions.management.notebook_extension'])
-                if no_browser and '--no-browser' not in ipython_arguments:
-                    ipython_arguments.append('--no-browser')
-                if 'django_extensions.management.notebook_extension' not in ipython_arguments:
-                    print(self.style.ERROR("""WARNING:
-IPython Notebook Extension 'django_extensions.management.notebook_extension' not
-found in IPYTHON_ARGUMENTS. Without it the IPython Notebook will not initialize
-Django and will not automatically load your models.
 
-Please read the documentation carefully:
-  http://django-extensions.readthedocs.org/en/latest/shell_plus.html#configuration
-"""))
-                app.initialize(ipython_arguments)
+                # Treat IPYTHON_ARGUMENTS from settings
+                ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                if 'django_extensions.management.notebook_extension' not in ipython_arguments:
+                    ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
+
+                # Treat NOTEBOOK_ARGUMENTS from settings
+                notebook_arguments = getattr(settings, 'NOTEBOOK_ARGUMENTS', [])
+                if no_browser and '--no-browser' not in notebook_arguments:
+                    notebook_arguments.append('--no-browser')
+                if '--notebook-dir' not in notebook_arguments:
+                    notebook_arguments.extend(['--notebook-dir', '.'])
+
+                # IPython < 3 passes through kernel args from notebook CLI
+                from IPython import release
+                if release.version_info[0] < 3:
+                    notebook_arguments.extend(ipython_arguments)
+
+                app.initialize(notebook_arguments)
+
+                # IPython >= 3 uses kernelspecs to specify kernel CLI args
+                if release.version_info[0] >= 3:
+                    install_kernel_spec(app, ipython_arguments)
+
                 app.start()
             return run_notebook
 
