@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import traceback
 from optparse import make_option
@@ -127,7 +128,7 @@ class Command(NoArgsCommand):
                 ks = ksm.get_kernel_spec('python')
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
-                kernel_dir = os.path.join(ksm.user_kernel_dir, 'django')
+                kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
                 if not os.path.exists(kernel_dir):
                     os.makedirs(kernel_dir)
                 with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
