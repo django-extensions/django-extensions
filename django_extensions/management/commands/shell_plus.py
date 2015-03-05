@@ -121,12 +121,12 @@ class Command(NoArgsCommand):
                 except ImportError:
                     return traceback.format_exc()
 
-            def install_kernel_spec(app, ipython_arguments):
+            def install_kernel_spec(app, display_name, ipython_arguments):
                 """install an IPython >= 3.0 kernelspec that loads django extensions"""
                 ksm = app.kernel_spec_manager
                 ks = ksm.get_kernel_spec('python')
                 ks.argv.extend(ipython_arguments)
-                ks.display_name = 'Django Admin'
+                ks.display_name = display_name
                 kernel_dir = os.path.join(ksm.user_kernel_dir, 'django')
                 if not os.path.exists(kernel_dir):
                     os.makedirs(kernel_dir)
@@ -157,7 +157,8 @@ class Command(NoArgsCommand):
 
                 # IPython >= 3 uses kernelspecs to specify kernel CLI args
                 if release.version_info[0] >= 3:
-                    install_kernel_spec(app, ipython_arguments)
+                    display_name = getattr(settings, 'IPYTHON_KERNEL_DISPLAY_NAME', "Django Shell-Plus")
+                    install_kernel_spec(app, display_name, ipython_arguments)
 
                 app.start()
             return run_notebook
