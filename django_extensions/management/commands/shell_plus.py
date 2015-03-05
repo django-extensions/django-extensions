@@ -128,6 +128,14 @@ class Command(NoArgsCommand):
                 ks = ksm.get_kernel_spec('python')
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
+
+                manage_py_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+
+                if os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
+                    pythonpath = ks.env.get("PYTHONPATH", "").split(":")
+                    pythonpath.append(manage_py_dir)
+                    ks.env["PYTHONPATH"] = ":".join(pythonpath)
+
                 kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
                 if not os.path.exists(kernel_dir):
                     os.makedirs(kernel_dir)
