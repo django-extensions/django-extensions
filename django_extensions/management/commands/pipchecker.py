@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from distutils.version import LooseVersion
 from optparse import make_option
 
