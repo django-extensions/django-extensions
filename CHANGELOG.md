@@ -11,7 +11,7 @@ Changes:
  - Improvement: shell_plus, IPython 3.x support for notebooks
  - Improvement: tests, move to py.test and lots of other improvements
  - Improvement: create_app, add migrations folder
- - Improvement: tix.ini, refactored to be more DRY
+ - Improvement: tox.ini, refactored to be more DRY
  - Improvement: runserver_plus, also reload on changes to translation files
  - Improvement: runserver_plus, add reloader_interval support
  - Improvement: create_template_tags, removed unusued command line option
