@@ -5,7 +5,7 @@ from distutils.version import LooseVersion
 from optparse import make_option
 
 import pip
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import NoArgsCommand, CommandError
 from pip.req import parse_requirements
 
 from django_extensions.management.color import color_style
@@ -62,20 +62,21 @@ class Command(NoArgsCommand):
                          if os.path.isfile(os.path.join("requirements", f)) and
                          f.lower().endswith(".txt")]
         else:
-            sys.exit("requirements not found")
+            raise CommandError("Requirements not found")
+
+        try:
+            from pip.download import PipSession
+        except ImportError:
+            raise CommandError("Pip version 6 or higher is required")
 
         self.reqs = {}
-        for filename in req_files:
-            class Object(object):
-                pass
-            mockoptions = Object()
-            mockoptions.default_vcs = "git"
-            mockoptions.skip_requirements_regex = None
-            for req in parse_requirements(filename, options=mockoptions):
-                self.reqs[req.name] = {
-                    "pip_req": req,
-                    "url": req.url,
-                }
+        with PipSession() as session:
+            for filename in req_files:
+                for req in parse_requirements(filename, session=session):
+                    self.reqs[req.name] = {
+                        "pip_req": req,
+                        "url": req.url,
+                    }
 
         if options["github_api_token"]:
             self.github_api_token = options["github_api_token"]
