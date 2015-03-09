@@ -1,6 +1,24 @@
 Changelog
 =========
 
+1.5.1
+-----
+
+Changes:
+ - New: runserver_plus, add support for --extra-files parameter
+ - Fix: Django 1.7 defined MIDDLEWARE_CLASSES for tests
+ - Fix: shell_plus, problem when auto-loading modules with empty '__module__' property
+ - Improvement: shell_plus, IPython 3.x support for notebooks
+ - Improvement: tests, move to py.test and lots of other improvements
+ - Improvement: create_app, add migrations folder
+ - Improvement: tix.ini, refactored to be more DRY
+ - Improvement: runserver_plus, also reload on changes to translation files
+ - Improvement: runserver_plus, add reloader_interval support
+ - Improvement: create_template_tags, removed unusued command line option
+ - Docs: print_user_for_session, add note about SESSION_ENGINE
+ - Docs: runserver_plus, added section about IO calls and CPU usage
+
+
 1.5.0
 -----
 
