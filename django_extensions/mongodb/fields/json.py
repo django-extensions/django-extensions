@@ -15,18 +15,24 @@ from decimal import Decimal
 
 import six
 from django.conf import settings
-from django.utils import simplejson
 from mongoengine.fields import StringField
 
+try:
+    # Django >= 1.7
+    import json
+except ImportError:
+    # Django <= 1.6 backwards compatibility
+    from django.utils import simplejson as json
 
-class JSONEncoder(simplejson.JSONEncoder):
+
+class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             assert settings.TIME_ZONE == 'UTC'
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-        return simplejson.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def dumps(value):
@@ -35,7 +41,7 @@ def dumps(value):
 
 
 def loads(txt):
-    value = simplejson.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
+    value = json.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
     assert isinstance(value, dict)
     return value
 
