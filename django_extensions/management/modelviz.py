@@ -288,7 +288,7 @@ def generate_dot(app_labels, **kwargs):
     now = datetime.datetime.now()
     t = loader.get_template('django_extensions/graph_models/digraph.dot')
 
-    if not isinstance(t, Template):
+    if not isinstance(t, Template) and not (hasattr(t,'template') and isinstance(t.template, Template)):
         raise Exception("Default Django template loader isn't used. "
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")

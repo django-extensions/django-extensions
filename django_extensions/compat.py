@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import sys
 
 import django
+from django.conf import settings
 
 # flake8: noqa
 
@@ -36,3 +37,13 @@ except ImportError:  # pragma: no cover
     User.get_username = lambda self: self.username
     def get_user_model():
         return User
+
+
+def list_apps():
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+        return [app.name for app in apps.get_app_configs()]
+    except ImportError:
+        # old way
+        return settings.INSTALLED_APPS
