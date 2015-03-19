@@ -2,9 +2,7 @@ import sys
 import traceback
 from optparse import make_option
 
-from django.conf import settings
-
-from django_extensions.compat import importlib
+from django_extensions.compat import importlib, list_apps
 from django_extensions.management.email_notifications import \
     EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
@@ -135,7 +133,7 @@ class Command(EmailNotificationCommand):
             """ find script module which contains 'run' attribute """
             modules = []
             # first look in apps
-            for app in settings.INSTALLED_APPS:
+            for app in list_apps():
                 for subdir in subdirs:
                     mod = my_import("%s.%s.%s" % (app, subdir, script))
                     if mod:
