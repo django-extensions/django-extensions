@@ -310,7 +310,7 @@ class SQLDiff(object):
                 attname = field.db_column or field.attname
                 db_field_unique = table_indexes.get(attname, {}).get('unique')
                 if not db_field_unique and table_constraints:
-                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if attname in constraint['columns'])
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if [attname] == constraint['columns'])
                 if attname in table_indexes and db_field_unique:
                     continue
                 self.add_difference('unique-missing-in-db', table_name, attname)
