@@ -71,6 +71,7 @@ Contents
    sync_s3
    sqldiff
    sqlcreate
+   sqldsn
    validate_templates
 
 
