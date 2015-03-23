@@ -51,7 +51,6 @@ except ImportError:
     from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
 
 
-
 def orm_item_locator(orm_obj):
     """
     This function is called every time an object that will not be exported is required.

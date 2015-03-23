@@ -43,7 +43,7 @@ class Command(BaseCommand):
             routers = [options.get('router')]
 
         for i, router in enumerate(routers):
-            if i!=0:
+            if i != 0:
                 sys.stdout.write("\n")
             self.show_dsn(router, options)
 
