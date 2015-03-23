@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.5.2
+-----
+
+Changes:
+ - New: sqldsn, prints Data Source Name for defined database(s)
+ - Fix: graph_models, Django 1.8 support
+ - Fix: highlighting tag, fix usage of is_safe
+ - Fix: runscript, fix for runscript with AppConfig apps
+ - Fix: sqldiff, KeyError when index is missing in database
+ - Fix: sqldiff, multi column indexes was also counted as a single colomn index
+ - Improvements: JSONField, Added try/catch for importing json/simplejson for Django 1.7
+
 1.5.1
 -----
 
