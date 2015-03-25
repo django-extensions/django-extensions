@@ -13,6 +13,8 @@ from django.db.models import FileField
 from django.db.models.loading import get_models
 from django.utils.six import PY3
 
+from django_extensions.management.utils import signalcommand
+
 
 if PY3:
     raw_input = input
@@ -39,6 +41,7 @@ class Command(NoArgsCommand):
         'easy_thumbnails': (('easy_thumbnails_thumbnail', 'name'),)
     }
 
+    @signalcommand
     def handle_noargs(self, **options):
         print('Finding unregistered media...')
         print('(You will be asked to confirm deletion after that)')
