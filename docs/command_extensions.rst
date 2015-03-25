@@ -29,6 +29,9 @@ Current Command Extensions
 
 * *clear_cache* - Clear django cache, useful when testing or deploying.
 
+* *delete_unregistered_media* - Collects unregistered media files in a CSV
+  and deletes them if you confirm it.
+
 * *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 

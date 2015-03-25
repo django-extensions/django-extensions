@@ -1,6 +1,12 @@
 Changelog
 =========
 
+master
+------
+
+Changes:
+- New: *delete_unregistered_media* command replaces *unreferenced_files*
+
 1.5.2
 -----
 
