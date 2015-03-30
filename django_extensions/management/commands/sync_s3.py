@@ -258,7 +258,8 @@ class Command(BaseCommand):
         """
         bucket, key = self.open_s3()
         for directory in self.DIRECTORIES:
-            os.path.walk(directory, self.upload_s3, (bucket, key, self.AWS_BUCKET_NAME, directory))
+            for root, dirs, files in os.walk(directory):
+                self.upload_s3((bucket, key, self.AWS_BUCKET_NAME, directory), root, files)
 
     def compress_string(self, s):
         """Gzip a given string."""
