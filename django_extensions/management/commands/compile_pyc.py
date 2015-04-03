@@ -17,7 +17,7 @@ class Command(NoArgsCommand):
     )
     help = "Compile python bytecode files for the project."
 
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle_noargs(self, **options):

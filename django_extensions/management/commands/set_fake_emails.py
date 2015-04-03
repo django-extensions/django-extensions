@@ -34,7 +34,7 @@ class Command(NoArgsCommand):
                     help='Exclude users matching this group. (use comma seperation for multiple groups)'),
     )
     help = '''DEBUG only: give all users a new email based on their account data ("%s" by default). Possible parameters are: username, first_name, last_name''' % (DEFAULT_FAKE_EMAIL, )
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle_noargs(self, **options):
