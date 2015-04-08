@@ -83,11 +83,11 @@ Check templates for rendering errors::
 
     $ python manage.py validate_templates
 
-Run the enchanced django shell::
+Run the enhanced django shell::
 
     $ python manage.py shell_plus
 
-Run the enchanced django runserver, (requires Werkzeug install)::
+Run the enhanced django runserver, (requires Werkzeug install)::
 
     $ python manage.py runserver_plus
 
