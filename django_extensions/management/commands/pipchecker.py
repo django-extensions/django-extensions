@@ -112,7 +112,7 @@ class Command(NoArgsCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].url_name)
+                available = pypi.package_releases(req["pip_req"].name)
                 try:
                     available_version = LooseVersion(available[0])
                 except IndexError:
