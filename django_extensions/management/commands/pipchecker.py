@@ -105,7 +105,7 @@ class Command(NoArgsCommand):
             if name in self.reqs.keys():
                 self.reqs[name]["dist"] = dist
 
-        pypi = ServerProxy("http://pypi.python.org/pypi")
+        pypi = ServerProxy("https://pypi.python.org/pypi")
         for name, req in list(self.reqs.items()):
             if req["url"]:
                 continue  # skipping github packages.
