@@ -76,7 +76,7 @@ class Command(BaseCommand):
     args = '[optional port number, or ipaddr:port]'
 
     # Validation is called explicitly each time the server is reloaded.
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle(self, addrport='', *args, **options):

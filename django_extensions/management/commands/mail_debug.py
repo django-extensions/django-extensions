@@ -39,7 +39,7 @@ class Command(BaseCommand):
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
