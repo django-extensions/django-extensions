@@ -19,7 +19,7 @@ class Command(NoArgsCommand):
     )
     help = "Removes all python bytecode compiled files from the project."
 
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle_noargs(self, **options):

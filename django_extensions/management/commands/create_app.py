@@ -31,7 +31,7 @@ class Command(LabelCommand):
     args = "APP_NAME"
     label = 'application name'
 
-    requires_model_validation = False
+    requires_system_checks = False
     can_import_settings = True
 
     @signalcommand

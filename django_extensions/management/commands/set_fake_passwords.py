@@ -24,7 +24,7 @@ class Command(NoArgsCommand):
                     help='Use this as default password.'),
     )
     help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle_noargs(self, **options):

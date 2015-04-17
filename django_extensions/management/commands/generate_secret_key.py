@@ -8,7 +8,7 @@ from django_extensions.management.utils import signalcommand
 class Command(NoArgsCommand):
     help = "Generates a new SECRET_KEY that can be used in a project settings file."
 
-    requires_model_validation = False
+    requires_system_checks = False
 
     @signalcommand
     def handle_noargs(self, **options):

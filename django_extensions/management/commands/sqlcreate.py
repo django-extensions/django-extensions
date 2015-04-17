@@ -23,7 +23,7 @@ The envisioned use case is something like this:
     ./manage.py sqlcreate [--router=<routername>] | mysql -u <db_administrator> -p
     ./manage.py sqlcreate [--router=<routername>] | psql -U <db_administrator> -W"""
 
-    requires_model_validation = False
+    requires_system_checks = False
     can_import_settings = True
 
     @signalcommand
