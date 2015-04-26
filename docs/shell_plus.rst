@@ -70,6 +70,24 @@ uses a web browser as its user interface, as an alternative shell::
 
     $ ./manage.py shell_plus --notebook
 
+There are two settings that you can use to pass your custom options to the IPython
+Notebook in your Django settings.
+
+The first one is ``NOTEBOOK_ARGUMENTS`` that can be used to hold those options that available via::
+
+    $ ipython notebook -h
+
+For example::
+
+    NOTEBOOK_ARGUMENTS = [
+        '--ip=x.x.x.x',
+        '--port=xx',
+    ]
+
+Another one is ``IPYTHON_ARGUMENTS`` that for those options that available via::
+
+    $ ipython -h
+
 The Django settings module and database models are auto-loaded into the
 interactive shell's global namespace also for IPython Notebook.
 
