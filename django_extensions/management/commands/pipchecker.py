@@ -105,14 +105,14 @@ class Command(NoArgsCommand):
             if name in self.reqs.keys():
                 self.reqs[name]["dist"] = dist
 
-        pypi = ServerProxy("http://pypi.python.org/pypi")
+        pypi = ServerProxy("https://pypi.python.org/pypi")
         for name, req in list(self.reqs.items()):
             if req["url"]:
                 continue  # skipping github packages.
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].url_name)
+                available = pypi.package_releases(req["pip_req"].name)
                 try:
                     available_version = LooseVersion(available[0])
                 except IndexError:
