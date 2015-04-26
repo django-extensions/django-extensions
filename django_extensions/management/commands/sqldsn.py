@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
     ./manage.py sqldsn [--router=<routername>] [--style=pgpass]"""
 
-    requires_model_validation = False
+    requires_system_checks = False
     can_import_settings = True
 
     def handle(self, *args, **options):
