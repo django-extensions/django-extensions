@@ -72,10 +72,17 @@ class Command(NoArgsCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
-                    self.reqs[req.name] = {
-                        "pip_req": req,
-                        "url": req.url,
-                    }
+                    # url attribute changed to link in pip version 6.1.0 and above
+                    if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
+                        self.reqs[req.name] = {
+                            "pip_req": req,
+                            "url": req.link,
+                        }
+                    else:
+                        self.reqs[req.name] = {
+                            "pip_req": req,
+                            "url": req.url,
+                        }
 
         if options["github_api_token"]:
             self.github_api_token = options["github_api_token"]
