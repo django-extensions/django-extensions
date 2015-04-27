@@ -127,7 +127,6 @@ go towards the Django and Python foundations.
 We have setup a couple of ways you can donate towards Django Extensions using the buttons below:
 
  - Bountysource
- - Bitcoins at address: 13V3AaapCRz2i2HnJiFoqVECe1t5H26yCg
  - Gratipay (formerly Gittip)
  - Flattr
  - PayPal
@@ -136,9 +135,6 @@ We have setup a couple of ways you can donate towards Django Extensions using th
 .. image:: https://www.bountysource.com/badge/team?team_id=7470&style=bounties_posted
     :target: https://www.bountysource.com/teams/django-extensions/bounties?utm_source=django-extensions&utm_medium=shield&utm_campaign=bounties_posted
     :alt: BountySource
-
-.. image:: https://img.shields.io/bitcoin/donate.png
-    :target: bitcoin:13V3AaapCRz2i2HnJiFoqVECe1t5H26yCg?label=DjangoExtensions
 
 .. image:: https://img.shields.io/flattr/donate.png
     :target: https://flattr.com/submit/auto?user_id=Trbs&url=https%3A%2F%2Fgithub.com%2Fdjango-extensions%2Fdjango-extensions
