@@ -180,6 +180,7 @@ class Command(NoArgsCommand):
             req_url = req["url"]
             if not req_url:
                 continue
+            req_url = str(req_url)
             if req_url.startswith("git") and "github.com/" not in req_url:
                 continue
             if req_url.endswith(".tar.gz") or req_url.endswith(".tar.bz2") or req_url.endswith(".zip"):
