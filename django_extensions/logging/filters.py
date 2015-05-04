@@ -12,7 +12,7 @@ class RateLimiterFilter(logging.Filter):
         prefix = getattr(settings, 'RATE_LIMITER_FILTER_PREFIX', 'ratelimiterfilter')
 
         subject = record.getMessage()
-        cache_key = "ratelimiterfilter:%s" % md5(subject).hexdigest()
+        cache_key = "%s:%s" % (prefix, md5(subject).hexdigest())
 
         value = cache.get(cache_key)
         if value:
