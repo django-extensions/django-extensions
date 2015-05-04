@@ -103,6 +103,7 @@ class Command(BaseCommand):
         object_count = 0
         objects_per_fixture = []
         models = set()
+        objects_to_keep = {}
 
         humanize = lambda dirname: dirname and "'%s'" % dirname or 'absolute path'
 
@@ -160,7 +161,6 @@ class Command(BaseCommand):
                             if verbosity > 0:
                                 print("Installing %s fixture '%s' from %s." % (format, fixture_name, humanize(fixture_dir)))
                             try:
-                                objects_to_keep = {}
                                 objects = serializers.deserialize(format, fixture)
                                 for obj in objects:
                                     object_count += 1
@@ -173,9 +173,6 @@ class Command(BaseCommand):
 
                                     models.add(class_)
                                     obj.save()
-
-                                if options.get('remove'):
-                                    self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True
                             except (SystemExit, KeyboardInterrupt):
@@ -193,6 +190,9 @@ class Command(BaseCommand):
                     except:
                         if verbosity > 1:
                             print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
+
+        if options.get('remove'):
+            self.remove_objects_not_in(objects_to_keep, verbosity)
 
         # If any of the fixtures we loaded contain 0 objects, assume that an
         # error was encountered during fixture loading.
