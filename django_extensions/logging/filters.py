@@ -2,6 +2,7 @@ import time
 import logging
 from hashlib import md5
 
+
 class RateLimiterFilter(logging.Filter):
     def filter(self, record):
         from django.conf import settings
