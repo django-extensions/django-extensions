@@ -12,6 +12,7 @@ import os
 import sys
 from contextlib import contextmanager
 from functools import wraps
+from optparse import make_option
 
 import six
 from django.core.management.base import BaseCommand
@@ -49,6 +50,12 @@ class Command(BaseCommand):
 
     help = 'Makes the current database have the same data as the fixture(s), no more, no less.'
     args = "fixture [fixture ...]"
+
+    option_list = BaseCommand.option_list + (
+        make_option('--skip-remove', action='store_false',
+                    dest='remove', default=True,
+                    help='Avoid remove any object from db'),
+    )
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -167,7 +174,8 @@ class Command(BaseCommand):
                                     models.add(class_)
                                     obj.save()
 
-                                self.remove_objects_not_in(objects_to_keep, verbosity)
+                                if options.get('remove'):
+                                    self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True
                             except (SystemExit, KeyboardInterrupt):
