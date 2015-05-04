@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.5.3:
+
+Changes:
+ - New: ratelimiter, a simple ratelimiter filter for Python logging
+ - Fix: various improvements for Django 1.8
+ - Fix: sync_s3, use os.walk instead of os.path.walk (py3 fix)
+ - Improvement: pipchecker, use name instead of url_name to fix casing mismatches
+ - Improvement: pipchecker, use https
+ - Improvement: pipchecker, fix issues with new(er) pip versions
+ - Docs: fixed a few typos
+ - Docs: added documentation about NOTEBOOK_ARGUMENTS settings
+
+
 1.5.2
 -----
 
