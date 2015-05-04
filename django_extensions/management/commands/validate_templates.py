@@ -4,7 +4,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.template.base import add_to_builtins
-from django.template.loaders.filesystem import Loader
+from django.template.loader import get_template
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils import validatingtemplatetags
@@ -36,12 +36,17 @@ class Command(BaseCommand):
         template_dirs = set(settings.TEMPLATE_DIRS)
         template_dirs |= set(options.get('includes', []))
         template_dirs |= set(getattr(settings, 'VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS', []))
+
+        # Load in Templates from 1.8
+        if hasattr(settings, 'TEMPLATES'):
+            for template_engine in settings.TEMPLATES:
+                if 'DIRS' in template_engine:
+                    template_dirs |= set(template_engine['DIRS'])
+
         settings.TEMPLATE_DIRS = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
         verbosity = int(options.get('verbosity', 1))
         errors = 0
-
-        template_loader = Loader()
 
         # Replace built in template tags with our own validating versions
         if options.get('check_urls', False):
@@ -59,7 +64,7 @@ class Command(BaseCommand):
                         print(filepath)
                     validatingtemplatetags.before_new_template(options.get('force_new_urls', False))
                     try:
-                        template_loader.load_template(filename, [root])
+                        get_template(filename, [root])
                     except Exception as e:
                         errors += 1
                         print("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))
