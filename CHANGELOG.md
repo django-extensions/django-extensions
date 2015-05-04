@@ -1,7 +1,8 @@
 Changelog
 =========
 
-1.5.3:
+1.5.3
+-----
 
 Changes:
  - New: ratelimiter, a simple ratelimiter filter for Python logging
