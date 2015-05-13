@@ -24,7 +24,7 @@ class RateLimiterFilter(logging.Filter):
 
         if not cntr:
             cntr = 1
-            cache.set(cache_count_key, cntr, rate+60)
+            cache.set(cache_count_key, cntr, rate + 60)
 
         if value:
             cache.incr(cache_count_key)
