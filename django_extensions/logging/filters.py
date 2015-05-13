@@ -16,10 +16,20 @@ class RateLimiterFilter(logging.Filter):
 
         subject = record.getMessage()
         cache_key = "%s:%s" % (prefix, md5(subject).hexdigest())
+        cache_count_key = "%s:count" % cache_key
 
-        value = cache.get(cache_key)
+        result = cache.get_many([cache_key, cache_count_key])
+        value = result.get(cache_key)
+        cntr = result.get(cache_count_key)
+
+        if not cntr:
+            cntr = 1
+            cache.set(cache_count_key, cntr, rate+60)
+
         if value:
+            cache.incr(cache_count_key)
             return False
 
+        record.msg = "[%sx] %s" % (cntr, record.msg)
         cache.set(cache_key, time.time(), rate)
         return True
