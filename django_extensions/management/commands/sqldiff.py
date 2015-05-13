@@ -155,6 +155,9 @@ class SQLDiff(object):
         self.cursor = connection.cursor()
         self.django_tables = self.get_django_tables(options.get('only_existing', True))
         self.db_tables = self.introspection.get_table_list(self.cursor)
+        if django.VERSION[:2] >= (1, 8):
+            # TODO: We are losing information about tables which are views here
+            self.db_tables = [table_info.name for table_info in self.db_tables]
         self.differences = []
         self.unknown_db_fields = {}
         self.new_db_fields = set()
