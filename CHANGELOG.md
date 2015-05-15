@@ -1,7 +1,26 @@
 Changelog
 =========
 
-1.5.3:
+1.5.5
+-----
+
+Changes:
+ - Fix: sqldiff, previous Django 1.8 fix was slightly broken
+
+
+1.5.4
+-----
+
+Changes:
+ - Improvement: syncdata, add skip-remove option
+ - Improvement: logging, report how often mail was ratelimited
+ - Fix: admin, Django 1.8 compatibility module_name is now called model_name
+ - Fix: notes, Python 3.x fix force output of filter into list
+ - Fix: sqldiff, fix for Django 1.8
+
+
+1.5.3
+-----
 
 Changes:
  - New: ratelimiter, a simple ratelimiter filter for Python logging
@@ -25,6 +44,7 @@ Changes:
  - Fix: sqldiff, KeyError when index is missing in database
  - Fix: sqldiff, multi column indexes was also counted as a single colomn index
  - Improvements: JSONField, Added try/catch for importing json/simplejson for Django 1.7
+
 
 1.5.1
 -----
