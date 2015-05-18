@@ -48,7 +48,7 @@ class Command(LabelCommand):
             except ImportError:
                 pass
 
-        for app in [a.models_module for a in apps.get_app_configs()]:
+        for app in [a.models_module for a in apps.get_app_configs() if a.models_module is not None]:
             if verbosity > 1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print("Sending %s job signal for: %s" % (when, app_name))
