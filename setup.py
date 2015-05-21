@@ -129,7 +129,7 @@ additions for Django projects. See the project page for more information:
     cmdclass=cmdclasses,
     package_data=package_data,
     install_requires=['six>=1.2'],
-    tests_require=['Django', 'shortuuid', 'python-dateutil', 'pytest', 'tox'],
+    tests_require=['Django', 'shortuuid', 'python-dateutil', 'pytest', 'tox', 'mock'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',
