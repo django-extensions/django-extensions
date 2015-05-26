@@ -44,7 +44,11 @@ def extract_views_from_urlpatterns(urlpatterns, base='', namespace=None):
                 patterns = p.url_patterns
             except ImportError:
                 continue
-            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=(namespace or p.namespace)))
+            if namespace and p.namespace:
+                _namespace = '{0}:{1}'.format(namespace, p.namespace)
+            else:
+                _namespace = (p.namespace or namespace)
+            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
         elif hasattr(p, '_get_callback'):
             try:
                 views.append((p._get_callback(), base + p.regex.pattern, p.name))
