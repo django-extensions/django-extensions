@@ -91,12 +91,21 @@ def import_objects(options, style):
         from django.apps import apps
         from django import setup
     except ImportError:
-        pass
+        from django.db.models.loading import get_models, get_apps
+
+        def get_apps_and_models():
+            for app_mod in get_apps():
+                app_models = get_models(app_mod)
+                yield app_mod, app_models
     else:
         if not apps.ready:
             setup()
 
-    from django.db.models.loading import get_models, get_apps
+        def get_apps_and_models():
+            for app in apps.get_app_configs():
+                if app.models_module:
+                    yield app.models_module, app.get_models()
+
     mongoengine = False
     try:
         from mongoengine.base import _document_registry
@@ -135,8 +144,7 @@ def import_objects(options, style):
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(name)
 
-    for app_mod in get_apps():
-        app_models = get_models(app_mod)
+    for app_mod, app_models in get_apps_and_models():
         if not app_models:
             continue
 
@@ -156,6 +164,7 @@ def import_objects(options, style):
 
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports"))
+
     for app_mod, models in sorted(six.iteritems(load_models)):
         try:
             app_name = app_mod.split('.')[-2]
