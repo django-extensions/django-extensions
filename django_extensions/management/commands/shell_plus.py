@@ -223,11 +223,11 @@ class Command(NoArgsCommand):
 
         def get_ipython():
             try:
-                from IPython import embed
+                from IPython import start_ipython
 
                 def run_ipython():
                     imported_objects = import_objects(options, self.style)
-                    embed(user_ns=imported_objects)
+                    start_ipython(argv=[], user_ns=imported_objects)
                 return run_ipython
             except ImportError:
                 str_exc = traceback.format_exc()
