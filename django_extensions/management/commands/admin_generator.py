@@ -1,4 +1,19 @@
 # -*- coding: utf-8 -*-
+'''
+The Django Admin Generator is a project which can automatically generate
+(scaffold) a Django Admin for you. By doing this it will introspect your
+models and automatically generate an Admin with properties like:
+
+ - `list_display` for all local fields
+ - `list_filter` for foreign keys with few items
+ - `raw_id_fields` for foreign keys with a lot of items
+ - `search_fields` for name and `slug` fields
+ - `prepopulated_fields` for `slug` fields
+ - `date_hierarchy` for `created_at`, `updated_at` or `joined_at` fields
+
+The original source and latest version can be found here: 
+https://github.com/WoLpH/django-admin-generator/
+'''
 
 import optparse
 import re
