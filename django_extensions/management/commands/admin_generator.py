@@ -11,7 +11,7 @@ models and automatically generate an Admin with properties like:
  - `prepopulated_fields` for `slug` fields
  - `date_hierarchy` for `created_at`, `updated_at` or `joined_at` fields
 
-The original source and latest version can be found here: 
+The original source and latest version can be found here:
 https://github.com/WoLpH/django-admin-generator/
 '''
 
