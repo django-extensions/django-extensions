@@ -248,9 +248,13 @@ class Command(NoArgsCommand):
 
         def get_ptpython():
             try:
-                from prompt_toolkit.contrib.repl import embed
+                from ptpython.repl import embed
             except ImportError:
-                return traceback.format_exc()
+                tb = traceback.format_exc()
+                try:  # prompt_toolkit < v0.27
+                    from prompt_toolkit.contrib.repl import embed
+                except ImportError:
+                    return tb
 
             def run_ptpython():
                 imported_objects = import_objects(options, self.style)
@@ -261,9 +265,13 @@ class Command(NoArgsCommand):
 
         def get_ptipython():
             try:
-                from prompt_toolkit.contrib.ipython import embed
+                from ptpython.ipython import embed
             except ImportError:
-                return traceback.format_exc()
+                tb = traceback.format_exc()
+                try:  # prompt_toolkit < v0.27
+                    from prompt_toolkit.contrib.ipython import embed
+                except ImportError:
+                    return tb
 
             def run_ptipython():
                 imported_objects = import_objects(options, self.style)
