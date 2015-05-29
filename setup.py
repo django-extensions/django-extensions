@@ -131,7 +131,6 @@ additions for Django projects. See the project page for more information:
     install_requires=['six>=1.2'],
     tests_require=['Django', 'shortuuid', 'python-dateutil', 'pytest', 'tox', 'mock'],
     classifiers=[
-        'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
