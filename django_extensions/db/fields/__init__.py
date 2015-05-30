@@ -1,7 +1,6 @@
 """
 Django Extensions additional model fields
 """
-import random
 import re
 import six
 import string
@@ -20,8 +19,9 @@ except ImportError:
     HAS_SHORT_UUID = False
 
 from django.core.exceptions import ImproperlyConfigured
-from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
+from django.utils.crypto import get_random_string
+from django.template.defaultfilters import slugify
 
 try:
     from django.utils.timezone import now as datetime_now
@@ -37,7 +37,6 @@ except ImportError:
 
 
 MAX_UNIQUE_QUERY_ATTEMPTS = 100
-random_sample = random.SystemRandom().sample
 
 
 class UniqueFieldMixin(object):
@@ -264,7 +263,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     def random_char_generator(self, chars):
         for i in range(100):
-            yield ''.join(random_sample(chars, self.length))
+            yield ''.join(get_random_string(self.length, chars))
         raise RuntimeError('max random character attempts exceeded (%s)' %
             MAX_UNIQUE_QUERY_ATTEMPTS)
 
