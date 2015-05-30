@@ -214,7 +214,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 class RandomCharField(UniqueFieldMixin, CharField):
     """ RandomCharField
 
-    By default, sets editable=False, blank=True.
+    By default, sets editable=False, blank=True, db_index=False.
 
     Required arguments:
 
@@ -222,6 +222,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
         Specifies the length of the field
 
     Optional arguments:
+
+    db_index
+        If set to True, duplicate entries are not allowed (default: False)
 
     lowercase
         If set to True, lowercase the alpha characters (default: False)
@@ -253,9 +256,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
         self.include_punctuation = kwargs.pop('include_punctuation', False)
         self.check_is_bool('include_punctuation')
 
-        # Set db_index=True unless it's been set manually.
+        # Set db_index=False unless it's been set manually.
         if 'db_index' not in kwargs:
-            kwargs['db_index'] = True
+            kwargs['db_index'] = False
 
         super(RandomCharField, self).__init__(*args, **kwargs)
 
@@ -282,10 +285,14 @@ class RandomCharField(UniqueFieldMixin, CharField):
         if self.include_punctuation:
             population += string.punctuation
 
+        random_chars = self.random_char_generator(population)
+        if not self.db_index:
+            return random_chars
+
         return super(RandomCharField, self).find_unique(
             model_instance,
             model_instance._meta.get_field(self.attname),
-            self.random_char_generator(population),
+            random_chars,
         )
 
     def internal_type(self):

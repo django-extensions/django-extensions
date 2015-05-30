@@ -17,7 +17,7 @@ Current Database Model Field Extensions
   a length of 8 thats yields 3.4 million possible combinations. A 12
   character field would yield about 2 billion. Below are some examples::
 
-    >>> RandomCharField(length=8)
+    >>> RandomCharField(length=8, db_index=True)
     BVm9GEaE
 
     >>> RandomCharField(length=4, include_alpha=False)
