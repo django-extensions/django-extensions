@@ -227,7 +227,8 @@ class Command(NoArgsCommand):
 
                 def run_ipython():
                     imported_objects = import_objects(options, self.style)
-                    start_ipython(argv=[], user_ns=imported_objects)
+                    ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                    start_ipython(argv=ipython_arguments, user_ns=imported_objects)
                 return run_ipython
             except ImportError:
                 str_exc = traceback.format_exc()
