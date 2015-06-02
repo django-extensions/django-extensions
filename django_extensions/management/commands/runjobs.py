@@ -38,7 +38,7 @@ class Command(LabelCommand):
         """ Run jobs from the signals """
         # Thanks for Ian Holsman for the idea and code
         from django_extensions.management import signals
-        from django.db import models
+        from django.apps import apps
         from django.conf import settings
 
         verbosity = int(options.get('verbosity', 1))
@@ -48,7 +48,7 @@ class Command(LabelCommand):
             except ImportError:
                 pass
 
-        for app in models.get_apps():
+        for app in [a.models_module for a in apps.get_app_configs() if a.models_module is not None]:
             if verbosity > 1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print("Sending %s job signal for: %s" % (when, app_name))
