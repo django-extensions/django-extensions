@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover
     from django.contrib.auth.models import User
     User.USERNAME_FIELD = "username"
     User.get_username = lambda self: self.username
+
     def get_user_model():
         return User
 
@@ -47,3 +48,13 @@ def list_apps():
     except ImportError:
         # old way
         return settings.INSTALLED_APPS
+
+
+def get_apps():
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+        return [app.models_module for app in apps.get_app_configs() if app.models_module]
+    except ImportError:
+        from django.db import models
+        return models.get_apps()

@@ -26,6 +26,8 @@ try:
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
+from django_extensions.compat import get_apps
+
 
 __version__ = "1.0"
 __license__ = "Python"
@@ -78,7 +80,7 @@ def generate_dot(app_labels, **kwargs):
 
     apps = []
     if all_applications:
-        apps = models.get_apps()
+        apps = get_apps()
 
     for app_label in app_labels:
         app = models.get_app(app_label)
@@ -183,7 +185,7 @@ def generate_dot(app_labels, **kwargs):
                 model['fields'] = sorted(model['fields'], key=lambda field: (not field['primary_key'], not field['relation'], field['label']))
 
             # FIXME: actually many_to_many fields aren't saved in this model's db table, so why should we add an attribute-line for them in the resulting graph?
-            #if appmodel._meta.many_to_many:
+            # if appmodel._meta.many_to_many:
             #    for field in appmodel._meta.many_to_many:
             #        if skip_field(field):
             #            continue

@@ -24,6 +24,7 @@ from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models.loading import get_models
 
+from django_extensions.compat import get_apps
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
@@ -323,7 +324,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.style = color_style()
 
-        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in models.get_apps())
+        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
         if not args:
