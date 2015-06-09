@@ -26,7 +26,7 @@ Current Database Model Field Extensions
     >>> RandomCharField(length=12, include_punctuation=True)
     k[ZS.TR,0LHO
 
-    >>> RandomCharField(length=12, lower=True, include_digits=False)
+    >>> RandomCharField(length=12, lowercase=True, include_digits=False)
     pzolbemetmok
 
 * *CreationDateTimeField* - DateTimeField that will automatically set its date
