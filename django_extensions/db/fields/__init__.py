@@ -266,7 +266,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             MAX_UNIQUE_QUERY_ATTEMPTS)
 
     def pre_save(self, model_instance, add):
-        if not add:
+        if not add and getattr(model_instance, self.attname) != '':
             return getattr(model_instance, self.attname)
 
         population = ''
@@ -274,7 +274,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             if self.lowercase:
                 population += string.ascii_lowercase
             else:
-                population += string.ascii_letters
+                population += string.ascii_uppercase
 
         if self.include_digits:
             population += string.digits
