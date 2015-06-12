@@ -68,7 +68,7 @@ class RandomCharFieldTest(TestCase):
         assert m.random_char_field == 'aaa'
 
     def testRandomCharTestModelAsserts(self):
-        with mock.patch('django_extensions.db.fields.random_sample') as mock_sample:
+        with mock.patch('django_extensions.db.fields.get_random_string') as mock_sample:
             mock_sample.return_value = 'aaa'
             m = RandomCharTestModel()
             m.save()
