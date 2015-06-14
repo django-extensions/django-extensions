@@ -129,14 +129,14 @@ class ShortUUIDTestManyToManyModel(ShortUUIDTestModel_pk):
 
 
 class RandomCharTestModel(models.Model):
-    random_char_field = RandomCharField(length=8, db_index=True)
+    random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:
         app_label = 'django_extensions'
 
 
 class RandomCharTestModelAlphaDigits(models.Model):
-    random_char_field = RandomCharField(length=8, db_index=True)
+    random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:
         app_label = 'django_extensions'

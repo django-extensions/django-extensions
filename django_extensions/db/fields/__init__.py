@@ -213,7 +213,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 class RandomCharField(UniqueFieldMixin, CharField):
     """ RandomCharField
 
-    By default, sets editable=False, blank=True, db_index=False.
+    By default, sets editable=False, blank=True, unique=False.
 
     Required arguments:
 
@@ -222,7 +222,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     Optional arguments:
 
-    db_index
+    unqiue
         If set to True, duplicate entries are not allowed (default: False)
 
     lowercase
@@ -262,9 +262,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
         self.include_punctuation = kwargs.pop('include_punctuation', False)
         self.check_is_bool('include_punctuation')
 
-        # Set db_index=False unless it's been set manually.
-        if 'db_index' not in kwargs:
-            kwargs['db_index'] = False
+        # Set unique=False unless it's been set manually.
+        if 'unique' not in kwargs:
+            kwargs['unique'] = False
 
         super(RandomCharField, self).__init__(*args, **kwargs)
 
@@ -294,7 +294,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             population += string.punctuation
 
         random_chars = self.random_char_generator(population)
-        if not self.db_index:
+        if not self.unique:
             return random_chars
 
         return super(RandomCharField, self).find_unique(
@@ -318,6 +318,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             'include_aphla': repr(self.include_alpha),
             'include_punctuation': repr(self.include_punctuation),
             'length': repr(self.length),
+            'unique': repr(self.unique),
         })
         del kwargs['max_length']
         # That's our definition!
@@ -337,6 +338,8 @@ class RandomCharField(UniqueFieldMixin, CharField):
             kwargs['include_digits'] = self.include_digits
         if self.include_punctuation is True:
             kwargs['include_punctuation'] = self.include_punctuation
+        if self.unique is True:
+            kwargs['unique'] = self.unique
         return name, path, args, kwargs
 
 
