@@ -228,6 +228,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
     lowercase
         If set to True, lowercase the alpha characters (default: False)
 
+    uppercase
+        If set to True, uppercase the alpha characters (default: False)
+
     include_alpha
         If set to True, include alpha characters (default: True)
 
@@ -248,6 +251,10 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
         self.lowercase = kwargs.pop('lowercase', False)
         self.check_is_bool('lowercase')
+        self.uppercase = kwargs.pop('uppercase', False)
+        self.check_is_bool('uppercase')
+        if self.uppercase and self.lowercase:
+            raise ValueError("the 'lowercase' and 'uppercase' arguments are mutually exclusive")
         self.include_digits = kwargs.pop('include_digits', True)
         self.check_is_bool('include_digits')
         self.include_alpha = kwargs.pop('include_alpha', True)
@@ -262,7 +269,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         super(RandomCharField, self).__init__(*args, **kwargs)
 
     def random_char_generator(self, chars):
-        for i in range(100):
+        for i in range(MAX_UNIQUE_QUERY_ATTEMPTS):
             yield ''.join(get_random_string(self.length, chars))
         raise RuntimeError('max random character attempts exceeded (%s)' %
             MAX_UNIQUE_QUERY_ATTEMPTS)
@@ -275,8 +282,10 @@ class RandomCharField(UniqueFieldMixin, CharField):
         if self.include_alpha:
             if self.lowercase:
                 population += string.ascii_lowercase
-            else:
+            elif self.uppercase:
                 population += string.ascii_uppercase
+            else:
+                population += string.ascii_letters
 
         if self.include_digits:
             population += string.digits
@@ -310,20 +319,24 @@ class RandomCharField(UniqueFieldMixin, CharField):
             'include_punctuation': repr(self.include_punctuation),
             'length': repr(self.length),
         })
+        del kwargs['max_length']
         # That's our definition!
         return (field_class, args, kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super(RandomCharField, self).deconstruct()
         kwargs['length'] = self.length
-        if self.lowercase is not True:
-            kwargs['lowercase'] = False
-        if self.include_alpha is not True:
-            kwargs['include_alpha'] = False
-        if self.include_digits is not True:
-            kwargs['include_digits'] = False
-        if self.include_punctuation is not True:
-            kwargs['include_punctuation'] = False
+        del kwargs['max_length']
+        if self.lowercase is True:
+            kwargs['lowercase'] = self.lowercase
+        if self.uppercase is True:
+            kwargs['uppercase'] = self.uppercase
+        if self.include_alpha is False:
+            kwargs['include_alpha'] = self.include_alpha
+        if self.include_digits is False:
+            kwargs['include_digits'] = self.include_digits
+        if self.include_punctuation is True:
+            kwargs['include_punctuation'] = self.include_punctuation
         return name, path, args, kwargs
 
 

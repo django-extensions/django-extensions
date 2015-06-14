@@ -135,16 +135,38 @@ class RandomCharTestModel(models.Model):
         app_label = 'django_extensions'
 
 
-class RandomCharTestModelLowerAlphaDigits(models.Model):
-    random_char_field = RandomCharField(length=8, lowercase=True, include_alpha=True)
+class RandomCharTestModelAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, db_index=True)
 
     class Meta:
         app_label = 'django_extensions'
-        verbose_name = 'lower alpha digits'
 
 
-class RandomCharTestModelLower(models.Model):
+class RandomCharTestModelLowercaseAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, lowercase=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        verbose_name = 'lowercase alpha digits'
+
+
+class RandomCharTestModelUppercaseAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, uppercase=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        verbose_name = 'uppercase alpha digits'
+
+
+class RandomCharTestModelLowercase(models.Model):
     random_char_field = RandomCharField(length=8, lowercase=True, include_digits=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelUppercase(models.Model):
+    random_char_field = RandomCharField(length=8, uppercase=True, include_digits=False)
 
     class Meta:
         app_label = 'django_extensions'
