@@ -7,11 +7,13 @@ from django.test import TestCase
 
 from .testapp.models import (
     RandomCharTestModel,
-    RandomCharTestModelLower,
+    RandomCharTestModelLowercase,
+    RandomCharTestModelUppercase,
     RandomCharTestModelAlpha,
     RandomCharTestModelDigits,
     RandomCharTestModelPunctuation,
-    RandomCharTestModelLowerAlphaDigits,
+    RandomCharTestModelLowercaseAlphaDigits,
+    RandomCharTestModelUppercaseAlphaDigits,
 )
 
 if django.VERSION >= (1, 7):
@@ -28,11 +30,17 @@ class RandomCharFieldTest(TestCase):
         m.save()
         assert len(m.random_char_field) == 8, m.random_char_field
 
-    def testRandomCharFieldLower(self):
-        m = RandomCharTestModelLower()
+    def testRandomCharFieldLowercase(self):
+        m = RandomCharTestModelLowercase()
         m.save()
         for c in m.random_char_field:
             assert c.islower(), m.random_char_field
+
+    def testRandomCharFieldUppercase(self):
+        m = RandomCharTestModelUppercase()
+        m.save()
+        for c in m.random_char_field:
+            assert c.isupper(), m.random_char_field
 
     def testRandomCharFieldAlpha(self):
         m = RandomCharTestModelAlpha()
@@ -52,11 +60,17 @@ class RandomCharFieldTest(TestCase):
         for c in m.random_char_field:
             assert c in string.punctuation, m.random_char_field
 
-    def testRandomCharTestModelLowerAlphaDigits(self):
-        m = RandomCharTestModelLowerAlphaDigits()
+    def testRandomCharTestModelLowercaseAlphaDigits(self):
+        m = RandomCharTestModelLowercaseAlphaDigits()
         m.save()
         for c in m.random_char_field:
             assert c.isdigit() or (c.isalpha() and c.islower()), m.random_char_field
+
+    def testRandomCharTestModelUppercaseAlphaDigits(self):
+        m = RandomCharTestModelUppercaseAlphaDigits()
+        m.save()
+        for c in m.random_char_field:
+            assert c.isdigit() or (c.isalpha() and c.isupper()), m.random_char_field
 
     def testRandomCharTestModelDuplicate(self):
         m = RandomCharTestModel()
