@@ -222,7 +222,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     Optional arguments:
 
-    unqiue
+    unique
         If set to True, duplicate entries are not allowed (default: False)
 
     lowercase
