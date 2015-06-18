@@ -346,13 +346,13 @@ class RandomCharField(UniqueFieldMixin, CharField):
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
 
-    By default, sets editable=False, blank=True, default=datetime.now
+    By default, sets editable=False, blank=True, auto_now_add=True
     """
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('editable', False)
         kwargs.setdefault('blank', True)
-        kwargs.setdefault('default', datetime_now)
+        kwargs.setdefault('auto_now_add', True)
         DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
@@ -380,15 +380,14 @@ class CreationDateTimeField(DateTimeField):
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField
 
-    By default, sets editable=False, blank=True, default=datetime.now
+    By default, sets editable=False, blank=True, auto_now=True
 
-    Sets value to datetime.now() on each save of the model.
+    Sets value to now every time the object is saved.
     """
 
-    def pre_save(self, model, add):
-        value = datetime_now()
-        setattr(model, self.attname, value)
-        return value
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('auto_now', True)
+        DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
         return "DateTimeField"
