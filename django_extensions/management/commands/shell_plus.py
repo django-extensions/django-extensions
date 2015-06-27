@@ -35,6 +35,8 @@ class Command(NoArgsCommand):
                     help='Tells Django to use IPython Notebook.'),
         make_option('--kernel', action='store_true', dest='kernel',
                     help='Tells Django to start an IPython Kernel.'),
+        make_option('--connection_file', action='store', dest='connection_file',
+                    help='Specifies the connection file to use if using the --kernel option'),
         make_option('--use-pythonrc', action='store_true', dest='use_pythonrc',
                     help='Tells Django to execute PYTHONSTARTUP file (BE CAREFULL WITH THIS!)'),
         make_option('--print-sql', action='store_true', default=False,
@@ -108,7 +110,10 @@ class Command(NoArgsCommand):
 
             def run_kernel():
                 imported_objects = import_objects(options, self.style)
-                embed_kernel(local_ns=imported_objects)
+                if options.get('connection_file'):
+                    embed_kernel(local_ns=imported_objects, connection_file=options.get('connection_file'))
+                else:
+                    embed_kernel(local_ns=imported_objects)
             return run_kernel
 
         def get_notebook():
