@@ -74,7 +74,9 @@ class Command(BaseCommand):
         make_option("--decorator", "-d", action="append", dest="decorator", default=[],
                     help="Show the presence of given decorator on views"),
         make_option("--format", "-f", dest="format_style", default="dense",
-                    help="Style of the output. Choices: %s" % FMTR.keys())
+                    help="Style of the output. Choices: %s" % FMTR.keys()),
+        make_option("--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
+                    help="Set the settings URL conf variable to use")
     )
 
     help = "Displays all of the url matching routes for the project."
@@ -104,15 +106,20 @@ class Command(BaseCommand):
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
         fmtr = FMTR[format_style]
 
+        urlconf = options.get('urlconf')
+
         views = []
         for settings_mod in settings_modules:
+            if not hasattr(settings_mod, urlconf):
+                raise CommandError("Settings module {} does not have the attribute {}.".format(settings_mod, urlconf))
+
             try:
-                urlconf = __import__(settings_mod.ROOT_URLCONF, {}, {}, [''])
+                urlconf = __import__(getattr(settings_mod, urlconf), {}, {}, [''])
             except Exception as e:
                 if options.get('traceback', None):
                     import traceback
                     traceback.print_exc()
-                print(style.ERROR("Error occurred while trying to load %s: %s" % (settings_mod.ROOT_URLCONF, str(e))))
+                print(style.ERROR("Error occurred while trying to load %s: %s" % (getattr(settings_mod, urlconf), str(e))))
                 continue
 
             view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
