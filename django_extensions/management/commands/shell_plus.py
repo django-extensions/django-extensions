@@ -104,16 +104,16 @@ class Command(NoArgsCommand):
                 if release.version_info[0] < 2:
                     print(self.style.ERROR("--kernel requires at least IPython version 2.0"))
                     return
-                from IPython import embed_kernel
+                from IPython import start_kernel
             except ImportError:
                 return traceback.format_exc()
 
             def run_kernel():
                 imported_objects = import_objects(options, self.style)
                 if options.get('connection_file'):
-                    embed_kernel(local_ns=imported_objects, connection_file=options.get('connection_file'))
+                    start_kernel(argv=[], user_ns=imported_objects, connection_file=options.get('connection_file'))
                 else:
-                    embed_kernel(local_ns=imported_objects)
+                    start_kernel(argv=[], user_ns=imported_objects)
             return run_kernel
 
         def get_notebook():
