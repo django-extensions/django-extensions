@@ -67,7 +67,7 @@ and they will all be run sequentially.
 Passing arguments
 -----------------
 
-You can pass arguments from the command line to your script by passing a comma-separated
+You can pass arguments from the command line to your script by passing a space separated
 list of values with ``--script-args``. For example::
 
   $ python manage.py runscript delete_all_polls --script-args=staleonly
