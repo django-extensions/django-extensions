@@ -5,10 +5,7 @@ sudo: false
 env:
     - TOX_ENV=py27-flake8
     - TOX_ENV=py34-flake8
-    - TOX_ENV=py26-dj14
     - TOX_ENV=py27-dj14
-    - TOX_ENV=py26-dj15
-    - TOX_ENV=py26-dj16
     - TOX_ENV=py27-dj15
     - TOX_ENV=py27-dj16
     - TOX_ENV=py32-dj15
