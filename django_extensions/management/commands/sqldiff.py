@@ -31,6 +31,7 @@ from django.core.management.color import no_style
 from django.db import connection, transaction
 from django.db.models.fields import AutoField, IntegerField
 
+from django_extensions.compat import get_app_models
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -949,18 +950,12 @@ because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
-            app_models = models.get_models(include_auto_created=True)
+            app_models = get_app_models()
         else:
             if not app_labels:
                 raise CommandError('Enter at least one appname.')
-            try:
-                app_list = [models.get_app(app_label) for app_label in app_labels]
-            except (models.ImproperlyConfigured, ImportError) as e:
-                raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
 
-            app_models = []
-            for app in app_list:
-                app_models.extend(models.get_models(app, include_auto_created=True))
+            app_models = get_app_models(app_labels)
 
         # remove all models that are not managed by Django
         #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
