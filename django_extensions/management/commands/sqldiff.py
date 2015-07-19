@@ -933,7 +933,6 @@ to check/debug ur models compared to the real database tables and columns."""
 
     @signalcommand
     def handle(self, *app_labels, **options):
-        from django.db import models
         from django.conf import settings
 
         engine = None
