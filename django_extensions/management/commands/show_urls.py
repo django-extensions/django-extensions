@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
-from django.utils.translation import activate
+from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+from django.utils import translation
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -48,7 +48,13 @@ def extract_views_from_urlpatterns(urlpatterns, base='', namespace=None):
                 _namespace = '{0}:{1}'.format(namespace, p.namespace)
             else:
                 _namespace = (p.namespace or namespace)
-            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+            if isinstance(p, LocaleRegexURLResolver):
+                LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
+                for langauge in settings.LANGUAGES:
+                    with translation.override(langauge[0]):
+                        views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+            else:
+                views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
         elif hasattr(p, '_get_callback'):
             try:
                 views.append((p._get_callback(), base + p.regex.pattern, p.name))
@@ -95,7 +101,7 @@ class Command(BaseCommand):
 
         language = options.get('language', None)
         if language is not None:
-            activate(language)
+            translation.activate(language)
 
         decorator = options.get('decorator')
         if not decorator:
