@@ -50,7 +50,7 @@ def extract_views_from_urlpatterns(urlpatterns, base='', namespace=None):
                 _namespace = (p.namespace or namespace)
             if isinstance(p, LocaleRegexURLResolver):
                 LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
-                for langauge in settings.LANGUAGES:
+                for langauge in LANGUAGES:
                     with translation.override(langauge[0]):
                         views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
             else:
