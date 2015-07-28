@@ -132,7 +132,7 @@ class Command(NoArgsCommand):
                 manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
 
                 if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
-                    pythonpath = os.environ.get('PYTHONPATH') or ks.env.get('PYTHONPATH') or ''
+                    pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
                     pythonpath = pythonpath.split(':')
                     if manage_py_dir not in pythonpath:
                         pythonpath.append(manage_py_dir)
