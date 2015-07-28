@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import traceback
+from collections import OrderedDict
 from optparse import make_option
 
 import six
@@ -129,18 +130,22 @@ class Command(NoArgsCommand):
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
 
-                manage_py_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+                manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
 
-                if os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
-                    pythonpath = ks.env.get("PYTHONPATH", "").split(":")
-                    pythonpath.append(manage_py_dir)
-                    ks.env["PYTHONPATH"] = ":".join(pythonpath)
+                if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
+                    pythonpath = os.environ.get('PYTHONPATH') or ks.env.get('PYTHONPATH') or ''
+                    pythonpath = pythonpath.split(':')
+                    if manage_py_dir not in pythonpath:
+                        pythonpath.append(manage_py_dir)
+
+                    ks.env['PYTHONPATH'] = ':'.join(filter(None, pythonpath))
 
                 kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
                 if not os.path.exists(kernel_dir):
                     os.makedirs(kernel_dir)
                 with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
                     f.write(ks.to_json())
+
 
             def run_notebook():
                 app = NotebookApp.instance()
