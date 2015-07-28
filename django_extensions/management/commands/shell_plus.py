@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import traceback
-from collections import OrderedDict
 from optparse import make_option
 
 import six
@@ -145,7 +144,6 @@ class Command(NoArgsCommand):
                     os.makedirs(kernel_dir)
                 with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
                     f.write(ks.to_json())
-
 
             def run_notebook():
                 app = NotebookApp.instance()
