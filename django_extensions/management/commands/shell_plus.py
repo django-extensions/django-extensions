@@ -113,9 +113,12 @@ class Command(NoArgsCommand):
 
         def get_notebook():
             from django.conf import settings
+            from IPython import release
             try:
                 from IPython.html.notebookapp import NotebookApp
-            except ImportError:
+            except ImportError as exc:
+                if release.version_info[0] >= 3:
+                    raise
                 try:
                     from IPython.frontend.html.notebook import notebookapp
                     NotebookApp = notebookapp.NotebookApp
@@ -158,7 +161,6 @@ class Command(NoArgsCommand):
                     notebook_arguments.extend(['--notebook-dir', '.'])
 
                 # IPython < 3 passes through kernel args from notebook CLI
-                from IPython import release
                 if release.version_info[0] < 3:
                     notebook_arguments.extend(ipython_arguments)
 
