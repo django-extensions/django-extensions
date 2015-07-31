@@ -69,7 +69,7 @@ class Command(BaseCommand):
         make_option('--ipdb', action='store_true', dest='ipdb', default=False,
                     help='Drop into ipdb shell at the start of any view.'),
         make_option('--pm', action='store_true', dest='pm', default=False,
-                    help='Drop into ipdb shell if an exception is raised in a view.'),
+                    help='Drop into (i)pdb shell if an exception is raised in a view.'),
     )
     if USE_STATICFILES:
         option_list += (
