@@ -116,7 +116,7 @@ class Command(NoArgsCommand):
             from IPython import release
             try:
                 from IPython.html.notebookapp import NotebookApp
-            except ImportError as exc:
+            except ImportError:
                 if release.version_info[0] >= 3:
                     raise
                 try:
