@@ -156,17 +156,19 @@ class Command(BaseCommand):
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
+        pdb_option = options.get('pdb', False)
+        ipdb_option = options.get('ipdb', False)
+        pm = options.get('pm', False)
         try:
             from django_pdb.middleware import PdbMiddleware
-
-            pdb_option = options.get('pdb', False)
-            ipdb_option = options.get('ipdb', False)
-            pm = options.get('pm', False)
-
+        except ImportError:
+            if pdb_option or ipdb_option or pm:
+                raise CommandError("django-pdb is required for --pdb, --ipdb and --pm options. Please visit https://pypi.python.org/pypi/django-pdb or install via pip. (pip install django-pdb)")
+            pm = False
+        else:
             # Add pdb middleware if --pdb is specified or if in DEBUG mode
             middleware = 'django_pdb.middleware.PdbMiddleware'
-            if ((pdb_option or settings.DEBUG) and
-                    middleware not in settings.MIDDLEWARE_CLASSES):
+            if ((pdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES):
                 settings.MIDDLEWARE_CLASSES += (middleware,)
 
             # If --pdb is specified then always break at the start of views.
@@ -187,13 +189,9 @@ class Command(BaseCommand):
                                                                    exc_value)
                 p.post_mortem(tb)
 
-        except ImportError:
-            pm = False
-
         # usurp django's handler
         from django.views import debug
-        debug.technical_500_response = \
-            postmortem if pm else null_technical_500_response
+        debug.technical_500_response = postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options.get('use_ipv6')
         if self.use_ipv6 and not socket.has_ipv6:
