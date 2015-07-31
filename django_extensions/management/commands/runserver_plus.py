@@ -167,7 +167,7 @@ class Command(BaseCommand):
         else:
             # Add pdb middleware if --pdb is specified or if in DEBUG mode
             middleware = 'django_pdb.middleware.PdbMiddleware'
-            if ((pdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES):
+            if ((pdb_option or ipdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES):
                 settings.MIDDLEWARE_CLASSES += (middleware,)
 
             # If --pdb is specified then always break at the start of views.
