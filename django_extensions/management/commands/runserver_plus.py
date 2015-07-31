@@ -65,12 +65,11 @@ class Command(BaseCommand):
         make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
                     help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
         make_option('--pdb', action='store_true', dest='pdb', default=False,
-                    help='Drop into pdb shell on at the start of any view.'),
+                    help='Drop into pdb shell at the start of any view.'),
         make_option('--ipdb', action='store_true', dest='ipdb', default=False,
-                    help='Drop into ipdb shell on at the start of any view.'),
-        make_option(
-            '--pm', action='store_true', dest='pm', default=False,
-            help='Drop into ipdb shell if an exception is raised in a view.'),
+                    help='Drop into ipdb shell at the start of any view.'),
+        make_option('--pm', action='store_true', dest='pm', default=False,
+                    help='Drop into ipdb shell if an exception is raised in a view.'),
     )
     if USE_STATICFILES:
         option_list += (
