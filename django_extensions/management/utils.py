@@ -72,3 +72,12 @@ def signalcommand(func):
         post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
         return ret
     return inner
+
+
+def has_ipdb():
+    try:
+        import ipdb  # noqa
+        import IPython  # noqa
+        return True
+    except ImportError:
+        return False
