@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.technical_response import \
     null_technical_500_response
 from django_extensions.management.utils import (
-    RedirectHandler, setup_logger, signalcommand,
+    RedirectHandler, setup_logger, signalcommand, has_ipdb
 )
 
 try:
@@ -64,6 +64,13 @@ class Command(BaseCommand):
                     help='auto-reload whenever the given file changes too (can be specified multiple times)'),
         make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
                     help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
+        make_option('--pdb', action='store_true', dest='pdb', default=False,
+                    help='Drop into pdb shell on at the start of any view.'),
+        make_option('--ipdb', action='store_true', dest='ipdb', default=False,
+                    help='Drop into ipdb shell on at the start of any view.'),
+        make_option(
+            '--pm', action='store_true', dest='pm', default=False,
+            help='Drop into ipdb shell if an exception is raised in a view.'),
     )
     if USE_STATICFILES:
         option_list += (
@@ -149,9 +156,44 @@ class Command(BaseCommand):
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
+        try:
+            from django_pdb.middleware import PdbMiddleware
+
+            pdb_option = options.get('pdb', False)
+            ipdb_option = options.get('ipdb', False)
+            pm = options.get('pm', False)
+
+            # Add pdb middleware if --pdb is specified or if in DEBUG mode
+            middleware = 'django_pdb.middleware.PdbMiddleware'
+            if ((pdb_option or settings.DEBUG) and
+                    middleware not in settings.MIDDLEWARE_CLASSES):
+                settings.MIDDLEWARE_CLASSES += (middleware,)
+
+            # If --pdb is specified then always break at the start of views.
+            # Otherwise break only if a 'pdb' query parameter is set in the url
+            if pdb_option:
+                PdbMiddleware.always_break = 'pdb'
+            elif ipdb_option:
+                PdbMiddleware.always_break = 'ipdb'
+
+            def postmortem(request, exc_type, exc_value, tb):
+                if has_ipdb():
+                    import ipdb
+                    p = ipdb
+                else:
+                    import pdb
+                    p = pdb
+                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
+                                                                   exc_value)
+                p.post_mortem(tb)
+
+        except ImportError:
+            pm = False
+
         # usurp django's handler
         from django.views import debug
-        debug.technical_500_response = null_technical_500_response
+        debug.technical_500_response = \
+            postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options.get('use_ipv6')
         if self.use_ipv6 and not socket.has_ipv6:
