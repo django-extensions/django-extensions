@@ -142,3 +142,10 @@ the automatic imports:
     import module.submodule4
 
 These symbols will be available as soon as the shell starts.
+
+
+Database application signature
+------------------------------
+
+If using PostgreSQL the ``application_name`` is set by default to
+``django_shell`` to help  identify queries made under shell_plus.
