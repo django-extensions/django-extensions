@@ -112,7 +112,6 @@ class Command(NoArgsCommand):
             return run_kernel
 
         def get_notebook():
-            from django.conf import settings
             from IPython import release
             try:
                 from IPython.html.notebookapp import NotebookApp
