@@ -112,7 +112,6 @@ class Command(NoArgsCommand):
             return run_kernel
 
         def get_notebook():
-            from django.conf import settings
             from IPython import release
             try:
                 from IPython.html.notebookapp import NotebookApp
@@ -286,6 +285,37 @@ class Command(NoArgsCommand):
                       vi_mode=options.get('vi_mode', False))
             return run_ptipython
 
+        def set_application_name():
+            """Set the application_name on PostgreSQL connection
+
+            Use the fallback_application_name to let the user override
+            it with PGAPPNAME env variable
+
+            http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
+            """
+            supported_backends = ['django.db.backends.postgresql_psycopg2']
+            opt_name = 'fallback_application_name'
+            default_app_name = 'django_shell'
+
+            dbs = getattr(settings, 'DATABASES', [])
+
+            # lookup over all the databases entry
+            for db in dbs.keys():
+                if dbs[db]['ENGINE'] in supported_backends:
+                    try:
+                        options = dbs[db]['OPTIONS']
+                    except KeyError:
+                        options = {}
+
+                    # dot not override a defined value
+                    if opt_name in options.keys():
+                        app_name = dbs[db]['OPTIONS'][opt_name]
+                    else:
+                        dbs[db]['OPTIONS'].update({opt_name: default_app_name})
+                        app_name = default_app_name
+
+            return app_name
+
         shells = (
             ('ptipython', get_ptipython),
             ('ptpython', get_ptpython),
@@ -297,6 +327,7 @@ class Command(NoArgsCommand):
 
         shell = None
         shell_name = "any"
+        set_application_name()
         if use_kernel:
             shell = get_kernel()
             shell_name = "IPython Kernel"
