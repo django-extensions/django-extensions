@@ -238,7 +238,7 @@ class Command(BaseCommand):
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
-            print("Validating models...")
+            print("Performing system checks...\n")
             self.validate(display_num_errors=True)
             try:
                 self.check_migrations()
