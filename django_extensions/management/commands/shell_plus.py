@@ -253,11 +253,11 @@ class Command(NoArgsCommand):
 
         def get_ptpython():
             try:
-                from ptpython.repl import embed
+                from ptpython.repl import embed, run_config
             except ImportError:
                 tb = traceback.format_exc()
                 try:  # prompt_toolkit < v0.27
-                    from prompt_toolkit.contrib.repl import embed
+                    from prompt_toolkit.contrib.repl import embed, run_config
                 except ImportError:
                     return tb
 
@@ -265,16 +265,16 @@ class Command(NoArgsCommand):
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(globals=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptpython
 
         def get_ptipython():
             try:
-                from ptpython.ipython import embed
+                from ptpython.ipython import embed, run_config
             except ImportError:
                 tb = traceback.format_exc()
                 try:  # prompt_toolkit < v0.27
-                    from prompt_toolkit.contrib.ipython import embed
+                    from prompt_toolkit.contrib.ipython import embed, run_config
                 except ImportError:
                     return tb
 
@@ -282,7 +282,7 @@ class Command(NoArgsCommand):
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(user_ns=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptipython
 
         def set_application_name():
