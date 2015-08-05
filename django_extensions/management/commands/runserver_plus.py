@@ -9,7 +9,6 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
-from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
 
 from django_extensions.management.technical_response import \
@@ -29,6 +28,12 @@ try:
         USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
+
+try:
+    from django.db.migrations.executor import MigrationExecutor
+    HAS_MIGRATIONS = True
+except ImportError:
+    HAS_MIGRATIONS = False
 
 
 naiveip_re = re.compile(r"""^(?:
@@ -240,10 +245,11 @@ class Command(BaseCommand):
         def inner_run():
             print("Performing system checks...\n")
             self.validate(display_num_errors=True)
-            try:
-                self.check_migrations()
-            except ImproperlyConfigured:
-                pass
+            if HAS_MIGRATIONS:
+                try:
+                    self.check_migrations()
+                except ImproperlyConfigured:
+                    pass
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
             print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
