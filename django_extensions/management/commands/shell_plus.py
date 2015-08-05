@@ -270,11 +270,13 @@ class Command(NoArgsCommand):
 
         def get_ptipython():
             try:
-                from ptpython.ipython import embed, run_config
+                from ptpython.repl import run_config
+                from ptpython.ipython import embed
             except ImportError:
                 tb = traceback.format_exc()
                 try:  # prompt_toolkit < v0.27
-                    from prompt_toolkit.contrib.ipython import embed, run_config
+                    from prompt_toolkit.contrib.repl import run_config
+                    from prompt_toolkit.contrib.ipython import embed
                 except ImportError:
                     return tb
 
