@@ -8,6 +8,9 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connections, DEFAULT_DB_ALIAS
+from django.db.migrations.executor import MigrationExecutor
+from django.core.exceptions import ImproperlyConfigured
 
 from django_extensions.management.technical_response import \
     null_technical_500_response
@@ -235,8 +238,12 @@ class Command(BaseCommand):
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
-            print("Validating models...")
+            print("Performing system checks...\n")
             self.validate(display_num_errors=True)
+            try:
+                self.check_migrations()
+            except ImproperlyConfigured:
+                pass
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
             print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
@@ -317,6 +324,17 @@ class Command(BaseCommand):
                 ssl_context=ssl_context,
             )
         inner_run()
+
+    def check_migrations(self):
+        """
+        Checks to see if the set of migrations on disk matches the
+        migrations in the database. Prints a warning if they don't match.
+        """
+        executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+        if plan:
+            self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
+            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
 
 def set_werkzeug_log_color():
