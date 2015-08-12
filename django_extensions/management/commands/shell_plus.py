@@ -127,7 +127,12 @@ class Command(NoArgsCommand):
             def install_kernel_spec(app, display_name, ipython_arguments):
                 """install an IPython >= 3.0 kernelspec that loads django extensions"""
                 ksm = app.kernel_spec_manager
-                ks = ksm.get_kernel_spec('python')
+                try:
+                    # IPython < 4
+                    ks = ksm.get_kernel_spec('python')
+                except KeyError:
+                    # IPython >= 4
+                    ks = ksm.get_kernel_spec('python2')
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
 
