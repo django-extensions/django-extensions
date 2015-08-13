@@ -113,6 +113,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
 
+                additional_filter = self.get_related_filter(model, request)
+                if additional_filter:
+                    queryset = queryset.filter(additional_filter)
+
                 if self.autocomplete_limit:
                     queryset = queryset[:self.autocomplete_limit]
 
@@ -126,6 +130,12 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     data = to_string_function(obj)
             return HttpResponse(data)
         return HttpResponseNotFound()
+
+    def get_related_filter(self, model, request):
+        """Given a model class and current request return an optional Q object
+        that should be applied as an additional filter for autocomplete query.
+        If no additional filtering is needed, this method should return
+        None."""
 
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)
