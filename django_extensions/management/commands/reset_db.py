@@ -4,6 +4,7 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 import logging
 from optparse import make_option
 
+import django
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import configparser, input
@@ -125,9 +126,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection.query(create_query)
 
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-            if engine == 'postgresql':
+            if engine == 'postgresql' and django.VERSION < (1, 9):
                 import psycopg as Database  # NOQA
-            elif engine in ('postgresql_psycopg2', 'postgis'):
+            elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
             conn_string = "dbname=template1"
