@@ -11,11 +11,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 
-from django_extensions.management.technical_response import \
-    null_technical_500_response
-from django_extensions.management.utils import (
-    RedirectHandler, setup_logger, signalcommand, has_ipdb
-)
+from django_extensions.management.technical_response import null_technical_500_response
+from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
 try:
     if 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
@@ -34,8 +31,6 @@ try:
     HAS_MIGRATIONS = True
 except ImportError:
     HAS_MIGRATIONS = False
-
-HAS_VALIDATE = hasattr(BaseCommand, 'validate')
 
 
 naiveip_re = re.compile(r"""^(?:
@@ -246,10 +241,10 @@ class Command(BaseCommand):
 
         def inner_run():
             print("Performing system checks...\n")
-            if HAS_VALIDATE:
-                self.validate(display_num_errors=True)
-            else:
+            if hasattr(self, 'check'):
                 self.check(display_num_errors=True)
+            else:
+                self.validate(display_num_errors=True)
             if HAS_MIGRATIONS:
                 try:
                     self.check_migrations()
