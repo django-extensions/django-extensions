@@ -35,6 +35,8 @@ try:
 except ImportError:
     HAS_MIGRATIONS = False
 
+HAS_VALIDATE = hasattr(BaseCommand, 'validate')
+
 
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
@@ -244,7 +246,10 @@ class Command(BaseCommand):
 
         def inner_run():
             print("Performing system checks...\n")
-            self.validate(display_num_errors=True)
+            if HAS_VALIDATE:
+                self.validate(display_num_errors=True)
+            else:
+                self.check(display_num_errors=True)
             if HAS_MIGRATIONS:
                 try:
                     self.check_migrations()
