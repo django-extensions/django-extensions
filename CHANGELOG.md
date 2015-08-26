@@ -1,6 +1,37 @@
 Changelog
 =========
 
+1.5.6
+-----
+
+Changes:
+ - New: RandomCharField, prepopulates random character string
+ - New: (Not)NullFieldListFilter, filters for admin
+ - New: runserver_plus, integrate with django-pdb
+ - New: runserver_plus, add check_migrations from Django
+ - Improvement: show_urls, nested namespace support
+ - Improvement: show_urls, allow to specify alternative urlconf
+ - Improvement: show_urls, support i18n_patterns
+ - Improvement: show_urls, use --language to filter on a particular language
+ - Improvement: admin_generator, added docstrings to module
+ - Improvement: shell_plus, allow cli arguments to be passed to ipython
+ - Improvement: shell_plus, fixed PYTHONPATH bug when using django-admin shell_plus --notebook
+ - Improvement: shell_plus, set application_name on PostgreSQL databases
+ - Improvement: shell_plus, load user pypython config file
+ - Improvement: CreationDateTimeField, use auto_now_add instead of default ModificationDateTimeField
+ - Improvement: ModificationDateTimeField, use auto_now instead of pre_save method
+ - Improvement: ForeignKeyAutocompleteAdmin, added ability to filter autocomplete query
+ - Fix: shell_plus, support for pypython>=0.27
+ - Fix: shell_plus, load apps and models directly through the apps interface when available
+ - Fix: shell_plus, use ipython start_ipython instead of embed
+ - Fix: shell_plus, fix swalling ImportErrors with IPython 3 and higher
+ - Fix: dumpscript, fix missing imports in dumped script
+ - Fix: admin_generator, fix issues with Django 1.9
+ - Fix: template tags, move exception for import failure to inside of the template tags
+ - Fix: reset_db, fix for Django 1.9
+ - Fix: runserver_plus, fix for Django 1.9
+
+
 1.5.5
 -----
 
