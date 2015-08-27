@@ -329,7 +329,7 @@ class Command(NoArgsCommand):
                     if opt_name in options.keys():
                         app_name = dbs[db]['OPTIONS'][opt_name]
                     else:
-                        dbs[db]['OPTIONS'].update({opt_name: default_app_name})
+                        dbs[db].setdefault('OPTIONS', {}).update({opt_name: default_app_name})
                         app_name = default_app_name
 
             return app_name
