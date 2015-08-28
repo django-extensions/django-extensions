@@ -93,6 +93,9 @@ Current Command Extensions
 * :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
   in settings.py.
 
+* :doc:`sqldsn` - Reads the Django settings and extracts the parameters needed
+  to connect to databases using other programs.
+
 * `sync_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser

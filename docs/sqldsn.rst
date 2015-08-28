@@ -10,7 +10,7 @@ Supported Databases
 
 Currently the following databases are supported:
 
-* PostgreSQL
+* PostgreSQL (psycopg2 or postgis)
 * Sqlite3
 * MySQL
 
