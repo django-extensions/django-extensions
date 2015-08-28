@@ -2,9 +2,6 @@ import logging
 import os
 import sys
 
-from django.conf import settings
-
-from django_extensions.compat import importlib
 from django_extensions.management.signals import post_command, pre_command
 
 
