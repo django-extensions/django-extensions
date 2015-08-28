@@ -116,15 +116,18 @@ class Command(NoArgsCommand):
         def get_notebook():
             from IPython import release
             try:
-                from IPython.html.notebookapp import NotebookApp
+                from notebook.notebookapp import NotebookApp
             except ImportError:
-                if release.version_info[0] >= 3:
-                    raise
                 try:
-                    from IPython.frontend.html.notebook import notebookapp
-                    NotebookApp = notebookapp.NotebookApp
+                    from IPython.html.notebookapp import NotebookApp
                 except ImportError:
-                    return traceback.format_exc()
+                    if release.version_info[0] >= 3:
+                        raise
+                    try:
+                        from IPython.frontend.html.notebook import notebookapp
+                        NotebookApp = notebookapp.NotebookApp
+                    except ImportError:
+                        return traceback.format_exc()
 
             def install_kernel_spec(app, display_name, ipython_arguments):
                 """install an IPython >= 3.0 kernelspec that loads django extensions"""
