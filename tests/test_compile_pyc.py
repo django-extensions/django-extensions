@@ -5,11 +5,10 @@ import six
 from django.core.management import call_command
 from django.test import TestCase
 
-from django_extensions.management.utils import get_project_root
-
 
 class CompilePycTests(TestCase):
     def setUp(self):
+        self.project_root = os.path.join('tests', 'testapp')
         self._settings = os.environ.get('DJANGO_SETTINGS_MODULE')
         os.environ['DJANGO_SETTINGS_MODULE'] = 'django_extensions.settings'
 
@@ -25,29 +24,27 @@ class CompilePycTests(TestCase):
         return pyc_glob
 
     def test_compiles_pyc_files(self):
-        with self.settings(BASE_DIR=get_project_root()):
+        with self.settings(BASE_DIR=self.project_root):
             call_command('clean_pyc')
-        pyc_glob = self._find_pyc(get_project_root())
+        pyc_glob = self._find_pyc(self.project_root)
         self.assertEqual(len(pyc_glob), 0)
-        with self.settings(BASE_DIR=get_project_root()):
+        with self.settings(BASE_DIR=self.project_root):
             call_command('compile_pyc')
-        pyc_glob = self._find_pyc(get_project_root())
+        pyc_glob = self._find_pyc(self.project_root)
         self.assertTrue(len(pyc_glob) > 0)
-        with self.settings(BASE_DIR=get_project_root()):
+        with self.settings(BASE_DIR=self.project_root):
             call_command('clean_pyc')
 
     def test_takes_path(self):
         out = six.StringIO()
-        project_root = os.path.join(get_project_root(), 'tests', 'testapp')
-        with self.settings(BASE_DIR=get_project_root()):
-            call_command('clean_pyc', path=project_root)
-        pyc_glob = self._find_pyc(project_root)
+        with self.settings(BASE_DIR=""):
+            call_command('clean_pyc', path=self.project_root)
+        pyc_glob = self._find_pyc(self.project_root)
         self.assertEqual(len(pyc_glob), 0)
-        with self.settings(BASE_DIR=get_project_root()):
-            call_command('compile_pyc', verbosity=2, path=project_root, stdout=out)
-        expected = ['Compiling %s...' % fn for fn in
-                    sorted(self._find_pyc(project_root, mask='*.py'))]
+        with self.settings(BASE_DIR=""):
+            call_command('compile_pyc', verbosity=2, path=self.project_root, stdout=out)
+        expected = ['Compiling %s...' % fn for fn in sorted(self._find_pyc(self.project_root, mask='*.py'))]
         output = out.getvalue().splitlines()
         self.assertEqual(expected, sorted(output))
-        with self.settings(BASE_DIR=get_project_root()):
-            call_command('clean_pyc')
+        with self.settings(BASE_DIR=""):
+            call_command('clean_pyc', path=self.project_root)

@@ -8,17 +8,6 @@ from django_extensions.compat import importlib
 from django_extensions.management.signals import post_command, pre_command
 
 
-def get_project_root():
-    """ get the project root directory """
-    django_settings_module = os.environ.get('DJANGO_SETTINGS_MODULE')
-    if not django_settings_module:
-        module_str = settings.SETTINGS_MODULE
-    else:
-        module_str = django_settings_module.split(".")[0]
-    mod = importlib.import_module(module_str)
-    return os.path.dirname(os.path.abspath(mod.__file__))
-
-
 def _make_writeable(filename):
     """
     Make sure that the file is writeable. Useful if our source is
