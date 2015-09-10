@@ -48,9 +48,11 @@ __contributors__ = [
 def parse_file_or_list(arg):
     if not arg:
         return []
+    if isinstance(arg, (list, tuple, set)):
+        return arg
     if ',' not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
-    return arg.split(',')
+    return [e.strip() for e in arg.split(',')]
 
 
 def generate_dot(app_labels, **kwargs):
