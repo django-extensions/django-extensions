@@ -1,4 +1,6 @@
 import logging
+import glob
+import itertools
 import os
 import re
 import socket
@@ -236,7 +238,11 @@ class Command(BaseCommand):
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
         bind_url = "http://%s:%s/" % (
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
-        extra_files = options.get('extra_files', None) or []
+        # glob `--extra-file` input
+        extra_files = list(set(
+            itertools. chain.from_iterable(glob.glob(nested_file)
+            for nested_file in options.get('extra_files', None) or [])
+        ))
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
