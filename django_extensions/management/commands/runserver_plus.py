@@ -240,7 +240,7 @@ class Command(BaseCommand):
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
         # glob `--extra-file` input
         extra_files = list(set(
-            itertools. chain.from_iterable(glob.glob(nested_file)
+            itertools.chain.from_iterable(glob.glob(nested_file)
             for nested_file in options.get('extra_files', None) or [])
         ))
         reloader_interval = options.get('reloader_interval', 1)
