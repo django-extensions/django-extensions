@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.5.7
+-----
+
+Changes:
+ - Fix: CreationDateTimeField, migration error
+ - Fix: ModificationDateTimeField, migration error
+ - Fix: shell_plus, options is not always in db config dictionary
+ - Fix: admin filters, contrib.admin.util fallback code
+ - Fix: graph_models, currectly support parsing lists for cli options
+ - Improvement: sqldsn, support postfix
+ - Improvement: utils, remove get_project_root function
+
+
 1.5.6
 -----
 
