@@ -65,7 +65,7 @@ def get_decoded_string(s):
     else:
         if isinstance(s, str):
             return s
-        else: # bytes
+        else:
             return s.decode("utf-8")
 
 
