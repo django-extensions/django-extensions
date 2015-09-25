@@ -60,7 +60,7 @@ def get_decoded_string(s):
     if sys.version < '3':
         if isinstance(s, str):
             return s.decode("utf-8")
-        elif isinstance(s, unicode):
+        else:
             return s
     else:
         if isinstance(s, str):
