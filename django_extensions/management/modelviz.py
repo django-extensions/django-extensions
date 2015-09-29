@@ -9,7 +9,8 @@ Based on:
 
 import datetime
 import os
-import sys
+
+from django.utils import encoding
 
 import six
 from django.db import models
@@ -54,19 +55,6 @@ def parse_file_or_list(arg):
     if ',' not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
     return [e.strip() for e in arg.split(',')]
-
-
-def get_decoded_string(s):
-    if sys.version < '3':
-        if isinstance(s, str):
-            return s.decode("utf-8")
-        else:
-            return s
-    else:
-        if isinstance(s, str):
-            return s
-        else:
-            return s.decode("utf-8")
 
 
 def generate_dot(app_labels, **kwargs):
@@ -152,14 +140,14 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
-                model['label'] = get_decoded_string(appmodel._meta.verbose_name)
+                model['label'] = encoding.force_bytes(appmodel._meta.verbose_name)
             else:
                 model['label'] = model['name']
 
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
-                    label = get_decoded_string(field.verbose_name)
+                    label = encoding.force_bytes(field.verbose_name)
 
                     if label.islower():
                         label = label.capitalize()
