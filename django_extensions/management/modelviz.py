@@ -198,7 +198,7 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name.decode("utf8")
+                    label = force_bytes(field.verbose_name)
                     if label.islower():
                         label = label.capitalize()
                 else:
