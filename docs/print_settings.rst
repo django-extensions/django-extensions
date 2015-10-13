@@ -26,6 +26,7 @@ The simplest way to run it is with no arguments::
 
 Some variations::
 
+    $ python manage.py print_settings --format=value
     $ python manage.py print_settings --format=json
     $ python manage.py print_settings --format=yaml    # Requires PyYAML
 
