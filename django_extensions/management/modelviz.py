@@ -17,6 +17,7 @@ from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
 from django.template import Context, Template, loader
+from django.utils.encoding import force_bytes
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
 
@@ -42,6 +43,7 @@ __contributors__ = [
     "Alexander Houben <alexander@houben.ch>",
     "Joern Hees <gitdev@joernhees.de>",
     "Kevin Cherepski <cherepski@gmail.com>",
+    "Jose Tomas Tocino <theom3ga@gmail.com>"
 ]
 
 
@@ -138,14 +140,14 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
-                model['label'] = appmodel._meta.verbose_name.decode("utf8")
+                model['label'] = force_bytes(appmodel._meta.verbose_name)
             else:
                 model['label'] = model['name']
 
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name.decode("utf8")
+                    label = force_bytes(field.verbose_name)
                     if label.islower():
                         label = label.capitalize()
                 else:
@@ -196,7 +198,7 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name.decode("utf8")
+                    label = force_bytes(field.verbose_name)
                     if label.islower():
                         label = label.capitalize()
                 else:
