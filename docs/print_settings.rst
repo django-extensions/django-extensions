@@ -26,14 +26,17 @@ The simplest way to run it is with no arguments::
 
 Some variations::
 
-    $ python manage.py print_settings --format=value
     $ python manage.py print_settings --format=json
     $ python manage.py print_settings --format=yaml    # Requires PyYAML
+    $ python manage.py print_settings --format=pprint
+    $ python manage.py print_settings --format=text
+    $ python manage.py print_settings --format=value
 
 Show just selected settings::
 
     $ python manage.py print_settings DEBUG INSTALLED_APPS
     $ python manage.py print_settings DEBUG INSTALLED_APPS --format=pprint
+    $ python manage.py print_settings INSTALLED_APPS --format=value
 
 For more info, take a look at the built-in help::
 
@@ -58,4 +61,3 @@ For more info, take a look at the built-in help::
       --indent=INDENT       Specifies indent level for JSON and YAML
       --version             show program's version number and exit
       -h, --help            show this help message and exit
-

@@ -50,8 +50,12 @@ class Command(BaseCommand):
         elif output_format == 'pprint':
             from pprint import pprint
             pprint(a_dict)
+        elif output_format == 'text':
+            for key, value in a_dict.items():
+                print("%s = %s" % (key, value))
         elif output_format == 'value':
-            print(a_dict.values()[0])
+            for value in a_dict.values():
+                print(value)
         else:
             self.print_simple(a_dict)
 
