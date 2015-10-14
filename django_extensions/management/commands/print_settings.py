@@ -50,6 +50,8 @@ class Command(BaseCommand):
         elif output_format == 'pprint':
             from pprint import pprint
             pprint(a_dict)
+        elif output_format == 'value':
+            print(a_dict.values()[0])
         else:
             self.print_simple(a_dict)
 
