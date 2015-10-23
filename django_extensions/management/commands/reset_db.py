@@ -131,17 +131,17 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
-            conn_string = "dbname=template1"
+            conn_params = {'database': 'template1'}
             if user:
-                conn_string += " user=%s" % user
+                conn_params['user'] = user
             if password:
-                conn_string += " password='%s'" % password
+                conn_params['password'] = password
             if database_host:
-                conn_string += " host=%s" % database_host
+                conn_params['host'] = database_host
             if database_port:
-                conn_string += " port=%s" % database_port
+                conn_params['port'] = database_port
 
-            connection = Database.connect(conn_string)
+            connection = Database.connect(**conn_params)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
             drop_query = "DROP DATABASE \"%s\";" % database_name
