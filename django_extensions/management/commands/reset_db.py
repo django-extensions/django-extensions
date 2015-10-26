@@ -158,8 +158,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             if engine == 'postgis':
                 # fetch postgis template name if it exists
-                from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
-                postgis_template = getattr(PostGISCreation(connection), 'template_postgis', None)
+                try:
+                    from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
+                    postgis_template = getattr(PostGISCreation(connection), 'template_postgis', None)
+                except ImportError:
+                    postgis_template = None
                 if postgis_template is not None:
                     create_query += ' TEMPLATE = %s' % postgis_template
 
