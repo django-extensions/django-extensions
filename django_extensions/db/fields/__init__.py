@@ -3,6 +3,7 @@ Django Extensions additional model fields
 """
 import re
 import six
+import string
 import warnings
 
 try:
@@ -18,8 +19,9 @@ except ImportError:
     HAS_SHORT_UUID = False
 
 from django.core.exceptions import ImproperlyConfigured
-from django.template.defaultfilters import slugify
 from django.db.models import DateTimeField, CharField, SlugField
+from django.utils.crypto import get_random_string
+from django.template.defaultfilters import slugify
 
 try:
     from django.utils.timezone import now as datetime_now
@@ -34,7 +36,45 @@ except ImportError:
     from django.utils.encoding import force_text as force_unicode  # NOQA
 
 
-class AutoSlugField(SlugField):
+MAX_UNIQUE_QUERY_ATTEMPTS = 100
+
+
+class UniqueFieldMixin(object):
+
+    def check_is_bool(self, attrname):
+        if not isinstance(getattr(self, attrname), bool):
+            raise ValueError("'{}' argument must be True or False".format(attrname))
+
+    def get_queryset(self, model_cls, slug_field):
+        for field, model in model_cls._meta.get_fields_with_model():
+            if model and field == slug_field:
+                return model._default_manager.all()
+        return model_cls._default_manager.all()
+
+    def find_unique(self, model_instance, field, iterator, *args):
+        # exclude the current model instance from the queryset used in finding
+        # next valid hash
+        queryset = self.get_queryset(model_instance.__class__, field)
+        if model_instance.pk:
+            queryset = queryset.exclude(pk=model_instance.pk)
+
+        # form a kwarg dict used to impliment any unique_together contraints
+        kwargs = {}
+        for params in model_instance._meta.unique_together:
+            if self.attname in params:
+                for param in params:
+                    kwargs[param] = getattr(model_instance, param, None)
+
+        new = six.next(iterator)
+        kwargs[self.attname] = new
+        while not new or queryset.filter(**kwargs):
+            new = six.next(iterator)
+            kwargs[self.attname] = new
+        setattr(model_instance, self.attname, new)
+        return new
+
+
+class AutoSlugField(UniqueFieldMixin, SlugField):
     """ AutoSlugField
 
     By default, sets editable=False, blank=True.
@@ -68,11 +108,9 @@ class AutoSlugField(SlugField):
         self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
-        if not isinstance(self.overwrite, bool):
-            raise ValueError("'overwrite' argument must be True or False")
+        self.check_is_bool('overwrite')
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
-        if not isinstance(self.allow_duplicates, bool):
-            raise ValueError("'allow_duplicates' argument must be True or False")
+        self.check_is_bool('allow_duplicates')
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -87,16 +125,24 @@ class AutoSlugField(SlugField):
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
-    def get_queryset(self, model_cls, slug_field):
-        for field, model in model_cls._meta.get_fields_with_model():
-            if model and field == slug_field:
-                return model._default_manager.all()
-        return model_cls._default_manager.all()
-
     def slugify_func(self, content):
         if content:
             return self.slugify_function(content)
         return ''
+
+    def slug_generator(self, original_slug, start):
+        yield original_slug
+        for i in range(start, MAX_UNIQUE_QUERY_ATTEMPTS):
+            slug = original_slug
+            end = '%s%s' % (self.separator, i)
+            end_len = len(end)
+            if self.slug_len and len(slug) + end_len > self.slug_len:
+                slug = slug[:self.slug_len - end_len]
+                slug = self._slug_strip(slug)
+            slug = '%s%s' % (slug, end)
+            yield slug
+        raise RuntimeError('max slug attempts for %s exceeded (%s)' %
+            (original_slug, MAX_UNIQUE_QUERY_ATTEMPTS))
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
@@ -108,7 +154,7 @@ class AutoSlugField(SlugField):
             # slugify the original field content and set next step to 2
             slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
-            next = 2
+            start = 2
         else:
             # get slug from the current model instance
             slug = getattr(model_instance, self.attname)
@@ -118,46 +164,20 @@ class AutoSlugField(SlugField):
 
         # strip slug depending on max_length attribute of the slug field
         # and clean-up
-        slug_len = slug_field.max_length
-        if slug_len:
-            slug = slug[:slug_len]
+        self.slug_len = slug_field.max_length
+        if self.slug_len:
+            slug = slug[:self.slug_len]
         slug = self._slug_strip(slug)
         original_slug = slug
 
         if self.allow_duplicates:
             return slug
 
-        # exclude the current model instance from the queryset used in finding
-        # the next valid slug
-        queryset = self.get_queryset(model_instance.__class__, slug_field)
-        if model_instance.pk:
-            queryset = queryset.exclude(pk=model_instance.pk)
-
-        # form a kwarg dict used to impliment any unique_together contraints
-        kwargs = {}
-        for params in model_instance._meta.unique_together:
-            if self.attname in params:
-                for param in params:
-                    kwargs[param] = getattr(model_instance, param, None)
-        kwargs[self.attname] = slug
-
-        # increases the number while searching for the next valid slug
-        # depending on the given slug, clean-up
-        while not slug or queryset.filter(**kwargs):
-            slug = original_slug
-            end = '%s%s' % (self.separator, next)
-            end_len = len(end)
-            if slug_len and len(slug) + end_len > slug_len:
-                slug = slug[:slug_len - end_len]
-                slug = self._slug_strip(slug)
-            slug = '%s%s' % (slug, end)
-            kwargs[self.attname] = slug
-            next += 1
-        return slug
+        return super(AutoSlugField, self).find_unique(
+            model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def pre_save(self, model_instance, add):
         value = force_unicode(self.create_slug(model_instance, add))
-        setattr(model_instance, self.attname, value)
         return value
 
     def get_internal_type(self):
@@ -190,16 +210,149 @@ class AutoSlugField(SlugField):
         return name, path, args, kwargs
 
 
+class RandomCharField(UniqueFieldMixin, CharField):
+    """ RandomCharField
+
+    By default, sets editable=False, blank=True, unique=False.
+
+    Required arguments:
+
+    length
+        Specifies the length of the field
+
+    Optional arguments:
+
+    unique
+        If set to True, duplicate entries are not allowed (default: False)
+
+    lowercase
+        If set to True, lowercase the alpha characters (default: False)
+
+    uppercase
+        If set to True, uppercase the alpha characters (default: False)
+
+    include_alpha
+        If set to True, include alpha characters (default: True)
+
+    include_digits
+        If set to True, include digit characters (default: True)
+
+    include_punctuation
+        If set to True, include punctuation characters (default: False)
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('blank', True)
+        kwargs.setdefault('editable', False)
+
+        self.length = kwargs.pop('length', None)
+        if self.length is None:
+            raise ValueError("missing 'length' argument")
+        kwargs['max_length'] = self.length
+
+        self.lowercase = kwargs.pop('lowercase', False)
+        self.check_is_bool('lowercase')
+        self.uppercase = kwargs.pop('uppercase', False)
+        self.check_is_bool('uppercase')
+        if self.uppercase and self.lowercase:
+            raise ValueError("the 'lowercase' and 'uppercase' arguments are mutually exclusive")
+        self.include_digits = kwargs.pop('include_digits', True)
+        self.check_is_bool('include_digits')
+        self.include_alpha = kwargs.pop('include_alpha', True)
+        self.check_is_bool('include_alpha')
+        self.include_punctuation = kwargs.pop('include_punctuation', False)
+        self.check_is_bool('include_punctuation')
+
+        # Set unique=False unless it's been set manually.
+        if 'unique' not in kwargs:
+            kwargs['unique'] = False
+
+        super(RandomCharField, self).__init__(*args, **kwargs)
+
+    def random_char_generator(self, chars):
+        for i in range(MAX_UNIQUE_QUERY_ATTEMPTS):
+            yield ''.join(get_random_string(self.length, chars))
+        raise RuntimeError('max random character attempts exceeded (%s)' %
+            MAX_UNIQUE_QUERY_ATTEMPTS)
+
+    def pre_save(self, model_instance, add):
+        if not add and getattr(model_instance, self.attname) != '':
+            return getattr(model_instance, self.attname)
+
+        population = ''
+        if self.include_alpha:
+            if self.lowercase:
+                population += string.ascii_lowercase
+            elif self.uppercase:
+                population += string.ascii_uppercase
+            else:
+                population += string.ascii_letters
+
+        if self.include_digits:
+            population += string.digits
+
+        if self.include_punctuation:
+            population += string.punctuation
+
+        random_chars = self.random_char_generator(population)
+        if not self.unique:
+            return random_chars
+
+        return super(RandomCharField, self).find_unique(
+            model_instance,
+            model_instance._meta.get_field(self.attname),
+            random_chars,
+        )
+
+    def internal_type(self):
+        return "CharField"
+
+    def south_field_triple(self):
+        "Returns a suitable description of this field for South."
+        # We'll just introspect the _actual_ field.
+        from south.modelsinspector import introspector
+        field_class = '%s.RandomCharField' % self.__module__
+        args, kwargs = introspector(self)
+        kwargs.update({
+            'lowercase': repr(self.lowercase),
+            'include_digits': repr(self.include_digits),
+            'include_aphla': repr(self.include_alpha),
+            'include_punctuation': repr(self.include_punctuation),
+            'length': repr(self.length),
+            'unique': repr(self.unique),
+        })
+        del kwargs['max_length']
+        # That's our definition!
+        return (field_class, args, kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(RandomCharField, self).deconstruct()
+        kwargs['length'] = self.length
+        del kwargs['max_length']
+        if self.lowercase is True:
+            kwargs['lowercase'] = self.lowercase
+        if self.uppercase is True:
+            kwargs['uppercase'] = self.uppercase
+        if self.include_alpha is False:
+            kwargs['include_alpha'] = self.include_alpha
+        if self.include_digits is False:
+            kwargs['include_digits'] = self.include_digits
+        if self.include_punctuation is True:
+            kwargs['include_punctuation'] = self.include_punctuation
+        if self.unique is True:
+            kwargs['unique'] = self.unique
+        return name, path, args, kwargs
+
+
 class CreationDateTimeField(DateTimeField):
     """ CreationDateTimeField
 
-    By default, sets editable=False, blank=True, default=datetime.now
+    By default, sets editable=False, blank=True, auto_now_add=True
     """
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('editable', False)
         kwargs.setdefault('blank', True)
-        kwargs.setdefault('default', datetime_now)
+        kwargs.setdefault('auto_now_add', True)
         DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
@@ -219,23 +372,22 @@ class CreationDateTimeField(DateTimeField):
             kwargs['editable'] = True
         if self.blank is not True:
             kwargs['blank'] = False
-        if self.default is not datetime_now:
-            kwargs['default'] = self.default
+        if self.auto_now_add is not False:
+            kwargs['auto_now_add'] = True
         return name, path, args, kwargs
 
 
 class ModificationDateTimeField(CreationDateTimeField):
     """ ModificationDateTimeField
 
-    By default, sets editable=False, blank=True, default=datetime.now
+    By default, sets editable=False, blank=True, auto_now=True
 
-    Sets value to datetime.now() on each save of the model.
+    Sets value to now every time the object is saved.
     """
 
-    def pre_save(self, model, add):
-        value = datetime_now()
-        setattr(model, self.attname, value)
-        return value
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('auto_now', True)
+        DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
         return "DateTimeField"
@@ -247,6 +399,12 @@ class ModificationDateTimeField(CreationDateTimeField):
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
         return (field_class, args, kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(ModificationDateTimeField, self).deconstruct()
+        if self.auto_now is not False:
+            kwargs['auto_now'] = True
+        return name, path, args, kwargs
 
 
 class UUIDVersionError(Exception):

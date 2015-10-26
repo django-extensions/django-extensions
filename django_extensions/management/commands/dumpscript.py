@@ -560,7 +560,7 @@ class Script(Code):
 # and the script is at ./some_folder/some_script.py
 # you must make sure ./some_folder/__init__.py exists
 # and run  ./manage.py runscript some_folder.some_script
-
+import os, sys
 from django.db import transaction
 
 class BasicImportHelper(object):

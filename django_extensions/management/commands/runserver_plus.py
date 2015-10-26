@@ -8,12 +8,11 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connections, DEFAULT_DB_ALIAS
+from django.core.exceptions import ImproperlyConfigured
 
-from django_extensions.management.technical_response import \
-    null_technical_500_response
-from django_extensions.management.utils import (
-    RedirectHandler, setup_logger, signalcommand,
-)
+from django_extensions.management.technical_response import null_technical_500_response
+from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
 try:
     if 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
@@ -26,6 +25,12 @@ try:
         USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
+
+try:
+    from django.db.migrations.executor import MigrationExecutor
+    HAS_MIGRATIONS = True
+except ImportError:
+    HAS_MIGRATIONS = False
 
 
 naiveip_re = re.compile(r"""^(?:
@@ -64,6 +69,12 @@ class Command(BaseCommand):
                     help='auto-reload whenever the given file changes too (can be specified multiple times)'),
         make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
                     help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
+        make_option('--pdb', action='store_true', dest='pdb', default=False,
+                    help='Drop into pdb shell at the start of any view.'),
+        make_option('--ipdb', action='store_true', dest='ipdb', default=False,
+                    help='Drop into ipdb shell at the start of any view.'),
+        make_option('--pm', action='store_true', dest='pm', default=False,
+                    help='Drop into (i)pdb shell if an exception is raised in a view.'),
     )
     if USE_STATICFILES:
         option_list += (
@@ -149,9 +160,42 @@ class Command(BaseCommand):
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
+        pdb_option = options.get('pdb', False)
+        ipdb_option = options.get('ipdb', False)
+        pm = options.get('pm', False)
+        try:
+            from django_pdb.middleware import PdbMiddleware
+        except ImportError:
+            if pdb_option or ipdb_option or pm:
+                raise CommandError("django-pdb is required for --pdb, --ipdb and --pm options. Please visit https://pypi.python.org/pypi/django-pdb or install via pip. (pip install django-pdb)")
+            pm = False
+        else:
+            # Add pdb middleware if --pdb is specified or if in DEBUG mode
+            middleware = 'django_pdb.middleware.PdbMiddleware'
+            if ((pdb_option or ipdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES):
+                settings.MIDDLEWARE_CLASSES += (middleware,)
+
+            # If --pdb is specified then always break at the start of views.
+            # Otherwise break only if a 'pdb' query parameter is set in the url
+            if pdb_option:
+                PdbMiddleware.always_break = 'pdb'
+            elif ipdb_option:
+                PdbMiddleware.always_break = 'ipdb'
+
+            def postmortem(request, exc_type, exc_value, tb):
+                if has_ipdb():
+                    import ipdb
+                    p = ipdb
+                else:
+                    import pdb
+                    p = pdb
+                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
+                                                                   exc_value)
+                p.post_mortem(tb)
+
         # usurp django's handler
         from django.views import debug
-        debug.technical_500_response = null_technical_500_response
+        debug.technical_500_response = postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options.get('use_ipv6')
         if self.use_ipv6 and not socket.has_ipv6:
@@ -196,8 +240,16 @@ class Command(BaseCommand):
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
-            print("Validating models...")
-            self.validate(display_num_errors=True)
+            print("Performing system checks...\n")
+            if hasattr(self, 'check'):
+                self.check(display_num_errors=True)
+            else:
+                self.validate(display_num_errors=True)
+            if HAS_MIGRATIONS:
+                try:
+                    self.check_migrations()
+                except ImproperlyConfigured:
+                    pass
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
             print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
@@ -278,6 +330,17 @@ class Command(BaseCommand):
                 ssl_context=ssl_context,
             )
         inner_run()
+
+    def check_migrations(self):
+        """
+        Checks to see if the set of migrations on disk matches the
+        migrations in the database. Prints a warning if they don't match.
+        """
+        executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+        if plan:
+            self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
+            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
 
 def set_werkzeug_log_color():

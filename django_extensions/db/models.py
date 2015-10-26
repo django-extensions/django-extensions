@@ -30,14 +30,23 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
-class TitleSlugDescriptionModel(models.Model):
+class TitleDescriptionModel(models.Model):
+    """ TitleDescriptionModel
+    An abstract base class model that provides title and description fields.
+    """
+    title = models.CharField(_('title'), max_length=255)
+    description = models.TextField(_('description'), blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class TitleSlugDescriptionModel(TitleDescriptionModel):
     """ TitleSlugDescriptionModel
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
-    title = models.CharField(_('title'), max_length=255)
     slug = AutoSlugField(_('slug'), populate_from='title')
-    description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
         abstract = True

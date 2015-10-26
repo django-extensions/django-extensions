@@ -1,25 +1,27 @@
 import os
+import six
 import sys
 import time
 import traceback
 from optparse import make_option
 
-import six
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import NoArgsCommand, CommandError
 
+from django_extensions.compat import PY3
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
 
 
-class Command(NoArgsCommand):
-    def use_vi_mode():
-        editor = os.environ.get('EDITOR')
-        if not editor:
-            return False
-        editor = os.path.basename(editor)
-        return editor.startswith('vi') or editor.endswith('vim')
+def use_vi_mode():
+    editor = os.environ.get('EDITOR')
+    if not editor:
+        return False
+    editor = os.path.basename(editor)
+    return editor.startswith('vi') or editor.endswith('vim')
 
+
+class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--plain', action='store_true', dest='plain',
                     help='Tells Django to use plain Python, not BPython nor IPython.'),
@@ -112,29 +114,51 @@ class Command(NoArgsCommand):
             return run_kernel
 
         def get_notebook():
-            from django.conf import settings
+            from IPython import release
             try:
-                from IPython.html.notebookapp import NotebookApp
+                from notebook.notebookapp import NotebookApp
             except ImportError:
                 try:
-                    from IPython.frontend.html.notebook import notebookapp
-                    NotebookApp = notebookapp.NotebookApp
+                    from IPython.html.notebookapp import NotebookApp
                 except ImportError:
-                    return traceback.format_exc()
+                    if release.version_info[0] >= 3:
+                        raise
+                    try:
+                        from IPython.frontend.html.notebook import notebookapp
+                        NotebookApp = notebookapp.NotebookApp
+                    except ImportError:
+                        return traceback.format_exc()
 
             def install_kernel_spec(app, display_name, ipython_arguments):
                 """install an IPython >= 3.0 kernelspec that loads django extensions"""
                 ksm = app.kernel_spec_manager
-                ks = ksm.get_kernel_spec('python')
+                try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
+                    'python3' if PY3 else 'python2',
+                    'python',
+                ])
+                if isinstance(try_spec_names, six.string_types):
+                    try_spec_names = [try_spec_names]
+                ks = None
+                for spec_name in try_spec_names:
+                    try:
+                        ks = ksm.get_kernel_spec(spec_name)
+                        break
+                    except:
+                        continue
+                if not ks:
+                    raise CommandError("No notebook (Python) kernel specs found")
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
 
-                manage_py_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+                manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
 
-                if os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
-                    pythonpath = ks.env.get("PYTHONPATH", "").split(":")
-                    pythonpath.append(manage_py_dir)
-                    ks.env["PYTHONPATH"] = ":".join(pythonpath)
+                if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
+                    pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
+                    pythonpath = pythonpath.split(':')
+                    if manage_py_dir not in pythonpath:
+                        pythonpath.append(manage_py_dir)
+
+                    ks.env['PYTHONPATH'] = ':'.join(filter(None, pythonpath))
 
                 kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
                 if not os.path.exists(kernel_dir):
@@ -158,7 +182,6 @@ class Command(NoArgsCommand):
                     notebook_arguments.extend(['--notebook-dir', '.'])
 
                 # IPython < 3 passes through kernel args from notebook CLI
-                from IPython import release
                 if release.version_info[0] < 3:
                     notebook_arguments.extend(ipython_arguments)
 
@@ -223,11 +246,12 @@ class Command(NoArgsCommand):
 
         def get_ipython():
             try:
-                from IPython import embed
+                from IPython import start_ipython
 
                 def run_ipython():
                     imported_objects = import_objects(options, self.style)
-                    embed(user_ns=imported_objects)
+                    ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                    start_ipython(argv=ipython_arguments, user_ns=imported_objects)
                 return run_ipython
             except ImportError:
                 str_exc = traceback.format_exc()
@@ -248,29 +272,70 @@ class Command(NoArgsCommand):
 
         def get_ptpython():
             try:
-                from prompt_toolkit.contrib.repl import embed
+                from ptpython.repl import embed, run_config
             except ImportError:
-                return traceback.format_exc()
+                tb = traceback.format_exc()
+                try:  # prompt_toolkit < v0.27
+                    from prompt_toolkit.contrib.repl import embed, run_config
+                except ImportError:
+                    return tb
 
             def run_ptpython():
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(globals=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptpython
 
         def get_ptipython():
             try:
-                from prompt_toolkit.contrib.ipython import embed
+                from ptpython.repl import run_config
+                from ptpython.ipython import embed
             except ImportError:
-                return traceback.format_exc()
+                tb = traceback.format_exc()
+                try:  # prompt_toolkit < v0.27
+                    from prompt_toolkit.contrib.repl import run_config
+                    from prompt_toolkit.contrib.ipython import embed
+                except ImportError:
+                    return tb
 
             def run_ptipython():
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(user_ns=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptipython
+
+        def set_application_name():
+            """Set the application_name on PostgreSQL connection
+
+            Use the fallback_application_name to let the user override
+            it with PGAPPNAME env variable
+
+            http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
+            """
+            supported_backends = ['django.db.backends.postgresql_psycopg2']
+            opt_name = 'fallback_application_name'
+            default_app_name = 'django_shell'
+            app_name = default_app_name
+            dbs = getattr(settings, 'DATABASES', [])
+
+            # lookup over all the databases entry
+            for db in dbs.keys():
+                if dbs[db]['ENGINE'] in supported_backends:
+                    try:
+                        options = dbs[db]['OPTIONS']
+                    except KeyError:
+                        options = {}
+
+                    # dot not override a defined value
+                    if opt_name in options.keys():
+                        app_name = dbs[db]['OPTIONS'][opt_name]
+                    else:
+                        dbs[db].setdefault('OPTIONS', {}).update({opt_name: default_app_name})
+                        app_name = default_app_name
+
+            return app_name
 
         shells = (
             ('ptipython', get_ptipython),
@@ -283,6 +348,7 @@ class Command(NoArgsCommand):
 
         shell = None
         shell_name = "any"
+        set_application_name()
         if use_kernel:
             shell = get_kernel()
             shell_name = "IPython Kernel"

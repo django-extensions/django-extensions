@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-from django.core.urlresolvers import RegexURLPattern, RegexURLResolver
-from django.utils.translation import activate
+from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+from django.utils import translation
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -20,57 +20,18 @@ FMTR = {
 }
 
 
-def extract_views_from_urlpatterns(urlpatterns, base='', namespace=None):
-    """
-    Return a list of views from a list of urlpatterns.
-
-    Each object in the returned list is a two-tuple: (view_func, regex)
-    """
-    views = []
-    for p in urlpatterns:
-        if isinstance(p, RegexURLPattern):
-            try:
-                if not p.name:
-                    name = p.name
-                elif namespace:
-                    name = '{0}:{1}'.format(namespace, p.name)
-                else:
-                    name = p.name
-                views.append((p.callback, base + p.regex.pattern, name))
-            except ViewDoesNotExist:
-                continue
-        elif isinstance(p, RegexURLResolver):
-            try:
-                patterns = p.url_patterns
-            except ImportError:
-                continue
-            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=(namespace or p.namespace)))
-        elif hasattr(p, '_get_callback'):
-            try:
-                views.append((p._get_callback(), base + p.regex.pattern, p.name))
-            except ViewDoesNotExist:
-                continue
-        elif hasattr(p, 'url_patterns') or hasattr(p, '_get_url_patterns'):
-            try:
-                patterns = p.url_patterns
-            except ImportError:
-                continue
-            views.extend(extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=namespace))
-        else:
-            raise TypeError("%s does not appear to be a urlpattern object" % p)
-    return views
-
-
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option("--unsorted", "-u", action="store_true", dest="unsorted",
                     help="Show urls unsorted but same order as found in url patterns"),
         make_option("--language", "-l", dest="language",
-                    help="Set the language code (useful for i18n_patterns)"),
+                    help="Only show this language code (useful for i18n_patterns)"),
         make_option("--decorator", "-d", action="append", dest="decorator", default=[],
                     help="Show the presence of given decorator on views"),
         make_option("--format", "-f", dest="format_style", default="dense",
-                    help="Style of the output. Choices: %s" % FMTR.keys())
+                    help="Style of the output. Choices: %s" % FMTR.keys()),
+        make_option("--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
+                    help="Set the settings URL conf variable to use")
     )
 
     help = "Displays all of the url matching routes for the project."
@@ -87,9 +48,12 @@ class Command(BaseCommand):
         else:
             settings_modules = [settings]
 
+        self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
+
         language = options.get('language', None)
         if language is not None:
-            activate(language)
+            translation.activate(language)
+            self.LANGUAGES = [(code, name) for code, name in self.LANGUAGES if code == language]
 
         decorator = options.get('decorator')
         if not decorator:
@@ -100,20 +64,24 @@ class Command(BaseCommand):
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
         fmtr = FMTR[format_style]
 
+        urlconf = options.get('urlconf')
+
         views = []
         for settings_mod in settings_modules:
+            if not hasattr(settings_mod, urlconf):
+                raise CommandError("Settings module {} does not have the attribute {}.".format(settings_mod, urlconf))
+
             try:
-                urlconf = __import__(settings_mod.ROOT_URLCONF, {}, {}, [''])
+                urlconf = __import__(getattr(settings_mod, urlconf), {}, {}, [''])
             except Exception as e:
                 if options.get('traceback', None):
                     import traceback
                     traceback.print_exc()
-                print(style.ERROR("Error occurred while trying to load %s: %s" % (settings_mod.ROOT_URLCONF, str(e))))
+                print(style.ERROR("Error occurred while trying to load %s: %s" % (getattr(settings_mod, urlconf), str(e))))
                 continue
 
-            view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
+            view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
             for (func, regex, url_name) in view_functions:
-
                 if hasattr(func, '__globals__'):
                     func_globals = func.__globals__
                 elif hasattr(func, 'func_globals'):
@@ -173,3 +141,52 @@ class Command(BaseCommand):
             views = table_views
 
         return "\n".join([v for v in views]) + "\n"
+
+    def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
+        """
+        Return a list of views from a list of urlpatterns.
+
+        Each object in the returned list is a two-tuple: (view_func, regex)
+        """
+        views = []
+        for p in urlpatterns:
+            if isinstance(p, RegexURLPattern):
+                try:
+                    if not p.name:
+                        name = p.name
+                    elif namespace:
+                        name = '{0}:{1}'.format(namespace, p.name)
+                    else:
+                        name = p.name
+                    views.append((p.callback, base + p.regex.pattern, name))
+                except ViewDoesNotExist:
+                    continue
+            elif isinstance(p, RegexURLResolver):
+                try:
+                    patterns = p.url_patterns
+                except ImportError:
+                    continue
+                if namespace and p.namespace:
+                    _namespace = '{0}:{1}'.format(namespace, p.namespace)
+                else:
+                    _namespace = (p.namespace or namespace)
+                if isinstance(p, LocaleRegexURLResolver):
+                    for langauge in self.LANGUAGES:
+                        with translation.override(langauge[0]):
+                            views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+                else:
+                    views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+            elif hasattr(p, '_get_callback'):
+                try:
+                    views.append((p._get_callback(), base + p.regex.pattern, p.name))
+                except ViewDoesNotExist:
+                    continue
+            elif hasattr(p, 'url_patterns') or hasattr(p, '_get_url_patterns'):
+                try:
+                    patterns = p.url_patterns
+                except ImportError:
+                    continue
+                views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=namespace))
+            else:
+                raise TypeError("%s does not appear to be a urlpattern object" % p)
+        return views

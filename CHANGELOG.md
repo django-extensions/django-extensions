@@ -1,6 +1,82 @@
 Changelog
 =========
 
+1.5.7
+-----
+
+Changes:
+ - Fix: CreationDateTimeField, migration error
+ - Fix: ModificationDateTimeField, migration error
+ - Fix: shell_plus, options is not always in db config dictionary
+ - Fix: admin filters, contrib.admin.util fallback code
+ - Fix: graph_models, currectly support parsing lists for cli options
+ - Improvement: sqldsn, support postfix
+ - Improvement: utils, remove get_project_root function
+
+
+1.5.6
+-----
+
+Changes:
+ - New: RandomCharField, prepopulates random character string
+ - New: (Not)NullFieldListFilter, filters for admin
+ - New: runserver_plus, integrate with django-pdb
+ - New: runserver_plus, add check_migrations from Django
+ - Improvement: show_urls, nested namespace support
+ - Improvement: show_urls, allow to specify alternative urlconf
+ - Improvement: show_urls, support i18n_patterns
+ - Improvement: show_urls, use --language to filter on a particular language
+ - Improvement: admin_generator, added docstrings to module
+ - Improvement: shell_plus, allow cli arguments to be passed to ipython
+ - Improvement: shell_plus, fixed PYTHONPATH bug when using django-admin shell_plus --notebook
+ - Improvement: shell_plus, set application_name on PostgreSQL databases
+ - Improvement: shell_plus, load user pypython config file
+ - Improvement: CreationDateTimeField, use auto_now_add instead of default ModificationDateTimeField
+ - Improvement: ModificationDateTimeField, use auto_now instead of pre_save method
+ - Improvement: ForeignKeyAutocompleteAdmin, added ability to filter autocomplete query
+ - Fix: shell_plus, support for pypython>=0.27
+ - Fix: shell_plus, load apps and models directly through the apps interface when available
+ - Fix: shell_plus, use ipython start_ipython instead of embed
+ - Fix: shell_plus, fix swalling ImportErrors with IPython 3 and higher
+ - Fix: dumpscript, fix missing imports in dumped script
+ - Fix: admin_generator, fix issues with Django 1.9
+ - Fix: template tags, move exception for import failure to inside of the template tags
+ - Fix: reset_db, fix for Django 1.9
+ - Fix: runserver_plus, fix for Django 1.9
+
+
+1.5.5
+-----
+
+Changes:
+ - Fix: sqldiff, previous Django 1.8 fix was slightly broken
+
+
+1.5.4
+-----
+
+Changes:
+ - Improvement: syncdata, add skip-remove option
+ - Improvement: logging, report how often mail was ratelimited
+ - Fix: admin, Django 1.8 compatibility module_name is now called model_name
+ - Fix: notes, Python 3.x fix force output of filter into list
+ - Fix: sqldiff, fix for Django 1.8
+
+
+1.5.3
+-----
+
+Changes:
+ - New: ratelimiter, a simple ratelimiter filter for Python logging
+ - Fix: various improvements for Django 1.8
+ - Fix: sync_s3, use os.walk instead of os.path.walk (py3 fix)
+ - Improvement: pipchecker, use name instead of url_name to fix casing mismatches
+ - Improvement: pipchecker, use https
+ - Improvement: pipchecker, fix issues with new(er) pip versions
+ - Docs: fixed a few typos
+ - Docs: added documentation about NOTEBOOK_ARGUMENTS settings
+
+
 1.5.2
 -----
 
@@ -12,6 +88,7 @@ Changes:
  - Fix: sqldiff, KeyError when index is missing in database
  - Fix: sqldiff, multi column indexes was also counted as a single colomn index
  - Improvements: JSONField, Added try/catch for importing json/simplejson for Django 1.7
+
 
 1.5.1
 -----

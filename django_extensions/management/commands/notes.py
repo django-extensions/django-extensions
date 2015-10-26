@@ -20,7 +20,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         # don't add django internal code
-        apps = filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)
+        apps = [app for app in filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)]
         template_dirs = getattr(settings, 'TEMPLATE_DIRS', [])
         if template_dirs:
             apps += template_dirs

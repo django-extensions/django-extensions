@@ -1,7 +1,10 @@
 from django.db import models
 
 from django_extensions.db.fields import (
-    AutoSlugField, ShortUUIDField, UUIDField,
+    AutoSlugField,
+    RandomCharField,
+    ShortUUIDField,
+    UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel
@@ -120,6 +123,76 @@ class ShortUUIDTestAgregateModel(ShortUUIDTestModel_pk):
 
 class ShortUUIDTestManyToManyModel(ShortUUIDTestModel_pk):
     many = models.ManyToManyField(ShortUUIDTestModel_field)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModel(models.Model):
+    random_char_field = RandomCharField(length=8, unique=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, unique=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelLowercaseAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, lowercase=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        verbose_name = 'lowercase alpha digits'
+
+
+class RandomCharTestModelUppercaseAlphaDigits(models.Model):
+    random_char_field = RandomCharField(length=8, uppercase=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        verbose_name = 'uppercase alpha digits'
+
+
+class RandomCharTestModelLowercase(models.Model):
+    random_char_field = RandomCharField(length=8, lowercase=True, include_digits=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelUppercase(models.Model):
+    random_char_field = RandomCharField(length=8, uppercase=True, include_digits=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelAlpha(models.Model):
+    random_char_field = RandomCharField(length=8, include_digits=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelDigits(models.Model):
+    random_char_field = RandomCharField(length=8, include_alpha=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelPunctuation(models.Model):
+    random_char_field = RandomCharField(
+        length=8,
+        include_punctuation=True,
+        include_digits=False,
+        include_alpha=False,
+    )
 
     class Meta:
         app_label = 'django_extensions'

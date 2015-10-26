@@ -5,6 +5,7 @@ import six
 import operator
 from six.moves import reduce
 
+import django
 from django.http import HttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.db import models
@@ -60,7 +61,12 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
 
-        info = self.model._meta.app_label, self.model._meta.module_name
+        # model._meta.module_name is deprecated in django version 1.7 and removed in django version 1.8.
+        # It is replaced by model._meta.model_name
+        if django.VERSION < (1, 7):
+            info = self.model._meta.app_label, self.model._meta.module_name
+        else:
+            info = self.model._meta.app_label, self.model._meta.model_name
 
         urlpatterns = patterns('', url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete), name='%s_%s_autocomplete' % info))
         urlpatterns += super(ForeignKeyAutocompleteAdmin, self).get_urls()
@@ -107,6 +113,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
 
+                additional_filter = self.get_related_filter(model, request)
+                if additional_filter:
+                    queryset = queryset.filter(additional_filter)
+
                 if self.autocomplete_limit:
                     queryset = queryset[:self.autocomplete_limit]
 
@@ -120,6 +130,12 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     data = to_string_function(obj)
             return HttpResponse(data)
         return HttpResponseNotFound()
+
+    def get_related_filter(self, model, request):
+        """Given a model class and current request return an optional Q object
+        that should be applied as an additional filter for autocomplete query.
+        If no additional filtering is needed, this method should return
+        None."""
 
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)

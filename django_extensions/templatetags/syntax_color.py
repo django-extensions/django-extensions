@@ -39,8 +39,9 @@ try:
     from pygments import highlight
     from pygments.formatters import HtmlFormatter
     from pygments.lexers import get_lexer_by_name, guess_lexer, ClassNotFound
+    HAS_PYGMENTS = True
 except ImportError:
-    raise ImportError("Please install 'pygments' library to use syntax_color.")
+    HAS_PYGMENTS = False
 
 __author__ = 'Will Larson <lethain@gmail.com>'
 
@@ -50,6 +51,8 @@ register = template.Library()
 
 @register.simple_tag
 def pygments_css():
+    if not HAS_PYGMENTS:
+        raise ImportError("Please install 'pygments' library to use syntax_color.")
     return HtmlFormatter().get_style_defs('.highlight')
 
 
@@ -71,6 +74,8 @@ def get_lexer(value, arg):
 @register.filter(name='colorize')
 @stringfilter
 def colorize(value, arg=None):
+    if not HAS_PYGMENTS:
+        raise ImportError("Please install 'pygments' library to use syntax_color.")
     try:
         return mark_safe(highlight(value, get_lexer(value, arg), HtmlFormatter()))
     except ClassNotFound:
@@ -80,6 +85,8 @@ def colorize(value, arg=None):
 @register.filter(name='colorize_table')
 @stringfilter
 def colorize_table(value, arg=None):
+    if not HAS_PYGMENTS:
+        raise ImportError("Please install 'pygments' library to use syntax_color.")
     try:
         return mark_safe(highlight(value, get_lexer(value, arg), HtmlFormatter(linenos='table')))
     except ClassNotFound:
@@ -89,6 +96,8 @@ def colorize_table(value, arg=None):
 @register.filter(name='colorize_noclasses')
 @stringfilter
 def colorize_noclasses(value, arg=None):
+    if not HAS_PYGMENTS:
+        raise ImportError("Please install 'pygments' library to use syntax_color.")
     try:
         return mark_safe(highlight(value, get_lexer(value, arg), HtmlFormatter(noclasses=True)))
     except ClassNotFound:

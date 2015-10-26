@@ -1,4 +1,19 @@
 # -*- coding: utf-8 -*-
+'''
+The Django Admin Generator is a project which can automatically generate
+(scaffold) a Django Admin for you. By doing this it will introspect your
+models and automatically generate an Admin with properties like:
+
+ - `list_display` for all local fields
+ - `list_filter` for foreign keys with few items
+ - `raw_id_fields` for foreign keys with a lot of items
+ - `search_fields` for name and `slug` fields
+ - `prepopulated_fields` for `slug` fields
+ - `date_hierarchy` for `created_at`, `updated_at` or `joined_at` fields
+
+The original source and latest version can be found here:
+https://github.com/WoLpH/django-admin-generator/
+'''
 
 import optparse
 import re
@@ -9,6 +24,7 @@ from django.core.management.base import BaseCommand
 from django.db import models
 from django.db.models.loading import get_models
 
+from django_extensions.compat import get_apps
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
@@ -150,7 +166,8 @@ class AdminModel(UnicodeMixin):
     def _process_many_to_many(self, meta):
         raw_id_threshold = self.raw_id_threshold
         for field in meta.local_many_to_many:
-            related_objects = field.related.parent_model.objects.all()
+            related_model = getattr(field.related, 'related_model', field.related.model)
+            related_objects = related_model.objects.all()
             if(related_objects[:raw_id_threshold].count() < raw_id_threshold):
                 yield field.name
 
@@ -165,7 +182,8 @@ class AdminModel(UnicodeMixin):
         raw_id_threshold = self.raw_id_threshold
         list_filter_threshold = self.list_filter_threshold
         max_count = max(list_filter_threshold, raw_id_threshold)
-        related_count = field.related.parent_model.objects.all()
+        related_model = getattr(field.related, 'related_model', field.related.model)
+        related_count = related_model.objects.all()
         related_count = related_count[:max_count].count()
 
         if related_count >= raw_id_threshold:
@@ -308,7 +326,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.style = color_style()
 
-        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in models.get_apps())
+        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
         if not args:

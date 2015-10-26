@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover
     from django.contrib.auth.models import User
     User.USERNAME_FIELD = "username"
     User.get_username = lambda self: self.username
+
     def get_user_model():
         return User
 
@@ -47,3 +48,48 @@ def list_apps():
     except ImportError:
         # old way
         return settings.INSTALLED_APPS
+
+
+def get_apps():
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+        return [app.models_module for app in apps.get_app_configs() if app.models_module]
+    except ImportError:
+        from django.db import models
+        return models.get_apps()
+
+
+def get_app_models(app_labels=None):
+    if app_labels is None:
+        try:
+            # django >= 1.7, to support AppConfig
+            from django.apps import apps
+            return apps.get_models(include_auto_created=True)
+        except ImportError:
+            from django.db import models
+            return models.get_models(include_auto_created=True)
+
+    if not isinstance(app_labels, (list, tuple, set)):
+        app_labels = [app_labels]
+
+    app_models = []
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+
+        for app_label in app_labels:
+            app_config = apps.get_app_config(app_label)
+            app_models.extend(app_config.get_models(include_auto_created=True))
+    except ImportError:
+        from django.db import models
+
+        try:
+            app_list = [models.get_app(app_label) for app_label in app_labels]
+        except (models.ImproperlyConfigured, ImportError) as e:
+            raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
+
+        for app in app_list:
+            app_models.extend(models.get_models(app, include_auto_created=True))
+
+    return app_models
