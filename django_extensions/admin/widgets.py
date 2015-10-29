@@ -24,9 +24,9 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
                     'django_extensions/js/jquery.autocomplete.js']
 
         # Use a newer version of jquery if django version <= 1.5.x
-        # When removing this compatibility code also remove jquery-1.7.2.min.js file.
+        # When removing this compatibility code also remove jquery-1.8.3.min.js file.
         if int(django.get_version()[2]) <= 5:
-            js_files.insert(0, 'django_extensions/js/jquery-1.7.2.min.js')
+            js_files.insert(0, 'django_extensions/js/jquery-1.8.3.min.js')
 
         return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
                            js=js_files)
