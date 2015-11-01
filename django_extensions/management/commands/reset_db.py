@@ -157,10 +157,14 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 create_query += " WITH OWNER = \"%s\" " % owner
             create_query += " ENCODING = 'UTF8'"
 
-            if engine == 'postgis':
-                # fetch postgis template name if it exists
-                from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
-                postgis_template = PostGISCreation(connection).template_postgis
+            if engine == 'postgis' and django.VERSION < (1, 9):
+                # For PostGIS 1.5, fetch template name if it exists
+                if django.VERSION < (1, 8):
+                    from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
+                    postgis_template = PostGISCreation(connection).template_postgis
+                else:
+                    from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper
+                    postgis_template = DatabaseWrapper(dbinfo).template_postgis
                 if postgis_template is not None:
                     create_query += ' TEMPLATE = %s' % postgis_template
 
