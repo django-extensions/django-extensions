@@ -212,6 +212,8 @@ def import_objects(options, style):
         }
         if django.VERSION[:2] >= (1, 7):
             SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].append("Prefetch")
+        if django.VERSION[:2] >= (1, 8):
+            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend(["Case", "When"])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v

@@ -12,5 +12,6 @@ venv*
 *.bak
 .DS_Store
 .eggs/
+.idea/
 .coverage
 
