@@ -27,6 +27,10 @@ Tag it::
 
   $ git tag 0.4.1
 
+Remove old build directory (if exists)::
+
+  $ rm -r build
+
 Prepare the release tarball::
 
   $ python ./setup.py sdist
