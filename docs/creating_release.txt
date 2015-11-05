@@ -33,7 +33,7 @@ Remove old build directory (if exists)::
 
 Prepare the release tarball::
 
-  $ python ./setup.py sdist
+  $ python ./setup.py sdist bdist_wheel
 
 Upload release to pypi::
 
