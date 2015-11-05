@@ -14,7 +14,7 @@ Get a fresh copy::
 
 Run tests::
 
-  $ flake8 --ignore=E265,E501,W391 .
+  $ flake8 django-extensions
   $ tox --recreate
 
 Change version numbers in django_extensions/__init__.py and docs/conf.py::
