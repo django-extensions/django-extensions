@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.5.9
+-----
+
+Changes:
+ - Fix: wheel still had the old migrations directory in the package
+
+
 1.5.8
 -----
 
