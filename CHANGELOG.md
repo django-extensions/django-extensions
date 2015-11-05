@@ -1,6 +1,20 @@
 Changelog
 =========
 
+1.5.8
+-----
+
+Changes:
+ - Fix: migrations, fix BadMigrationError with Django 1.8+
+ - Fix: reset_db, Django 1.8+ compatibility fix
+ - Fix: runserver_plus, fix signature of null_technical_500_response for Django 1.8+
+ - Fix: graph_models, use force_bytes instead of .decode('utf8')
+ - Improvement: print_settings, add format option to only print values
+ - Improvement: print_esttings, add format option for simple key = value text output
+ - Improvement: email_export, documentation updates
+ - Improvement: shell_plus, auto load conditional db expressions Case and When
+
+
 1.5.7
 -----
 
