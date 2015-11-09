@@ -144,7 +144,7 @@ which address and port the development server should bind to.
 
 If you find yourself frequently starting the server with::
 
-  $ python manage.py runserver_plus 0.0.0.0:8000 
+  $ python manage.py runserver_plus 0.0.0.0:8000
 
 You can use settings to automatically default your development to an address/port::
 
