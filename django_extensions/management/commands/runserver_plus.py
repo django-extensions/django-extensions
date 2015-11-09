@@ -75,6 +75,8 @@ class Command(BaseCommand):
                     help='Drop into ipdb shell at the start of any view.'),
         make_option('--pm', action='store_true', dest='pm', default=False,
                     help='Drop into (i)pdb shell if an exception is raised in a view.'),
+        make_option('--startup-messages', dest='startup_messages', action="store", default='reload',
+                    help='When to show startup messages: reload [default], once, always, never.')
     )
     if USE_STATICFILES:
         option_list += (
@@ -92,6 +94,18 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, addrport='', *args, **options):
         import django
+
+        startup_messages = options.get('startup_messages', 'reload')
+        if startup_messages == "reload":
+            self.show_startup_messages = os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
+        elif startup_messages == "once":
+            self.show_startup_messages = not os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
+        elif startup_messages == "never":
+            self.show_startup_messages = False
+        else:
+            self.show_startup_messages = True
+
+        os.environ['RUNSERVER_PLUS_SHOW_MESSAGES'] = '1'
 
         # Do not use default ending='\n', because StreamHandler() takes care of it
         if hasattr(self.stderr, 'ending'):
@@ -154,7 +168,8 @@ class Command(BaseCommand):
                 try:
                     set_werkzeug_log_color()
                 except:     # We are dealing with some internals, anything could go wrong
-                    print("Wrapping internal werkzeug logger for color highlighting has failed!")
+                    if self.show_startup_messages:
+                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
                     pass
 
         except ImportError:
@@ -240,20 +255,22 @@ class Command(BaseCommand):
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
-            print("Performing system checks...\n")
+            if self.show_startup_messages:
+                print("Performing system checks...\n")
             if hasattr(self, 'check'):
-                self.check(display_num_errors=True)
+                self.check(display_num_errors=self.show_startup_messages)
             else:
-                self.validate(display_num_errors=True)
+                self.validate(display_num_errors=self.show_startup_messages)
             if HAS_MIGRATIONS:
                 try:
                     self.check_migrations()
                 except ImproperlyConfigured:
                     pass
-            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-            print("Quit the server with %s." % quit_command)
+            if self.show_startup_messages:
+                print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+                print("Development server is running at %s" % (bind_url,))
+                print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+                print("Quit the server with %s." % quit_command)
             path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
@@ -304,7 +321,8 @@ class Command(BaseCommand):
                         ssl_context = make_ssl_devcert(
                             os.path.join(dir_path, root), host='localhost')
                 except ImportError:
-                    print("Werkzeug version is less than 0.9, trying adhoc certificate.")
+                    if self.show_startup_messages:
+                        print("Werkzeug version is less than 0.9, trying adhoc certificate.")
                     ssl_context = "adhoc"
 
             else:
@@ -338,7 +356,7 @@ class Command(BaseCommand):
         """
         executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
         plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-        if plan:
+        if plan and self.show_startup_messages:
             self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
             self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
