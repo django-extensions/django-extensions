@@ -76,7 +76,9 @@ class Command(BaseCommand):
         make_option('--pm', action='store_true', dest='pm', default=False,
                     help='Drop into (i)pdb shell if an exception is raised in a view.'),
         make_option('--startup-messages', dest='startup_messages', action="store", default='reload',
-                    help='When to show startup messages: reload [default], once, always, never.')
+                    help='When to show startup messages: reload [default], once, always, never.'),
+        make_option('--nopin', action='store_true', dest='nopin', default=False,
+                    help='Disable the PIN in werkzeug. USE IT WISELY!')
     )
     if USE_STATICFILES:
         option_list += (
@@ -254,6 +256,8 @@ class Command(BaseCommand):
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
 
+        self.nopin = not options.get('nopin', False)
+
         def inner_run():
             if self.show_startup_messages:
                 print("Performing system checks...\n")
@@ -339,7 +343,7 @@ class Command(BaseCommand):
             run_simple(
                 self.addr,
                 int(self.port),
-                DebuggedApplication(handler, True),
+                DebuggedApplication(handler, True, pin_security=self.nopin),
                 use_reloader=use_reloader,
                 use_debugger=True,
                 extra_files=extra_files,
