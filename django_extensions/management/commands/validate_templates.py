@@ -3,9 +3,9 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
-from django.template.base import add_to_builtins
 from django.template.loader import get_template
 
+from django_extensions.compat import add_to_builtins_compat
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils import validatingtemplatetags
 
@@ -50,7 +50,8 @@ class Command(BaseCommand):
 
         # Replace built in template tags with our own validating versions
         if options.get('check_urls', False):
-            add_to_builtins('django_extensions.utils.validatingtemplatetags')
+            add_to_builtins_compat(
+                'django_extensions.utils.validatingtemplatetags')
 
         for template_dir in template_dirs:
             for root, dirs, filenames in os.walk(template_dir):

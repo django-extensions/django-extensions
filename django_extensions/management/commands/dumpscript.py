@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 """
       Title: Dumpscript management command
     Project: Hardytools (queryset-refactor version)
@@ -44,6 +44,9 @@ from django.db.models import (
 )
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import (
+    get_apps, get_model_compat, get_models_compat, get_models_for_app
+)
 
 try:
     from django.utils.encoding import smart_unicode, force_unicode  # NOQA
@@ -122,9 +125,6 @@ def get_models(app_labels):
         Or at least discovered with a get_or_create() call.
     """
 
-    from django.db.models import get_app, get_apps, get_model
-    from django.db.models import get_models as get_all_models
-
     # These models are not to be output, e.g. because they can be generated automatically
     # TODO: This should be "appname.modelname" string
     EXCLUDED_MODELS = (ContentType, )
@@ -134,7 +134,8 @@ def get_models(app_labels):
     # If no app labels are given, return all
     if not app_labels:
         for app in get_apps():
-            models += [m for m in get_all_models(app) if m not in EXCLUDED_MODELS]
+            models += [m for m in get_models_compat(app)
+                       if m not in EXCLUDED_MODELS]
         return models
 
     # Get all relevant apps
@@ -142,10 +143,11 @@ def get_models(app_labels):
         # If a specific model is mentioned, get only that model
         if "." in app_label:
             app_label, model_name = app_label.split(".", 1)
-            models.append(get_model(app_label, model_name))
+            models.append(get_model_compat(app_label, model_name))
         # Get all models for a given app
         else:
-            models += [m for m in get_all_models(get_app(app_label)) if m not in EXCLUDED_MODELS]
+            models += [m for m in get_models_for_app(app_label)
+                       if m not in EXCLUDED_MODELS]
 
     return models
 

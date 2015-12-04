@@ -1,7 +1,7 @@
 import sys
 
 from django.core.management.base import BaseCommand
-from django.utils.log import getLogger
+from logging import getLogger
 
 logger = getLogger('django.commands')
 

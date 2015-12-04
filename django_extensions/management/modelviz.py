@@ -11,8 +11,6 @@ import datetime
 import os
 
 import six
-from django.db import models
-from django.db.models import get_models
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -26,12 +24,11 @@ except ImportError:
     from django.utils.encoding import smart_str as force_bytes
 
 try:
-    from django.db.models.fields.generic import GenericRelation
-    assert GenericRelation
+    from django.contrib.contenttypes.fields import GenericRelation
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_apps
+from django_extensions.compat import get_app, get_apps, get_models_compat
 
 
 __version__ = "1.0"
@@ -86,17 +83,18 @@ def generate_dot(app_labels, **kwargs):
                 return True
         return False
 
-    apps = []
+    my_apps = []
     if all_applications:
-        apps = get_apps()
+        my_apps = get_apps()
 
     for app_label in app_labels:
-        app = models.get_app(app_label)
-        if app not in apps:
-            apps.append(app)
+        app = get_app(app_label)
+
+        if app not in my_apps:
+            my_apps.append(app)
 
     graphs = []
-    for app in apps:
+    for app in my_apps:
         graph = Context({
             'name': '"%s"' % app.__name__,
             'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
@@ -104,7 +102,7 @@ def generate_dot(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = get_models(app)
+        appmodels = get_models_compat(app)
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]

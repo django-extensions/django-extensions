@@ -106,7 +106,6 @@ class CommandClassTests(TestCase):
     """Try to load every management command to catch exceptions."""
     def test_load_commands(self):
         try:
-
             management_dir = os.path.join('django_extensions', 'management')
             commands = find_commands(management_dir)
             for command in commands:
