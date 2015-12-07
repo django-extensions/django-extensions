@@ -1,9 +1,9 @@
 from six.moves import configparser
 
 
-def parse_mysql_settings(dbinfo):
+def parse_mysql_cnf(dbinfo):
     """
-    Attempt to parse mysql database connection settings.
+    Attempt to parse mysql database config file for connection settings.
     Ideally we would hook into django's code to do this, but read_default_file is handled by the mysql C libs
     so we have to emulate the behaviour
 

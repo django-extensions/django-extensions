@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
 from django_extensions.management.utils import signalcommand
-from ._private import parse_mysql_settings
+from ._private import parse_mysql_cnf
 
 try:
     from django.db.backends.base.creation import TEST_DATABASE_PREFIX
@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
         user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
-            (user, password, database_name, database_host, database_port) = parse_mysql_settings(dbinfo)
+            (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password
