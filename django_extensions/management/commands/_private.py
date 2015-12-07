@@ -40,4 +40,3 @@ def parse_mysql_cnf(dbinfo):
             pass
 
     return '', '', '', '', ''
-
