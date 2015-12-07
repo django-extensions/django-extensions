@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
         user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
-            (user, password, database_name, database_host, database_port) = Command.parse_mysql_settings(options)
+            (user, password, database_name, database_host, database_port) = parse_mysql_settings(dbinfo)
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password

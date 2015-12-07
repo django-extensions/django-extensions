@@ -29,11 +29,15 @@ def parse_mysql_settings(dbinfo):
             database_host = config.get('client', 'host')
             database_port = config.get('client', 'port')
             socket = config.get('client', 'socket')
+
+            if database_host == 'localhost' and socket:
+                # mysql actually uses a socket if host is localhost
+                database_host = socket
+
+            return user, password, database_name, database_host, database_port
+
         except configparser.NoSectionError:
             pass
 
-        if database_host == 'localhost' and socket:
-            # mysql actually uses a socket if host is localhost
-            database_host = socket
+    return '', '', '', '', ''
 
-    return user, password, database_name, database_host, database_port
