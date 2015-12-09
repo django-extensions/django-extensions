@@ -9,6 +9,7 @@ import django
 from django.http import HttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.db import models
+from django.apps import apps
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
@@ -102,7 +103,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     return "%s__search" % field_name[1:]
                 else:
                     return "%s__icontains" % field_name
-            model = models.get_model(app_label, model_name)
+            model = apps.get_model(app_label, model_name)
             queryset = model._default_manager.all()
             data = ''
             if query:
