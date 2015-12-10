@@ -28,7 +28,7 @@ try:
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_app, get_apps, get_models_compat
+from django_extensions.compat import get_app, get_models_compat, list_app_labels
 
 
 __version__ = "1.0"
@@ -83,18 +83,14 @@ def generate_dot(app_labels, **kwargs):
                 return True
         return False
 
-    my_apps = []
     if all_applications:
-        my_apps = get_apps()
-
-    for app_label in app_labels:
-        app = get_app(app_label)
-
-        if app not in my_apps:
-            my_apps.append(app)
+        app_labels = list_app_labels()
 
     graphs = []
-    for app in my_apps:
+    for app_label in app_labels:
+        app = get_app(app_label)
+        if not app:
+            continue
         graph = Context({
             'name': '"%s"' % app.__name__,
             'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
@@ -102,7 +98,7 @@ def generate_dot(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = get_models_compat(app)
+        appmodels = list(get_models_compat(app_label))
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]

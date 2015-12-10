@@ -48,6 +48,16 @@ def list_apps():
         return list(settings.INSTALLED_APPS)
 
 
+def list_app_labels():
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+        return [app.label for app in apps.get_app_configs()]
+    except ImportError:
+        # old way
+        return [app.rsplit(".")[-1] for app in settings.INSTALLED_APPS]
+
+
 def get_app(app_label):
     try:
         # django >= 1.7
