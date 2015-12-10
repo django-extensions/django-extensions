@@ -15,22 +15,14 @@ from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
 from django.contrib.admin import ModelAdmin
 
-get_model_compat = None
-
-try:
-    from django.apps import apps
-    get_model_compat = apps.get_model
-except ImportError:
-    # less than Django 1.7 the 'get_model' method is on the models module.
-    get_model_compat = models.get_model
+from django_extensions.admin.widgets import ForeignKeySearchInput
+from django_extensions.compat import get_model_compat
 
 try:
     from functools import update_wrapper
     assert update_wrapper
 except ImportError:
     from django.utils.functional import update_wrapper
-
-from django_extensions.admin.widgets import ForeignKeySearchInput
 
 
 class ForeignKeyAutocompleteAdmin(ModelAdmin):
