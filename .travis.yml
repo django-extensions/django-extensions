@@ -5,6 +5,7 @@ sudo: false
 env:
     - TOX_ENV=py27-flake8
     - TOX_ENV=py34-flake8
+    - TOX_ENV=py35-flake8
     - TOX_ENV=py27-dj14
     - TOX_ENV=py27-dj15
     - TOX_ENV=py27-dj16
@@ -40,8 +41,6 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    # py3.5 is not available in travis yet, so let it fail for now.
-    - env: TOX_ENV=py35-dj19
     - env: TOX_ENV=py35-djmaster
     - env: TOX_ENV=py34-djmaster
     - env: TOX_ENV=py33-djmaster
