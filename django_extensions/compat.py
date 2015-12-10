@@ -45,7 +45,7 @@ def list_apps():
         return [app.name for app in apps.get_app_configs()]
     except ImportError:
         # old way
-        return settings.INSTALLED_APPS
+        return list(settings.INSTALLED_APPS)
 
 
 def get_app(app_label):
