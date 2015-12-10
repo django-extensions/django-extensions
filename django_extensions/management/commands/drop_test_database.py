@@ -5,8 +5,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
+from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
-from ._private import parse_mysql_cnf
 
 try:
     from django.db.backends.base.creation import TEST_DATABASE_PREFIX
