@@ -10,12 +10,12 @@ to hook into each commands execution.
 Basic Example
 -------------
 
-An example hooking into show_templatetags:
+An example hooking into show_template_tags:
 
 ::
 
   from django_extensions.management.signals import pre_command, post_command
-  from django_extensions.management.commands.show_templatetags import Command
+  from django_extensions.management.commands.show_template_tags import Command
   
   def pre_receiver(sender, args, kwargs):
     # I'm executed prior to the management command
