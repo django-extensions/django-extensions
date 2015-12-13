@@ -1,6 +1,18 @@
 Changelog
 =========
 
+
+1.6.0
+-----
+
+Changes:
+ - Fix: Django 1.9 compatibility
+ - New: runserver_plus, add --startup-messages to control when to show them
+ - New: added support for Python 3.5
+ - Improvement: show_template_tags, renamed from show_templatetags for consistancy
+ - Removed: jquery library (after dropping support for Django 1.5)
+
+
 1.5.9
 -----
 
