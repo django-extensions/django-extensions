@@ -1,4 +1,3 @@
-import django
 import six
 from django import forms
 from django.contrib.admin.sites import site
