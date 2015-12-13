@@ -14,7 +14,7 @@ Get a fresh copy::
 
 Run tests::
 
-  $ flake8 django-extensions
+  $ flake8 django_extensions
   $ tox --recreate
 
 Change version numbers in django_extensions/__init__.py and docs/conf.py::
