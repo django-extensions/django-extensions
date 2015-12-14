@@ -92,17 +92,15 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         else:
             return value
 
-    def get_db_prep_value(self, value, connection, prepared=False):
+    def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
-        value = super(JSONField, self).get_db_prep_value(
-            value, connection, prepared)
         if value is None and self.null:
             return None
         # default values come in as strings; only non-strings should be
         # run through `dumps`
         if not isinstance(value, six.string_types):
             value = dumps(value)
-        return value
+        return super(JSONField, self).get_db_prep_save(value, connection=connection, **kwargs)
 
     def south_field_triple(self):
         """Returns a suitable description of this field for South."""
