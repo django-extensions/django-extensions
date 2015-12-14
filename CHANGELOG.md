@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.6.1
+-----
+
+Changes:
+ - Revert: JSONField, revert Django 1.9 fix as it breaks the field (ticket #781)
+
 
 1.6.0
 -----
