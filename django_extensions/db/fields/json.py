@@ -14,6 +14,7 @@ from __future__ import absolute_import
 from decimal import Decimal
 
 import six
+import django
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -24,6 +25,12 @@ try:
 except ImportError:
     # Django <= 1.6 backwards compatibility
     from django.utils import simplejson as json
+
+
+if django.VERSION < (1, 8):
+    JSONFieldBase = six.with_metaclass(models.SubfieldBase, models.TextField)
+else:
+    JSONFieldBase = models.TextField
 
 
 def dumps(value):
@@ -64,7 +71,7 @@ class JSONList(list):
         return dumps(self)
 
 
-class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
+class JSONField(JSONFieldBase):
     """JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
@@ -91,6 +98,9 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
             return res
         else:
             return value
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
