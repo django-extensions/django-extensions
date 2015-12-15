@@ -3,8 +3,9 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from six.moves import configparser, input
+from six.moves import input
 
+from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -50,15 +51,9 @@ class Command(BaseCommand):
 
         engine = dbinfo.get('ENGINE').split('.')[-1]
 
-        user = password = database_name = ''
+        user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
-            read_default_file = dbinfo.get('OPTIONS', {}).get('read_default_file')
-            if read_default_file:
-                config = configparser.ConfigParser()
-                config.read(read_default_file)
-                user = config.get('client', 'user')
-                password = config.get('client', 'password')
-                database_name = config.get('client', 'database')
+            (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password
@@ -74,8 +69,8 @@ class Command(BaseCommand):
         if database_name is None or database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
 
-        database_host = dbinfo.get('HOST')
-        database_port = dbinfo.get('PORT')
+        database_host = dbinfo.get('HOST') or database_host
+        database_port = dbinfo.get('PORT') or database_port
 
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
