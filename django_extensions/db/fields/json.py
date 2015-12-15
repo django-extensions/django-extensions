@@ -56,14 +56,14 @@ class JSONList(list):
         return dumps(self)
 
 
-class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
+class JSONField(models.TextField):
     """JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
     def __init__(self, *args, **kwargs):
         default = kwargs.get('default', None)
         if default is None:
-            kwargs['default'] = '{}'
+            kwargs['default'] = {}
         elif isinstance(default, (list, dict)):
             kwargs['default'] = dumps(default)
         models.TextField.__init__(self, *args, **kwargs)
@@ -87,6 +87,9 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
     def get_prep_value(self, value):
         """Do not call `to_python` method."""
         return super(models.TextField, self).get_prep_value(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
