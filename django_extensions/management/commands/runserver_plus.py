@@ -85,7 +85,7 @@ class Command(BaseCommand):
                                 help='Drop into (i)pdb shell if an exception is raised in a view.')
             parser.add_argument('--startup-messages', dest='startup_messages', action="store", default='reload',
                                 help='When to show startup messages: reload [default], once, always, never.')
-    
+
             if USE_STATICFILES:
                 parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
                                     help='Tells Django to NOT automatically serve static files at STATIC_URL.')
