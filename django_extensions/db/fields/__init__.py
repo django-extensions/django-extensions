@@ -295,7 +295,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
         random_chars = self.random_char_generator(population)
         if not self.unique:
-            return random_chars
+            new = six.next(random_chars)
+            setattr(model_instance, self.attname, new)
+            return new
 
         return super(RandomCharField, self).find_unique(
             model_instance,
