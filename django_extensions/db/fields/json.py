@@ -102,7 +102,8 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         # run through `dumps`
         if not isinstance(value, six.string_types):
             value = dumps(value)
-        return super(JSONField, self).get_db_prep_save(value, connection=connection, **kwargs)
+
+        return value
 
     def south_field_triple(self):
         """Returns a suitable description of this field for South."""
