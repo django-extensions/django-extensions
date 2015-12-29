@@ -1,8 +1,11 @@
 import os
 import sys
+import shutil
+
 from optparse import make_option
 
 from django.core.management.base import AppCommand
+from django.core.management.color import color_style
 
 from django_extensions.management.utils import _make_writeable, signalcommand
 
@@ -26,15 +29,25 @@ class Command(AppCommand):
     can_import_settings = True
 
     @signalcommand
+    def handle_app_config(self, app, **options):
+        copy_template('command_template', app.path, **options)
+
+    @signalcommand
     def handle_app(self, app, **options):
+        # handle_app is RemovedInDjango19
         app_dir = os.path.dirname(app.__file__)
-        copy_template('command_template', app_dir, options.get('command_name'), '%sCommand' % options.get('base_command'))
+        copy_template('command_template', app_dir, **options)
 
 
-def copy_template(template_name, copy_to, command_name, base_command):
+def copy_template(template_name, copy_to, **options):
     """copies the specified template directory to the copy_to location"""
     import django_extensions
-    import shutil
+
+    style = color_style()
+    ERROR = getattr(style, 'ERROR', lambda x: x)
+    SUCCESS = getattr(style, 'SUCCESS', lambda x: x)
+
+    command_name, base_command = options.get('command_name'), '%sCommand' % options.get('base_command')
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
 
@@ -58,17 +71,18 @@ def copy_template(template_name, copy_to, command_name, base_command):
             if f.endswith('.pyc') or f.startswith('.DS_Store'):
                 continue
             path_old = os.path.join(d, f)
-            path_new = os.path.join(copy_to, relative_dir, f.replace('sample', command_name))
+            path_new = os.path.join(copy_to, relative_dir, f.replace('sample', command_name)).rstrip(".tmpl")
             if os.path.exists(path_new):
-                path_new = os.path.join(copy_to, relative_dir, f)
+                path_new = os.path.join(copy_to, relative_dir, f).rstrip(".tmpl")
                 if os.path.exists(path_new):
+                    if options.get('verbosity', 1) > 1:
+                        print(ERROR("%s already exists" % path_new))
                     continue
-            path_new = path_new.rstrip(".tmpl")
-            fp_old = open(path_old, 'r')
-            fp_new = open(path_new, 'w')
-            fp_new.write(fp_old.read().replace('{{ command_name }}', command_name).replace('{{ base_command }}', base_command).replace('{{ handle_method }}', handle_method))
-            fp_old.close()
-            fp_new.close()
+            if options.get('verbosity', 1) > 1:
+                print(SUCCESS("%s" % path_new))
+            with open(path_old, 'r') as fp_orig:
+                with open(path_new, 'w') as fp_new:
+                    fp_new.write(fp_orig.read().replace('{{ command_name }}', command_name).replace('{{ base_command }}', base_command).replace('{{ handle_method }}', handle_method))
             try:
                 shutil.copymode(path_old, path_new)
                 _make_writeable(path_new)
