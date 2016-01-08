@@ -5,6 +5,7 @@ from os.path import join as _j
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 
+
 class Command(BaseCommand):
     help = "Removes all python bytecode compiled files from the project."
 
