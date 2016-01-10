@@ -6,6 +6,7 @@ import sys
 import time
 from optparse import make_option
 
+import django
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
@@ -46,50 +47,90 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
-                    help='Tells Django to use a IPv6 address.'),
-        make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-                    help='Tells Django to NOT use the auto-reloader.'),
-        make_option('--browser', action='store_true', dest='open_browser',
-                    help='Tells Django to open a browser.'),
-        make_option('--adminmedia', dest='admin_media_path', default='',
-                    help='Specifies the directory from which to serve admin media.'),
-        make_option('--nothreading', action='store_false', dest='threaded',
-                    help='Do not run in multithreaded mode.'),
-        make_option('--threaded', action='store_true', dest='threaded',
-                    help='Run in multithreaded mode.'),
-        make_option('--output', dest='output_file', default=None,
-                    help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
-        make_option('--print-sql', action='store_true', default=False,
-                    help="Print SQL queries as they're executed"),
-        make_option('--cert', dest='cert_path', action="store", type="string",
-                    help='To use SSL, specify certificate path.'),
-        make_option('--extra-file', dest='extra_files', action="append", type="string",
-                    help='auto-reload whenever the given file changes too (can be specified multiple times)'),
-        make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
-                    help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
-        make_option('--pdb', action='store_true', dest='pdb', default=False,
-                    help='Drop into pdb shell at the start of any view.'),
-        make_option('--ipdb', action='store_true', dest='ipdb', default=False,
-                    help='Drop into ipdb shell at the start of any view.'),
-        make_option('--pm', action='store_true', dest='pm', default=False,
-                    help='Drop into (i)pdb shell if an exception is raised in a view.'),
-        make_option('--startup-messages', dest='startup_messages', action="store", default='reload',
-                    help='When to show startup messages: reload [default], once, always, never.')
-    )
-    if USE_STATICFILES:
-        option_list += (
-            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
-            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                        help='Allows serving static files even if DEBUG is False.'),
-        )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
 
     # Validation is called explicitly each time the server is reloaded.
     requires_system_checks = False
+
+    if django.VERSION >= (1, 8):
+        def add_arguments(self, parser):
+            parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
+                                help='Tells Django to use a IPv6 address.')
+            parser.add_argument('--noreload', action='store_false', dest='use_reloader', default=True,
+                                help='Tells Django to NOT use the auto-reloader.')
+            parser.add_argument('--browser', action='store_true', dest='open_browser',
+                                help='Tells Django to open a browser.')
+            parser.add_argument('--adminmedia', dest='admin_media_path', default='',
+                                help='Specifies the directory from which to serve admin media.')
+            parser.add_argument('--nothreading', action='store_false', dest='threaded',
+                                help='Do not run in multithreaded mode.')
+            parser.add_argument('--threaded', action='store_true', dest='threaded',
+                                help='Run in multithreaded mode.')
+            parser.add_argument('--output', dest='output_file', default=None,
+                                help='Specifies an output file to send a copy of all messages (not flushed immediately).')
+            parser.add_argument('--print-sql', action='store_true', default=False,
+                                help="Print SQL queries as they're executed")
+            parser.add_argument('--cert', dest='cert_path', action="store", type=str,
+                                help='To use SSL, specify certificate path.')
+            parser.add_argument('--extra-file', dest='extra_files', action="append", type=str,
+                                help='auto-reload whenever the given file changes too (can be specified multiple times)')
+            parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
+                                help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
+            parser.add_argument('--pdb', action='store_true', dest='pdb', default=False,
+                                help='Drop into pdb shell at the start of any view.')
+            parser.add_argument('--ipdb', action='store_true', dest='ipdb', default=False,
+                                help='Drop into ipdb shell at the start of any view.')
+            parser.add_argument('--pm', action='store_true', dest='pm', default=False,
+                                help='Drop into (i)pdb shell if an exception is raised in a view.')
+            parser.add_argument('--startup-messages', dest='startup_messages', action="store", default='reload',
+                                help='When to show startup messages: reload [default], once, always, never.')
+
+            if USE_STATICFILES:
+                parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                                    help='Tells Django to NOT automatically serve static files at STATIC_URL.')
+                parser.add_argument('--insecure', action="store_true", dest='insecure_serving', default=False,
+                                    help='Allows serving static files even if DEBUG is False.')
+    else:
+        option_list = BaseCommand.option_list + (
+            make_option('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
+                        help='Tells Django to use a IPv6 address.'),
+            make_option('--noreload', action='store_false', dest='use_reloader', default=True,
+                        help='Tells Django to NOT use the auto-reloader.'),
+            make_option('--browser', action='store_true', dest='open_browser',
+                        help='Tells Django to open a browser.'),
+            make_option('--adminmedia', dest='admin_media_path', default='',
+                        help='Specifies the directory from which to serve admin media.'),
+            make_option('--nothreading', action='store_false', dest='threaded',
+                        help='Do not run in multithreaded mode.'),
+            make_option('--threaded', action='store_true', dest='threaded',
+                        help='Run in multithreaded mode.'),
+            make_option('--output', dest='output_file', default=None,
+                        help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
+            make_option('--print-sql', action='store_true', default=False,
+                        help="Print SQL queries as they're executed"),
+            make_option('--cert', dest='cert_path', action="store", type="string",
+                        help='To use SSL, specify certificate path.'),
+            make_option('--extra-file', dest='extra_files', action="append", type="string",
+                        help='auto-reload whenever the given file changes too (can be specified multiple times)'),
+            make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
+                        help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
+            make_option('--pdb', action='store_true', dest='pdb', default=False,
+                        help='Drop into pdb shell at the start of any view.'),
+            make_option('--ipdb', action='store_true', dest='ipdb', default=False,
+                        help='Drop into ipdb shell at the start of any view.'),
+            make_option('--pm', action='store_true', dest='pm', default=False,
+                        help='Drop into (i)pdb shell if an exception is raised in a view.'),
+            make_option('--startup-messages', dest='startup_messages', action="store", default='reload',
+                        help='When to show startup messages: reload [default], once, always, never.')
+        )
+        if USE_STATICFILES:
+            option_list += (
+                make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                            help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
+                make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
+                            help='Allows serving static files even if DEBUG is False.'),
+            )
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
