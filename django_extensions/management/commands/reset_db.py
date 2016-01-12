@@ -95,7 +95,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 logging.info("Unlinking %s database" % engine)
                 os.unlink(database_name)
             except OSError:
-                pass
+                raise CommandError(str(e))
 
         elif engine in ('mysql',):
             import MySQLdb as Database
