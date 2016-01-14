@@ -18,6 +18,8 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
+from django_extensions.compat import SubfieldBase
+
 try:
     # Django >= 1.7
     import json
@@ -64,7 +66,7 @@ class JSONList(list):
         return dumps(self)
 
 
-class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
+class JSONField(six.with_metaclass(SubfieldBase, models.TextField)):
     """JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
