@@ -7,6 +7,8 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 
+from django_extensions.compat import SubfieldBase
+
 try:
     from keyczar import keyczar
 except ImportError:
@@ -108,8 +110,7 @@ class BaseEncryptedField(models.Field):
         return name, path, args, kwargs
 
 
-class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedTextField(six.with_metaclass(SubfieldBase, BaseEncryptedField)):
     def get_internal_type(self):
         return 'TextField'
 
@@ -128,8 +129,7 @@ class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
         return (field_class, args, kwargs)
 
 
-class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedCharField(six.with_metaclass(SubfieldBase, BaseEncryptedField)):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
