@@ -4,14 +4,14 @@ import six
 import sys
 import time
 import traceback
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import CommandError
 
 from django_extensions.compat import PY3
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 def use_vi_mode():
@@ -22,39 +22,55 @@ def use_vi_mode():
     return editor.startswith('vi') or editor.endswith('vim')
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option('--plain', action='store_true', dest='plain',
-                    help='Tells Django to use plain Python, not BPython nor IPython.'),
-        make_option('--bpython', action='store_true', dest='bpython',
-                    help='Tells Django to use BPython, not IPython.'),
-        make_option('--ptpython', action='store_true', dest='ptpython',
-                    help='Tells Django to use PTPython, not IPython.'),
-        make_option('--ptipython', action='store_true', dest='ptipython',
-                    help='Tells Django to use PT-IPython, not IPython.'),
-        make_option('--ipython', action='store_true', dest='ipython',
-                    help='Tells Django to use IPython, not BPython.'),
-        make_option('--notebook', action='store_true', dest='notebook',
-                    help='Tells Django to use IPython Notebook.'),
-        make_option('--kernel', action='store_true', dest='kernel',
-                    help='Tells Django to start an IPython Kernel.'),
-        make_option('--use-pythonrc', action='store_true', dest='use_pythonrc',
-                    help='Tells Django to execute PYTHONSTARTUP file (BE CAREFULL WITH THIS!)'),
-        make_option('--print-sql', action='store_true', default=False,
-                    help="Print SQL queries as they're executed"),
-        make_option('--dont-load', action='append', dest='dont_load', default=[],
-                    help='Ignore autoloading of some apps/models. Can be used several times.'),
-        make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
-                    help='Do not display loaded models messages'),
-        make_option('--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
-                    help='Load Vi key bindings (for --ptpython and --ptipython)'),
-        make_option('--no-browser', action='store_true', default=False, dest='no_browser',
-                    help='Don\'t open the notebook in a browser after startup.'),
-    )
+class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--plain', action='store_true', dest='plain',
+            help='Tells Django to use plain Python, not BPython nor IPython.')
+        parser.add_argument(
+            '--bpython', action='store_true', dest='bpython',
+            help='Tells Django to use BPython, not IPython.')
+        parser.add_argument(
+            '--ptpython', action='store_true', dest='ptpython',
+            help='Tells Django to use PTPython, not IPython.')
+        parser.add_argument(
+            '--ptipython', action='store_true', dest='ptipython',
+            help='Tells Django to use PT-IPython, not IPython.')
+        parser.add_argument(
+            '--ipython', action='store_true', dest='ipython',
+            help='Tells Django to use IPython, not BPython.')
+        parser.add_argument(
+            '--notebook', action='store_true', dest='notebook',
+            help='Tells Django to use IPython Notebook.')
+        parser.add_argument(
+            '--kernel', action='store_true', dest='kernel',
+            help='Tells Django to start an IPython Kernel.')
+        parser.add_argument(
+            '--use-pythonrc', action='store_true', dest='use_pythonrc',
+            help='Tells Django to execute PYTHONSTARTUP file '
+            '(BE CAREFULL WITH THIS!)')
+        parser.add_argument(
+            '--print-sql', action='store_true', default=False,
+            help="Print SQL queries as they're executed")
+        parser.add_argument(
+            '--dont-load', action='append', dest='dont_load', default=[],
+            help='Ignore autoloading of some apps/models. Can be used '
+            'several times.')
+        parser.add_argument(
+            '--quiet-load', action='store_true', default=False,
+            dest='quiet_load', help='Do not display loaded models messages')
+        parser.add_argument(
+            '--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
+            help='Load Vi key bindings (for --ptpython and --ptipython)')
+        parser.add_argument(
+            '--no-browser', action='store_true', default=False,
+            dest='no_browser',
+            help='Don\'t open the notebook in a browser after startup.')
+
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         use_kernel = options.get('kernel', False)
         use_notebook = options.get('notebook', False)
         use_ipython = options.get('ipython', False)

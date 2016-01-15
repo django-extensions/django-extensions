@@ -15,17 +15,16 @@ The original source and latest version can be found here:
 https://github.com/WoLpH/django-admin-generator/
 """
 
-import optparse
 import re
 import sys
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.db import models
 
 from django_extensions.compat import get_apps, get_models_compat
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
@@ -291,35 +290,35 @@ class AdminModel(UnicodeMixin):
 
 class Command(BaseCommand):
     help = '''Generate a `admin.py` file for the given app (models)'''
-    option_list = BaseCommand.option_list + (
-        optparse.make_option(
+    can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument(
             '-s', '--search-field', action='append',
             default=SEARCH_FIELD_NAMES,
             help='Fields named like this will be added to `search_fields`'
-            ' [default: %default]'),
-        optparse.make_option(
+            ' [default: %default]')
+        parser.add_argument(
             '-d', '--date-hierarchy', action='append',
             default=DATE_HIERARCHY_NAMES,
             help='A field named like this will be set as `date_hierarchy`'
-            ' [default: %default]'),
-        optparse.make_option(
+            ' [default: %default]')
+        parser.add_argument(
             '-p', '--prepopulated-fields', action='append',
             default=PREPOPULATED_FIELD_NAMES,
             help='These fields will be prepopulated by the other field.'
             'The field names can be specified like `spam=eggA,eggB,eggC`'
-            ' [default: %default]'),
-        optparse.make_option(
-            '-l', '--list-filter-threshold', type='int',
+            ' [default: %default]')
+        parser.add_argument(
+            '-l', '--list-filter-threshold', type=int,
             default=LIST_FILTER_THRESHOLD, metavar='LIST_FILTER_THRESHOLD',
             help='If a foreign key has less than LIST_FILTER_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]'),
-        optparse.make_option(
-            '-r', '--raw-id-threshold', type='int',
+            'it will be added to `list_filter` [default: %default]')
+        parser.add_argument(
+            '-r', '--raw-id-threshold', type=int,
             default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
             help='If a foreign key has more than RAW_ID_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]'),
-    )
-    can_import_settings = True
+            'it will be added to `list_filter` [default: %default]')
 
     @signalcommand
     def handle(self, *args, **kwargs):

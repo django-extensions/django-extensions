@@ -2,12 +2,12 @@
 import asyncore
 import sys
 from logging import getLogger
-from optparse import make_option
 from smtpd import SMTPServer
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import setup_logger, signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 logger = getLogger(__name__)
 
@@ -30,17 +30,20 @@ class ExtensionDebuggingServer(SMTPServer):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--output', dest='output_file', default=None,
-                    help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
-        make_option('--use-settings', dest='use_settings',
-                    action='store_true', default=False,
-                    help='Uses EMAIL_HOST and HOST_PORT from Django settings.'),
-    )
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
     requires_system_checks = False
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--output', dest='output_file', default=None,
+            help='Specifies an output file to send a copy of all messages '
+            '(not flushed immediately).')
+        parser.add_argument(
+            '--use-settings', dest='use_settings',
+            action='store_true', default=False,
+            help='Uses EMAIL_HOST and HOST_PORT from Django settings.')
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
