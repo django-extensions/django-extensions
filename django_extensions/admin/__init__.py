@@ -156,7 +156,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         Overrides the default widget for Foreignkey fields if they are
         specified in the related_search_fields class attribute.
         """
-        if (isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields):
+        if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:
             model_name = db_field.rel.to._meta.object_name
             help_text = self.get_help_text(db_field.name, model_name)
             if kwargs.get('help_text'):

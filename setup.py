@@ -14,12 +14,12 @@ except ImportError:
 try:
     from setuptools.command.test import test as TestCommand
 
-    class ToxTestCommand(TestCommand):
-        user_options = [('tox-args=', 'a', "Arguments to pass to tox")]
+    class PyTest(TestCommand):
+        user_options = [('pytest-args=', 'a', "Arguments to pass into py.test")]
 
         def initialize_options(self):
             TestCommand.initialize_options(self)
-            self.tox_args = None
+            self.pytest_args = []
 
         def finalize_options(self):
             TestCommand.finalize_options(self)
@@ -27,16 +27,13 @@ try:
             self.test_suite = True
 
         def run_tests(self):
-            # import here, cause outside the eggs aren't loaded
-            import tox
-            import shlex
-            args = [""]
-            if self.tox_args:
-                args = shlex.split(self.tox_args)
-            errno = tox.cmdline(args=args)
+            import pytest
+
+            errno = pytest.main(self.pytest_args)
             sys.exit(errno)
+
 except ImportError:
-    ToxTestCommand = None
+    PyTest = None
 
 
 class osx_install_data(install_data):
@@ -58,8 +55,8 @@ if sys.platform == "darwin":
 else:
     cmdclasses = {'install_data': install_data}
 
-if ToxTestCommand:
-    cmdclasses['test'] = ToxTestCommand
+if PyTest:
+    cmdclasses['test'] = PyTest
 
 
 def fullsplit(path, result=None):

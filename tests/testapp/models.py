@@ -1,10 +1,8 @@
+# coding=utf-8
 from django.db import models
 
 from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-    UUIDField,
+    AutoSlugField, RandomCharField, ShortUUIDField, UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel
@@ -85,7 +83,7 @@ class UUIDTestModel_pk(models.Model):
         app_label = 'django_extensions'
 
 
-class UUIDTestAgregateModel(UUIDTestModel_pk):
+class UUIDTestAggregateModel(UUIDTestModel_pk):
     a = models.IntegerField()
 
     class Meta:
@@ -114,7 +112,7 @@ class ShortUUIDTestModel_pk(models.Model):
         app_label = 'django_extensions'
 
 
-class ShortUUIDTestAgregateModel(ShortUUIDTestModel_pk):
+class ShortUUIDTestAggregateModel(ShortUUIDTestModel_pk):
     a = models.IntegerField()
 
     class Meta:

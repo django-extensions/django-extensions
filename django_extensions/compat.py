@@ -1,9 +1,11 @@
+# coding=utf-8
 from __future__ import unicode_literals
 
 import sys
 import django
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.db import models
 
 # flake8: noqa
 
@@ -194,3 +196,9 @@ def add_to_builtins_compat(name):
     else:
         from django.template import engines
         engines['django'].engine.builtins.append(name)
+
+
+if django.VERSION >= (1, 10):
+    SubfieldBase = type
+else:
+    SubfieldBase = models.SubfieldBase
