@@ -1,3 +1,4 @@
+# coding=utf-8
 import json
 import os
 from distutils.version import LooseVersion
@@ -205,7 +206,6 @@ class Command(NoArgsCommand):
                 continue
 
             try:
-                #test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
                 test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             except HTTPError as e:
                 print("\n%s\n" % str(e))
@@ -231,13 +231,11 @@ class Command(NoArgsCommand):
 
             if frozen_commit_sha:
                 branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
-                #branch_data = self._urlopen_as_json(branch_url, headers=headers)
                 branch_data = requests.get(branch_url, headers=headers).json()
 
                 frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}".format(
                     user, repo_name, frozen_commit_sha
                 )
-                #frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
                 frozen_commit_data = requests.get(frozen_commit_url, headers=headers).json()
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":

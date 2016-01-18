@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import re
 import sys
@@ -27,7 +28,7 @@ class Command(LabelCommand):
                     help='The diagram path of the app to be created. -d is implied'),
     )
 
-    help = ("Creates an application directory structure for the specified application name.")
+    help = "Creates an application directory structure for the specified application name."
     args = "APP_NAME"
     label = 'application name'
 

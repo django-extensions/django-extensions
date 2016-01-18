@@ -1,8 +1,8 @@
+# coding=utf-8
 import mock
 import string
 import pytest
 
-import django
 from django.test import TestCase
 
 from .testapp.models import (
@@ -15,12 +15,6 @@ from .testapp.models import (
     RandomCharTestModelLowercaseAlphaDigits,
     RandomCharTestModelUppercaseAlphaDigits,
 )
-
-if django.VERSION >= (1, 7):
-    from django.db import migrations  # NOQA
-    from django.db.migrations.writer import MigrationWriter  # NOQA
-    from django.utils import six  # NOQA
-    import django_extensions  # NOQA
 
 
 class RandomCharFieldTest(TestCase):

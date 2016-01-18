@@ -1,3 +1,4 @@
+# coding=utf-8
 import fnmatch
 import os
 from optparse import make_option

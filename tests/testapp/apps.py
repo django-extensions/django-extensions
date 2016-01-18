@@ -1,3 +1,4 @@
+# coding=utf-8
 try:
     from django.apps import AppConfig
 

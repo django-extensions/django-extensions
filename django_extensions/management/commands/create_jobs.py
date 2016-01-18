@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import sys
 import shutil
@@ -9,7 +10,7 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 
 
 class Command(AppCommand):
-    help = ("Creates a Django jobs command directory structure for the given app name in the current directory.")
+    help = "Creates a Django jobs command directory structure for the given app name in the current directory."
     args = "[appname]"
     label = 'application name'
 

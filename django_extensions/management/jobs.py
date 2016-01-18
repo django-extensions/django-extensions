@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 django_extensions.management.jobs
 """

@@ -1,3 +1,4 @@
+# coding=utf-8
 import six
 from django import forms
 from django.contrib.admin.sites import site
@@ -40,7 +41,6 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()

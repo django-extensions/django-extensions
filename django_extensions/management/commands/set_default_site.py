@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 set_default_site.py
 """

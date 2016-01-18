@@ -1,3 +1,4 @@
+# coding=utf-8
 import getpass
 
 from django.core.management.base import BaseCommand, CommandError

@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 SyncData
 ========
@@ -143,7 +144,6 @@ class Command(BaseCommand):
 
                 label_found = False
                 for format in formats:
-                    #serializer = serializers.get_serializer(format)
                     if verbosity > 1:
                         print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format, fixture_name))
                     try:
@@ -198,7 +198,7 @@ class Command(BaseCommand):
         # error was encountered during fixture loading.
         if 0 in objects_per_fixture:
             sys.stderr.write(
-                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % (fixture_name)))
+                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % fixture_name))
             transaction.rollback()
             return
 
