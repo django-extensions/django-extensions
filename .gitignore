@@ -1,5 +1,4 @@
-*.pyc
-*.pyo
+*.py[cod]
 *.egg-info
 MANIFEST
 build
@@ -7,7 +6,6 @@ dist
 docs/_build
 docs/_static
 venv*
-*.egg-info
 .tox
 *.bak
 .DS_Store
@@ -15,4 +13,3 @@ venv*
 .idea/
 .coverage
 .cache/
-
