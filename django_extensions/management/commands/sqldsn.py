@@ -67,7 +67,7 @@ class Command(BaseCommand):
         if engine == 'mysql':
             dsnstr = 'host="{0}", db="{2}", user="{3}", passwd="{4}"'
             if dbport is not None:
-                dsnstr = dsnstr + ', port="{1}"'
+                dsnstr += ', port="{1}"'
 
             dsn.append(dsnstr.format(dbhost,
                                      dbport,
@@ -91,7 +91,7 @@ class Command(BaseCommand):
             sys.stdout.write("{}\n".format(output))
 
     def postgresql(self, dbhost, dbport, dbname, dbuser, dbpass, dsn_style=None):
-        """PostgreSQL psycopg2 driver  accepts two syntaxes
+        """PostgreSQL psycopg2 driver accepts two syntaxes
 
         Plus a string for .pgpass file
         """
@@ -101,7 +101,7 @@ class Command(BaseCommand):
             dsnstr = "host='{0}' dbname='{2}' user='{3}' password='{4}'"
 
             if dbport is not None:
-                dsnstr = dsnstr + " port='{1}'"
+                dsnstr += " port='{1}'"
 
             dsn.append(dsnstr.format(dbhost,
                                      dbport,
@@ -112,7 +112,7 @@ class Command(BaseCommand):
         if dsn_style == 'all' or dsn_style == 'kwargs':
             dsnstr = "host='{0}', database='{2}', user='{3}', password='{4}'"
             if dbport is not None:
-                dsnstr = dsnstr + ", port='{1}'"
+                dsnstr += ", port='{1}'"
 
             dsn.append(dsnstr.format(dbhost,
                                      dbport,

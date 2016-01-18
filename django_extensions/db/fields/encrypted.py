@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys
 import warnings
 
@@ -6,6 +7,8 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+
+from django_extensions.compat import SubfieldBase
 
 try:
     from keyczar import keyczar
@@ -18,7 +21,7 @@ class EncryptionWarning(RuntimeWarning):
     pass
 
 
-class BaseEncryptedField(models.Field):
+class BaseEncryptedField(six.with_metaclass(SubfieldBase, models.Field)):
     prefix = 'enc_str:::'
 
     def __init__(self, *args, **kwargs):
@@ -108,8 +111,7 @@ class BaseEncryptedField(models.Field):
         return name, path, args, kwargs
 
 
-class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedTextField(BaseEncryptedField):
     def get_internal_type(self):
         return 'TextField'
 
@@ -119,17 +121,16 @@ class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
         return super(EncryptedTextField, self).formfield(**defaults)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.TextField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
 
-class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedCharField(BaseEncryptedField):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
@@ -142,10 +143,10 @@ class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
         return super(EncryptedCharField, self).formfield(**defaults)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.CharField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs

@@ -1,3 +1,4 @@
+# coding=utf-8
 import tempfile
 from contextlib import contextmanager
 
@@ -5,7 +6,6 @@ import django
 import pytest
 from django.conf import settings
 from django.db import connection, models
-from django.test import TestCase
 
 from .testapp.models import Secret
 
@@ -126,7 +126,7 @@ def secret_model():
 @pytest.mark.skipif(keyczar_active is False or django.VERSION < (1, 7),
                     reason="Encrypted fields needs that keyczar is installed")
 @pytest.mark.usefixtures("admin_user", "keyczar_keys")
-class EncryptedFieldsTestCase(TestCase):
+class TestEncryptedFields:
     def test_char_field_create(self):
         """
         Uses a private key to encrypt data on model creation.
@@ -142,7 +142,7 @@ class EncryptedFieldsTestCase(TestCase):
                 cursor.execute(query)
                 db_val, = cursor.fetchone()
                 decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
-                self.assertEqual(test_val, decrypted_val)
+                assert test_val == decrypted_val
 
     def test_char_field_read(self):
         """
@@ -155,7 +155,7 @@ class EncryptedFieldsTestCase(TestCase):
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
-                self.assertEqual(test_val, retrieved_secret.name)
+                assert test_val == retrieved_secret.name
 
     def test_text_field_create(self):
         """
@@ -171,7 +171,7 @@ class EncryptedFieldsTestCase(TestCase):
                 cursor.execute(query)
                 db_val, = cursor.fetchone()
                 decrypted_val = crypt.Decrypt(db_val[len(EncryptedCharField.prefix):])
-                self.assertEqual(test_val, decrypted_val)
+                assert test_val == decrypted_val
 
     def test_text_field_read(self):
         """
@@ -184,7 +184,7 @@ class EncryptedFieldsTestCase(TestCase):
                 test_val = "Test Secret"
                 secret = model.objects.create(text=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
-                self.assertEqual(test_val, retrieved_secret.text)
+                assert test_val == retrieved_secret.text
 
     def test_cannot_decrypt(self):
         """
@@ -196,8 +196,8 @@ class EncryptedFieldsTestCase(TestCase):
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
-                self.assertNotEqual(test_val, retrieved_secret.name)
-                self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
+                assert test_val != retrieved_secret.name
+                assert retrieved_secret.name.startswith(EncryptedCharField.prefix)
 
     def test_unacceptable_purpose(self):
         """
@@ -206,7 +206,7 @@ class EncryptedFieldsTestCase(TestCase):
         since public keys cannot be used for decryption. This should raise an
         exception.
         """
-        with self.assertRaises(keyczar.errors.KeyczarError):
+        with pytest.raises(keyczar.errors.KeyczarError):
             with keys(keyinfo.ENCRYPT):
                 with secret_model():
                     # A KeyCzar exception should get raised during class
@@ -224,8 +224,8 @@ class EncryptedFieldsTestCase(TestCase):
                 test_val = "Test Secret"
                 secret = model.objects.create(name=test_val)
                 retrieved_secret = model.objects.get(id=secret.id)
-                self.assertNotEqual(test_val, retrieved_secret.name)
-                self.assertTrue(retrieved_secret.name.startswith(EncryptedCharField.prefix))
+                assert test_val != retrieved_secret.name
+                assert retrieved_secret.name.startswith(EncryptedCharField.prefix)
 
     def test_encrypt_public_decrypt_private(self):
         """
@@ -238,11 +238,11 @@ class EncryptedFieldsTestCase(TestCase):
             with secret_model() as model:
                 secret = model.objects.create(name=test_val)
                 enc_retrieved_secret = model.objects.get(id=secret.id)
-                self.assertNotEqual(test_val, enc_retrieved_secret.name)
-                self.assertTrue(enc_retrieved_secret.name.startswith(EncryptedCharField.prefix))
+                assert test_val != enc_retrieved_secret.name
+                assert enc_retrieved_secret.name.startswith(EncryptedCharField.prefix)
 
         # Next, retrieve data from db, and decrypt with private key.
         with keys(keyinfo.DECRYPT_AND_ENCRYPT):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
-                self.assertEqual(test_val, retrieved_secret.name)
+                assert test_val == retrieved_secret.name

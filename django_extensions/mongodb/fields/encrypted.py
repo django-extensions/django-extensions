@@ -22,7 +22,7 @@ class BaseEncryptedField(BaseField):
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if (value.startswith(self.prefix)):
+        if value.startswith(self.prefix):
             retval = self.crypt.Decrypt(value[len(self.prefix):])
         else:
             retval = value

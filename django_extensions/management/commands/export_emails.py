@@ -34,7 +34,7 @@ class Command(BaseCommand):
                     help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
     )
 
-    help = ("Export user email address list in one of a number of formats.")
+    help = "Export user email address list in one of a number of formats."
     args = "[output file]"
     label = 'filename to save to'
 

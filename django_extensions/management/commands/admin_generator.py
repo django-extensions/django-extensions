@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 The Django Admin Generator is a project which can automatically generate
 (scaffold) a Django Admin for you. By doing this it will introspect your
 models and automatically generate an Admin with properties like:
@@ -13,7 +13,7 @@ models and automatically generate an Admin with properties like:
 
 The original source and latest version can be found here:
 https://github.com/WoLpH/django-admin-generator/
-'''
+"""
 
 import optparse
 import re
@@ -167,7 +167,7 @@ class AdminModel(UnicodeMixin):
         for field in meta.local_many_to_many:
             related_model = getattr(field.related, 'related_model', field.related.model)
             related_objects = related_model.objects.all()
-            if(related_objects[:raw_id_threshold].count() < raw_id_threshold):
+            if related_objects[:raw_id_threshold].count() < raw_id_threshold:
                 yield field.name
 
     def _process_fields(self, meta):

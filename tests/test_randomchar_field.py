@@ -1,92 +1,53 @@
-import mock
+# coding=utf-8
 import string
+
+import mock
 import pytest
 
-import django
-from django.test import TestCase
-
 from .testapp.models import (
-    RandomCharTestModel,
-    RandomCharTestModelLowercase,
-    RandomCharTestModelUppercase,
-    RandomCharTestModelAlpha,
-    RandomCharTestModelDigits,
-    RandomCharTestModelPunctuation,
-    RandomCharTestModelLowercaseAlphaDigits,
+    RandomCharTestModel, RandomCharTestModelAlpha, RandomCharTestModelDigits,
+    RandomCharTestModelLowercase, RandomCharTestModelLowercaseAlphaDigits,
+    RandomCharTestModelPunctuation, RandomCharTestModelUppercase,
     RandomCharTestModelUppercaseAlphaDigits,
 )
 
-if django.VERSION >= (1, 7):
-    from django.db import migrations  # NOQA
-    from django.db.migrations.writer import MigrationWriter  # NOQA
-    from django.utils import six  # NOQA
-    import django_extensions  # NOQA
+pytestmark = pytest.mark.django_db
 
 
-class RandomCharFieldTest(TestCase):
+class TestRandomCharField:
 
     def testRandomCharField(self):
-        m = RandomCharTestModel()
-        m.save()
+        m = RandomCharTestModel.objects.create()
         assert len(m.random_char_field) == 8, m.random_char_field
 
-    def testRandomCharFieldLowercase(self):
-        m = RandomCharTestModelLowercase()
-        m.save()
-        for c in m.random_char_field:
-            assert c.islower(), m.random_char_field
-
-    def testRandomCharFieldUppercase(self):
-        m = RandomCharTestModelUppercase()
-        m.save()
-        for c in m.random_char_field:
-            assert c.isupper(), m.random_char_field
-
-    def testRandomCharFieldAlpha(self):
-        m = RandomCharTestModelAlpha()
-        m.save()
-        for c in m.random_char_field:
-            assert c.isalpha(), m.random_char_field
-
-    def testRandomCharFieldDigits(self):
-        m = RandomCharTestModelDigits()
-        m.save()
-        for c in m.random_char_field:
-            assert c.isdigit(), m.random_char_field
-
-    def testRandomCharFieldPunctuation(self):
-        m = RandomCharTestModelPunctuation()
-        m.save()
-        for c in m.random_char_field:
-            assert c in string.punctuation, m.random_char_field
-
-    def testRandomCharTestModelLowercaseAlphaDigits(self):
-        m = RandomCharTestModelLowercaseAlphaDigits()
-        m.save()
-        for c in m.random_char_field:
-            assert c.isdigit() or (c.isalpha() and c.islower()), m.random_char_field
-
-    def testRandomCharTestModelUppercaseAlphaDigits(self):
-        m = RandomCharTestModelUppercaseAlphaDigits()
-        m.save()
-        for c in m.random_char_field:
-            assert c.isdigit() or (c.isalpha() and c.isupper()), m.random_char_field
+    @pytest.mark.parametrize(
+        'model, checker',
+        (
+            (RandomCharTestModelLowercase, lambda c: c.islower()),
+            (RandomCharTestModelUppercase, lambda c: c.isupper()),
+            (RandomCharTestModelAlpha, lambda c: c.isalpha()),
+            (RandomCharTestModelDigits, lambda c: c.isdigit()),
+            (RandomCharTestModelPunctuation, lambda c: c in string.punctuation),
+            (RandomCharTestModelLowercaseAlphaDigits, lambda c: c.isdigit() or (c.isalpha() and c.islower())),
+            (RandomCharTestModelUppercaseAlphaDigits, lambda c: c.isdigit() or (c.isalpha() and c.isupper())),
+        )
+    )
+    def test_string_generation(self, model, checker):
+        instance = model.objects.create()
+        for character in instance.random_char_field:
+            assert checker(character), instance.random_char_field
 
     def testRandomCharTestModelDuplicate(self):
-        m = RandomCharTestModel()
-        m.save()
+        m = RandomCharTestModel.objects.create()
         with mock.patch('django_extensions.db.fields.RandomCharField.random_char_generator') as func:
             func.return_value = iter([m.random_char_field, 'aaa'])
-            m = RandomCharTestModel()
-            m.save()
+            m = RandomCharTestModel.objects.create()
         assert m.random_char_field == 'aaa'
 
     def testRandomCharTestModelAsserts(self):
         with mock.patch('django_extensions.db.fields.get_random_string') as mock_sample:
             mock_sample.return_value = 'aaa'
-            m = RandomCharTestModel()
-            m.save()
+            RandomCharTestModel.objects.create()
 
-            m = RandomCharTestModel()
             with pytest.raises(RuntimeError):
-                m.save()
+                RandomCharTestModel.objects.create()

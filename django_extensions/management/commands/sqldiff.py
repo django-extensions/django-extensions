@@ -351,7 +351,7 @@ class SQLDiff(object):
                 field = fields[att_name]
                 db_field_unique = att_opts['unique']
                 if not db_field_unique and table_constraints:
-                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
+                    db_field_unique = any(constraint['unique'] for constraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
                 if field.db_index:
                     continue
                 if getattr(field, 'spatial_index', False):

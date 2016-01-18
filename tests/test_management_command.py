@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
-import sys
 
+import pytest
 from django.core.management import (
     call_command, find_commands, load_command_class,
 )
-from django.test import TestCase
+from django.db import models
 
-from django_extensions.compat import StringIO, importlib
+from django_extensions.compat import importlib
+from django_extensions.management.base import logger
+
+pytestmark = pytest.mark.django_db
 
 
 class MockLoggingHandler(logging.Handler):
@@ -31,48 +34,43 @@ class MockLoggingHandler(logging.Handler):
         }
 
 
-class CommandTest(TestCase):
-    def test_error_logging(self):
-        # Ensure command errors are properly logged and reraised
-        from django_extensions.management.base import logger
-        logger.addHandler(MockLoggingHandler())
-        module_path = "tests.management.commands.error_raising_command"
-        module = importlib.import_module(module_path)
-        error_raising_command = module.Command()
-        self.assertRaises(Exception, error_raising_command.execute)
-        handler = logger.handlers[0]
-        self.assertEqual(len(handler.messages['error']), 1)
+def test_error_logging():
+    """
+    Ensure command errors are properly logged and reraised
+    """
+    logger.addHandler(MockLoggingHandler())
+    module_path = 'tests.management.commands.error_raising_command'
+    module = importlib.import_module(module_path)
+    error_raising_command = module.Command()
+    with pytest.raises(Exception):
+        error_raising_command.execute()
+    handler = logger.handlers[0]
+    assert len(handler.messages['error']) == 1
 
 
-class ShowTemplateTagsTests(TestCase):
-    def test_some_output(self):
-        out = StringIO()
-        call_command('show_template_tags', stdout=out)
-        output = out.getvalue()
-        # Once django_extension is installed during tests it should appear with
-        # its templatetags
-        self.assertIn('django_extensions', output)
-        # let's check at least one
-        self.assertIn('truncate_letters', output)
+def test_show_template_tags(capsys):
+    call_command('show_template_tags')
+    output = capsys.readouterr()[0]
+    # Once django_extension is installed during tests it should appear with
+    # its templatetags
+    assert 'django_extensions' in output
+    # let's check at least one
+    assert 'truncate_letters' in output
 
 
-class UpdatePermissionsTests(TestCase):
-    def test_works(self):
-        from django.db import models
+def test_update_permissions(capsys):
 
-        class PermModel(models.Model):
-            class Meta:
-                app_label = 'django_extensions'
-                permissions = (('test_permission', 'test_permission'),)
+    class PermModel(models.Model):
 
-        original_stdout = sys.stdout
-        out = sys.stdout = StringIO()
-        call_command('update_permissions', stdout=out, verbosity=3)
-        sys.stdout = original_stdout
-        self.assertIn("Can change perm model", out.getvalue())
+        class Meta:
+            app_label = 'django_extensions'
+            permissions = (('test_permission', 'test_permission'),)
+
+    call_command('update_permissions', verbosity=3)
+    assert 'Can change perm model' in capsys.readouterr()[0]
 
 
-class CommandSignalTests(TestCase):
+class TestCommandSignal:
     pre = None
     post = None
 
@@ -83,32 +81,27 @@ class CommandSignalTests(TestCase):
             Command
 
         def pre(sender, **kwargs):
-            CommandSignalTests.pre = dict(**kwargs)
+            TestCommandSignal.pre = dict(**kwargs)
 
         def post(sender, **kwargs):
-            CommandSignalTests.post = dict(**kwargs)
+            TestCommandSignal.post = dict(**kwargs)
 
         pre_command.connect(pre, Command)
         post_command.connect(post, Command)
 
-        out = StringIO()
-        call_command('show_template_tags', stdout=out)
+        call_command('show_template_tags')
 
-        self.assertIn('args', CommandSignalTests.pre)
-        self.assertIn('kwargs', CommandSignalTests.pre)
+        assert 'args' in TestCommandSignal.pre
+        assert 'kwargs' in TestCommandSignal.pre
 
-        self.assertIn('args', CommandSignalTests.post)
-        self.assertIn('kwargs', CommandSignalTests.post)
-        self.assertIn('outcome', CommandSignalTests.post)
+        assert 'args' in TestCommandSignal.post
+        assert 'kwargs' in TestCommandSignal.post
+        assert 'outcome' in TestCommandSignal.post
 
 
-class CommandClassTests(TestCase):
+def test_load_commands():
     """Try to load every management command to catch exceptions."""
-    def test_load_commands(self):
-        try:
-            management_dir = os.path.join('django_extensions', 'management')
-            commands = find_commands(management_dir)
-            for command in commands:
-                load_command_class('django_extensions', command)
-        except Exception as e:
-            self.fail("Can't load command class of {0}\n{1}".format(command, e))
+    management_dir = os.path.join('django_extensions', 'management')
+    commands = find_commands(management_dir)
+    for command in commands:
+        load_command_class('django_extensions', command)
