@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from .testapp.models import (
     RandomCharTestModel,
+    RandomCharTestModelUnique,
     RandomCharTestModelLowercase,
     RandomCharTestModelUppercase,
     RandomCharTestModelAlpha,
@@ -21,6 +22,11 @@ class RandomCharFieldTest(TestCase):
 
     def testRandomCharField(self):
         m = RandomCharTestModel()
+        m.save()
+        assert len(m.random_char_field) == 8, m.random_char_field
+
+    def testRandomCharFieldUnique(self):
+        m = RandomCharTestModelUnique()
         m.save()
         assert len(m.random_char_field) == 8, m.random_char_field
 
@@ -67,20 +73,20 @@ class RandomCharFieldTest(TestCase):
             assert c.isdigit() or (c.isalpha() and c.isupper()), m.random_char_field
 
     def testRandomCharTestModelDuplicate(self):
-        m = RandomCharTestModel()
+        m = RandomCharTestModelUnique()
         m.save()
         with mock.patch('django_extensions.db.fields.RandomCharField.random_char_generator') as func:
             func.return_value = iter([m.random_char_field, 'aaa'])
-            m = RandomCharTestModel()
+            m = RandomCharTestModelUnique()
             m.save()
         assert m.random_char_field == 'aaa'
 
     def testRandomCharTestModelAsserts(self):
         with mock.patch('django_extensions.db.fields.get_random_string') as mock_sample:
             mock_sample.return_value = 'aaa'
-            m = RandomCharTestModel()
+            m = RandomCharTestModelUnique()
             m.save()
 
-            m = RandomCharTestModel()
+            m = RandomCharTestModelUnique()
             with pytest.raises(RuntimeError):
                 m.save()
