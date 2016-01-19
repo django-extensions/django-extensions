@@ -1,20 +1,32 @@
 # coding=utf-8
-from django.test import TestCase
+import pytest
 
 from .testapp.models import JSONFieldTestModel
 
 
-class JsonFieldTest(TestCase):
-    def test_char_field_create(self):
-        j = JSONFieldTestModel.objects.create(a=6, j_field=dict(foo='bar'))
-        self.assertEqual(j.a, 6)
-        self.assertEqual(j.j_field, {'foo': 'bar'})
+pytestmark = pytest.mark.django_db
 
-    def test_default(self):
-        j = JSONFieldTestModel.objects.create(a=1)
-        self.assertEqual(j.j_field, {})
 
-    def test_empty_list(self):
-        j = JSONFieldTestModel.objects.create(a=6, j_field=[])
-        self.assertTrue(isinstance(j.j_field, list))
-        self.assertEqual(j.j_field, [])
+DEFAULT = {}
+
+
+@pytest.mark.parametrize(
+    'create_kwargs',
+    (
+        DEFAULT,
+        {'field': {'foo': 'bar'}},
+        {'field': []},
+        {'field': [1, 2, 3]},
+        {'field': None},
+        {'field': True},
+        {'field': 'foo'},
+    )
+)
+def test_json_field_create(create_kwargs):
+    expected = create_kwargs.get('field', DEFAULT)
+
+    instance = JSONFieldTestModel.objects.create(**create_kwargs)
+    assert instance.field == expected
+
+    from_db = JSONFieldTestModel.objects.get()
+    assert from_db.field == expected

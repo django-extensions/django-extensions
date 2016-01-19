@@ -64,8 +64,7 @@ class ChildSluggedTestModel(SluggedTestModel):
 
 
 class JSONFieldTestModel(models.Model):
-    a = models.IntegerField()
-    j_field = JSONField()
+    field = JSONField()
 
     class Meta:
         app_label = 'django_extensions'
