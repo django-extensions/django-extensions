@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 JSONField automatically serializes most Python terms to JSON data.
 Creates a TEXT field with a default value of "{}".  See test_json.py for
@@ -109,7 +110,7 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         field_class = "django.db.models.fields.TextField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(JSONField, self).deconstruct()

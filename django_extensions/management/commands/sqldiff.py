@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 sqldiff.py - Prints the (approximated) difference between models and database
 
@@ -233,7 +234,7 @@ class SQLDiff(object):
     def get_field_db_type(self, description, field=None, table_name=None):
         from django.db import models
         # DB-API cursor.description
-        #(name, type_code, display_size, internal_size, precision, scale, null_ok) = description
+        # (name, type_code, display_size, internal_size, precision, scale, null_ok) = description
         type_code = description[1]
         if type_code in self.DATA_TYPES_REVERSE_OVERRIDE:
             reverse_type = self.DATA_TYPES_REVERSE_OVERRIDE[type_code]
@@ -955,9 +956,6 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
                 raise CommandError('Enter at least one appname.')
 
             app_models = get_app_models(app_labels)
-
-        # remove all models that are not managed by Django
-        #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')

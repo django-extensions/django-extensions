@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 signals we use to trigger regular batch jobs
 """

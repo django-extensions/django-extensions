@@ -1,3 +1,4 @@
+# coding=utf-8
 import django
 from django import template
 from django.template.defaultfilters import stringfilter

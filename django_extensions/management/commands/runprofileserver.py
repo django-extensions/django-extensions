@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 runprofileserver.py
 
@@ -25,20 +26,9 @@ except ImportError as e:
     USE_STATICFILES = False
 
 
-try:
-    any
-except NameError:
-    # backwards compatibility for <2.5
-    def any(iterable):
-        for element in iterable:
-            if element:
-                return True
-        return False
-
-
 def label(code):
     if isinstance(code, str):
-        return ('~', 0, code)    # built-in functions ('~' sorts at the end)
+        return '~', 0, code  # built-in functions ('~' sorts at the end)
     else:
         return '%s %s:%d' % (code.co_name,
                              code.co_filename,
@@ -68,7 +58,6 @@ class KCacheGrind(object):
         out_file = self.out_file
 
         code = entry.code
-        #print >> out_file, 'ob=%s' % (code.co_filename,)
         if isinstance(code, str):
             out_file.write('fi=~\n')
         else:
@@ -99,7 +88,6 @@ class KCacheGrind(object):
     def _subentry(self, lineno, subentry):
         out_file = self.out_file
         code = subentry.code
-        #out_file.write('cob=%s\n' % (code.co_filename,))
         out_file.write('cfn=%s\n' % (label(code),))
         if isinstance(code, str):
             out_file.write('cfi=~\n')
@@ -278,7 +266,7 @@ class Command(BaseCommand):
                 if USE_STATICFILES:
                     use_static_handler = options.get('use_static_handler', True)
                     insecure_serving = options.get('insecure_serving', False)
-                    if (use_static_handler and (settings.DEBUG or insecure_serving)):
+                    if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)

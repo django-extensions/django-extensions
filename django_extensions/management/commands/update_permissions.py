@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.contrib.auth.management import \
     create_permissions as _create_permissions
 from django.core.management.base import BaseCommand

@@ -1,3 +1,4 @@
+# coding=utf-8
 import functools
 import re
 from optparse import make_option

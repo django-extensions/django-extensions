@@ -1,3 +1,4 @@
+# coding=utf-8
 import unicodedata
 
 from django.core.exceptions import ValidationError

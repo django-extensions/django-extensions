@@ -1,3 +1,4 @@
+# coding=utf-8
 import django
 import pytest
 from django.db import models

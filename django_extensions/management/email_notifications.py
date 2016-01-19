@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys
 import traceback
 from optparse import make_option
@@ -74,7 +75,7 @@ class EmailNotificationCommand(BaseCommand):
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
         except Exception:
-            if (options.get('email_exception', False) or getattr(self, 'email_exception', False)):
+            if options.get('email_exception', False) or getattr(self, 'email_exception', False):
                 self.send_email_notification(include_traceback=True)
             raise
 
@@ -97,7 +98,7 @@ class EmailNotificationCommand(BaseCommand):
             email_settings = {}
 
         # Exit if no traceback found and not in 'notify always' mode
-        if (not include_traceback and not email_settings.get('notification_level', 0)):
+        if not include_traceback and not email_settings.get('notification_level', 0):
             print(self.style.ERROR("Exiting, not in 'notify always' mode."))
             return
 
@@ -109,7 +110,7 @@ class EmailNotificationCommand(BaseCommand):
         )
 
         # Include traceback
-        if (include_traceback and not email_settings.get('no_traceback', False)):
+        if include_traceback and not email_settings.get('no_traceback', False):
             try:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 trb = ''.join(traceback.format_tb(exc_traceback))

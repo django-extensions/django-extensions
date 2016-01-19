@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Sets up the terminal color scheme.
 """

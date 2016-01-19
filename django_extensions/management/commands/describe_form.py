@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.core.management.base import CommandError, LabelCommand
 
 from django_extensions.management.utils import signalcommand

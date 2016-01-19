@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import with_statement
 
 import os
@@ -27,13 +28,13 @@ class Command(BaseCommand):
         for app_dir in apps:
             app_dir = app_dir.replace(".", "/")
             for top, dirs, files in os.walk(app_dir):
-                for f in files:
-                    if os.path.splitext(f)[1] in ('.py', '.html'):
-                        fpath = os.path.join(top, f)
+                for fn in files:
+                    if os.path.splitext(fn)[1] in ('.py', '.html'):
+                        fpath = os.path.join(top, fn)
                         annotation_lines = []
-                        with open(fpath, 'r') as f:
+                        with open(fpath, 'r') as fd:
                             i = 0
-                            for line in f.readlines():
+                            for line in fd.readlines():
                                 i += 1
                                 if ANNOTATION_RE.search(line):
                                     tag, msg = ANNOTATION_RE.findall(line)[0]
