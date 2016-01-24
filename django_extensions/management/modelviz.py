@@ -12,6 +12,7 @@ import datetime
 import os
 
 import six
+import django
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -305,6 +306,8 @@ def generate_dot(app_labels, **kwargs):
         'use_subgraph': use_subgraph,
         'graphs': graphs,
     })
+    if django.VERSION >= (1, 8):
+        c = c.flatten()
     dot = t.render(c)
 
     return dot
