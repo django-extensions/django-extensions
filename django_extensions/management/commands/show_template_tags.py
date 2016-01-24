@@ -5,11 +5,11 @@ import os
 import six
 from django.conf import settings
 from django.core.management import color
-from django.core.management.base import BaseCommand
 from django.utils import termcolors
 
 from django_extensions.compat import load_tag_library
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.utils.encoding import smart_text

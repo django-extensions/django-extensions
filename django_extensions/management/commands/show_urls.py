@@ -1,17 +1,17 @@
 # coding=utf-8
 import functools
 import re
-from optparse import make_option
 
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
 from django.utils import translation
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
@@ -22,20 +22,24 @@ FMTR = {
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option("--unsorted", "-u", action="store_true", dest="unsorted",
-                    help="Show urls unsorted but same order as found in url patterns"),
-        make_option("--language", "-l", dest="language",
-                    help="Only show this language code (useful for i18n_patterns)"),
-        make_option("--decorator", "-d", action="append", dest="decorator", default=[],
-                    help="Show the presence of given decorator on views"),
-        make_option("--format", "-f", dest="format_style", default="dense",
-                    help="Style of the output. Choices: %s" % FMTR.keys()),
-        make_option("--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
-                    help="Set the settings URL conf variable to use")
-    )
-
     help = "Displays all of the url matching routes for the project."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--unsorted", "-u", action="store_true", dest="unsorted",
+            help="Show urls unsorted but same order as found in url patterns")
+        parser.add_argument(
+            "--language", "-l", dest="language",
+            help="Only show this language code (useful for i18n_patterns)")
+        parser.add_argument(
+            "--decorator", "-d", action="append", dest="decorator", default=[],
+            help="Show the presence of given decorator on views")
+        parser.add_argument(
+            "--format", "-f", dest="format_style", default="dense",
+            help="Style of the output. Choices: %s" % FMTR.keys())
+        parser.add_argument(
+            "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
+            help="Set the settings URL conf variable to use")
 
     @signalcommand
     def handle(self, *args, **options):

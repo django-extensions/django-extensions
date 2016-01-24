@@ -3,18 +3,18 @@ import os
 from collections import defaultdict
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
 from django.db import models
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 from django_extensions.compat import get_apps_from_cache, get_models_from_cache
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
 
         if settings.MEDIA_ROOT == '':
             print("MEDIA_ROOT is not set, nothing to do")
