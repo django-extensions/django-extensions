@@ -319,6 +319,8 @@ class Command(BaseCommand):
             default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
             help='If a foreign key has more than RAW_ID_THRESHOLD items '
             'it will be added to `list_filter` [default: %default]')
+        parser.add_argument('app', nargs=1, type=str)
+
 
     @signalcommand
     def handle(self, *args, **kwargs):
@@ -327,11 +329,8 @@ class Command(BaseCommand):
         installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
-        if not args:
-            args = [False]
-
-        app = installed_apps.get(args[0])
-        if not app:
+        app = kwargs.pop('app')[0]
+        if not installed_apps.get(app):
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
             for app in sorted(installed_apps):
@@ -341,7 +340,6 @@ class Command(BaseCommand):
         model_res = []
         for arg in args[1:]:
             model_res.append(re.compile(arg, re.IGNORECASE))
-
         self.handle_app(app, model_res, **kwargs)
 
     def handle_app(self, app, model_res, **options):
