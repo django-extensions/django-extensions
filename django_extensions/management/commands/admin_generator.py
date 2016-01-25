@@ -321,7 +321,6 @@ class Command(BaseCommand):
             'it will be added to `list_filter` [default: %default]')
         parser.add_argument('app', nargs=1, type=str)
 
-
     @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
