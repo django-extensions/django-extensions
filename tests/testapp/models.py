@@ -63,11 +63,25 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
-class JSONFieldTestModel(models.Model):
+class JSONFieldModel(models.Model):
     field = JSONField()
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class InheritedFromConcreteJSONFieldModel(Name):
+    field = JSONField()
+
+
+class AbstractModel(models.Model):
+
+    class Meta:
+        abstract = True
+
+
+class InheritedFromAbstractJSONFieldModel(Name):
+    field = JSONField()
 
 
 class UUIDTestModel_field(models.Model):

@@ -1,7 +1,7 @@
 # coding=utf-8
 import pytest
 
-from .testapp.models import JSONFieldTestModel
+from .testapp.models import JSONFieldModel, InheritedFromConcreteJSONFieldModel, InheritedFromAbstractJSONFieldModel
 
 
 pytestmark = pytest.mark.django_db
@@ -10,6 +10,13 @@ pytestmark = pytest.mark.django_db
 DEFAULT = {}
 
 
+@pytest.mark.parametrize(
+    'model', (
+        JSONFieldModel,
+        InheritedFromConcreteJSONFieldModel,
+        InheritedFromAbstractJSONFieldModel
+    )
+)
 @pytest.mark.parametrize(
     'create_kwargs',
     (
@@ -22,11 +29,11 @@ DEFAULT = {}
         {'field': 'foo'},
     )
 )
-def test_json_field_create(create_kwargs):
+def test_json_field_create(model, create_kwargs):
     expected = create_kwargs.get('field', DEFAULT)
 
-    instance = JSONFieldTestModel.objects.create(**create_kwargs)
+    instance = model.objects.create(**create_kwargs)
     assert instance.field == expected
 
-    from_db = JSONFieldTestModel.objects.get()
+    from_db = model.objects.get()
     assert from_db.field == expected
