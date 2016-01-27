@@ -1,20 +1,18 @@
 # coding=utf-8
-from optparse import make_option
-
-from django.core.management.base import LabelCommand
-
 from django_extensions.management.jobs import get_job, print_jobs
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):
-    option_list = LabelCommand.option_list + (
-        make_option('--list', '-l', action="store_true", dest="list_jobs",
-                    help="List all jobs with their description"),
-    )
     help = "Run a single maintenance job."
     args = "[app_name] job_name"
     label = ""
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--list', '-l', action="store_true", dest="list_jobs",
+            help="List all jobs with their description")
 
     def runjob(self, app_name, job_name, options):
         verbosity = int(options.get('verbosity', 1))

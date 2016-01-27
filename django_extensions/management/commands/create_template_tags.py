@@ -1,23 +1,23 @@
 # coding=utf-8
 import os
 import sys
-from optparse import make_option
 
-from django.core.management.base import AppCommand
-
+from django_extensions.compat import CompatibilityAppCommand as AppCommand
 from django_extensions.management.utils import _make_writeable, signalcommand
 
 
 class Command(AppCommand):
-    option_list = AppCommand.option_list + (
-        make_option('--name', '-n', action='store', dest='tag_library_name', default='appname_tags',
-                    help='The name to use for the template tag base name. Defaults to `appname`_tags.'),
-    )
-
     help = ("Creates a Django template tags directory structure for the given app name"
             " in the apps's directory")
     args = "[appname]"
     label = 'application name'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--name', '-n', action='store', dest='tag_library_name',
+            default='appname_tags',
+            help='The name to use for the template tag base name. '
+            'Defaults to `appname`_tags.')
 
     requires_system_checks = False
     # Can't import settings during this command, because they haven't

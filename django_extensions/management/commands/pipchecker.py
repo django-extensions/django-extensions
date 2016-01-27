@@ -2,14 +2,14 @@
 import json
 import os
 from distutils.version import LooseVersion
-from optparse import make_option
 
 import pip
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import CommandError
 from pip.req import parse_requirements
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from urllib.parse import urlparse
@@ -29,27 +29,27 @@ except ImportError:
     HAS_REQUESTS = False
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option(
-            "-t", "--github-api-token", action="store", dest="github_api_token",
-            help="A github api authentication token."
-        ),
-        make_option(
-            "-r", "--requirement", action="append", dest="requirements",
-            default=[], metavar="FILENAME",
-            help="Check all the packages listed in the given requirements file. "
-                 "This option can be used multiple times."
-        ),
-        make_option(
-            "-n", "--newer", action="store_true", dest="show_newer",
-            help="Also show when newer version then available is installed."
-        ),
-    )
+class Command(BaseCommand):
     help = "Scan pip requirement files for out-of-date packages."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-t", "--github-api-token", action="store",
+            dest="github_api_token", help="A github api authentication token."
+        )
+        parser.add_argument(
+            "-r", "--requirement", action="append", dest="requirements",
+            default=[], metavar="FILENAME",
+            help="Check all the packages listed in the given requirements "
+                 "file. This option can be used multiple times."
+        ),
+        parser.add_argument(
+            "-n", "--newer", action="store_true", dest="show_newer",
+            help="Also show when newer version then available is installed."
+        )
+
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         self.style = color_style()
 
         self.options = options

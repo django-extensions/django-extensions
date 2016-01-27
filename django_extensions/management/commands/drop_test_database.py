@@ -1,13 +1,13 @@
 # coding=utf-8
 import logging
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from six.moves import input
 
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.db.backends.base.creation import TEST_DATABASE_PREFIX
@@ -17,24 +17,27 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--noinput', action='store_false',
-                    dest='interactive', default=True,
-                    help='Tells Django to NOT prompt the user for input of any kind.'),
-        make_option('-U', '--user', action='store',
-                    dest='user', default=None,
-                    help='Use another user for the database then defined in settings.py'),
-        make_option('-P', '--password', action='store',
-                    dest='password', default=None,
-                    help='Use another password for the database then defined in settings.py'),
-        make_option('-D', '--dbname', action='store',
-                    dest='dbname', default=None,
-                    help='Use another database name then defined in settings.py'),
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then defined in settings.py'),
-    )
     help = "Drops test database for this project."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--noinput', action='store_false', dest='interactive',
+            default=True, help='Tells Django to NOT prompt the user for '
+            'input of any kind.')
+        parser.add_argument(
+            '-U', '--user', action='store', dest='user', default=None,
+            help='Use another user for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-P', '--password', action='store', dest='password', default=None,
+            help='Use another password for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-D', '--dbname', action='store', dest='dbname', default=None,
+            help='Use another database name then defined in settings.py')
+        parser.add_argument(
+            '-R', '--router', action='store', dest='router', default='default',
+            help='Use this router-database other then defined in settings.py')
 
     @signalcommand
     def handle(self, *args, **options):

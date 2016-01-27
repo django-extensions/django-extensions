@@ -5,33 +5,34 @@ sqldns.py - Prints Data Source Name on stdout
 """
 
 import sys
-from optparse import make_option
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.core.management.color import color_style
+
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then default'),
-        make_option('-s', '--style', action='store',
-                    dest='style', default=None,
-                    help='DSN format style: keyvalue, uri, pgpass, all'),
-        make_option('-a', '--all', action='store_true',
-                    dest='all', default=False,
-                    help='Show DSN for all database routes'),
-        make_option('-q', '--quiet', action='store_true',
-                    dest='quiet', default=False,
-                    help='Quiet mode only show DSN'),
-    )
     help = """Prints DSN on stdout, as specified in settings.py
 
     ./manage.py sqldsn [--router=<routername>] [--style=pgpass]"""
 
     requires_system_checks = False
     can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument('-R', '--router', action='store',
+                    dest='router', default='default',
+                    help='Use this router-database other then default')
+        parser.add_argument('-s', '--style', action='store',
+                    dest='style', default=None,
+                    help='DSN format style: keyvalue, uri, pgpass, all')
+        parser.add_argument('-a', '--all', action='store_true',
+                    dest='all', default=False,
+                    help='Show DSN for all database routes')
+        parser.add_argument('-q', '--quiet', action='store_true',
+                    dest='quiet', default=False,
+                    help='Quiet mode only show DSN')
 
     def handle(self, *args, **options):
         self.style = color_style()

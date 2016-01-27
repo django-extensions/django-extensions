@@ -31,14 +31,12 @@ Improvements:
 
 import datetime
 import sys
-from optparse import make_option
 
 import django
 import six
 # conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
@@ -47,6 +45,7 @@ from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
     get_apps, get_model_compat, get_models_compat, get_models_for_app
 )
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.utils.encoding import smart_unicode, force_unicode  # NOQA
@@ -88,13 +87,13 @@ def orm_item_locator(orm_obj):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--autofield', action='store_false', dest='skip_autofield',
-                    default=True, help='Include Autofields (like pk fields)'),
-    )
-
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--autofield', action='store_false', dest='skip_autofield',
+            default=True, help='Include Autofields (like pk fields)')
 
     @signalcommand
     def handle(self, *app_labels, **options):

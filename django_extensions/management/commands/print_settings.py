@@ -6,12 +6,11 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
-from optparse import make_option
-
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):
@@ -19,12 +18,11 @@ class Command(BaseCommand):
 
     help = "Print the active Django settings."
 
-    option_list = BaseCommand.option_list + (
-        make_option('--format', default='simple', dest='format',
-                    help='Specifies output format.'),
-        make_option('--indent', default=4, dest='indent', type='int',
-                    help='Specifies indent level for JSON and YAML'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--format', default='simple', dest='format',
+                            help='Specifies output format.')
+        parser.add_argument('--indent', default=4, dest='indent', type=int,
+                            help='Specifies indent level for JSON and YAML')
 
     @signalcommand
     def handle(self, *args, **options):

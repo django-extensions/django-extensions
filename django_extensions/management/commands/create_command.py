@@ -3,22 +3,13 @@ import os
 import sys
 import shutil
 
-from optparse import make_option
-
-from django.core.management.base import AppCommand
 from django.core.management.color import color_style
 
 from django_extensions.management.utils import _make_writeable, signalcommand
+from django_extensions.compat import CompatibilityAppCommand as AppCommand
 
 
 class Command(AppCommand):
-    option_list = AppCommand.option_list + (
-        make_option('--name', '-n', action='store', dest='command_name', default='sample',
-                    help='The name to use for the management command'),
-        make_option('--base', '-b', action='store', dest='base_command', default='Base',
-                    help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
-    )
-
     help = ("Creates a Django management command directory structure for the given app name"
             " in the app's directory.")
     args = "[appname]"
@@ -28,6 +19,16 @@ class Command(AppCommand):
     # Can't import settings during this command, because they haven't
     # necessarily been created.
     can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--name', '-n', action='store', dest='command_name',
+            default='sample',
+            help='The name to use for the management command')
+        parser.add_argument(
+            '--base', '-b', action='store', dest='base_command',
+            default='Base', help='The base class used for implementation of '
+            'this command. Should be one of Base, App, Label, or NoArgs')
 
     @signalcommand
     def handle_app_config(self, app, **options):

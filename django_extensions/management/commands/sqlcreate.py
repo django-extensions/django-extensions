@@ -1,23 +1,15 @@
 # coding=utf-8
 import socket
 import sys
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then defined in settings.py'),
-        make_option('-D', '--drop', action='store_true',
-                    dest='drop', default=False,
-                    help='If given, includes commands to drop any existing user and database.'),
-    )
     help = """Generates the SQL to create your database for you, as specified in settings.py
 The envisioned use case is something like this:
 
@@ -26,6 +18,15 @@ The envisioned use case is something like this:
 
     requires_system_checks = False
     can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '-R', '--router', action='store', dest='router', default='default',
+            help='Use this router-database other then defined in settings.py')
+        parser.add_argument(
+            '-D', '--drop', action='store_true', dest='drop', default=False,
+            help='If given, includes commands to drop any existing user '
+            'and database.')
 
     @signalcommand
     def handle(self, *args, **options):

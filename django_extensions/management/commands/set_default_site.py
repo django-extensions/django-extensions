@@ -3,26 +3,29 @@
 set_default_site.py
 """
 import socket
-from optparse import make_option
 
-from django.core.management.base import CommandError, NoArgsCommand
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option('--name', dest='site_name', default=None,
-                    help='Use this as site name.'),
-        make_option('--domain', dest='site_domain', default=None,
-                    help='Use this as site domain.'),
-        make_option('--system-fqdn', dest='set_as_system_fqdn', default=False,
-                    action="store_true", help='Use the systems FQDN (Fully Qualified Domain Name) as name and domain. Can be used in combination with --name'),
-    )
+class Command(BaseCommand):
     help = "Set parameters of the default django.contrib.sites Site"
 
+    def add_arguments(self, parser):
+        parser.add_argument('--name', dest='site_name', default=None,
+                            help='Use this as site name.')
+        parser.add_argument('--domain', dest='site_domain', default=None,
+                            help='Use this as site domain.')
+        parser.add_argument(
+            '--system-fqdn', dest='set_as_system_fqdn', default=False,
+            action="store_true",
+            help='Use the systems FQDN (Fully Qualified Domain Name) as name '
+            'and domain. Can be used in combination with --name')
+
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         from django.contrib.sites.models import Site
 
         try:
