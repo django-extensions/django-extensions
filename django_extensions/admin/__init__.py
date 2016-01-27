@@ -78,7 +78,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
             from django.conf.urls import patterns
             urlpatterns = patterns('', _url)
         else:
-            urlpatterns = [_url,]
+            urlpatterns = [_url]
 
         urlpatterns += super(ForeignKeyAutocompleteAdmin, self).get_urls()
         return urlpatterns
