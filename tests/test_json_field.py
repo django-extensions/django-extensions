@@ -1,7 +1,7 @@
 # coding=utf-8
 import pytest
 
-from .testapp.models import JSONFieldModel, InheritedFromConcreteJSONFieldModel, InheritedFromAbstractJSONFieldModel
+from .testapp.models import JSONFieldModel, InheritedFromConcreteJSONFieldModel, InheritedFromAbstractJSONFieldModel, NullableJSONFieldModel
 
 
 pytestmark = pytest.mark.django_db
@@ -14,7 +14,8 @@ DEFAULT = {}
     'model', (
         JSONFieldModel,
         InheritedFromConcreteJSONFieldModel,
-        InheritedFromAbstractJSONFieldModel
+        InheritedFromAbstractJSONFieldModel,
+        NullableJSONFieldModel,
     )
 )
 @pytest.mark.parametrize(
@@ -24,9 +25,9 @@ DEFAULT = {}
         {'field': {'foo': 'bar'}},
         {'field': []},
         {'field': [1, 2, 3]},
-        {'field': None},
         {'field': True},
         {'field': 'foo'},
+        {'field': ''},
     )
 )
 def test_json_field_create(model, create_kwargs):
@@ -35,5 +36,19 @@ def test_json_field_create(model, create_kwargs):
     instance = model.objects.create(**create_kwargs)
     assert instance.field == expected
 
+    from_db = model.objects.get()
+    assert from_db.field == expected
+
+
+@pytest.mark.parametrize(
+    'model, expected',
+    (
+        (JSONFieldModel, {}),
+        (NullableJSONFieldModel, None),
+    )
+)
+def test_default_value(model, expected):
+    instance = model.objects.create(field=None)
+    assert instance.field == expected
     from_db = model.objects.get()
     assert from_db.field == expected

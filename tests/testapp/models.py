@@ -70,6 +70,13 @@ class JSONFieldModel(models.Model):
         app_label = 'django_extensions'
 
 
+class NullableJSONFieldModel(models.Model):
+    field = JSONField(null=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class InheritedFromConcreteJSONFieldModel(Name):
     field = JSONField()
 
