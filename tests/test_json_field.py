@@ -1,8 +1,10 @@
 # coding=utf-8
 import pytest
 
-from .testapp.models import JSONFieldModel, InheritedFromConcreteJSONFieldModel, InheritedFromAbstractJSONFieldModel, NullableJSONFieldModel
-
+from .testapp.models import (
+    InheritedFromAbstractModel, InheritedFromConcreteModel, JSONFieldModel,
+    NullableJSONFieldModel,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -13,8 +15,8 @@ DEFAULT = {}
 @pytest.mark.parametrize(
     'model', (
         JSONFieldModel,
-        InheritedFromConcreteJSONFieldModel,
-        InheritedFromAbstractJSONFieldModel,
+        InheritedFromConcreteModel,
+        InheritedFromAbstractModel,
         NullableJSONFieldModel,
     )
 )

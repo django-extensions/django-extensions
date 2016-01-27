@@ -2,10 +2,7 @@
 from django.db import models
 
 from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-    UUIDField,
+    AutoSlugField, RandomCharField, ShortUUIDField, UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel
@@ -77,7 +74,7 @@ class NullableJSONFieldModel(models.Model):
         app_label = 'django_extensions'
 
 
-class InheritedFromConcreteJSONFieldModel(Name):
+class InheritedFromConcreteModel(Name):
     field = JSONField()
 
 
@@ -87,7 +84,7 @@ class AbstractModel(models.Model):
         abstract = True
 
 
-class InheritedFromAbstractJSONFieldModel(Name):
+class InheritedFromAbstractModel(Name):
     field = JSONField()
 
 
