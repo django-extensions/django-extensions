@@ -90,6 +90,10 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         else:
             return value
 
+    def get_prep_value(self, value):
+        """Do not call `to_python` method."""
+        return super(models.TextField, self).get_prep_value(value)
+
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
         if value is None and self.null:
