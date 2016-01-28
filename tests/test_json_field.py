@@ -1,7 +1,9 @@
 # coding=utf-8
+import six
 from django.test import TestCase
 
 from .testapp.models import JSONFieldTestModel
+from django_extensions.db.fields.json import dumps, JSONField
 
 
 class JsonFieldTest(TestCase):
@@ -31,3 +33,16 @@ class JsonFieldTest(TestCase):
 
         test_instance = JSONFieldTestModel.objects.get()
         self.assertEqual(test_instance.j_field['test'], 0.1)
+
+    def test_get_db_prep_save(self):
+        j_field = JSONField()
+
+        self.assertEqual(
+            six.u(dumps([{'a': 'a'}])),
+            j_field.get_db_prep_save(value=[{'a': 'a'}], connection=None)
+        )
+
+        self.assertEqual(
+            six.u('[{"a": "a"}]'),
+            j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None)
+        )
