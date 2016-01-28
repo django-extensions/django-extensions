@@ -1,7 +1,7 @@
 # coding=utf-8
 import pytest
 
-from django_extensions.db.fields.json import JSONField
+from django_extensions.db.fields.json import JSONField, dumps
 from .testapp.models import (
     InheritedFromAbstractModel, InheritedFromConcreteModel, JSONFieldModel,
     NullableJSONFieldModel,
@@ -61,13 +61,13 @@ def test_float_values():
     """ Tests that float values in JSONFields are correctly serialized over repeated saves.
         Regression test for c382398b, which fixes floats being returned as strings after a second save.
     """
-    test_instance = JSONFieldModel.objects.create(a=6, field={'test': 0.1})
+    JSONFieldModel.objects.create(field={'test': 0.1})
 
     test_instance = JSONFieldModel.objects.get()
     test_instance.save()
 
     test_instance = JSONFieldModel.objects.get()
-    assert test_instance.field['test'] ==  0.1
+    assert test_instance.field['test'] == 0.1
 
 
 @pytest.mark.parametrize(
