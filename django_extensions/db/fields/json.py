@@ -12,8 +12,6 @@ more information.
 """
 from __future__ import absolute_import
 
-from decimal import Decimal
-
 import six
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
@@ -34,7 +32,6 @@ def dumps(value):
 def loads(txt):
     value = json.loads(
         txt,
-        parse_float=Decimal,
         encoding=settings.DEFAULT_CHARSET
     )
     return value
