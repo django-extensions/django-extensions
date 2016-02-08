@@ -194,9 +194,9 @@ class Command(BaseCommand):
             import time
             try:
                 import hotshot
-                HAS_HOTSPOT = True
+                HAS_HOTSHOT = True
             except ImportError:
-                HAS_HOTSPOT = False  # python 3.x
+                HAS_HOTSHOT = False  # python 3.x
             USE_CPROFILE = options.get('use_cprofile', False)
             USE_LSPROF = options.get('use_lsprof', False)
             if USE_LSPROF:
@@ -211,8 +211,8 @@ class Command(BaseCommand):
             if USE_LSPROF and not USE_CPROFILE:
                 raise CommandError("Kcachegrind compatible output format required cProfile from Python 2.5")
 
-            if not HAS_HOTSPOT and not USE_CPROFILE:
-                raise CommandError("Hotspot profile library not found. (and not using cProfile)")
+            if not HAS_HOTSHOT and not USE_CPROFILE:
+                raise CommandError("Hotshot profile library not found. (and not using cProfile)")
 
             prof_path = options.get('prof_path', '/tmp')
 
