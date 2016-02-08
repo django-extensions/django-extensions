@@ -151,7 +151,7 @@ You can use settings to automatically default your development to an address/por
     RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
 
 To ensure Werkzeug can log to the console, you may need to add the following
-to your settings:
+to your settings::
 
   LOGGING = {
       ...
