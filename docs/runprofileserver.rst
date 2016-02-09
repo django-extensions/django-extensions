@@ -46,6 +46,26 @@ one aggregated profile file. This tool is called *gather_profile_stats.py* and
 is located inside the *bin* directory of your Django distribution.
 
 
+Profiler choice
+---------------
+*runprofileserver* supports two profilers: *hotshot* and *cProfile*. Both come 
+with the standard Python library but *cProfile* is more recent and may not be
+available on all systems. For this reason, *hotshot* is the default profiler.
+
+However, *hotshot* `is not maintained anymore <https://docs.python.org/2/library/profile.html#introduction-to-the-profilers>`_
+and using *cProfile* is usually the recommended way. 
+If it is available on your system, you can use it with the option ``--use-cprofile``.
+
+Example::
+  
+  $ mkdir /tmp/my-profile-data
+  $ ./manage.py runprofileserver --use-cprofile --prof-path=/tmp/my-profile-data
+
+If you used the default profiler but are not able to open the profiling results
+with the ``pstats`` module or with your profiling GUI of choice because of an
+error "*ValueError: bad marshal data (unknown type code)*", try using *cProfile*
+instead.
+
 KCacheGrind
 -----------
 
