@@ -152,7 +152,7 @@ class Command(BaseCommand):
             with open(output_file, 'wt') as json_output_f:
                 json.dump(graph_data, json_output_f)
         else:
-            print json.dumps(graph_data)
+            print(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
         """Renders the image using pygraphviz"""
