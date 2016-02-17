@@ -209,7 +209,7 @@ def generate_dot(app_labels, **kwargs):
                     related_query_name = field.related_query_name()
                     if verbose_names and related_query_name.islower():
                         related_query_name = related_query_name.replace('_', ' ').capitalize()
-                    label += ' (%s)' % related_query_name
+                    label += force_bytes(' (%s)' % related_query_name)
 
                 # handle self-relationships and lazy-relationships
                 if isinstance(field.rel.to, six.string_types):
