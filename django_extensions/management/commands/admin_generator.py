@@ -297,28 +297,28 @@ class Command(BaseCommand):
             '-s', '--search-field', action='append',
             default=SEARCH_FIELD_NAMES,
             help='Fields named like this will be added to `search_fields`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-d', '--date-hierarchy', action='append',
             default=DATE_HIERARCHY_NAMES,
             help='A field named like this will be set as `date_hierarchy`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-p', '--prepopulated-fields', action='append',
             default=PREPOPULATED_FIELD_NAMES,
             help='These fields will be prepopulated by the other field.'
             'The field names can be specified like `spam=eggA,eggB,eggC`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-l', '--list-filter-threshold', type=int,
             default=LIST_FILTER_THRESHOLD, metavar='LIST_FILTER_THRESHOLD',
             help='If a foreign key has less than LIST_FILTER_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]')
+            'it will be added to `list_filter` [default: %(default)s]')
         parser.add_argument(
             '-r', '--raw-id-threshold', type=int,
             default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
             help='If a foreign key has more than RAW_ID_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]')
+            'it will be added to `list_filter` [default: %(default)s]')
 
     @signalcommand
     def handle(self, *args, **kwargs):
