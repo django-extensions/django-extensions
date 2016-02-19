@@ -62,7 +62,7 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
-def generate_dot(app_labels, **kwargs):
+def generate_graph_data(app_labels, **kwargs):
     cli_options = kwargs.get('cli_options', None)
     disable_fields = kwargs.get('disable_fields', False)
     include_models = parse_file_or_list(kwargs.get('include_models', ""))
@@ -294,6 +294,17 @@ def generate_dot(app_labels, **kwargs):
                     relation['needs_node'] = False
 
     now = datetime.datetime.now()
+    graph_data = {
+        'created_at': now.strftime("%Y-%m-%d %H:%M"),
+        'cli_options': cli_options,
+        'disable_fields': disable_fields,
+        'use_subgraph': use_subgraph,
+        'graphs': graphs,
+    }
+    return graph_data
+
+
+def generate_dot(graph_data):
     t = loader.get_template('django_extensions/graph_models/digraph.dot')
 
     if not isinstance(t, Template) and not (hasattr(t, 'template') and isinstance(t.template, Template)):
@@ -301,13 +312,7 @@ def generate_dot(app_labels, **kwargs):
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
-    c = Context({
-        'created_at': now.strftime("%Y-%m-%d %H:%M"),
-        'cli_options': cli_options,
-        'disable_fields': disable_fields,
-        'use_subgraph': use_subgraph,
-        'graphs': graphs,
-    })
+    c = Context(graph_data)
     if django.VERSION >= (1, 8):
         c = c.flatten()
     dot = t.render(c)

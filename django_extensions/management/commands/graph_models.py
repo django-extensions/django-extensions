@@ -1,13 +1,14 @@
 # coding=utf-8
 import sys
 from optparse import NO_DEFAULT
+import json
 
 import six
 from django.conf import settings
 from django.core.management.base import CommandError
 
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-from django_extensions.management.modelviz import generate_dot
+from django_extensions.management.modelviz import generate_graph_data, generate_dot
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -37,6 +38,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--pydot', action='store_true', dest='pydot',
             help='Use PyDot to generate the image.')
+        parser.add_argument('--json', action='store_true', dest='json',
+            help='Output graph data as JSON')
         parser.add_argument(
             '--disable-fields', '-d', action='store_true',
             dest='disable_fields', help='Do not show the class member fields')
@@ -95,8 +98,17 @@ class Command(BaseCommand):
 
         use_pygraphviz = options.get('pygraphviz', False)
         use_pydot = options.get('pydot', False)
+        use_json = options.get('json', False)
+        if use_json and (use_pydot or use_pygraphviz):
+            raise CommandError("Cannot specify --json with --pydot or --pygraphviz")
+
         cli_options = ' '.join(sys.argv[2:])
-        dotdata = generate_dot(args, cli_options=cli_options, **options)
+        graph_data = generate_graph_data(args, cli_options=cli_options, **options)
+        if use_json:
+            self.render_output_json(graph_data, **options)
+            return
+
+        dotdata = generate_dot(graph_data)
         if not six.PY3:
             dotdata = dotdata.encode('utf-8')
         if options['outputfile']:
@@ -133,6 +145,14 @@ class Command(BaseCommand):
             dotdata = dotdata.decode()
 
         print(dotdata)
+
+    def render_output_json(self, graph_data, **kwargs):
+        output_file = kwargs.get('outputfile')
+        if output_file:
+            with open(output_file, 'wt') as json_output_f:
+                json.dump(graph_data, json_output_f)
+        else:
+            print(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
         """Renders the image using pygraphviz"""
