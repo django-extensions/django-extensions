@@ -13,6 +13,7 @@ import os
 
 import six
 import django
+from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -46,7 +47,8 @@ __contributors__ = [
     "Alexander Houben <alexander@houben.ch>",
     "Joern Hees <gitdev@joernhees.de>",
     "Kevin Cherepski <cherepski@gmail.com>",
-    "Jose Tomas Tocino <theom3ga@gmail.com>"
+    "Jose Tomas Tocino <theom3ga@gmail.com>",
+    "Adam Dobrawy <naczelnik@jawnosc.tk>"
 ]
 
 
@@ -216,7 +218,7 @@ def generate_dot(app_labels, **kwargs):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
-                        raise Exception("Lazy relationship for model (%s) must be explicit for field (%s)" % (field.model.__name__, field.name))
+                        target_model = apps.get_model(*field.rel.to.split('.'))
                 else:
                     target_model = field.rel.to
 
