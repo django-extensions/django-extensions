@@ -13,7 +13,6 @@ import os
 
 import six
 import django
-from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -31,7 +30,7 @@ try:
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_app, get_models_compat, list_app_labels
+from django_extensions.compat import get_app, get_models_compat, list_app_labels, get_model
 
 
 __version__ = "1.0"
@@ -218,7 +217,7 @@ def generate_dot(app_labels, **kwargs):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
-                        target_model = apps.get_model(*field.rel.to.split('.'))
+                        target_model = get_model(field.rel.to)
                 else:
                     target_model = field.rel.to
 
