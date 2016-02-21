@@ -24,7 +24,7 @@ from django.db import models
 from django_extensions.compat import get_apps, get_models_compat
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
@@ -288,8 +288,9 @@ class AdminModel(UnicodeMixin):
         self.processed = True
 
 
-class Command(BaseCommand):
+class Command(LabelCommand):
     help = '''Generate a `admin.py` file for the given app (models)'''
+    args = "[app_name]"
     can_import_settings = True
 
     def add_arguments(self, parser):
@@ -323,15 +324,13 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
-
         installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
         if not args:
             args = [False]
-
-        app = installed_apps.get(args[0])
-        if not app:
+        app = args[0]
+        if not installed_apps.get(app):
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
             for app in sorted(installed_apps):
