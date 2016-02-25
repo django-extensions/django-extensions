@@ -101,6 +101,8 @@ Current Command Extensions
   Content-Encoding header, and also set a far future expires header for browser
   caching.
 
+* *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
+
 
 .. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
