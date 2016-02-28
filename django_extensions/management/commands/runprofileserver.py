@@ -26,8 +26,6 @@ except ImportError as e:
     USE_STATICFILES = False
 
 
-
-
 class KCacheGrind(object):
     def __init__(self, profiler):
         self.data = profiler.getstats()
