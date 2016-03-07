@@ -200,7 +200,7 @@ def add_to_builtins_compat(name):
 
 
 def get_model(path):
-    if django.VERSION < (1.7):
+    if django.VERSION < (1, 7):
         from django.db.models.loading import get_model
         return get_model(*path.split('.', 1))
     else:
