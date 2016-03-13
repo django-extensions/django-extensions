@@ -52,11 +52,8 @@ class UniqueFieldMixin(object):
             # verbosity due to replacement of deprecated model_cls._meta.get_fields_with_model(),
             # as explained here: https://docs.djangoproject.com/en/1.9/ref/models/meta/#migrating-from-the-old-api
             return [
-                (f, f.model if f.model != model_cls else None)
-                for f in model_cls._meta.get_fields()
-                if not f.is_relation
-                    or f.one_to_one
-                    or (f.many_to_one and f.related_model)
+                (f, f.model if f.model != model_cls else None) for f in model_cls._meta.get_fields()
+                if not f.is_relation or f.one_to_one or (f.many_to_one and f.related_model)
             ]
         else:
             # prior to 1.9
