@@ -3,6 +3,7 @@ import six
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
+from django.core import urlresolvers
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
@@ -44,7 +45,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
-        related_url = '../../../%s/%s/' % (app_label, model_name)
+        related_url = urlresolvers.reverse('admin:%s_%s_changelist' % (app_label, model_name))
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
