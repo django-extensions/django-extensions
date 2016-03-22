@@ -1,6 +1,89 @@
 Changelog
 =========
 
+1.6.1
+-----
+
+Changes:
+ - Revert: JSONField, revert Django 1.9 fix as it breaks the field (ticket #781)
+
+
+1.6.0
+-----
+
+Changes:
+ - Fix: Django 1.9 compatibility
+ - New: runserver_plus, add --startup-messages to control when to show them
+ - New: added support for Python 3.5
+ - Improvement: show_template_tags, renamed from show_templatetags for consistancy
+ - Removed: jquery library (after dropping support for Django 1.5)
+
+
+1.5.9
+-----
+
+Changes:
+ - Fix: wheel still had the old migrations directory in the package
+
+
+1.5.8
+-----
+
+Changes:
+ - Fix: migrations, fix BadMigrationError with Django 1.8+
+ - Fix: reset_db, Django 1.8+ compatibility fix
+ - Fix: runserver_plus, fix signature of null_technical_500_response for Django 1.8+
+ - Fix: graph_models, use force_bytes instead of .decode('utf8')
+ - Improvement: print_settings, add format option to only print values
+ - Improvement: print_esttings, add format option for simple key = value text output
+ - Improvement: email_export, documentation updates
+ - Improvement: shell_plus, auto load conditional db expressions Case and When
+
+
+1.5.7
+-----
+
+Changes:
+ - Fix: CreationDateTimeField, migration error
+ - Fix: ModificationDateTimeField, migration error
+ - Fix: shell_plus, options is not always in db config dictionary
+ - Fix: admin filters, contrib.admin.util fallback code
+ - Fix: graph_models, currectly support parsing lists for cli options
+ - Improvement: sqldsn, support postfix
+ - Improvement: utils, remove get_project_root function
+
+
+1.5.6
+-----
+
+Changes:
+ - New: RandomCharField, prepopulates random character string
+ - New: (Not)NullFieldListFilter, filters for admin
+ - New: runserver_plus, integrate with django-pdb
+ - New: runserver_plus, add check_migrations from Django
+ - Improvement: show_urls, nested namespace support
+ - Improvement: show_urls, allow to specify alternative urlconf
+ - Improvement: show_urls, support i18n_patterns
+ - Improvement: show_urls, use --language to filter on a particular language
+ - Improvement: admin_generator, added docstrings to module
+ - Improvement: shell_plus, allow cli arguments to be passed to ipython
+ - Improvement: shell_plus, fixed PYTHONPATH bug when using django-admin shell_plus --notebook
+ - Improvement: shell_plus, set application_name on PostgreSQL databases
+ - Improvement: shell_plus, load user pypython config file
+ - Improvement: CreationDateTimeField, use auto_now_add instead of default ModificationDateTimeField
+ - Improvement: ModificationDateTimeField, use auto_now instead of pre_save method
+ - Improvement: ForeignKeyAutocompleteAdmin, added ability to filter autocomplete query
+ - Fix: shell_plus, support for pypython>=0.27
+ - Fix: shell_plus, load apps and models directly through the apps interface when available
+ - Fix: shell_plus, use ipython start_ipython instead of embed
+ - Fix: shell_plus, fix swalling ImportErrors with IPython 3 and higher
+ - Fix: dumpscript, fix missing imports in dumped script
+ - Fix: admin_generator, fix issues with Django 1.9
+ - Fix: template tags, move exception for import failure to inside of the template tags
+ - Fix: reset_db, fix for Django 1.9
+ - Fix: runserver_plus, fix for Django 1.9
+
+
 1.5.5
 -----
 

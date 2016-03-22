@@ -1,11 +1,13 @@
+# coding=utf-8
 import logging
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from six.moves import configparser, input
+from django.core.management.base import CommandError
+from six.moves import input
 
+from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.db.backends.base.creation import TEST_DATABASE_PREFIX
@@ -15,24 +17,27 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--noinput', action='store_false',
-                    dest='interactive', default=True,
-                    help='Tells Django to NOT prompt the user for input of any kind.'),
-        make_option('-U', '--user', action='store',
-                    dest='user', default=None,
-                    help='Use another user for the database then defined in settings.py'),
-        make_option('-P', '--password', action='store',
-                    dest='password', default=None,
-                    help='Use another password for the database then defined in settings.py'),
-        make_option('-D', '--dbname', action='store',
-                    dest='dbname', default=None,
-                    help='Use another database name then defined in settings.py'),
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then defined in settings.py'),
-    )
     help = "Drops test database for this project."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--noinput', action='store_false', dest='interactive',
+            default=True, help='Tells Django to NOT prompt the user for '
+            'input of any kind.')
+        parser.add_argument(
+            '-U', '--user', action='store', dest='user', default=None,
+            help='Use another user for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-P', '--password', action='store', dest='password', default=None,
+            help='Use another password for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-D', '--dbname', action='store', dest='dbname', default=None,
+            help='Use another database name then defined in settings.py')
+        parser.add_argument(
+            '-R', '--router', action='store', dest='router', default='default',
+            help='Use this router-database other then defined in settings.py')
 
     @signalcommand
     def handle(self, *args, **options):
@@ -50,15 +55,9 @@ class Command(BaseCommand):
 
         engine = dbinfo.get('ENGINE').split('.')[-1]
 
-        user = password = database_name = ''
+        user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
-            read_default_file = dbinfo.get('OPTIONS', {}).get('read_default_file')
-            if read_default_file:
-                config = configparser.ConfigParser()
-                config.read(read_default_file)
-                user = config.get('client', 'user')
-                password = config.get('client', 'password')
-                database_name = config.get('client', 'database')
+            (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password
@@ -74,8 +73,8 @@ class Command(BaseCommand):
         if database_name is None or database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
 
-        database_host = dbinfo.get('HOST')
-        database_port = dbinfo.get('PORT')
+        database_host = dbinfo.get('HOST') or database_host
+        database_port = dbinfo.get('PORT') or database_port
 
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):
@@ -125,17 +124,17 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             elif engine in ('postgresql_psycopg2', 'postgis'):
                 import psycopg2 as Database  # NOQA
 
-            conn_string = "dbname=template1"
+            conn_params = {'database': 'template1'}
             if user:
-                conn_string += " user=%s" % user
+                conn_params['user'] = user
             if password:
-                conn_string += " password='%s'" % password
+                conn_params['password'] = password
             if database_host:
-                conn_string += " host=%s" % database_host
+                conn_params['host'] = database_host
             if database_port:
-                conn_string += " port=%s" % database_port
+                conn_params['port'] = database_port
 
-            connection = Database.connect(conn_string)
+            connection = Database.connect(**conn_params)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
             drop_query = "DROP DATABASE IF EXISTS \"%s\";" % database_name

@@ -1,9 +1,10 @@
+# coding=utf-8
 import sys
 
-from django.core.management.base import LabelCommand
 from django.template import TemplateDoesNotExist, loader
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 def get_template_path(path):

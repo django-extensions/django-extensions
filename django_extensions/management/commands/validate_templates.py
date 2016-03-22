@@ -1,13 +1,14 @@
+# coding=utf-8
 import os
-from optparse import make_option
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.core.management.color import color_style
-from django.template.base import add_to_builtins
 from django.template.loader import get_template
 
+from django_extensions.compat import add_to_builtins_compat
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils import validatingtemplatetags
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 #
@@ -18,16 +19,23 @@ from django_extensions.utils import validatingtemplatetags
 class Command(BaseCommand):
     args = ''
     help = "Validate templates on syntax and compile errors"
-    option_list = BaseCommand.option_list + (
-        make_option('--break', '-b', action='store_true', dest='break',
-                    default=False, help="Break on first error."),
-        make_option('--check-urls', '-u', action='store_true', dest='check_urls',
-                    default=False, help="Check url tag view names are quoted appropriately"),
-        make_option('--force-new-urls', '-n', action='store_true', dest='force_new_urls',
-                    default=False, help="Error on usage of old style url tags (without {% load urls from future %}"),
-        make_option('--include', '-i', action='append', dest='includes',
-                    default=[], help="Append these paths to TEMPLATE_DIRS")
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--break', '-b', action='store_true', dest='break',
+            default=False, help="Break on first error.")
+        parser.add_argument(
+            '--check-urls', '-u', action='store_true', dest='check_urls',
+            default=False, help="Check url tag view names are quoted "
+            "appropriately")
+        parser.add_argument(
+            '--force-new-urls', '-n', action='store_true',
+            dest='force_new_urls',
+            default=False, help="Error on usage of old style url tags "
+            "(without {% load urls from future %}")
+        parser.add_argument(
+            '--include', '-i', action='append', dest='includes',
+            default=[], help="Append these paths to TEMPLATE_DIRS")
 
     @signalcommand
     def handle(self, *args, **options):
@@ -50,7 +58,8 @@ class Command(BaseCommand):
 
         # Replace built in template tags with our own validating versions
         if options.get('check_urls', False):
-            add_to_builtins('django_extensions.utils.validatingtemplatetags')
+            add_to_builtins_compat(
+                'django_extensions.utils.validatingtemplatetags')
 
         for template_dir in template_dirs:
             for root, dirs, filenames in os.walk(template_dir):

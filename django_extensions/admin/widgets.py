@@ -1,8 +1,9 @@
-import django
+# coding=utf-8
 import six
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
+from django.core import urlresolvers
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
@@ -23,11 +24,6 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
                     'django_extensions/js/jquery.ajaxQueue.js',
                     'django_extensions/js/jquery.autocomplete.js']
 
-        # Use a newer version of jquery if django version <= 1.5.x
-        # When removing this compatibility code also remove jquery-1.7.2.min.js file.
-        if int(django.get_version()[2]) <= 5:
-            js_files.insert(0, 'django_extensions/js/jquery-1.7.2.min.js')
-
         return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
                            js=js_files)
 
@@ -46,11 +42,10 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
-        related_url = '../../../%s/%s/' % (app_label, model_name)
+        related_url = urlresolvers.reverse('admin:%s_%s_changelist' % (app_label, model_name))
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])

@@ -1,5 +1,6 @@
+# coding=utf-8
 from django.template import defaulttags
-from django.template.base import Library, Node
+from django.template import Library, Node
 from django.templatetags import future
 
 register = Library()

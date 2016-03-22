@@ -14,7 +14,7 @@ Get a fresh copy::
 
 Run tests::
 
-  $ flake8 --ignore=E265,E501,W391 .
+  $ flake8 django_extensions
   $ tox --recreate
 
 Change version numbers in django_extensions/__init__.py and docs/conf.py::
@@ -27,9 +27,13 @@ Tag it::
 
   $ git tag 0.4.1
 
+Remove old build directory (if exists)::
+
+  $ rm -r build
+
 Prepare the release tarball::
 
-  $ python ./setup.py sdist
+  $ python ./setup.py sdist bdist_wheel
 
 Upload release to pypi::
 

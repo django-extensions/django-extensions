@@ -1,19 +1,20 @@
+# coding=utf-8
 import os
 from collections import defaultdict
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
 from django.db import models
-from django.db.models.loading import cache
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
+from django_extensions.compat import get_apps_from_cache, get_models_from_cache
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
 
         if settings.MEDIA_ROOT == '':
             print("MEDIA_ROOT is not set, nothing to do")
@@ -28,9 +29,8 @@ class Command(NoArgsCommand):
         # Get list of all fields (value) for each model (key)
         # that is a FileField or subclass of a FileField
         model_dict = defaultdict(list)
-        for app in cache.get_apps():
-            model_list = cache.get_models(app)
-            for model in model_list:
+        for app in get_apps_from_cache():
+            for model in get_models_from_cache(app):
                 for field in model._meta.fields:
                     if issubclass(field.__class__, models.FileField):
                         model_dict[model].append(field)

@@ -144,12 +144,33 @@ which address and port the development server should bind to.
 
 If you find yourself frequently starting the server with::
 
-  $ python manage.py runserver_plus 0.0.0.0:8000 
+  $ python manage.py runserver_plus 0.0.0.0:8000
 
 You can use settings to automatically default your development to an address/port::
 
     RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
 
+To ensure Werkzeug can log to the console, you may need to add the following
+to your settings::
+
+  LOGGING = {
+      ...
+      'handlers': {
+          ...
+          'console': {
+              'level': 'DEBUG',
+              'class': 'logging.StreamHandler',
+          },
+      },
+      'loggers': {
+          ...
+          'werkzeug': {
+              'handlers': ['console'],
+              'level': 'DEBUG',
+              'propagate': True,
+          },
+      },
+  }
 
 IO Calls and CPU Usage
 ^^^^^^^^^^^^^^^^^^^^^^

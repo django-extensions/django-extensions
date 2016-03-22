@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 modelviz.py - DOT file generator for Django Models
 
@@ -11,8 +12,7 @@ import datetime
 import os
 
 import six
-from django.db import models
-from django.db.models import get_models
+import django
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -21,12 +21,16 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
 
 try:
-    from django.db.models.fields.generic import GenericRelation
-    assert GenericRelation
+    from django.utils.encoding import force_bytes
+except ImportError:
+    from django.utils.encoding import smart_str as force_bytes
+
+try:
+    from django.contrib.contenttypes.fields import GenericRelation
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_apps
+from django_extensions.compat import get_app, get_models_compat, list_app_labels, get_model
 
 
 __version__ = "1.0"
@@ -42,18 +46,22 @@ __contributors__ = [
     "Alexander Houben <alexander@houben.ch>",
     "Joern Hees <gitdev@joernhees.de>",
     "Kevin Cherepski <cherepski@gmail.com>",
+    "Jose Tomas Tocino <theom3ga@gmail.com>",
+    "Adam Dobrawy <naczelnik@jawnosc.tk>"
 ]
 
 
 def parse_file_or_list(arg):
     if not arg:
         return []
+    if isinstance(arg, (list, tuple, set)):
+        return arg
     if ',' not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
-    return arg.split(',')
+    return [e.strip() for e in arg.split(',')]
 
 
-def generate_dot(app_labels, **kwargs):
+def generate_graph_data(app_labels, **kwargs):
     cli_options = kwargs.get('cli_options', None)
     disable_fields = kwargs.get('disable_fields', False)
     include_models = parse_file_or_list(kwargs.get('include_models', ""))
@@ -78,17 +86,14 @@ def generate_dot(app_labels, **kwargs):
                 return True
         return False
 
-    apps = []
     if all_applications:
-        apps = get_apps()
-
-    for app_label in app_labels:
-        app = models.get_app(app_label)
-        if app not in apps:
-            apps.append(app)
+        app_labels = list_app_labels()
 
     graphs = []
-    for app in apps:
+    for app_label in app_labels:
+        app = get_app(app_label)
+        if not app:
+            continue
         graph = Context({
             'name': '"%s"' % app.__name__,
             'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
@@ -96,7 +101,7 @@ def generate_dot(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = get_models(app)
+        appmodels = list(get_models_compat(app_label))
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
@@ -136,14 +141,14 @@ def generate_dot(app_labels, **kwargs):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
-                model['label'] = appmodel._meta.verbose_name.decode("utf8")
+                model['label'] = force_bytes(appmodel._meta.verbose_name)
             else:
                 model['label'] = model['name']
 
             # model attributes
             def add_attributes(field):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name.decode("utf8")
+                    label = force_bytes(field.verbose_name)
                     if label.islower():
                         label = label.capitalize()
                 else:
@@ -194,7 +199,7 @@ def generate_dot(app_labels, **kwargs):
             # relations
             def add_relation(field, extras=""):
                 if verbose_names and field.verbose_name:
-                    label = field.verbose_name.decode("utf8")
+                    label = force_bytes(field.verbose_name)
                     if label.islower():
                         label = label.capitalize()
                 else:
@@ -205,14 +210,14 @@ def generate_dot(app_labels, **kwargs):
                     related_query_name = field.related_query_name()
                     if verbose_names and related_query_name.islower():
                         related_query_name = related_query_name.replace('_', ' ').capitalize()
-                    label += ' (%s)' % related_query_name
+                    label = '{} ({})'.format(label, force_bytes(related_query_name))
 
                 # handle self-relationships and lazy-relationships
                 if isinstance(field.rel.to, six.string_types):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
-                        raise Exception("Lazy relationship for model (%s) must be explicit for field (%s)" % (field.model.__name__, field.name))
+                        target_model = get_model(field.rel.to)
                 else:
                     target_model = field.rel.to
 
@@ -288,6 +293,17 @@ def generate_dot(app_labels, **kwargs):
                     relation['needs_node'] = False
 
     now = datetime.datetime.now()
+    graph_data = {
+        'created_at': now.strftime("%Y-%m-%d %H:%M"),
+        'cli_options': cli_options,
+        'disable_fields': disable_fields,
+        'use_subgraph': use_subgraph,
+        'graphs': graphs,
+    }
+    return graph_data
+
+
+def generate_dot(graph_data):
     t = loader.get_template('django_extensions/graph_models/digraph.dot')
 
     if not isinstance(t, Template) and not (hasattr(t, 'template') and isinstance(t.template, Template)):
@@ -295,13 +311,9 @@ def generate_dot(app_labels, **kwargs):
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
-    c = Context({
-        'created_at': now.strftime("%Y-%m-%d %H:%M"),
-        'cli_options': cli_options,
-        'disable_fields': disable_fields,
-        'use_subgraph': use_subgraph,
-        'graphs': graphs,
-    })
+    c = Context(graph_data)
+    if django.VERSION >= (1, 8):
+        c = c.flatten()
     dot = t.render(c)
 
     return dot

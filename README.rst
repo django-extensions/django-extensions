@@ -36,7 +36,7 @@ minutes Eric walks you through a half a dozen command extensions. There is also 
 Requirements
 ============
 
-Django Extensions requires Django 1.4 or later.
+Django Extensions requires Django 1.6 or later.
 
 
 Getting It
@@ -113,40 +113,14 @@ You can view documentation online at:
 Or you can look at the docs/ directory in the repository.
 
 
-Donations
-=========
+Support
+=======
 
-Django Extensions is free and always will be. From time to time people and company's have expressed the willingness
-to donation to the project to help foster it's development. We prefer people to become active in the project and support
-us by sending pull requests but will humbly accept donations as well.
+Django Extensions is free and always will be. It is development and maintained by developers in an Open Source manner.
+Any support is welcome. You could help by writing documentation, pull-requests, report issues and/or translations.
 
-Donations will be used to make Django Extensions better by allowing developers to spend more time on it, paying to go
-to conferences, paying for infrastructure, etc. If for some reason we would receive more donations then needed they will
-go towards the Django and Python foundations.
-
-We have setup a couple of ways you can donate towards Django Extensions using the buttons below:
-
- - Bountysource
- - Gratipay (formerly Gittip)
- - Flattr
- - PayPal
- - Patreon `here <https://patreon.com/trbs>`_
-
-.. image:: https://www.bountysource.com/badge/team?team_id=7470&style=bounties_posted
-    :target: https://www.bountysource.com/teams/django-extensions/bounties?utm_source=django-extensions&utm_medium=shield&utm_campaign=bounties_posted
-    :alt: BountySource
-
-.. image:: https://img.shields.io/flattr/donate.png
-    :target: https://flattr.com/submit/auto?user_id=Trbs&url=https%3A%2F%2Fgithub.com%2Fdjango-extensions%2Fdjango-extensions
-    :alt: Flattr this
-
-.. image:: https://img.shields.io/paypal/donate.png
-    :target: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=P57EJJ9QYL232
-    :alt: PayPal Donations
-
-.. image:: https://img.shields.io/gratipay/trbs.png
-    :target: https://gratipay.com/trbs/
-    :alt: Gifts received
+Please remember that nobody is payed directly to develop or maintain Django Extensions so we do have to divide our time
+between putting food on the table, family, this project and the rest of life :-)
 
 
 __ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/

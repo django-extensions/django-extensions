@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys
 import traceback
 from optparse import make_option
@@ -117,13 +118,9 @@ class Command(EmailNotificationCommand):
 
                 return False
 
-            #if verbosity > 1:
-            #    print(NOTICE("Found script %s ..." % mod))
             if hasattr(t, "run"):
                 if verbosity > 1:
                     print(NOTICE2("Found script '%s' ..." % mod))
-                #if verbosity > 1:
-                #    print(NOTICE("found run() in %s. executing..." % mod))
                 return t
             else:
                 if verbosity > 1:

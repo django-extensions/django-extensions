@@ -47,7 +47,7 @@ class CommandTest(TestCase):
 class ShowTemplateTagsTests(TestCase):
     def test_some_output(self):
         out = StringIO()
-        call_command('show_templatetags', stdout=out)
+        call_command('show_template_tags', stdout=out)
         output = out.getvalue()
         # Once django_extension is installed during tests it should appear with
         # its templatetags
@@ -79,7 +79,7 @@ class CommandSignalTests(TestCase):
     def test_works(self):
         from django_extensions.management.signals import post_command, \
             pre_command
-        from django_extensions.management.commands.show_templatetags import \
+        from django_extensions.management.commands.show_template_tags import \
             Command
 
         def pre(sender, **kwargs):
@@ -92,7 +92,7 @@ class CommandSignalTests(TestCase):
         post_command.connect(post, Command)
 
         out = StringIO()
-        call_command('show_templatetags', stdout=out)
+        call_command('show_template_tags', stdout=out)
 
         self.assertIn('args', CommandSignalTests.pre)
         self.assertIn('kwargs', CommandSignalTests.pre)
@@ -106,7 +106,6 @@ class CommandClassTests(TestCase):
     """Try to load every management command to catch exceptions."""
     def test_load_commands(self):
         try:
-
             management_dir = os.path.join('django_extensions', 'management')
             commands = find_commands(management_dir)
             for command in commands:

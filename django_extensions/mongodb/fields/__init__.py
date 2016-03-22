@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 MongoDB model fields emulating Django Extensions' additional model fields
 
@@ -13,11 +14,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from mongoengine.fields import StringField, DateTimeField
 
-try:
-    import uuid
-    assert uuid
-except ImportError:
-    from django_extensions.utils import uuid
+import uuid
 
 
 class SlugField(StringField):

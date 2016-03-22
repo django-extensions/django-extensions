@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 The Django Admin Generator is a project which can automatically generate
 (scaffold) a Django Admin for you. By doing this it will introspect your
 models and automatically generate an Admin with properties like:
@@ -13,20 +13,18 @@ models and automatically generate an Admin with properties like:
 
 The original source and latest version can be found here:
 https://github.com/WoLpH/django-admin-generator/
-'''
+"""
 
-import optparse
 import re
 import sys
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.db import models
-from django.db.models.loading import get_models
 
-from django_extensions.compat import get_apps
+from django_extensions.compat import get_apps, get_models_compat
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
@@ -91,7 +89,7 @@ class AdminApp(UnicodeMixin):
         self.options = options
 
     def __iter__(self):
-        for model in get_models(self.app):
+        for model in get_models_compat(self.app):
             admin_model = AdminModel(model, **self.options)
 
             for model_re in self.model_res:
@@ -168,7 +166,7 @@ class AdminModel(UnicodeMixin):
         for field in meta.local_many_to_many:
             related_model = getattr(field.related, 'related_model', field.related.model)
             related_objects = related_model.objects.all()
-            if(related_objects[:raw_id_threshold].count() < raw_id_threshold):
+            if related_objects[:raw_id_threshold].count() < raw_id_threshold:
                 yield field.name
 
     def _process_fields(self, meta):
@@ -290,50 +288,49 @@ class AdminModel(UnicodeMixin):
         self.processed = True
 
 
-class Command(BaseCommand):
+class Command(LabelCommand):
     help = '''Generate a `admin.py` file for the given app (models)'''
-    option_list = BaseCommand.option_list + (
-        optparse.make_option(
+    args = "[app_name]"
+    can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument(
             '-s', '--search-field', action='append',
             default=SEARCH_FIELD_NAMES,
             help='Fields named like this will be added to `search_fields`'
-            ' [default: %default]'),
-        optparse.make_option(
+            ' [default: %(default)s]')
+        parser.add_argument(
             '-d', '--date-hierarchy', action='append',
             default=DATE_HIERARCHY_NAMES,
             help='A field named like this will be set as `date_hierarchy`'
-            ' [default: %default]'),
-        optparse.make_option(
+            ' [default: %(default)s]')
+        parser.add_argument(
             '-p', '--prepopulated-fields', action='append',
             default=PREPOPULATED_FIELD_NAMES,
             help='These fields will be prepopulated by the other field.'
             'The field names can be specified like `spam=eggA,eggB,eggC`'
-            ' [default: %default]'),
-        optparse.make_option(
-            '-l', '--list-filter-threshold', type='int',
+            ' [default: %(default)s]')
+        parser.add_argument(
+            '-l', '--list-filter-threshold', type=int,
             default=LIST_FILTER_THRESHOLD, metavar='LIST_FILTER_THRESHOLD',
             help='If a foreign key has less than LIST_FILTER_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]'),
-        optparse.make_option(
-            '-r', '--raw-id-threshold', type='int',
+            'it will be added to `list_filter` [default: %(default)s]')
+        parser.add_argument(
+            '-r', '--raw-id-threshold', type=int,
             default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
             help='If a foreign key has more than RAW_ID_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]'),
-    )
-    can_import_settings = True
+            'it will be added to `list_filter` [default: %(default)s]')
 
     @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
-
         installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
         if not args:
             args = [False]
-
-        app = installed_apps.get(args[0])
-        if not app:
+        app = args[0]
+        if not installed_apps.get(app):
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
             for app in sorted(installed_apps):

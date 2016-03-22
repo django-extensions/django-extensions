@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 SyncData
 ========
@@ -12,14 +13,13 @@ import os
 import sys
 from contextlib import contextmanager
 from functools import wraps
-from optparse import make_option
 
 import six
-from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.db import connection, transaction
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 if hasattr(transaction, 'set_autocommit'):
     @contextmanager
@@ -51,11 +51,10 @@ class Command(BaseCommand):
     help = 'Makes the current database have the same data as the fixture(s), no more, no less.'
     args = "fixture [fixture ...]"
 
-    option_list = BaseCommand.option_list + (
-        make_option('--skip-remove', action='store_false',
-                    dest='remove', default=True,
-                    help='Avoid remove any object from db'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--skip-remove', action='store_false',
+                            dest='remove', default=True,
+                            help='Avoid remove any object from db'),
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -143,7 +142,6 @@ class Command(BaseCommand):
 
                 label_found = False
                 for format in formats:
-                    #serializer = serializers.get_serializer(format)
                     if verbosity > 1:
                         print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format, fixture_name))
                     try:
@@ -198,7 +196,7 @@ class Command(BaseCommand):
         # error was encountered during fixture loading.
         if 0 in objects_per_fixture:
             sys.stderr.write(
-                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % (fixture_name)))
+                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % fixture_name))
             transaction.rollback()
             return
 

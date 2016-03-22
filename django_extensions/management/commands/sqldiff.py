@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 sqldiff.py - Prints the (approximated) difference between models and database
 
@@ -21,17 +22,17 @@ KNOWN ISSUES:
 """
 
 import sys
-from optparse import make_option
 
 import django
 import six
 from django.core.management import CommandError, sql as _sql
-from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.db import connection, transaction
 from django.db.models.fields import AutoField, IntegerField
 
+from django_extensions.compat import get_app_models
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.core.management.base import OutputWrapper
@@ -232,7 +233,7 @@ class SQLDiff(object):
     def get_field_db_type(self, description, field=None, table_name=None):
         from django.db import models
         # DB-API cursor.description
-        #(name, type_code, display_size, internal_size, precision, scale, null_ok) = description
+        # (name, type_code, display_size, internal_size, precision, scale, null_ok) = description
         type_code = description[1]
         if type_code in self.DATA_TYPES_REVERSE_OVERRIDE:
             reverse_type = self.DATA_TYPES_REVERSE_OVERRIDE[type_code]
@@ -905,17 +906,6 @@ DATABASE_SQLDIFF_CLASSES = {
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--all-applications', '-a', action='store_true', dest='all_applications',
-                    help="Automaticly include all application from INSTALLED_APPS."),
-        make_option('--not-only-existing', '-e', action='store_false', dest='only_existing',
-                    help="Check all tables that exist in the database, not only tables that should exist based on models."),
-        make_option('--dense-output', '-d', action='store_true', dest='dense_output',
-                    help="Shows the output in dense format, normally output is spreaded over multiple lines."),
-        make_option('--output_text', '-t', action='store_false', dest='sql', default=True,
-                    help="Outputs the differences as descriptive text instead of SQL"),
-    )
-
     help = """Prints the (approximated) difference between models and fields in the database for the given app name(s).
 
 It indicates how columns in the database are different from the sql that would
@@ -926,13 +916,31 @@ to check/debug ur models compared to the real database tables and columns."""
     output_transaction = False
     args = '<appname appname ...>'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--all-applications', '-a', action='store_true',
+            dest='all_applications',
+            help="Automaticly include all application from INSTALLED_APPS.")
+        parser.add_argument(
+            '--not-only-existing', '-e', action='store_false',
+            dest='only_existing',
+            help="Check all tables that exist in the database, not only "
+            "tables that should exist based on models.")
+        parser.add_argument(
+            '--dense-output', '-d', action='store_true', dest='dense_output',
+            help="Shows the output in dense format, normally output is "
+            "spreaded over multiple lines.")
+        parser.add_argument(
+            '--output_text', '-t', action='store_false', dest='sql',
+            default=True,
+            help="Outputs the differences as descriptive text instead of SQL")
+
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
         self.exit_code = 1
 
     @signalcommand
     def handle(self, *app_labels, **options):
-        from django.db import models
         from django.conf import settings
 
         engine = None
@@ -949,21 +957,12 @@ because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
-            app_models = models.get_models(include_auto_created=True)
+            app_models = get_app_models()
         else:
             if not app_labels:
                 raise CommandError('Enter at least one appname.')
-            try:
-                app_list = [models.get_app(app_label) for app_label in app_labels]
-            except (models.ImproperlyConfigured, ImportError) as e:
-                raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
 
-            app_models = []
-            for app in app_list:
-                app_models.extend(models.get_models(app, include_auto_created=True))
-
-        # remove all models that are not managed by Django
-        #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
+            app_models = get_app_models(app_labels)
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')

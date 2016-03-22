@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.db import models
 
 from django_extensions.db.fields import (
@@ -129,6 +130,13 @@ class ShortUUIDTestManyToManyModel(ShortUUIDTestModel_pk):
 
 
 class RandomCharTestModel(models.Model):
+    random_char_field = RandomCharField(length=8, unique=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelUnique(models.Model):
     random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:

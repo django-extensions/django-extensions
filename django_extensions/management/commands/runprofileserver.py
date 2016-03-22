@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 runprofileserver.py
 
@@ -11,12 +12,12 @@ Credits for kcachegrind support taken from lsprofcalltree.py go to:
 
 import sys
 from datetime import datetime
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.contrib.staticfiles.handlers import StaticFilesHandler
@@ -25,20 +26,9 @@ except ImportError as e:
     USE_STATICFILES = False
 
 
-try:
-    any
-except NameError:
-    # backwards compatibility for <2.5
-    def any(iterable):
-        for element in iterable:
-            if element:
-                return True
-        return False
-
-
 def label(code):
     if isinstance(code, str):
-        return ('~', 0, code)    # built-in functions ('~' sorts at the end)
+        return '~', 0, code  # built-in functions ('~' sorts at the end)
     else:
         return '%s %s:%d' % (code.co_name,
                              code.co_filename,
@@ -68,7 +58,6 @@ class KCacheGrind(object):
         out_file = self.out_file
 
         code = entry.code
-        #print >> out_file, 'ob=%s' % (code.co_filename,)
         if isinstance(code, str):
             out_file.write('fi=~\n')
         else:
@@ -99,7 +88,6 @@ class KCacheGrind(object):
     def _subentry(self, lineno, subentry):
         out_file = self.out_file
         code = subentry.code
-        #out_file.write('cob=%s\n' % (code.co_filename,))
         out_file.write('cfn=%s\n' % (label(code),))
         if isinstance(code, str):
             out_file.write('cfi=~\n')
@@ -113,31 +101,50 @@ class KCacheGrind(object):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-                    help='Tells Django to NOT use the auto-reloader.'),
-        make_option('--adminmedia', dest='admin_media_path', default='',
-                    help='Specifies the directory from which to serve admin media.'),
-        make_option('--prof-path', dest='prof_path', default='/tmp',
-                    help='Specifies the directory which to save profile information in.'),
-        make_option('--prof-file', dest='prof_file', default='{path}.{duration:06d}ms.{time}',
-                    help='Set filename format, default if "{path}.{duration:06d}ms.{time}".'),
-        make_option('--nomedia', action='store_true', dest='no_media', default=False,
-                    help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL'),
-        make_option('--use-cprofile', action='store_true', dest='use_cprofile', default=False,
-                    help='Use cProfile if available, this is disabled per default because of incompatibilities.'),
-        make_option('--kcachegrind', action='store_true', dest='use_lsprof', default=False,
-                    help='Create kcachegrind compatible lsprof files, this requires and automatically enables cProfile.'),
-    )
-    if USE_STATICFILES:
-        option_list += (
-            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
-            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                        help='Allows serving static files even if DEBUG is False.'),
-        )
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--noreload', action='store_false', dest='use_reloader',
+            default=True,
+            help='Tells Django to NOT use the auto-reloader.')
+        parser.add_argument(
+            '--adminmedia', dest='admin_media_path', default='',
+            help='Specifies the directory from which to serve admin media.')
+        parser.add_argument(
+            '--prof-path', dest='prof_path', default='/tmp',
+            help='Specifies the directory which to save profile information '
+            'in.')
+        parser.add_argument(
+            '--prof-file', dest='prof_file',
+            default='{path}.{duration:06d}ms.{time}',
+            help='Set filename format, default if '
+            '"{path}.{duration:06d}ms.{time}".')
+        parser.add_argument(
+            '--nomedia', action='store_true', dest='no_media', default=False,
+            help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL')
+        parser.add_argument(
+            '--use-cprofile', action='store_true', dest='use_cprofile',
+            default=False,
+            help='Use cProfile if available, this is disabled per default '
+            'because of incompatibilities.')
+        parser.add_argument(
+            '--kcachegrind', action='store_true', dest='use_lsprof',
+            default=False,
+            help='Create kcachegrind compatible lsprof files, this requires '
+            'and automatically enables cProfile.')
+
+        if USE_STATICFILES:
+            parser.add_argument(
+                '--nostatic', action="store_false", dest='use_static_handler',
+                default=True,
+                help='Tells Django to NOT automatically serve static files '
+                'at STATIC_URL.')
+            parser.add_argument(
+                '--insecure', action="store_true", dest='insecure_serving',
+                default=False,
+                help='Allows serving static files even if DEBUG is False.')
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
@@ -187,8 +194,9 @@ class Command(BaseCommand):
             import time
             try:
                 import hotshot
+                HAS_HOTSHOT = True
             except ImportError:
-                pass            # python 3.x
+                HAS_HOTSHOT = False  # python 3.x
             USE_CPROFILE = options.get('use_cprofile', False)
             USE_LSPROF = options.get('use_lsprof', False)
             if USE_LSPROF:
@@ -201,7 +209,11 @@ class Command(BaseCommand):
                     print("cProfile disabled, module cannot be imported!")
                     USE_CPROFILE = False
             if USE_LSPROF and not USE_CPROFILE:
-                raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
+                raise CommandError("Kcachegrind compatible output format required cProfile from Python 2.5")
+
+            if not HAS_HOTSHOT and not USE_CPROFILE:
+                raise CommandError("Hotshot profile library not found. (and not using cProfile)")
+
             prof_path = options.get('prof_path', '/tmp')
 
             prof_file = options.get('prof_file', '{path}.{duration:06d}ms.{time}')
@@ -278,7 +290,7 @@ class Command(BaseCommand):
                 if USE_STATICFILES:
                     use_static_handler = options.get('use_static_handler', True)
                     insecure_serving = options.get('insecure_serving', False)
-                    if (use_static_handler and (settings.DEBUG or insecure_serving)):
+                    if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)

@@ -1,19 +1,19 @@
+# coding=utf-8
 import logging
 import os
 import re
 import socket
 import sys
 import time
-from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
+from django.db import connections, DEFAULT_DB_ALIAS
+from django.core.exceptions import ImproperlyConfigured
 
-from django_extensions.management.technical_response import \
-    null_technical_500_response
-from django_extensions.management.utils import (
-    RedirectHandler, setup_logger, signalcommand,
-)
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
+from django_extensions.management.technical_response import null_technical_500_response
+from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
 try:
     if 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
@@ -26,6 +26,12 @@ try:
         USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
+
+try:
+    from django.db.migrations.executor import MigrationExecutor
+    HAS_MIGRATIONS = True
+except ImportError:
+    HAS_MIGRATIONS = False
 
 
 naiveip_re = re.compile(r"""^(?:
@@ -41,46 +47,65 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
-                    help='Tells Django to use a IPv6 address.'),
-        make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-                    help='Tells Django to NOT use the auto-reloader.'),
-        make_option('--browser', action='store_true', dest='open_browser',
-                    help='Tells Django to open a browser.'),
-        make_option('--adminmedia', dest='admin_media_path', default='',
-                    help='Specifies the directory from which to serve admin media.'),
-        make_option('--nothreading', action='store_false', dest='threaded',
-                    help='Do not run in multithreaded mode.'),
-        make_option('--threaded', action='store_true', dest='threaded',
-                    help='Run in multithreaded mode.'),
-        make_option('--output', dest='output_file', default=None,
-                    help='Specifies an output file to send a copy of all messages (not flushed immediately).'),
-        make_option('--print-sql', action='store_true', default=False,
-                    help="Print SQL queries as they're executed"),
-        make_option('--cert', dest='cert_path', action="store", type="string",
-                    help='To use SSL, specify certificate path.'),
-        make_option('--extra-file', dest='extra_files', action="append", type="string",
-                    help='auto-reload whenever the given file changes too (can be specified multiple times)'),
-        make_option('--reloader-interval', dest='reloader_interval', action="store", type="int", default=DEFAULT_POLLER_RELOADER_INTERVAL,
-                    help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL),
-    )
-    if USE_STATICFILES:
-        option_list += (
-            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
-            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                        help='Allows serving static files even if DEBUG is False.'),
-        )
     help = "Starts a lightweight Web server for development."
     args = '[optional port number, or ipaddr:port]'
 
     # Validation is called explicitly each time the server is reloaded.
     requires_system_checks = False
 
+    def add_arguments(self, parser):
+        parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
+                            help='Tells Django to use a IPv6 address.')
+        parser.add_argument('--noreload', action='store_false', dest='use_reloader', default=True,
+                            help='Tells Django to NOT use the auto-reloader.')
+        parser.add_argument('--browser', action='store_true', dest='open_browser',
+                            help='Tells Django to open a browser.')
+        parser.add_argument('--adminmedia', dest='admin_media_path', default='',
+                            help='Specifies the directory from which to serve admin media.')
+        parser.add_argument('--nothreading', action='store_false', dest='threaded',
+                            help='Do not run in multithreaded mode.')
+        parser.add_argument('--threaded', action='store_true', dest='threaded',
+                            help='Run in multithreaded mode.')
+        parser.add_argument('--output', dest='output_file', default=None,
+                            help='Specifies an output file to send a copy of all messages (not flushed immediately).')
+        parser.add_argument('--print-sql', action='store_true', default=False,
+                            help="Print SQL queries as they're executed")
+        parser.add_argument('--cert', dest='cert_path', action="store", type=str,
+                            help='To use SSL, specify certificate path.')
+        parser.add_argument('--extra-file', dest='extra_files', action="append", type=str,
+                            help='auto-reload whenever the given file changes too (can be specified multiple times)')
+        parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
+                            help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
+        parser.add_argument('--pdb', action='store_true', dest='pdb', default=False,
+                            help='Drop into pdb shell at the start of any view.')
+        parser.add_argument('--ipdb', action='store_true', dest='ipdb', default=False,
+                            help='Drop into ipdb shell at the start of any view.')
+        parser.add_argument('--pm', action='store_true', dest='pm', default=False,
+                            help='Drop into (i)pdb shell if an exception is raised in a view.')
+        parser.add_argument('--startup-messages', dest='startup_messages', action="store", default='reload',
+                            help='When to show startup messages: reload [default], once, always, never.')
+
+        if USE_STATICFILES:
+            parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
+                                help='Tells Django to NOT automatically serve static files at STATIC_URL.')
+            parser.add_argument('--insecure', action="store_true", dest='insecure_serving', default=False,
+                                help='Allows serving static files even if DEBUG is False.')
+
     @signalcommand
     def handle(self, addrport='', *args, **options):
         import django
+
+        startup_messages = options.get('startup_messages', 'reload')
+        if startup_messages == "reload":
+            self.show_startup_messages = os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
+        elif startup_messages == "once":
+            self.show_startup_messages = not os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
+        elif startup_messages == "never":
+            self.show_startup_messages = False
+        else:
+            self.show_startup_messages = True
+
+        os.environ['RUNSERVER_PLUS_SHOW_MESSAGES'] = '1'
 
         # Do not use default ending='\n', because StreamHandler() takes care of it
         if hasattr(self.stderr, 'ending'):
@@ -143,15 +168,49 @@ class Command(BaseCommand):
                 try:
                     set_werkzeug_log_color()
                 except:     # We are dealing with some internals, anything could go wrong
-                    print("Wrapping internal werkzeug logger for color highlighting has failed!")
+                    if self.show_startup_messages:
+                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
                     pass
 
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
+        pdb_option = options.get('pdb', False)
+        ipdb_option = options.get('ipdb', False)
+        pm = options.get('pm', False)
+        try:
+            from django_pdb.middleware import PdbMiddleware
+        except ImportError:
+            if pdb_option or ipdb_option or pm:
+                raise CommandError("django-pdb is required for --pdb, --ipdb and --pm options. Please visit https://pypi.python.org/pypi/django-pdb or install via pip. (pip install django-pdb)")
+            pm = False
+        else:
+            # Add pdb middleware if --pdb is specified or if in DEBUG mode
+            middleware = 'django_pdb.middleware.PdbMiddleware'
+            if (pdb_option or ipdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES:
+                settings.MIDDLEWARE_CLASSES += (middleware,)
+
+            # If --pdb is specified then always break at the start of views.
+            # Otherwise break only if a 'pdb' query parameter is set in the url
+            if pdb_option:
+                PdbMiddleware.always_break = 'pdb'
+            elif ipdb_option:
+                PdbMiddleware.always_break = 'ipdb'
+
+            def postmortem(request, exc_type, exc_value, tb):
+                if has_ipdb():
+                    import ipdb
+                    p = ipdb
+                else:
+                    import pdb
+                    p = pdb
+                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
+                                                                   exc_value)
+                p.post_mortem(tb)
+
         # usurp django's handler
         from django.views import debug
-        debug.technical_500_response = null_technical_500_response
+        debug.technical_500_response = postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options.get('use_ipv6')
         if self.use_ipv6 and not socket.has_ipv6:
@@ -196,12 +255,22 @@ class Command(BaseCommand):
         reloader_interval = options.get('reloader_interval', 1)
 
         def inner_run():
-            print("Validating models...")
-            self.validate(display_num_errors=True)
-            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-            print("Quit the server with %s." % quit_command)
+            if self.show_startup_messages:
+                print("Performing system checks...\n")
+            if hasattr(self, 'check'):
+                self.check(display_num_errors=self.show_startup_messages)
+            else:
+                self.validate(display_num_errors=self.show_startup_messages)
+            if HAS_MIGRATIONS:
+                try:
+                    self.check_migrations()
+                except ImproperlyConfigured:
+                    pass
+            if self.show_startup_messages:
+                print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+                print("Development server is running at %s" % (bind_url,))
+                print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+                print("Quit the server with %s." % quit_command)
             path = options.get('admin_media_path', '')
             if not path:
                 admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
@@ -252,7 +321,8 @@ class Command(BaseCommand):
                         ssl_context = make_ssl_devcert(
                             os.path.join(dir_path, root), host='localhost')
                 except ImportError:
-                    print("Werkzeug version is less than 0.9, trying adhoc certificate.")
+                    if self.show_startup_messages:
+                        print("Werkzeug version is less than 0.9, trying adhoc certificate.")
                     ssl_context = "adhoc"
 
             else:
@@ -278,6 +348,17 @@ class Command(BaseCommand):
                 ssl_context=ssl_context,
             )
         inner_run()
+
+    def check_migrations(self):
+        """
+        Checks to see if the set of migrations on disk matches the
+        migrations in the database. Prints a warning if they don't match.
+        """
+        executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+        if plan and self.show_startup_messages:
+            self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
+            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
 
 def set_werkzeug_log_color():

@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Django Extensions additional model fields
 """
@@ -184,7 +185,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         return "SlugField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = '%s.AutoSlugField' % self.__module__
@@ -196,7 +197,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             'allow_duplicates': repr(self.allow_duplicates),
         })
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
@@ -295,7 +296,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
         random_chars = self.random_char_generator(population)
         if not self.unique:
-            return random_chars
+            new = six.next(random_chars)
+            setattr(model_instance, self.attname, new)
+            return new
 
         return super(RandomCharField, self).find_unique(
             model_instance,
@@ -307,7 +310,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         return "CharField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = '%s.RandomCharField' % self.__module__
@@ -322,7 +325,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         })
         del kwargs['max_length']
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(RandomCharField, self).deconstruct()
@@ -359,12 +362,12 @@ class CreationDateTimeField(DateTimeField):
         return "DateTimeField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect ourselves, since we inherit.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(CreationDateTimeField, self).deconstruct()
@@ -372,8 +375,8 @@ class CreationDateTimeField(DateTimeField):
             kwargs['editable'] = True
         if self.blank is not True:
             kwargs['blank'] = False
-        if self.default is not datetime_now:
-            kwargs['default'] = self.default
+        if self.auto_now_add is not False:
+            kwargs['auto_now_add'] = True
         return name, path, args, kwargs
 
 
@@ -393,12 +396,18 @@ class ModificationDateTimeField(CreationDateTimeField):
         return "DateTimeField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect ourselves, since we inherit.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(ModificationDateTimeField, self).deconstruct()
+        if self.auto_now is not False:
+            kwargs['auto_now'] = True
+        return name, path, args, kwargs
 
 
 class UUIDVersionError(Exception):
@@ -465,13 +474,13 @@ class UUIDField(CharField):
         return super(UUIDField, self).formfield(**kwargs)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.CharField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(UUIDField, self).deconstruct()

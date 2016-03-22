@@ -1,59 +1,78 @@
+# coding=utf-8
 import os
+import six
 import sys
 import time
 import traceback
-from optparse import make_option
 
-import six
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import CommandError
 
+from django_extensions.compat import PY3
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
-class Command(NoArgsCommand):
-    def use_vi_mode():
-        editor = os.environ.get('EDITOR')
-        if not editor:
-            return False
-        editor = os.path.basename(editor)
-        return editor.startswith('vi') or editor.endswith('vim')
+def use_vi_mode():
+    editor = os.environ.get('EDITOR')
+    if not editor:
+        return False
+    editor = os.path.basename(editor)
+    return editor.startswith('vi') or editor.endswith('vim')
 
-    option_list = NoArgsCommand.option_list + (
-        make_option('--plain', action='store_true', dest='plain',
-                    help='Tells Django to use plain Python, not BPython nor IPython.'),
-        make_option('--bpython', action='store_true', dest='bpython',
-                    help='Tells Django to use BPython, not IPython.'),
-        make_option('--ptpython', action='store_true', dest='ptpython',
-                    help='Tells Django to use PTPython, not IPython.'),
-        make_option('--ptipython', action='store_true', dest='ptipython',
-                    help='Tells Django to use PT-IPython, not IPython.'),
-        make_option('--ipython', action='store_true', dest='ipython',
-                    help='Tells Django to use IPython, not BPython.'),
-        make_option('--notebook', action='store_true', dest='notebook',
-                    help='Tells Django to use IPython Notebook.'),
-        make_option('--kernel', action='store_true', dest='kernel',
-                    help='Tells Django to start an IPython Kernel.'),
-        make_option('--connection_file', action='store', dest='connection_file',
-                    help='Specifies the connection file to use if using the --kernel option'),
-        make_option('--use-pythonrc', action='store_true', dest='use_pythonrc',
-                    help='Tells Django to execute PYTHONSTARTUP file (BE CAREFULL WITH THIS!)'),
-        make_option('--print-sql', action='store_true', default=False,
-                    help="Print SQL queries as they're executed"),
-        make_option('--dont-load', action='append', dest='dont_load', default=[],
-                    help='Ignore autoloading of some apps/models. Can be used several times.'),
-        make_option('--quiet-load', action='store_true', default=False, dest='quiet_load',
-                    help='Do not display loaded models messages'),
-        make_option('--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
-                    help='Load Vi key bindings (for --ptpython and --ptipython)'),
-        make_option('--no-browser', action='store_true', default=False, dest='no_browser',
-                    help='Don\'t open the notebook in a browser after startup.'),
-    )
+
+class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--plain', action='store_true', dest='plain',
+            help='Tells Django to use plain Python, not BPython nor IPython.')
+        parser.add_argument(
+            '--bpython', action='store_true', dest='bpython',
+            help='Tells Django to use BPython, not IPython.')
+        parser.add_argument(
+            '--ptpython', action='store_true', dest='ptpython',
+            help='Tells Django to use PTPython, not IPython.')
+        parser.add_argument(
+            '--ptipython', action='store_true', dest='ptipython',
+            help='Tells Django to use PT-IPython, not IPython.')
+        parser.add_argument(
+            '--ipython', action='store_true', dest='ipython',
+            help='Tells Django to use IPython, not BPython.')
+        parser.add_argument(
+            '--notebook', action='store_true', dest='notebook',
+            help='Tells Django to use IPython Notebook.')
+        parser.add_argument(
+            '--kernel', action='store_true', dest='kernel',
+            help='Tells Django to start an IPython Kernel.')
+        parser.add_argument('--connection_file', action='store', dest='connection_file',
+                    help='Specifies the connection file to use if using the --kernel option'),
+        parser.add_argument(
+            '--use-pythonrc', action='store_true', dest='use_pythonrc',
+            help='Tells Django to execute PYTHONSTARTUP file '
+            '(BE CAREFULL WITH THIS!)')
+        parser.add_argument(
+            '--print-sql', action='store_true', default=False,
+            help="Print SQL queries as they're executed")
+        parser.add_argument(
+            '--dont-load', action='append', dest='dont_load', default=[],
+            help='Ignore autoloading of some apps/models. Can be used '
+            'several times.')
+        parser.add_argument(
+            '--quiet-load', action='store_true', default=False,
+            dest='quiet_load', help='Do not display loaded models messages')
+        parser.add_argument(
+            '--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
+            help='Load Vi key bindings (for --ptpython and --ptipython)')
+        parser.add_argument(
+            '--no-browser', action='store_true', default=False,
+            dest='no_browser',
+            help='Don\'t open the notebook in a browser after startup.')
+
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         use_kernel = options.get('kernel', False)
         use_notebook = options.get('notebook', False)
         use_ipython = options.get('ipython', False)
@@ -117,29 +136,51 @@ class Command(NoArgsCommand):
             return run_kernel
 
         def get_notebook():
-            from django.conf import settings
+            from IPython import release
             try:
-                from IPython.html.notebookapp import NotebookApp
+                from notebook.notebookapp import NotebookApp
             except ImportError:
                 try:
-                    from IPython.frontend.html.notebook import notebookapp
-                    NotebookApp = notebookapp.NotebookApp
+                    from IPython.html.notebookapp import NotebookApp
                 except ImportError:
-                    return traceback.format_exc()
+                    if release.version_info[0] >= 3:
+                        raise
+                    try:
+                        from IPython.frontend.html.notebook import notebookapp
+                        NotebookApp = notebookapp.NotebookApp
+                    except ImportError:
+                        return traceback.format_exc()
 
             def install_kernel_spec(app, display_name, ipython_arguments):
                 """install an IPython >= 3.0 kernelspec that loads django extensions"""
                 ksm = app.kernel_spec_manager
-                ks = ksm.get_kernel_spec('python')
+                try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
+                    'python3' if PY3 else 'python2',
+                    'python',
+                ])
+                if isinstance(try_spec_names, six.string_types):
+                    try_spec_names = [try_spec_names]
+                ks = None
+                for spec_name in try_spec_names:
+                    try:
+                        ks = ksm.get_kernel_spec(spec_name)
+                        break
+                    except:
+                        continue
+                if not ks:
+                    raise CommandError("No notebook (Python) kernel specs found")
                 ks.argv.extend(ipython_arguments)
                 ks.display_name = display_name
 
-                manage_py_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+                manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
 
-                if os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
-                    pythonpath = ks.env.get("PYTHONPATH", "").split(":")
-                    pythonpath.append(manage_py_dir)
-                    ks.env["PYTHONPATH"] = ":".join(pythonpath)
+                if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
+                    pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
+                    pythonpath = pythonpath.split(':')
+                    if manage_py_dir not in pythonpath:
+                        pythonpath.append(manage_py_dir)
+
+                    ks.env['PYTHONPATH'] = ':'.join(filter(None, pythonpath))
 
                 kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
                 if not os.path.exists(kernel_dir):
@@ -163,7 +204,6 @@ class Command(NoArgsCommand):
                     notebook_arguments.extend(['--notebook-dir', '.'])
 
                 # IPython < 3 passes through kernel args from notebook CLI
-                from IPython import release
                 if release.version_info[0] < 3:
                     notebook_arguments.extend(ipython_arguments)
 
@@ -254,11 +294,11 @@ class Command(NoArgsCommand):
 
         def get_ptpython():
             try:
-                from ptpython.repl import embed
+                from ptpython.repl import embed, run_config
             except ImportError:
                 tb = traceback.format_exc()
                 try:  # prompt_toolkit < v0.27
-                    from prompt_toolkit.contrib.repl import embed
+                    from prompt_toolkit.contrib.repl import embed, run_config
                 except ImportError:
                     return tb
 
@@ -266,15 +306,17 @@ class Command(NoArgsCommand):
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(globals=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptpython
 
         def get_ptipython():
             try:
+                from ptpython.repl import run_config
                 from ptpython.ipython import embed
             except ImportError:
                 tb = traceback.format_exc()
                 try:  # prompt_toolkit < v0.27
+                    from prompt_toolkit.contrib.repl import run_config
                     from prompt_toolkit.contrib.ipython import embed
                 except ImportError:
                     return tb
@@ -283,8 +325,39 @@ class Command(NoArgsCommand):
                 imported_objects = import_objects(options, self.style)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(user_ns=imported_objects, history_filename=history_filename,
-                      vi_mode=options.get('vi_mode', False))
+                      vi_mode=options.get('vi_mode', False), configure=run_config)
             return run_ptipython
+
+        def set_application_name():
+            """Set the application_name on PostgreSQL connection
+
+            Use the fallback_application_name to let the user override
+            it with PGAPPNAME env variable
+
+            http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
+            """
+            supported_backends = ['django.db.backends.postgresql_psycopg2']
+            opt_name = 'fallback_application_name'
+            default_app_name = 'django_shell'
+            app_name = default_app_name
+            dbs = getattr(settings, 'DATABASES', [])
+
+            # lookup over all the databases entry
+            for db in dbs.keys():
+                if dbs[db]['ENGINE'] in supported_backends:
+                    try:
+                        options = dbs[db]['OPTIONS']
+                    except KeyError:
+                        options = {}
+
+                    # dot not override a defined value
+                    if opt_name in options.keys():
+                        app_name = dbs[db]['OPTIONS'][opt_name]
+                    else:
+                        dbs[db].setdefault('OPTIONS', {}).update({opt_name: default_app_name})
+                        app_name = default_app_name
+
+            return app_name
 
         shells = (
             ('ptipython', get_ptipython),
@@ -297,6 +370,7 @@ class Command(NoArgsCommand):
 
         shell = None
         shell_name = "any"
+        set_application_name()
         if use_kernel:
             shell = get_kernel()
             shell_name = "IPython Kernel"

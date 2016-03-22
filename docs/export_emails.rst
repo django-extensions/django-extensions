@@ -5,9 +5,9 @@ export_emails
 
 Most Django sites include a registered user base. There are times when you
 would like to import these e-mail addresses into other systems (generic mail
-program, GMail, google docs invites, give edit permissions, LinkedLn Group
-pre-approved listing). The export_emails command extension gives you this
-ability. The users exported can be filtered by Group name association.
+program, Gmail, Google Docs invites, give edit permissions, LinkedIn Group
+pre-approved listing, etc.). The export_emails command extension gives you this
+ability. Exported users can be filtered by Group name association.
 
 
 Example Usage
@@ -25,7 +25,7 @@ Example Usage
 
 ::
 
-  # Create a csv file importable by GMail or Google Docs
+  # Create a csv file importable by Gmail or Google Docs
   $ ./manage.py export_emails --format=google google.csv
 
 
@@ -47,7 +47,7 @@ google
 ^^^^^^
 
 A CSV (comma separated value) format which Google applications can import.
-This can be used to import directly into GMail, a GMail mailing group, Google
+This can be used to import directly into Gmail, a Gmail mailing group, Google
 Docs invite (to read), Google Docs grant edit permissions, Google Calendar
 invites, etc.
 

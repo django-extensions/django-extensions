@@ -1,34 +1,32 @@
 language: python
 
+python:
+    - 3.5
+
 sudo: false
 
 env:
     - TOX_ENV=py27-flake8
     - TOX_ENV=py34-flake8
-    - TOX_ENV=py26-dj14
-    - TOX_ENV=py27-dj14
-    - TOX_ENV=py26-dj15
-    - TOX_ENV=py26-dj16
-    - TOX_ENV=py27-dj15
+    - TOX_ENV=py35-flake8
     - TOX_ENV=py27-dj16
-    - TOX_ENV=py32-dj15
     - TOX_ENV=py32-dj16
-    - TOX_ENV=py33-dj15
     - TOX_ENV=py33-dj16
-    - TOX_ENV=py34-dj15
     - TOX_ENV=py34-dj16
     - TOX_ENV=py27-dj17
     - TOX_ENV=py27-dj18
+    - TOX_ENV=py27-dj19
     - TOX_ENV=py27-djmaster
     - TOX_ENV=py32-dj17
     - TOX_ENV=py32-dj18
-    - TOX_ENV=py32-djmaster
     - TOX_ENV=py33-dj17
     - TOX_ENV=py33-dj18
-    - TOX_ENV=py33-djmaster
     - TOX_ENV=py34-dj17
     - TOX_ENV=py34-dj18
+    - TOX_ENV=py34-dj19
     - TOX_ENV=py34-djmaster
+    - TOX_ENV=py35-dj19
+    - TOX_ENV=py35-djmaster
     - TOX_ENV=pypy-dj17
     - TOX_ENV=pypy-dj18
     - TOX_ENV=pypy-djmaster
@@ -39,15 +37,14 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
+    - env: TOX_ENV=py35-djmaster
     - env: TOX_ENV=py34-djmaster
-    - env: TOX_ENV=py33-djmaster
-    - env: TOX_ENV=py32-djmaster
     - env: TOX_ENV=py27-djmaster
     - env: TOX_ENV=pypy-djmaster
     - env: TOX_ENV=pypy3-djmaster
 
 install:
-  - pip install tox coveralls
+  - pip install "virtualenv<14.0.0" tox coveralls
 
 script:
   - tox -e $TOX_ENV
