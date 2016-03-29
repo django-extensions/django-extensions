@@ -340,6 +340,12 @@ class Command(BaseCommand):
             else:
                 extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
 
+        # Werkzeug needs to be clued in its the main instance if running
+        # without reloader or else it won't show key.
+        # https://git.io/vVIgo
+        if not use_reloader:
+            os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+
         # Don't run a second instance of the debugger / reloader
         # See also: https://github.com/django-extensions/django-extensions/issues/832
         if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
