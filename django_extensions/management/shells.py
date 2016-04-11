@@ -9,64 +9,90 @@ class ObjectImportError(Exception):
     pass
 
 
+def check_alias(directive):
+    result = directive.split(' as ')
+    if len(result) == 2:
+        object_name, alias = result
+    else:
+        object_name = alias = result[0]
+    return object_name, alias
+
+
 def import_items(import_directives, style, quiet_load=False):
     """
     Import the items in import_directives and return a list of the imported items
 
     Each item in import_directives should be one of the following forms
-        * a tuple like ('module.submodule', ('classname1', 'classname2')), which indicates a 'from module.submodule import classname1, classname2'
-        * a tuple like ('module.submodule', 'classname1'), which indicates a 'from module.submodule import classname1'
-        * a tuple like ('module.submodule', '*'), which indicates a 'from module.submodule import *'
-        * a simple 'module.submodule' which indicates 'import module.submodule'.
+        * a tuple like ('module.submodule', ('classname1', 'classname2 as alias')), which indicates a 'from module.submodule import classname1, classname2 as alias'
+        * a tuple like ('module.submodule', 'classname1[ as alias]'), which indicates 'from module.submodule import classname1[ as alias]'
+        * a tuple like ('module.submodule', '*'), which indicates 'from module.submodule import *'
+        * a string like 'module.submodule[ as alias]', which indicates 'import module.submodule[ as alias]'.
 
-    Returns a dict mapping the names to the imported items
+    Returns a dict mapping the names or aliases to the imported items
     """
     imported_objects = {}
     for directive in import_directives:
         try:
             # First try a straight import
             if isinstance(directive, six.string_types):
-                imported_object = __import__(directive)
-                imported_objects[directive.split('.')[0]] = imported_object
+                object_name, alias = check_alias(directive)
+                if object_name == alias:
+                    # 'import module' or 'import module.submodule'
+                    # Note that imported object will always be <module>
+                    module_name = object_name.split('.')[0]
+                    alias = module_name
+                    fromlist = []
+                else:
+                    # 'import module.submodule as submodule_alias'
+                    fromlist = object_name.split('.')
+
+                # If fromlist is empty, imported object will be <module>
+                # If not, it will be <module>.<submodule>
+                imported_object = __import__(object_name, fromlist=fromlist)
+                imported_objects[alias] = imported_object
+
                 if not quiet_load:
                     print(style.SQL_COLTYPE("import %s" % directive))
                 continue
             elif isinstance(directive, (list, tuple)) and len(directive) == 2:
-                if not isinstance(directive[0], six.string_types):
+                module_name, object_spec = directive
+                if not isinstance(module_name, six.string_types):
                     if not quiet_load:
-                        print(style.ERROR("Unable to import %r: module name must be of type string" % directive[0]))
+                        print(style.ERROR("Unable to import %r: module name must be of type string" % module_name))
                     continue
-                if isinstance(directive[1], (list, tuple)) and all(isinstance(e, six.string_types) for e in directive[1]):
+                if isinstance(object_spec, (list, tuple)) and all(isinstance(e, six.string_types) for e in object_spec):
                     # Try the ('module.submodule', ('classname1', 'classname2')) form
-                    imported_object = __import__(directive[0], {}, {}, directive[1])
+                    imported_object = __import__(module_name, {}, {}, object_spec)
                     imported_names = []
-                    for name in directive[1]:
+                    for spec in object_spec:
                         try:
-                            imported_objects[name] = getattr(imported_object, name)
+                            object_name, alias = check_alias(spec)
+                            imported_objects[alias] = getattr(imported_object, object_name)
                         except AttributeError:
                             if not quiet_load:
-                                print(style.ERROR("Unable to import %r from %r: %r does not exist" % (name, directive[0], name)))
+                                print(style.ERROR("Unable to import %r from %r: %r does not exist" % (object_name, module_name, object_name)))
                         else:
-                            imported_names.append(name)
+                            imported_names.append(spec)
                     if not quiet_load:
-                        print(style.SQL_COLTYPE("from %s import %s" % (directive[0], ', '.join(imported_names))))
-                elif isinstance(directive[1], six.string_types):
+                        print(style.SQL_COLTYPE("from %s import %s" % (module_name, ', '.join(imported_names))))
+                elif isinstance(object_spec, six.string_types):
                     # If it is a tuple, but the second item isn't a list, so we have something like ('module.submodule', 'classname1')
                     # Check for the special '*' to import all
-                    if directive[1] == '*':
-                        imported_object = __import__(directive[0], {}, {}, directive[1])
+                    if object_spec == '*':
+                        imported_object = __import__(module_name, {}, {}, object_spec)
                         for k in dir(imported_object):
                             imported_objects[k] = getattr(imported_object, k)
                         if not quiet_load:
-                            print(style.SQL_COLTYPE("from %s import *" % directive[0]))
+                            print(style.SQL_COLTYPE("from %s import *" % module_name))
                     else:
-                        imported_object = getattr(__import__(directive[0], {}, {}, [directive[1]]), directive[1])
-                        imported_objects[directive[1]] = imported_object
+                        object_name, alias = check_alias(object_spec)
+                        imported_object = getattr(__import__(module_name, {}, {}, [object_name]), object_name)
+                        imported_objects[alias] = imported_object
                         if not quiet_load:
-                            print(style.SQL_COLTYPE("from %s import %s" % (directive[0], directive[1])))
+                            print(style.SQL_COLTYPE("from %s import %s" % (module_name, object_spec)))
                 else:
                     if not quiet_load:
-                        print(style.ERROR("Unable to import %r from %r: names must be of type string" % (directive[1], directive[0])))
+                        print(style.ERROR("Unable to import %r from %r: names must be of type string" % (object_spec, module_name)))
             else:
                 if not quiet_load:
                     print(style.ERROR("Unable to import %r: names must be of type string" % directive))
