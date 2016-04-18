@@ -26,7 +26,7 @@ class TimeStampedModel(models.Model):
     modified = ModificationDateTimeField(_('modified'))
 
     def save(self, **kwargs):
-        self.update_modified = kwargs.pop('update_modified', True)
+        self.update_modified = kwargs.pop('update_modified', getattr(self, 'update_modified', True))
         super(TimeStampedModel, self).save(**kwargs)
 
     class Meta:
