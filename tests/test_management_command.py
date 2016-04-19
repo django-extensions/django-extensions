@@ -9,6 +9,7 @@ from django.core.management import (
 from django.test import TestCase
 
 from django_extensions.compat import StringIO, importlib
+from django_extensions.management.modelviz import use_model
 
 
 class MockLoggingHandler(logging.Handler):
@@ -112,3 +113,26 @@ class CommandClassTests(TestCase):
                 load_command_class('django_extensions', command)
         except Exception as e:
             self.fail("Can't load command class of {0}\n{1}".format(command, e))
+
+class GraphModelsTests(TestCase):
+    """
+    Tests for the `graph_models` management command.
+    """
+    def test_use_model(self):
+        include_models = [
+            'NoWildcardInclude',
+            '*WildcardPrefixInclude',
+            'WildcardSuffixInclude*',
+            '*WildcardBothInclude*'
+        ]
+        exclude_models = [
+            'NoWildcardExclude',
+            '*WildcardPrefixExclude',
+            'WildcardSuffixExclude*',
+            '*WildcardBothExclude*'
+        ]
+        self.assertTrue(use_model(
+            'SomeModel',
+            None,
+            exclude_models
+        ))
