@@ -9,17 +9,8 @@ from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 def get_template_path(path):
     try:
-        template = loader.find_template(path)
-        if template[1]:
-            return template[1].name
-        # work arround https://code.djangoproject.com/ticket/17199 issue
-        for template_loader in loader.template_source_loaders:
-            try:
-                source, origin = template_loader.load_template_source(path)
-                return origin
-            except TemplateDoesNotExist:
-                pass
-        raise TemplateDoesNotExist(path)
+        template = loader.get_template(path)
+        return template.origin.name
     except TemplateDoesNotExist:
         return None
 
