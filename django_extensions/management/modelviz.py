@@ -62,6 +62,7 @@ def parse_file_or_list(arg):
         return [e.strip() for e in open(arg).readlines()]
     return [e.strip() for e in arg.split(',')]
 
+
 def use_model(model_name, include_models, exclude_models):
     """
     Decide whether to use a model, based on the model name and the lists of
@@ -83,6 +84,7 @@ def use_model(model_name, include_models, exclude_models):
                 return True
     # Return `True` if `include_models` is falsey, otherwise return `False`.
     return not include_models
+
 
 def generate_graph_data(app_labels, **kwargs):
     cli_options = kwargs.get('cli_options', None)

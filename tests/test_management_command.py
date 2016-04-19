@@ -114,6 +114,7 @@ class CommandClassTests(TestCase):
         except Exception as e:
             self.fail("Can't load command class of {0}\n{1}".format(command, e))
 
+
 class GraphModelsTests(TestCase):
     """
     Tests for the `graph_models` management command.
