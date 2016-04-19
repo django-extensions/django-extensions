@@ -140,6 +140,18 @@ class GraphModelsTests(TestCase):
             None,
             None
         ))
+        # Any model name should be allowed if `*` is in `include_models`.
+        self.assertTrue(use_model(
+            'SomeModel',
+            ['OtherModel', '*', 'Wildcard*Model'],
+            None
+        ))
+        # No model name should be allowed if `*` is in `exclude_models`.
+        self.assertFalse(use_model(
+            'SomeModel',
+            None,
+            ['OtherModel', '*', 'Wildcard*Model']
+        ))
         # Some tests with the `include_models` defined above.
         self.assertFalse(use_model(
             'SomeModel',
