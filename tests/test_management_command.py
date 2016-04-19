@@ -121,18 +121,84 @@ class GraphModelsTests(TestCase):
     def test_use_model(self):
         include_models = [
             'NoWildcardInclude',
+            'Wildcard*InsideInclude',
             '*WildcardPrefixInclude',
             'WildcardSuffixInclude*',
             '*WildcardBothInclude*'
         ]
         exclude_models = [
             'NoWildcardExclude',
+            'Wildcard*InsideExclude',
             '*WildcardPrefixExclude',
             'WildcardSuffixExclude*',
             '*WildcardBothExclude*'
         ]
+        # Any model name should be used if neither include or exclude
+        # are defined.
         self.assertTrue(use_model(
             'SomeModel',
+            None,
+            None
+        ))
+        # Some tests with the `include_models` defined above.
+        self.assertFalse(use_model(
+            'SomeModel',
+            include_models,
+            None
+        ))
+        self.assertTrue(use_model(
+            'NoWildcardInclude',
+            include_models,
+            None
+        ))
+        self.assertTrue(use_model(
+            'WildcardSomewhereInsideInclude',
+            include_models,
+            None
+        ))
+        self.assertTrue(use_model(
+            'MyWildcardPrefixInclude',
+            include_models,
+            None
+        ))
+        self.assertTrue(use_model(
+            'WildcardSuffixIncludeModel',
+            include_models,
+            None
+        ))
+        self.assertTrue(use_model(
+            'MyWildcardBothIncludeModel',
+            include_models,
+            None
+        ))
+        # Some tests with the `exclude_models` defined above.
+        self.assertTrue(use_model(
+            'SomeModel',
+            None,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'NoWildcardExclude',
+            None,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'WildcardSomewhereInsideExclude',
+            None,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'MyWildcardPrefixExclude',
+            None,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'WildcardSuffixExcludeModel',
+            None,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'MyWildcardBothExcludeModel',
             None,
             exclude_models
         ))
