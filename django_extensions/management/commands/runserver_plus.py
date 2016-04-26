@@ -16,7 +16,9 @@ from django_extensions.management.technical_response import null_technical_500_r
 from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
 try:
-    if 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
+    if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
+        USE_STATICFILES = False
+    elif 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
         from django.contrib.staticfiles.handlers import StaticFilesHandler
         USE_STATICFILES = True
     elif 'staticfiles' in settings.INSTALLED_APPS:
