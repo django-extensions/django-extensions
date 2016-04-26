@@ -25,6 +25,10 @@ class TimeStampedModel(models.Model):
     created = CreationDateTimeField(_('created'))
     modified = ModificationDateTimeField(_('modified'))
 
+    def save(self, **kwargs):
+        self.update_modified = kwargs.pop('update_modified', getattr(self, 'update_modified', True))
+        super(TimeStampedModel, self).save(**kwargs)
+
     class Meta:
         get_latest_by = 'modified'
         ordering = ('-modified', '-created',)
