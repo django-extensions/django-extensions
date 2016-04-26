@@ -87,11 +87,12 @@ class Command(BaseCommand):
             '--exclude-models -X': {
                 'action': 'store', 'dest': 'exclude_models',
                 'help': 'Exclude specific model(s) from the graph. Can also '
-                'load exclude list from file.'},
+                'load exclude list from file. Wildcards (*) are allowed.'},
 
             '--include-models -I': {
                 'action': 'store', 'dest': 'include_models',
-                'help': 'Restrict the graph to specified models.'},
+                'help': 'Restrict the graph to specified models. Wildcards '
+                '(*) are allowed.'},
 
             '--inheritance -e': {
                 'action': 'store_true', 'dest': 'inheritance', 'default': True,
