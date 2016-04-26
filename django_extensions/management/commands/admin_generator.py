@@ -24,7 +24,7 @@ from django.db import models
 from django_extensions.compat import get_apps, get_models_compat
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
@@ -288,8 +288,9 @@ class AdminModel(UnicodeMixin):
         self.processed = True
 
 
-class Command(BaseCommand):
+class Command(LabelCommand):
     help = '''Generate a `admin.py` file for the given app (models)'''
+    args = "[app_name]"
     can_import_settings = True
 
     def add_arguments(self, parser):
@@ -297,41 +298,39 @@ class Command(BaseCommand):
             '-s', '--search-field', action='append',
             default=SEARCH_FIELD_NAMES,
             help='Fields named like this will be added to `search_fields`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-d', '--date-hierarchy', action='append',
             default=DATE_HIERARCHY_NAMES,
             help='A field named like this will be set as `date_hierarchy`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-p', '--prepopulated-fields', action='append',
             default=PREPOPULATED_FIELD_NAMES,
             help='These fields will be prepopulated by the other field.'
             'The field names can be specified like `spam=eggA,eggB,eggC`'
-            ' [default: %default]')
+            ' [default: %(default)s]')
         parser.add_argument(
             '-l', '--list-filter-threshold', type=int,
             default=LIST_FILTER_THRESHOLD, metavar='LIST_FILTER_THRESHOLD',
             help='If a foreign key has less than LIST_FILTER_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]')
+            'it will be added to `list_filter` [default: %(default)s]')
         parser.add_argument(
             '-r', '--raw-id-threshold', type=int,
             default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
             help='If a foreign key has more than RAW_ID_THRESHOLD items '
-            'it will be added to `list_filter` [default: %default]')
+            'it will be added to `list_filter` [default: %(default)s]')
 
     @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
-
         installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
 
         # Make sure we always have args
         if not args:
             args = [False]
-
-        app = installed_apps.get(args[0])
-        if not app:
+        app = args[0]
+        if not installed_apps.get(app):
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
             for app in sorted(installed_apps):

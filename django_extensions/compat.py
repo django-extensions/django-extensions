@@ -199,6 +199,15 @@ def add_to_builtins_compat(name):
         engines['django'].engine.builtins.append(name)
 
 
+def get_model(path):
+    if django.VERSION < (1, 7):
+        from django.db.models.loading import get_model
+        return get_model(*path.split('.', 1))
+    else:
+        from django.apps import apps
+        return apps.get_model(*path.split('.', 1))
+
+
 class ProxyParser(object):
     """Faux parser object that will ferry our arguments into options."""
 
@@ -206,7 +215,16 @@ class ProxyParser(object):
         self.command = command
 
     def add_argument(self, *args, **kwargs):
-        self.command.option_list +=  (make_option(*args, **kwargs), )
+        """Transform our argument into an option to append to self.option_list.
+
+        In argparse, "available specifiers [in help strings] include the
+        program name, %(prog)s and most keyword arguments to add_argument()".
+        However, optparse only mentions %default in the help string, and we
+        must alter the format to properly replace in optparse without error.
+        """
+        if 'help' in kwargs:
+            kwargs['help'] = kwargs['help'].replace('%(default)s', '%default')
+        self.command.option_list += (make_option(*args, **kwargs), )
 
 class CompatibilityBaseCommand(BaseCommand):
     """Provides a compatibility between optparse and argparse transition.

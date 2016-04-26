@@ -1,6 +1,7 @@
 # coding=utf-8
 import sys
 
+import django
 from django.template import TemplateDoesNotExist, loader
 
 from django_extensions.management.utils import signalcommand
@@ -9,9 +10,13 @@ from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 def get_template_path(path):
     try:
-        template = loader.find_template(path)
-        if template[1]:
-            return template[1].name
+        if django.VERSION < (1, 8):
+            template = loader.find_template(path)[1]
+        else:
+            template = loader.get_template(path).template
+
+        if template:
+            return template.name
         # work arround https://code.djangoproject.com/ticket/17199 issue
         for template_loader in loader.template_source_loaders:
             try:

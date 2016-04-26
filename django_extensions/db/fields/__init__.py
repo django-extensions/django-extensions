@@ -409,6 +409,11 @@ class ModificationDateTimeField(CreationDateTimeField):
             kwargs['auto_now'] = True
         return name, path, args, kwargs
 
+    def pre_save(self, model_instance, add):
+        if not model_instance.update_modified:
+            return model_instance.modified
+        return super(ModificationDateTimeField, self).pre_save(model_instance, add)
+
 
 class UUIDVersionError(Exception):
     pass
