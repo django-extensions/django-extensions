@@ -1,5 +1,6 @@
 # coding=utf-8
 import functools
+import json
 import re
 
 from django.conf import settings
@@ -18,6 +19,8 @@ FMTR = {
     'table': "{url},{module},{url_name},{decorator}",
     'aligned': "{url},{module},{url_name},{decorator}",
     'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
+    'json': '',
+    'pretty-json': ''
 }
 
 
@@ -67,6 +70,9 @@ class Command(BaseCommand):
         format_style = options.get('format_style')
         if format_style not in FMTR:
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
+        pretty_json = format_style == 'pretty-json'
+        if pretty_json:
+            format_style = 'json'
         fmtr = FMTR[format_style]
 
         urlconf = options.get('urlconf')
@@ -107,14 +113,22 @@ class Command(BaseCommand):
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
-                views.append(fmtr.format(
-                    module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
-                    url_name=style.URL_NAME(url_name or ''),
-                    url=style.URL(simplify_regex(regex)),
-                    decorator=', '.join(decorators),
-                ))
+                module = '{0}.{1}'.format(func.__module__, func_name)
+                url_name = url_name or ''
+                url = simplify_regex(regex)
+                decorator = ', '.join(decorators)
 
-        if not options.get('unsorted', False):
+                if format_style == 'json':
+                    views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
+                else:
+                    views.append(fmtr.format(
+                        module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
+                        url_name=style.URL_NAME(url_name),
+                        url=style.URL(url),
+                        decorator=decorator,
+                    ))
+
+        if not options.get('unsorted', False) and format_style != 'json':
             views = sorted(views)
 
         if format_style == 'aligned':
@@ -144,6 +158,11 @@ class Command(BaseCommand):
 
             # Replace original views so we can return the same object
             views = table_views
+
+        elif format_style == 'json':
+            if pretty_json:
+                return json.dumps(views, indent=4)
+            return json.dumps(views)
 
         return "\n".join([v for v in views]) + "\n"
 
