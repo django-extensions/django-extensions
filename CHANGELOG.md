@@ -1,6 +1,45 @@
 Changelog
 =========
 
+1.6.2
+-----
+
+The long over due release :-)
+
+Changes:
+ - Fix: JsonFields, do not parse floats as decimals. This fixes bugs that causes
+        them to be returned as strings after multiple saves. Note that this can
+        be backwards incompatible !
+ - Fix: use add_arguments() instead of option_list (Django 1.10)
+ - Fix: create_command, Django 1.9 fixes
+ - Fix: create_jobs, Django 1.9 fixes
+ - Fix: RandomCharField, when not unique get the first value from the generator
+ - Fix: graph_models, render() must be called with a dict
+ - Fix: graph_models, use force_bytes fixes command for Python 3
+ - Fix: graph_models, fix django 1.6 compatibility for strings defined relation
+ - Fix: graph_models, fix settings.GRAPH_MODELS breaking the command
+ - Fix: graph_models, add support for lazy relationships
+ - Fix: ForeignKeyAutocompleteAdmin, url_patterns is just a list (Django 1.9+)
+ - Fix: ForeignKeySearchInput, use url reversing instead of hardcoded paths
+ - Fix: find_template, Fix for Django 1.8+
+ - Fix: admin_generator, incompatible "default" identifier raising TypeError
+ - Improvement: show_urls, add json and pretty-json formatting
+ - Improvement: runserver_plus, add support for whitenoise
+ - Improvement: ModificationDateTimeField, add parameter to preserve timestamps on save
+ - Improvement: runprofileserver, raise command error when hotspot is not available
+ - Improvement: reset_db, better parsing of mysql cnf file
+ - Improvement: restored coverage for Python 3.2
+ - Improvement: pep8 fixes, remove unused shims & imports & commented code
+ - Improvement: graph_models, JSON output
+ - Improvement: graph_models, add wildcard filters
+ - Docs: removed text on donations, the hope was that we could generate some
+         funds to have more consistent development and outreach.
+ - Docs: runserver_plus, added some documentation about LOGGING
+ - Docs: runscript, update documentation to match Django tutorial for Django 1.8+
+ - Docs: runprofileserver, add documentation on profiler choices
+ - Docs: update_permissions, add basic documentation for command
+
+
 1.6.1
 -----
 
