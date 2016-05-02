@@ -410,7 +410,7 @@ class ModificationDateTimeField(CreationDateTimeField):
         return name, path, args, kwargs
 
     def pre_save(self, model_instance, add):
-        if not model_instance.update_modified:
+        if not getattr(model_instance, 'update_modified', True):
             return model_instance.modified
         return super(ModificationDateTimeField, self).pre_save(model_instance, add)
 
