@@ -166,7 +166,7 @@ def get_models_compat(app_label):
 
 
 def get_models_for_app(app_label):
-    """Returns the models in the given app."""
+    """Returns the models in the given app label."""
     try:
         # django >= 1.7
         from django.apps import apps
