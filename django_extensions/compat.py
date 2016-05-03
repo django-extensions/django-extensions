@@ -153,20 +153,8 @@ def get_model_compat(app_label, model_name):
         return apps.get_model(app_label, model_name)
 
 
-def get_models_compat(app_label):
-    """Get models on multiple Django versions."""
-    try:
-        # django >= 1.7
-        from django.apps import apps
-    except ImportError:
-        from django.db.models import get_models
-        return get_models(app_label)
-    else:
-        return apps.get_app_config(app_label).get_models()
-
-
 def get_models_for_app(app_label):
-    """Returns the models in the given app label."""
+    """Returns the models in the given app for an app label."""
     try:
         # django >= 1.7
         from django.apps import apps
