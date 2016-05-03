@@ -32,7 +32,7 @@ except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
 from django_extensions.compat import (
-    get_app, get_model_compat, get_models_compat, list_app_labels
+    get_app, get_model_compat, get_models_for_app, list_app_labels
 )
 
 
@@ -128,7 +128,7 @@ def generate_graph_data(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = list(get_models_compat(app_label))
+        appmodels = list(get_models_for_app(app_label))
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
