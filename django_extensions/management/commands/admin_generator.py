@@ -21,7 +21,7 @@ import sys
 from django.conf import settings
 from django.db import models
 
-from django_extensions.compat import get_apps, get_models_compat
+from django_extensions.compat import get_apps, get_models_for_app
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
@@ -89,7 +89,7 @@ class AdminApp(UnicodeMixin):
         self.options = options
 
     def __iter__(self):
-        for model in get_models_compat(self.app):
+        for model in get_models_for_app(self.app):
             admin_model = AdminModel(model, **self.options)
 
             for model_re in self.model_res:
