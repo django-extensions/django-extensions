@@ -45,58 +45,64 @@ def list_apps():
     try:
         # django >= 1.7, to support AppConfig
         from django.apps import apps
-        return [app.name for app in apps.get_app_configs()]
     except ImportError:
         # old way
         return list(settings.INSTALLED_APPS)
+    else:
+        return [app.name for app in apps.get_app_configs()]
 
 
 def list_app_labels():
     try:
         # django >= 1.7, to support AppConfig
         from django.apps import apps
-        return [app.label for app in apps.get_app_configs()]
     except ImportError:
         # old way
         return [app.rsplit(".")[-1] for app in settings.INSTALLED_APPS]
+    else:
+        return [app.label for app in apps.get_app_configs()]
 
 
 def get_app(app_label):
     try:
         # django >= 1.7
         from django.apps import apps
-        return apps.get_app_config(app_label).models_module
     except ImportError:
         from django.db import models
         return models.get_app(app_label)
+    else:
+        return apps.get_app_config(app_label).models_module
 
 
 def get_apps():
     try:
         # django >= 1.7, to support AppConfig
         from django.apps import apps
-        return [app.models_module for app in apps.get_app_configs() if app.models_module]
     except ImportError:
         from django.db import models
         return models.get_apps()
+    else:
+        return [app.models_module for app in apps.get_app_configs() if app.models_module]
 
 
 def get_apps_from_cache():
     try:
         from django.apps import apps
-        return [app.models_module for app in apps.get_app_configs() if app.models_module]
     except ImportError:
         from django.db.models.loading import cache
         return cache.get_apps()
+    else:
+        return [app.models_module for app in apps.get_app_configs() if app.models_module]
 
 
 def get_models_from_cache(app):
     try:
         from django.apps import apps
-        return apps.get_models(app)
     except ImportError:
         from django.db.models.loading import cache
         return cache.get_models(app)
+    else:
+        return apps.get_models(app)
 
 
 def get_app_models(app_labels=None):
@@ -104,10 +110,11 @@ def get_app_models(app_labels=None):
         try:
             # django >= 1.7, to support AppConfig
             from django.apps import apps
-            return apps.get_models(include_auto_created=True)
         except ImportError:
             from django.db import models
             return models.get_models(include_auto_created=True)
+        else:
+            return apps.get_models(include_auto_created=True)
 
     if not isinstance(app_labels, (list, tuple, set)):
         app_labels = [app_labels]
@@ -116,10 +123,6 @@ def get_app_models(app_labels=None):
     try:
         # django >= 1.7, to support AppConfig
         from django.apps import apps
-
-        for app_label in app_labels:
-            app_config = apps.get_app_config(app_label)
-            app_models.extend(app_config.get_models(include_auto_created=True))
     except ImportError:
         from django.db import models
 
@@ -130,6 +133,10 @@ def get_app_models(app_labels=None):
 
         for app in app_list:
             app_models.extend(models.get_models(app, include_auto_created=True))
+    else:
+        for app_label in app_labels:
+            app_config = apps.get_app_config(app_label)
+            app_models.extend(app_config.get_models(include_auto_created=True))
 
     return app_models
 
@@ -139,10 +146,11 @@ def get_model_compat(app_label, model_name):
     try:
         # django >= 1.7
         from django.apps import apps
-        return apps.get_model(app_label, model_name)
     except ImportError:
         from django.db.models import get_model
         return get_model(app_label, model_name)
+    else:
+        return apps.get_model(app_label, model_name)
 
 
 def get_models_compat(app_label):
@@ -150,10 +158,11 @@ def get_models_compat(app_label):
     try:
         # django >= 1.7
         from django.apps import apps
-        return apps.get_app_config(app_label).get_models()
     except ImportError:
         from django.db.models import get_models
         return get_models(app_label)
+    else:
+        return apps.get_app_config(app_label).get_models()
 
 
 def get_models_for_app(app_label):
@@ -161,10 +170,11 @@ def get_models_for_app(app_label):
     try:
         # django >= 1.7
         from django.apps import apps
-        return apps.get_app_config(app_label).get_models()
     except ImportError:
         from django.db.models import get_app, get_models
         return get_models(get_app(app_label))
+    else:
+        return apps.get_app_config(app_label).get_models()
 
 
 def load_tag_library(libname):
