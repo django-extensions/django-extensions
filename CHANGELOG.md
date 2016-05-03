@@ -1,6 +1,17 @@
 Changelog
 =========
 
+1.6.6
+-----
+
+Changes:
+ - Fix: admin_generator, fix for using all apps in Django <1.7
+ - Fix: dump_script, fix for using all apps in Django <1.7
+ - Fix: UniqueFieldMixin, resolve get_fields_with_model deprecation Django 1.10
+ - Fix: runprofileserver, Fix call grind format to enable source code navigation in qcachegrind.
+ - Docs: runserver_plus, add a little note about the debugger PIN.
+
+
 1.6.5
 -----
 
