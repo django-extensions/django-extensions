@@ -43,7 +43,7 @@ from django.db.models import (
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
-    list_app_labels, get_model_compat, get_models_compat, get_models_for_app
+    list_app_labels, get_model_compat, get_models_for_app
 )
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
@@ -132,8 +132,8 @@ def get_models(app_labels):
 
     # If no app labels are given, return all
     if not app_labels:
-        for app in list_app_labels():
-            models += [m for m in get_models_compat(app)
+        for app_label in list_app_labels():
+            models += [m for m in get_models_for_app(app_label)
                        if m not in EXCLUDED_MODELS]
         return models
 
