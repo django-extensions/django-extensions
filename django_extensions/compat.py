@@ -199,15 +199,6 @@ def add_to_builtins_compat(name):
         engines['django'].engine.builtins.append(name)
 
 
-def get_model(path):
-    if django.VERSION < (1, 7):
-        from django.db.models.loading import get_model
-        return get_model(*path.split('.', 1))
-    else:
-        from django.apps import apps
-        return apps.get_model(*path.split('.', 1))
-
-
 class ProxyParser(object):
     """Faux parser object that will ferry our arguments into options."""
 
