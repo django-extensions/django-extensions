@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.6.5
+-----
+
+Bumped version number since PyPi returns 500 errors while uploading packages :(
+
+
 1.6.4
 -----
 
