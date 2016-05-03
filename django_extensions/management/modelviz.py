@@ -31,7 +31,9 @@ try:
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_app, get_models_compat, list_app_labels, get_model
+from django_extensions.compat import (
+    get_app, get_model_compat, get_models_compat, list_app_labels
+)
 
 
 __version__ = "1.0"
@@ -238,7 +240,12 @@ def generate_graph_data(app_labels, **kwargs):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
-                        target_model = get_model(field.rel.to)
+                        if '.' in field.rel.to:
+                            app_label, model_name = field.rel.to.split('.', 1)
+                        else:
+                            app_label = field.model._meta.app_label
+                            model_name = field.rel.to
+                        target_model = get_model_compat(app_label, model_name)
                 else:
                     target_model = field.rel.to
 
