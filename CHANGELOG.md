@@ -1,6 +1,24 @@
 Changelog
 =========
 
+1.6.4
+-----
+
+Changes:
+ - Fix: jobs cache_cleanup, use `caches` instead of deprecated `get_cache`
+ - Fix: ModificationDateTimeField, missing default value for `update_modified`
+ - Fix: modelviz, use get_model_compat and look up missing app_label
+ - Fix: modelviz, use get_models_for_app instead of get_models_compat
+ - Fix: dumpscript, use `list_app_labels` instead of `get_apps` when no app_labels are given
+ - Improvement: compat.py, move code from try to else block for Django 1.7+
+ - Docstring: get_models_for_app, clearify argument
+
+
+1.6.3
+-----
+
+Bumped version number for incomplete PyPi uplaod
+
 1.6.2
 -----
 
