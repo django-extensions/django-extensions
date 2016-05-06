@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.6.7
+-----
+
+Changes:
+    - Improvement: pipchecker, check for requirements-{dev,prod}.txt as well
+    - Docs: pipchecker, update documentation
+
 1.6.6
 -----
 
