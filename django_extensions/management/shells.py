@@ -123,7 +123,7 @@ def import_objects(options, style):
     quiet_load = options.get('quiet_load')
 
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
-    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIX', {})
+    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
 
     # Perform pre-imports before any other imports
     SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
