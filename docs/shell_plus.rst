@@ -51,6 +51,12 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
 ::
 
+  # Prefix all automatically loaded models in the app blog with myglog.
+  SHELL_PLUS_APP_PREFIXES = {'blog': 'myblog',}
+  }
+
+::
+
   # Dont load the 'sites' app, and skip the model 'pictures' in the app 'blog'
   SHELL_PLUS_DONT_LOAD = ['sites', 'blog.pictures']
   }
