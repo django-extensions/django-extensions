@@ -61,8 +61,12 @@ class Command(BaseCommand):
             req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
                          if os.path.isfile(os.path.join("requirements", f)) and
                          f.lower().endswith(".txt")]
+        elif os.path.exists("requirements-dev.txt"):
+            req_files = ["requirements-dev.txt"]
+        elif os.path.exists("requirements-prod.txt"):
+            req_files = ["requirements-prod.txt"]
         else:
-            raise CommandError("Requirements not found")
+            raise CommandError("Requirements file(s) not found")
 
         try:
             from pip.download import PipSession
