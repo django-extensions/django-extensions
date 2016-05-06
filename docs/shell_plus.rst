@@ -51,7 +51,7 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
 ::
 
-  # Prefix all automatically loaded models in the app blog with myglog.
+  # Prefix all automatically loaded models in the app blog with myblog.
   SHELL_PLUS_APP_PREFIXES = {'blog': 'myblog',}
   }
 
