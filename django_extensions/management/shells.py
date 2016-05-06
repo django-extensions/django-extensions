@@ -123,6 +123,7 @@ def import_objects(options, style):
     quiet_load = options.get('quiet_load')
 
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
+    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
 
     # Perform pre-imports before any other imports
     SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
@@ -173,6 +174,7 @@ def import_objects(options, style):
             # Some weird model naming scheme like in Sentry.
             app_name = app_mod
         app_aliases = model_aliases.get(app_name, {})
+        prefix = app_prefixes.get(app_name)
         model_labels = []
 
         for model_name in sorted(models):
@@ -182,7 +184,13 @@ def import_objects(options, style):
                 if "%s.%s" % (app_name, model_name) in dont_load:
                     continue
 
-                alias = app_aliases.get(model_name, model_name)
+                alias = app_aliases.get(model_name)
+
+                if not alias and prefix:
+                    alias = "%s_%s" % (prefix, model_name)
+                else:
+                    alias = model_name
+
                 imported_objects[alias] = imported_object
                 if model_name == alias:
                     model_labels.append(model_name)
