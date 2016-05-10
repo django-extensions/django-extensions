@@ -16,6 +16,17 @@ from django_extensions.management.technical_response import null_technical_500_r
 from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
 try:
+    from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
+except ImportError:
+    from django.core.handlers.wsgi import WSGIHandler  # noqa
+
+try:
+    from django.core.servers.basehttp import AdminMediaHandler
+    USE_ADMINMEDIAHANDLER = True
+except ImportError:
+    USE_ADMINMEDIAHANDLER = False
+
+try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
         USE_STATICFILES = False
     elif 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
@@ -95,8 +106,6 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
-        import django
-
         startup_messages = options.get('startup_messages', 'reload')
         if startup_messages == "reload":
             self.show_startup_messages = os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
@@ -150,32 +159,6 @@ class Command(BaseCommand):
                             logger.info(raw_sql + therest)
 
             utils.CursorDebugWrapper = PrintQueryWrapper
-
-        try:
-            from django.core.servers.basehttp import AdminMediaHandler
-            USE_ADMINMEDIAHANDLER = True
-        except ImportError:
-            USE_ADMINMEDIAHANDLER = False
-
-        try:
-            from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
-        except ImportError:
-            from django.core.handlers.wsgi import WSGIHandler  # noqa
-
-        try:
-            from werkzeug import run_simple, DebuggedApplication
-
-            # Set colored output
-            if settings.DEBUG:
-                try:
-                    set_werkzeug_log_color()
-                except:     # We are dealing with some internals, anything could go wrong
-                    if self.show_startup_messages:
-                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
-                    pass
-
-        except ImportError:
-            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
 
         pdb_option = options.get('pdb', False)
         ipdb_option = options.get('ipdb', False)
@@ -246,6 +229,26 @@ class Command(BaseCommand):
         if not self.addr:
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
 
+        self.inner_run(options)
+
+    def inner_run(self, options):
+        import django
+
+        try:
+            from werkzeug import run_simple, DebuggedApplication
+
+            # Set colored output
+            if settings.DEBUG:
+                try:
+                    set_werkzeug_log_color()
+                except:  # We are dealing with some internals, anything could go wrong
+                    if self.show_startup_messages:
+                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
+                    pass
+
+        except ImportError:
+            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+
         threaded = options.get('threaded', True)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
@@ -256,100 +259,109 @@ class Command(BaseCommand):
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
 
-        def inner_run():
-            if self.show_startup_messages:
-                print("Performing system checks...\n")
-            if hasattr(self, 'check'):
-                self.check(display_num_errors=self.show_startup_messages)
+        if self.show_startup_messages:
+            print("Performing system checks...\n")
+        if hasattr(self, 'check'):
+            self.check(display_num_errors=self.show_startup_messages)
+        else:
+            self.validate(display_num_errors=self.show_startup_messages)
+        if HAS_MIGRATIONS:
+            try:
+                self.check_migrations()
+            except ImproperlyConfigured:
+                pass
+        if self.show_startup_messages:
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at %s" % (bind_url,))
+            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Quit the server with %s." % quit_command)
+        path = options.get('admin_media_path', '')
+        if not path:
+            admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
+            if os.path.isdir(admin_media_path):
+                path = admin_media_path
             else:
-                self.validate(display_num_errors=self.show_startup_messages)
-            if HAS_MIGRATIONS:
-                try:
-                    self.check_migrations()
-                except ImproperlyConfigured:
-                    pass
-            if self.show_startup_messages:
-                print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-                print("Development server is running at %s" % (bind_url,))
-                print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-                print("Quit the server with %s." % quit_command)
-            path = options.get('admin_media_path', '')
-            if not path:
-                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
-                if os.path.isdir(admin_media_path):
-                    path = admin_media_path
-                else:
-                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
-            handler = WSGIHandler()
-            if USE_ADMINMEDIAHANDLER:
-                handler = AdminMediaHandler(handler, path)
-            if USE_STATICFILES:
-                use_static_handler = options.get('use_static_handler', True)
-                insecure_serving = options.get('insecure_serving', False)
-                if use_static_handler and (settings.DEBUG or insecure_serving):
-                    handler = StaticFilesHandler(handler)
-            if open_browser:
-                import webbrowser
-                webbrowser.open(bind_url)
-            if cert_path:
-                """
-                OpenSSL is needed for SSL support.
+                path = os.path.join(django.__path__[0], 'contrib/admin/media')
+        handler = WSGIHandler()
+        if USE_ADMINMEDIAHANDLER:
+            handler = AdminMediaHandler(handler, path)
+        if USE_STATICFILES:
+            use_static_handler = options.get('use_static_handler', True)
+            insecure_serving = options.get('insecure_serving', False)
+            if use_static_handler and (settings.DEBUG or insecure_serving):
+                handler = StaticFilesHandler(handler)
+        if open_browser:
+            import webbrowser
+            webbrowser.open(bind_url)
+        if cert_path:
+            """
+            OpenSSL is needed for SSL support.
 
-                This will make flakes8 throw warning since OpenSSL is not used
-                directly, alas, this is the only way to show meaningful error
-                messages. See:
-                http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
-                for more information on python imports.
-                """
-                try:
-                    import OpenSSL  # NOQA
-                except ImportError:
-                    raise CommandError("Python OpenSSL Library is "
-                                       "required to use runserver_plus with ssl support. "
-                                       "Install via pip (pip install pyOpenSSL).")
+            This will make flakes8 throw warning since OpenSSL is not used
+            directly, alas, this is the only way to show meaningful error
+            messages. See:
+            http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
+            for more information on python imports.
+            """
+            try:
+                import OpenSSL  # NOQA
+            except ImportError:
+                raise CommandError("Python OpenSSL Library is "
+                                   "required to use runserver_plus with ssl support. "
+                                   "Install via pip (pip install pyOpenSSL).")
 
-                dir_path, cert_file = os.path.split(cert_path)
-                if not dir_path:
-                    dir_path = os.getcwd()
-                root, ext = os.path.splitext(cert_file)
-                certfile = os.path.join(dir_path, root + ".crt")
-                keyfile = os.path.join(dir_path, root + ".key")
-                try:
-                    from werkzeug.serving import make_ssl_devcert
-                    if os.path.exists(certfile) and \
-                            os.path.exists(keyfile):
-                                ssl_context = (certfile, keyfile)
-                    else:  # Create cert, key files ourselves.
-                        ssl_context = make_ssl_devcert(
-                            os.path.join(dir_path, root), host='localhost')
-                except ImportError:
-                    if self.show_startup_messages:
-                        print("Werkzeug version is less than 0.9, trying adhoc certificate.")
-                    ssl_context = "adhoc"
+            dir_path, cert_file = os.path.split(cert_path)
+            if not dir_path:
+                dir_path = os.getcwd()
+            root, ext = os.path.splitext(cert_file)
+            certfile = os.path.join(dir_path, root + ".crt")
+            keyfile = os.path.join(dir_path, root + ".key")
+            try:
+                from werkzeug.serving import make_ssl_devcert
+                if os.path.exists(certfile) and \
+                        os.path.exists(keyfile):
+                            ssl_context = (certfile, keyfile)
+                else:  # Create cert, key files ourselves.
+                    ssl_context = make_ssl_devcert(
+                        os.path.join(dir_path, root), host='localhost')
+            except ImportError:
+                if self.show_startup_messages:
+                    print("Werkzeug version is less than 0.9, trying adhoc certificate.")
+                ssl_context = "adhoc"
 
+        else:
+            ssl_context = None
+
+        if use_reloader and settings.USE_I18N:
+            try:
+                from django.utils.autoreload import gen_filenames
+            except ImportError:
+                pass
             else:
-                ssl_context = None
+                extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
 
-            if use_reloader and settings.USE_I18N:
-                try:
-                    from django.utils.autoreload import gen_filenames
-                except ImportError:
-                    pass
-                else:
-                    extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
+        # Werkzeug needs to be clued in its the main instance if running
+        # without reloader or else it won't show key.
+        # https://git.io/vVIgo
+        if not use_reloader:
+            os.environ['WERKZEUG_RUN_MAIN'] = 'true'
 
-            run_simple(
-                self.addr,
-                int(self.port),
-                DebuggedApplication(handler, True),
-                use_reloader=use_reloader,
-                use_debugger=True,
-                extra_files=extra_files,
-                reloader_interval=reloader_interval,
-                threaded=threaded,
-                ssl_context=ssl_context,
-            )
-        inner_run()
+        # Don't run a second instance of the debugger / reloader
+        # See also: https://github.com/django-extensions/django-extensions/issues/832
+        if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+            handler = DebuggedApplication(handler, True)
+
+        run_simple(
+            self.addr,
+            int(self.port),
+            handler,
+            use_reloader=use_reloader,
+            use_debugger=True,
+            extra_files=extra_files,
+            reloader_interval=reloader_interval,
+            threaded=threaded,
+            ssl_context=ssl_context,
+        )
 
     def check_migrations(self):
         """
