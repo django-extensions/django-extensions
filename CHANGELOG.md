@@ -5,10 +5,10 @@ Changelog
 -----
 
 Changes:
-    - Fix: describe_form, fix No module named 'django.db.models.loading' error
-    - Improvement: shell_plus,  Add a setting to prefix all models in an application #887
-    - Improvement: pipchecker, check for requirements-{dev,prod}.txt as well
-    - Docs: pipchecker, update documentation
+- Fix: describe_form, fix No module named 'django.db.models.loading' error
+- Improvement: shell_plus,  Add a setting to prefix all models in an application #887
+- Improvement: pipchecker, check for requirements-{dev,prod}.txt as well
+- Docs: pipchecker, update documentation
 
 1.6.6
 -----
