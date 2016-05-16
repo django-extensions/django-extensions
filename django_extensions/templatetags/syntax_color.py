@@ -1,3 +1,4 @@
+# coding=utf-8
 r"""
 Template filter for rendering a string with syntax highlighting.
 It relies on Pygments to accomplish this.

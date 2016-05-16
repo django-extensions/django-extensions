@@ -1,6 +1,9 @@
-from django.core.management.base import CommandError, LabelCommand
+# coding=utf-8
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
+from django_extensions.compat import get_model_compat as get_model
 
 try:
     from django.utils.encoding import force_text
@@ -24,7 +27,6 @@ def describe_form(label, fields=None):
     """
     Returns a string describing a form based on the model
     """
-    from django.db.models.loading import get_model
     try:
         app_name, model_name = label.split('.')[-2:]
     except (IndexError, ValueError):

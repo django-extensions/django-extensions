@@ -1,11 +1,11 @@
+# coding=utf-8
 import os
 import re
 import sys
-from optparse import make_option
 
 from django import VERSION
 from django.conf import settings
-from django.core.management.base import CommandError, LabelCommand
+from django.core.management.base import CommandError
 from django.db import connection
 from django.template import Context, Template
 
@@ -13,26 +13,30 @@ import django_extensions
 from django_extensions.management.utils import _make_writeable, signalcommand
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
+from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):
-    option_list = LabelCommand.option_list + (
-        make_option('--template', '-t', action='store', dest='app_template',
-                    help='The path to the app template'),
-        make_option('--parent_path', '-p', action='store', dest='parent_path',
-                    help='The parent path of the application to be created'),
-        make_option('-d', action='store_true', dest='dia_parse',
-                    help='Generate model.py and admin.py from [APP_NAME].dia file'),
-        make_option('--diagram', action='store', dest='dia_path',
-                    help='The diagram path of the app to be created. -d is implied'),
-    )
-
-    help = ("Creates an application directory structure for the specified application name.")
+    help = "Creates an application directory structure for the specified application name."
     args = "APP_NAME"
     label = 'application name'
 
     requires_system_checks = False
     can_import_settings = True
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--template', '-t', action='store', dest='app_template',
+            help='The path to the app template')
+        parser.add_argument(
+            '--parent_path', '-p', action='store', dest='parent_path',
+            help='The parent path of the application to be created')
+        parser.add_argument(
+            '-d', action='store_true', dest='dia_parse',
+            help='Generate model.py and admin.py from [APP_NAME].dia file')
+        parser.add_argument(
+            '--diagram', action='store', dest='dia_path',
+            help='The diagram path of the app to be created. -d is implied')
 
     @signalcommand
     def handle_label(self, label, **options):

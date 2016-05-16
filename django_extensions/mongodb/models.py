@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Django Extensions abstract base mongoengine Document classes.
 """

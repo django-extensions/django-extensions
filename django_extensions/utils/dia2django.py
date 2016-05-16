@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-##Author Igor Támara igor@tamarapatino.org
-##Use this little program as you wish, if you
-#include it in your work, let others know you
-#are using it preserving this note, you have
-#the right to make derivative works, Use it
-#at your own risk.
-#Tested to work on(etch testing 13-08-2007):
+# Author Igor Támara igor@tamarapatino.org
+# Use this little program as you wish, if you
+# include it in your work, let others know you
+# are using it preserving this note, you have
+# the right to make derivative works, Use it
+# at your own risk.
+# Tested to work on(etch testing 13-08-2007):
 #  Python 2.4.4 (#2, Jul 17 2007, 11:56:54)
 #  [GCC 4.1.3 20070629 (prerelease) (Debian 4.1.2-13)] on linux2
 
@@ -19,7 +19,7 @@ import six
 
 dependclasses = ["User", "Group", "Permission", "Message"]
 
-#Type dictionary translation types SQL -> Django
+# Type dictionary translation types SQL -> Django
 tsd = {
     "text": "TextField",
     "date": "DateField",
@@ -32,13 +32,11 @@ tsd = {
     "timestamp": "DateTimeField",
     "bigint": "IntegerField",
     "datetime": "DateTimeField",
-    "date": "DateField",
     "time": "TimeField",
     "bool": "BooleanField",
-    "int": "IntegerField",
 }
 
-#convert varchar -> CharField
+# convert varchar -> CharField
 v2c = re.compile('varchar\((\d+)\)')
 
 
@@ -69,16 +67,16 @@ def addparentstofks(rels, fks):
 def dia2django(archivo):
     models_txt = ''
     f = codecs.open(archivo, "rb")
-    #dia files are gzipped
+    # dia files are gzipped
     data = gzip.GzipFile(fileobj=f).read()
     ppal = parseString(data)
-    #diagram -> layer -> object -> UML - Class -> name, (attribs : composite -> name,type)
+    # diagram -> layer -> object -> UML - Class -> name, (attribs : composite -> name,type)
     datos = ppal.getElementsByTagName("dia:diagram")[0].getElementsByTagName("dia:layer")[0].getElementsByTagName("dia:object")
     clases = {}
     herit = []
     imports = six.u("")
     for i in datos:
-        #Look for the classes
+        # Look for the classes
         if i.getAttribute("type") == "UML - Class":
             myid = i.getAttribute("id")
             for j in i.childNodes:
@@ -90,7 +88,7 @@ def dia2django(archivo):
                     if j.getAttribute("name") == "attributes":
                         for l in j.getElementsByTagName("dia:composite"):
                             if l.getAttribute("type") == "umlattribute":
-                                #Look for the attribute name and type
+                                # Look for the attribute name and type
                                 for k in l.getElementsByTagName("dia:attribute"):
                                     if k.getAttribute("name") == "name":
                                         nc = k.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
@@ -102,27 +100,27 @@ def dia2django(archivo):
                                             val = ''
                                     elif k.getAttribute("name") == "visibility" and k.getElementsByTagName("dia:enum")[0].getAttribute("val") == "2":
                                         if tc.replace(" ", "").lower().startswith("manytomanyfield("):
-                                                #If we find a class not in our model that is marked as being to another model
-                                                newc = tc.replace(" ", "")[16:-1]
-                                                if dependclasses.count(newc) == 0:
-                                                        dependclasses.append(newc)
+                                            # If we find a class not in our model that is marked as being to another model
+                                            newc = tc.replace(" ", "")[16:-1]
+                                            if dependclasses.count(newc) == 0:
+                                                dependclasses.append(newc)
                                         if tc.replace(" ", "").lower().startswith("foreignkey("):
-                                                #If we find a class not in our model that is marked as being to another model
-                                                newc = tc.replace(" ", "")[11:-1]
-                                                if dependclasses.count(newc) == 0:
-                                                        dependclasses.append(newc)
+                                            # If we find a class not in our model that is marked as being to another model
+                                            newc = tc.replace(" ", "")[11:-1]
+                                            if dependclasses.count(newc) == 0:
+                                                dependclasses.append(newc)
 
-                                #Mapping SQL types to Django
+                                # Mapping SQL types to Django
                                 varch = v2c.search(tc)
                                 if tc.replace(" ", "").startswith("ManyToManyField("):
                                     myfor = tc.replace(" ", "")[16:-1]
                                     if actclas == myfor:
-                                        #In case of a recursive type, we use 'self'
+                                        # In case of a recursive type, we use 'self'
                                         tc = tc.replace(myfor, "'self'")
                                     elif clases[actclas][0].count(myfor) == 0:
-                                        #Adding related class
+                                        # Adding related class
                                         if myfor not in dependclasses:
-                                            #In case we are using Auth classes or external via protected dia visibility
+                                            # In case we are using Auth classes or external via protected dia visibility
                                             clases[actclas][0].append(myfor)
                                     tc = "models." + tc
                                     if len(val) > 0:
@@ -135,12 +133,12 @@ def dia2django(archivo):
                                 elif tc.replace(" ", "").startswith("ForeignKey("):
                                     myfor = tc.replace(" ", "")[11:-1]
                                     if actclas == myfor:
-                                        #In case of a recursive type, we use 'self'
+                                        # In case of a recursive type, we use 'self'
                                         tc = tc.replace(myfor, "'self'")
                                     elif clases[actclas][0].count(myfor) == 0:
-                                        #Adding foreign classes
+                                        # Adding foreign classes
                                         if myfor not in dependclasses:
-                                            #In case we are using Auth classes
+                                            # In case we are using Auth classes
                                             clases[actclas][0].append(myfor)
                                     tc = "models." + tc
                                     if len(val) > 0:
@@ -152,7 +150,7 @@ def dia2django(archivo):
                                     if len(val) > 0:
                                         tc = tc.replace(")", ", " + val + " )")
                                 if not (nc == "id" and tc == "AutoField()"):
-                                    clases[actclas][2] = clases[actclas][2] + ("    %s = %s\n" % (nc, tc))
+                                    clases[actclas][2] += "    %s = %s\n" % (nc, tc)
         elif i.getAttribute("type") == "UML - Generalization":
             mycons = ['A', 'A']
             a = i.getElementsByTagName("dia:connection")
@@ -169,11 +167,11 @@ def dia2django(archivo):
                     imports += six.u("from %s.models import *" % j.childNodes[0].data[1:-1])
 
     addparentstofks(herit, clases)
-    #Ordering the appearance of classes
-    #First we make a list of the classes each classs is related to.
+    # Ordering the appearance of classes
+    # First we make a list of the classes each classs is related to.
     ordered = []
     for j, k in six.iteritems(clases):
-        k[2] = k[2] + "\n    def %s(self):\n        return u\"\"\n" % (("__str__" if six.PY3 else "__unicode__"), )
+        k[2] += "\n    def %s(self):\n        return u\"\"\n" % (("__str__" if six.PY3 else "__unicode__"),)
         for fk in k[0]:
             if fk not in dependclasses:
                 clases[fk][3] += 1
@@ -192,7 +190,7 @@ def dia2django(archivo):
         else:
             # swap %s in %s" % ( ordered[i] , ordered[mark]) to make ordered[i] to be at the end
             if ordered[i][0] in ordered[mark][1] and ordered[mark][0] in ordered[i][1]:
-                #Resolving simplistic circular ForeignKeys
+                # Resolving simplistic circular ForeignKeys
                 print("Not able to resolve circular ForeignKeys between %s and %s" % (ordered[i][1], ordered[mark][0]))
                 break
             a = ordered[i]
@@ -207,6 +205,7 @@ def dia2django(archivo):
         models_txt += '%s\n' % str(i[3])
 
     return models_txt
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

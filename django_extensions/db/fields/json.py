@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 JSONField automatically serializes most Python terms to JSON data.
 Creates a TEXT field with a default value of "{}".  See test_json.py for
@@ -10,8 +11,6 @@ more information.
      extra = json.JSONField()
 """
 from __future__ import absolute_import
-
-from decimal import Decimal
 
 import six
 import django
@@ -40,7 +39,6 @@ def dumps(value):
 def loads(txt):
     value = json.loads(
         txt,
-        parse_float=Decimal,
         encoding=settings.DEFAULT_CHARSET
     )
     return value
@@ -102,6 +100,10 @@ class JSONField(JSONFieldBase):
     def from_db_value(self, value, expression, connection, context):
         return self.to_python(value)
 
+    def get_prep_value(self, value):
+        """Do not call `to_python` method."""
+        return super(models.TextField, self).get_prep_value(value)
+
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
         if value is None and self.null:
@@ -110,7 +112,8 @@ class JSONField(JSONFieldBase):
         # run through `dumps`
         if not isinstance(value, six.string_types):
             value = dumps(value)
-        return super(JSONField, self).get_db_prep_save(value, connection=connection, **kwargs)
+
+        return value
 
     def south_field_triple(self):
         """Returns a suitable description of this field for South."""
@@ -119,7 +122,7 @@ class JSONField(JSONFieldBase):
         field_class = "django.db.models.fields.TextField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(JSONField, self).deconstruct()

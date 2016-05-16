@@ -1,40 +1,48 @@
+# coding=utf-8
 import functools
+import json
 import re
-from optparse import make_option
 
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
 from django.utils import translation
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
     'table': "{url},{module},{url_name},{decorator}",
     'aligned': "{url},{module},{url_name},{decorator}",
     'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
+    'json': '',
+    'pretty-json': ''
 }
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option("--unsorted", "-u", action="store_true", dest="unsorted",
-                    help="Show urls unsorted but same order as found in url patterns"),
-        make_option("--language", "-l", dest="language",
-                    help="Only show this language code (useful for i18n_patterns)"),
-        make_option("--decorator", "-d", action="append", dest="decorator", default=[],
-                    help="Show the presence of given decorator on views"),
-        make_option("--format", "-f", dest="format_style", default="dense",
-                    help="Style of the output. Choices: %s" % FMTR.keys()),
-        make_option("--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
-                    help="Set the settings URL conf variable to use")
-    )
-
     help = "Displays all of the url matching routes for the project."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--unsorted", "-u", action="store_true", dest="unsorted",
+            help="Show urls unsorted but same order as found in url patterns")
+        parser.add_argument(
+            "--language", "-l", dest="language",
+            help="Only show this language code (useful for i18n_patterns)")
+        parser.add_argument(
+            "--decorator", "-d", action="append", dest="decorator", default=[],
+            help="Show the presence of given decorator on views")
+        parser.add_argument(
+            "--format", "-f", dest="format_style", default="dense",
+            help="Style of the output. Choices: %s" % FMTR.keys())
+        parser.add_argument(
+            "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
+            help="Set the settings URL conf variable to use")
 
     @signalcommand
     def handle(self, *args, **options):
@@ -62,6 +70,9 @@ class Command(BaseCommand):
         format_style = options.get('format_style')
         if format_style not in FMTR:
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
+        pretty_json = format_style == 'pretty-json'
+        if pretty_json:
+            format_style = 'json'
         fmtr = FMTR[format_style]
 
         urlconf = options.get('urlconf')
@@ -102,14 +113,22 @@ class Command(BaseCommand):
                 else:
                     func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
-                views.append(fmtr.format(
-                    module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
-                    url_name=style.URL_NAME(url_name or ''),
-                    url=style.URL(simplify_regex(regex)),
-                    decorator=', '.join(decorators),
-                ))
+                module = '{0}.{1}'.format(func.__module__, func_name)
+                url_name = url_name or ''
+                url = simplify_regex(regex)
+                decorator = ', '.join(decorators)
 
-        if not options.get('unsorted', False):
+                if format_style == 'json':
+                    views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
+                else:
+                    views.append(fmtr.format(
+                        module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
+                        url_name=style.URL_NAME(url_name),
+                        url=style.URL(url),
+                        decorator=decorator,
+                    ))
+
+        if not options.get('unsorted', False) and format_style != 'json':
             views = sorted(views)
 
         if format_style == 'aligned':
@@ -139,6 +158,11 @@ class Command(BaseCommand):
 
             # Replace original views so we can return the same object
             views = table_views
+
+        elif format_style == 'json':
+            if pretty_json:
+                return json.dumps(views, indent=4)
+            return json.dumps(views)
 
         return "\n".join([v for v in views]) + "\n"
 

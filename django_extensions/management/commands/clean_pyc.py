@@ -1,28 +1,29 @@
+# coding=utf-8
 import fnmatch
 import os
-from optparse import make_option
 from os.path import join as _j
 
 from django.conf import settings
-from django.core.management.base import CommandError, NoArgsCommand
+from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option('--optimize', '-o', '-O', action='store_true',
-                    dest='optimize',
-                    help='Remove optimized python bytecode files'),
-        make_option('--path', '-p', action='store', dest='path',
-                    help='Specify path to recurse into'),
-    )
+class Command(BaseCommand):
     help = "Removes all python bytecode compiled files from the project."
 
     requires_system_checks = False
 
+    def add_arguments(self, parser):
+        parser.add_argument('--optimize', '-o', '-O', action='store_true',
+                            dest='optimize',
+                            help='Remove optimized python bytecode files')
+        parser.add_argument('--path', '-p', action='store', dest='path',
+                            help='Specify path to recurse into')
+
     @signalcommand
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         project_root = options.get("path", getattr(settings, 'BASE_DIR', None))
         if not project_root:
             project_root = getattr(settings, 'BASE_DIR', None)

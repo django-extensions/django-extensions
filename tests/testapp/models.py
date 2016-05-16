@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.db import models
 
 from django_extensions.db.fields import (
@@ -7,7 +8,7 @@ from django_extensions.db.fields import (
     UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
-from django_extensions.db.models import ActivatorModel
+from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 
 class Secret(models.Model):
@@ -129,6 +130,13 @@ class ShortUUIDTestManyToManyModel(ShortUUIDTestModel_pk):
 
 
 class RandomCharTestModel(models.Model):
+    random_char_field = RandomCharField(length=8, unique=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class RandomCharTestModelUnique(models.Model):
     random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:
@@ -194,5 +202,10 @@ class RandomCharTestModelPunctuation(models.Model):
         include_alpha=False,
     )
 
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'

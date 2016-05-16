@@ -1,42 +1,49 @@
+# coding=utf-8
 """
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import logging
-from optparse import make_option
 
 import django
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from six.moves import configparser, input
+from django.core.management.base import CommandError
+from six.moves import input
 
+from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--noinput', action='store_false',
-                    dest='interactive', default=True,
-                    help='Tells Django to NOT prompt the user for input of any kind.'),
-        make_option('--no-utf8', action='store_true',
-                    dest='no_utf8_support', default=False,
-                    help='Tells Django to not create a UTF-8 charset database'),
-        make_option('-U', '--user', action='store',
-                    dest='user', default=None,
-                    help='Use another user for the database then defined in settings.py'),
-        make_option('-O', '--owner', action='store',
-                    dest='owner', default=None,
-                    help='Use another owner for creating the database then the user defined in settings or via --user'),
-        make_option('-P', '--password', action='store',
-                    dest='password', default=None,
-                    help='Use another password for the database then defined in settings.py'),
-        make_option('-D', '--dbname', action='store',
-                    dest='dbname', default=None,
-                    help='Use another database name then defined in settings.py'),
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then defined in settings.py'),
-    )
     help = "Resets the database for this project."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--noinput', action='store_false',
+            dest='interactive', default=True,
+            help='Tells Django to NOT prompt the user for input of any kind.')
+        parser.add_argument(
+            '--no-utf8', action='store_true', dest='no_utf8_support',
+            default=False,
+            help='Tells Django to not create a UTF-8 charset database')
+        parser.add_argument(
+            '-U', '--user', action='store', dest='user', default=None,
+            help='Use another user for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-O', '--owner', action='store', dest='owner', default=None,
+            help='Use another owner for creating the database then the '
+            'user defined in settings or via --user')
+        parser.add_argument(
+            '-P', '--password', action='store', dest='password', default=None,
+            help='Use another password for the database then defined in '
+            'settings.py')
+        parser.add_argument(
+            '-D', '--dbname', action='store', dest='dbname', default=None,
+            help='Use another database name then defined in settings.py')
+        parser.add_argument(
+            '-R', '--router', action='store', dest='router', default='default',
+            help='Use this router-database other then defined in settings.py')
 
     @signalcommand
     def handle(self, *args, **options):
@@ -57,15 +64,9 @@ class Command(BaseCommand):
 
         engine = dbinfo.get('ENGINE').split('.')[-1]
 
-        user = password = database_name = ''
+        user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
-            read_default_file = dbinfo.get('OPTIONS', {}).get('read_default_file')
-            if read_default_file:
-                config = configparser.ConfigParser()
-                config.read(read_default_file)
-                user = config.get('client', 'user')
-                password = config.get('client', 'password')
-                database_name = config.get('client', 'database')
+            (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
         user = options.get('user') or dbinfo.get('USER') or user
         password = options.get('password') or dbinfo.get('PASSWORD') or password
@@ -75,8 +76,8 @@ class Command(BaseCommand):
         if database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
 
-        database_host = dbinfo.get('HOST')
-        database_port = dbinfo.get('PORT')
+        database_host = dbinfo.get('HOST') or database_host
+        database_port = dbinfo.get('PORT') or database_port
 
         verbosity = int(options.get('verbosity', 1))
         if options.get('interactive'):

@@ -1,3 +1,4 @@
+# coding=utf-8
 import warnings
 
 from django.core.management import call_command

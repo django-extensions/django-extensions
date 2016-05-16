@@ -1,3 +1,4 @@
+# coding=utf-8
 import six
 from django.utils.functional import allow_lazy
 

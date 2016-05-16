@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Django Extensions additional model fields
 """
@@ -45,8 +46,21 @@ class UniqueFieldMixin(object):
         if not isinstance(getattr(self, attrname), bool):
             raise ValueError("'{}' argument must be True or False".format(attrname))
 
+    @staticmethod
+    def _get_fields(model_cls):
+        if hasattr(model_cls._meta, 'get_fields'):
+            # verbosity due to replacement of deprecated model_cls._meta.get_fields_with_model(),
+            # as explained here: https://docs.djangoproject.com/en/1.9/ref/models/meta/#migrating-from-the-old-api
+            return [
+                (f, f.model if f.model != model_cls else None) for f in model_cls._meta.get_fields()
+                if not f.is_relation or f.one_to_one or (f.many_to_one and f.related_model)
+            ]
+        else:
+            # prior to 1.9
+            return model_cls._meta.get_fields_with_model()
+
     def get_queryset(self, model_cls, slug_field):
-        for field, model in model_cls._meta.get_fields_with_model():
+        for field, model in self._get_fields(model_cls):
             if model and field == slug_field:
                 return model._default_manager.all()
         return model_cls._default_manager.all()
@@ -184,7 +198,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         return "SlugField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = '%s.AutoSlugField' % self.__module__
@@ -196,7 +210,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             'allow_duplicates': repr(self.allow_duplicates),
         })
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
@@ -295,7 +309,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
         random_chars = self.random_char_generator(population)
         if not self.unique:
-            return random_chars
+            new = six.next(random_chars)
+            setattr(model_instance, self.attname, new)
+            return new
 
         return super(RandomCharField, self).find_unique(
             model_instance,
@@ -307,7 +323,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         return "CharField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = '%s.RandomCharField' % self.__module__
@@ -322,7 +338,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         })
         del kwargs['max_length']
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(RandomCharField, self).deconstruct()
@@ -359,12 +375,12 @@ class CreationDateTimeField(DateTimeField):
         return "DateTimeField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect ourselves, since we inherit.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(CreationDateTimeField, self).deconstruct()
@@ -393,18 +409,23 @@ class ModificationDateTimeField(CreationDateTimeField):
         return "DateTimeField"
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect ourselves, since we inherit.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.DateTimeField"
         args, kwargs = introspector(self)
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(ModificationDateTimeField, self).deconstruct()
         if self.auto_now is not False:
             kwargs['auto_now'] = True
         return name, path, args, kwargs
+
+    def pre_save(self, model_instance, add):
+        if not getattr(model_instance, 'update_modified', True):
+            return model_instance.modified
+        return super(ModificationDateTimeField, self).pre_save(model_instance, add)
 
 
 class UUIDVersionError(Exception):
@@ -471,13 +492,13 @@ class UUIDField(CharField):
         return super(UUIDField, self).formfield(**kwargs)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.CharField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
 
     def deconstruct(self):
         name, path, args, kwargs = super(UUIDField, self).deconstruct()

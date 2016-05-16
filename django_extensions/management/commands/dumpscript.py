@@ -31,22 +31,21 @@ Improvements:
 
 import datetime
 import sys
-from optparse import make_option
 
 import django
 import six
 # conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
-    get_apps, get_model_compat, get_models_compat, get_models_for_app
+    list_app_labels, get_model_compat, get_models_for_app
 )
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.utils.encoding import smart_unicode, force_unicode  # NOQA
@@ -88,13 +87,13 @@ def orm_item_locator(orm_obj):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--autofield', action='store_false', dest='skip_autofield',
-                    default=True, help='Include Autofields (like pk fields)'),
-    )
-
     help = 'Dumps the data as a customised python script.'
     args = '[appname ...]'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--autofield', action='store_false', dest='skip_autofield',
+            default=True, help='Include Autofields (like pk fields)')
 
     @signalcommand
     def handle(self, *app_labels, **options):
@@ -133,8 +132,8 @@ def get_models(app_labels):
 
     # If no app labels are given, return all
     if not app_labels:
-        for app in get_apps():
-            models += [m for m in get_models_compat(app)
+        for app_label in list_app_labels():
+            models += [m for m in get_models_for_app(app_label)
                        if m not in EXCLUDED_MODELS]
         return models
 
@@ -190,7 +189,7 @@ class Code(object):
 
 
 class ModelCode(Code):
-    " Produces a python script that can recreate data for a given model class. "
+    """ Produces a python script that can recreate data for a given model class. """
 
     def __init__(self, model, context=None, stdout=None, stderr=None, options=None):
         super(ModelCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
@@ -232,7 +231,7 @@ class ModelCode(Code):
 
 
 class InstanceCode(Code):
-    " Produces a python script that can recreate data for a given model instance. "
+    """ Produces a python script that can recreate data for a given model instance. """
 
     def __init__(self, instance, id, context=None, stdout=None, stderr=None, options=None):
         """ We need the instance in question and an id """
@@ -372,7 +371,7 @@ class InstanceCode(Code):
         return self.skip_me
 
     def instantiate(self):
-        " Write lines for instantiation "
+        """ Write lines for instantiation """
         # e.g. model_name_35 = Model()
         code_lines = []
 
@@ -388,7 +387,7 @@ class InstanceCode(Code):
         return code_lines
 
     def get_waiting_list(self, force=False):
-        " Add lines for any waiting fields that can be completed now. "
+        """ Add lines for any waiting fields that can be completed now. """
 
         code_lines = []
         skip_autofield = self.options.get('skip_autofield', True)
@@ -437,7 +436,7 @@ class InstanceCode(Code):
 
 
 class Script(Code):
-    " Produces a complete python script that can recreate data for the given apps. "
+    """ Produces a complete python script that can recreate data for the given apps. """
 
     def __init__(self, models, context=None, stdout=None, stderr=None, options=None):
         super(Script, self).__init__(stdout=stdout, stderr=stderr)
@@ -507,7 +506,7 @@ class Script(Code):
 
         # Queue and process the required models
         for model_class in self._queue_models(self.models, context=self.context):
-            msg = 'Processing model: %s\n' % model_class.model.__name__
+            msg = 'Processing model: %s.%s\n' % (model_class.model.__module__, model_class.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             code.append(model_class.import_lines)
@@ -516,7 +515,7 @@ class Script(Code):
 
         # Process left over foreign keys from cyclic models
         for model in self.models:
-            msg = 'Re-processing model: %s\n' % model.model.__name__
+            msg = 'Re-processing model: %s.%s\n' % (model.model.__module__, model.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             for instance in model.instances:
@@ -670,7 +669,7 @@ def import_data():
 
 
 # HELPER FUNCTIONS
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 def flatten_blocks(lines, num_indents=-1):
     """ Takes a list (block) or string (statement) and flattens it into a string
@@ -758,7 +757,7 @@ def make_clean_dict(the_dict):
 
 
 def check_dependencies(model, model_queue, avaliable_models):
-    " Check that all the depenedencies for this model are already in the queue. "
+    """ Check that all the depenedencies for this model are already in the queue. """
 
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
@@ -779,7 +778,7 @@ def check_dependencies(model, model_queue, avaliable_models):
 
 
 # EXCEPTIONS
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class SkipValue(Exception):
     """ Value could not be parsed or should simply be skipped. """

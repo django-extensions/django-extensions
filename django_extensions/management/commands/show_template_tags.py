@@ -1,14 +1,15 @@
+# coding=utf-8
 import inspect
 import os
 
 import six
 from django.conf import settings
 from django.core.management import color
-from django.core.management.base import BaseCommand
 from django.utils import termcolors
 
 from django_extensions.compat import load_tag_library
 from django_extensions.management.utils import signalcommand
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from django.utils.encoding import smart_text
@@ -26,12 +27,12 @@ def color_style():
 
 
 def format_block(block, nlspaces=0):
-    '''Format the given block of text, trimming leading/trailing
+    """Format the given block of text, trimming leading/trailing
     empty lines and any leading whitespace that is common to all lines.
     The purpose is to let us list a code block as a multiline,
     triple-quoted Python string, taking care of
     indentation concerns.
-    http://code.activestate.com/recipes/145672/'''
+    http://code.activestate.com/recipes/145672/"""
 
     import re
 

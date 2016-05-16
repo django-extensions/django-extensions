@@ -2,20 +2,24 @@
  Django Extensions
 ===================
 
-.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+.. image:: https://img.shields.io/pypi/l/django-extensions.svg
    :target: https://raw.githubusercontent.com/django-extensions/django-extensions/master/LICENSE
 
 .. image:: https://secure.travis-ci.org/django-extensions/django-extensions.png?branch=master
     :alt: Build Status
     :target: http://travis-ci.org/django-extensions/django-extensions
 
-.. image:: https://pypip.in/v/django-extensions/badge.png
+.. image:: https://img.shields.io/pypi/v/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/django-extensions/badge.png
+.. image:: https://img.shields.io/pypi/dm/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Number of PyPI downloads
+
+.. image:: https://img.shields.io/pypi/wheel/django-extensions.svg
+    :target: https://pypi.python.org/pypi/django-extensions/
+    :alt: Supports Wheel format
 
 .. image:: https://coveralls.io/repos/django-extensions/django-extensions/badge.png?branch=master
    :target: https://coveralls.io/r/django-extensions/django-extensions?branch=master

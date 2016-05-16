@@ -1,10 +1,11 @@
+# coding=utf-8
 import sys
 import traceback
-from optparse import make_option
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.management.base import BaseCommand
+
+from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class EmailNotificationCommand(BaseCommand):
@@ -46,16 +47,16 @@ class EmailNotificationCommand(BaseCommand):
         fail_silently:      Parameter passed to django's send_mail().
 
     """
-    option_list = BaseCommand.option_list + (
-        make_option('--email-notifications',
-                    action='store_true',
-                    dest='email_notifications',
-                    help='Send email notifications for command.'),
-        make_option('--email-exception',
-                    action='store_true',
-                    dest='email_exception',
-                    help='Send email for command exceptions.'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--email-notifications',
+                            action='store_true',
+                            dest='email_notifications',
+                            help='Send email notifications for command.')
+        parser.add_argument('--email-exception',
+                            action='store_true',
+                            dest='email_exception',
+                            help='Send email for command exceptions.')
 
     def run_from_argv(self, argv):
         """Overriden in order to access the command line arguments."""
@@ -74,7 +75,7 @@ class EmailNotificationCommand(BaseCommand):
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
         except Exception:
-            if (options.get('email_exception', False) or getattr(self, 'email_exception', False)):
+            if options.get('email_exception', False) or getattr(self, 'email_exception', False):
                 self.send_email_notification(include_traceback=True)
             raise
 
@@ -97,7 +98,7 @@ class EmailNotificationCommand(BaseCommand):
             email_settings = {}
 
         # Exit if no traceback found and not in 'notify always' mode
-        if (not include_traceback and not email_settings.get('notification_level', 0)):
+        if not include_traceback and not email_settings.get('notification_level', 0):
             print(self.style.ERROR("Exiting, not in 'notify always' mode."))
             return
 
@@ -109,7 +110,7 @@ class EmailNotificationCommand(BaseCommand):
         )
 
         # Include traceback
-        if (include_traceback and not email_settings.get('no_traceback', False)):
+        if include_traceback and not email_settings.get('no_traceback', False):
             try:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 trb = ''.join(traceback.format_tb(exc_traceback))

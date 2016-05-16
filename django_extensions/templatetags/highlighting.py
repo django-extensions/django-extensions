@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Similar to syntax_color.py but this is intended more for being able to
 copy+paste actual code into your Django templates without needing to
@@ -76,7 +77,7 @@ class CodeNode(Node):
         html = ""
         if self.name:
             name = self.name.resolve(context)
-            html = '<div class="predesc"><span>%s</span></div>' % (name)
+            html = '<div class="predesc"><span>%s</span></div>' % name
         return html + pyghighlight(code, lexer, formatter)
 
 
