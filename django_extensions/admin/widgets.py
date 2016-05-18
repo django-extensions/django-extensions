@@ -20,7 +20,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     search_path = None
 
     def _media(self):
-        js_files = ['django_extensions/js/jquery.bgiframe.min.js',
+        js_files = ['django_extensions/js/jquery.bgiframe.js',
                     'django_extensions/js/jquery.ajaxQueue.js',
                     'django_extensions/js/jquery.autocomplete.js']
 
