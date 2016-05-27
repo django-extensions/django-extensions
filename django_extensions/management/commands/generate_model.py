@@ -1,6 +1,7 @@
 import os
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
+import django_extensions
 from django_extensions.management.commands.generators.model_generator import ModelGenerator
 
 
@@ -21,7 +22,7 @@ class Command(BaseCommand):
         if not os.path.exists(package_dir):
             raise CommandError('Given package %s doesn\'t exist!' % package)
 
-        model_skeleton = open(os.path.dirname(__file__) + '/skeleton/model.py-tpl').read()
+        model_skeleton = open(os.path.join(django_extensions.__path__[0], 'conf', ) + '/model_class_template/model.py-tpl').read()
         models_file_resource = open(package_dir + '/models.py', 'a')
         generator = ModelGenerator(model_name, model_skeleton, models_file_resource, self)
         finished = False
