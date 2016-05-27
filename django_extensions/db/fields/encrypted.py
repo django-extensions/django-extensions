@@ -69,6 +69,9 @@ class BaseEncryptedField(models.Field):
                 'or ENCRYPT, not %s.' % crypt_type)
         return getattr(keyczar, crypt_class_name)
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
     def to_python(self, value):
         if isinstance(self.crypt.primary_key, keyczar.keys.RsaPublicKey):
             retval = value
@@ -109,8 +112,7 @@ class BaseEncryptedField(models.Field):
         return name, path, args, kwargs
 
 
-class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedTextField(BaseEncryptedField):
     def get_internal_type(self):
         return 'TextField'
 
@@ -129,8 +131,7 @@ class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
         return field_class, args, kwargs
 
 
-class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedCharField(BaseEncryptedField):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
