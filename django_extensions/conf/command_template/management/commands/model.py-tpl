@@ -1,0 +1,11 @@
+
+{% autoescape off %}
+class {{ model_name }}(models.Model):
+    {% for field in fields %}{{ field }}
+    {% endfor %}
+    created_at = models.DateTimeField(verbose_name='created_at', auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(verbose_name='updated_at', auto_now=True, null=True)
+
+    def __unicode__(self):
+        return ''
+{% endautoescape %}
