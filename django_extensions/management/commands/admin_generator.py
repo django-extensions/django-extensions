@@ -21,7 +21,7 @@ import sys
 from django.conf import settings
 from django.db import models
 
-from django_extensions.compat import get_apps, get_models_for_app
+from django_extensions.compat import get_apps, get_models_from_cache
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
@@ -89,7 +89,7 @@ class AdminApp(UnicodeMixin):
         self.options = options
 
     def __iter__(self):
-        for model in get_models_for_app(self.app):
+        for model in get_models_from_cache(self.app):
             admin_model = AdminModel(model, **self.options)
 
             for model_re in self.model_res:
@@ -329,8 +329,8 @@ class Command(LabelCommand):
         # Make sure we always have args
         if not args:
             args = [False]
-        app = args[0]
-        if not installed_apps.get(app):
+        app = installed_apps.get(args[0])
+        if not app:
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
             for app in sorted(installed_apps):
