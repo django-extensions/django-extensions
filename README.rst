@@ -112,7 +112,7 @@ Documentation
 
 You can view documentation online at:
 
-- http://django-extensions.readthedocs.org
+- https://django-extensions.readthedocs.io
 
 Or you can look at the docs/ directory in the repository.
 
