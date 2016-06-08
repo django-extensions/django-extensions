@@ -26,15 +26,6 @@ except ImportError as e:
     USE_STATICFILES = False
 
 
-def label(code):
-    if isinstance(code, str):
-        return '~', 0, code  # built-in functions ('~' sorts at the end)
-    else:
-        return '%s %s:%d' % (code.co_name,
-                             code.co_filename,
-                             code.co_firstlineno)
-
-
 class KCacheGrind(object):
     def __init__(self, profiler):
         self.data = profiler.getstats()
@@ -59,10 +50,10 @@ class KCacheGrind(object):
 
         code = entry.code
         if isinstance(code, str):
-            out_file.write('fi=~\n')
+            out_file.write('fn=%s\n' % code)
         else:
-            out_file.write('fi=%s\n' % (code.co_filename,))
-        out_file.write('fn=%s\n' % (label(code),))
+            out_file.write('fl=%s\n' % code.co_filename)
+            out_file.write('fn=%s\n' % code.co_name)
 
         inlinetime = int(entry.inlinetime * 1000)
         if isinstance(code, str):
@@ -88,12 +79,12 @@ class KCacheGrind(object):
     def _subentry(self, lineno, subentry):
         out_file = self.out_file
         code = subentry.code
-        out_file.write('cfn=%s\n' % (label(code),))
         if isinstance(code, str):
-            out_file.write('cfi=~\n')
+            out_file.write('cfn=%s\n' % code)
             out_file.write('calls=%d 0\n' % (subentry.callcount,))
         else:
-            out_file.write('cfi=%s\n' % (code.co_filename,))
+            out_file.write('cfl=%s\n' % code.co_filename)
+            out_file.write('cfn=%s\n' % code.co_name)
             out_file.write('calls=%d %d\n' % (subentry.callcount, code.co_firstlineno))
 
         totaltime = int(subentry.totaltime * 1000)

@@ -44,6 +44,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
             help='Use this router-database other then defined in settings.py')
+        parser.add_argument(
+            '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
+            help='Close database connections before dropping database (PostgreSQL only)')
 
     @signalcommand
     def handle(self, *args, **options):
@@ -145,9 +148,21 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection = Database.connect(**conn_params)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
+
+            if options.get('close_sessions'):
+                close_sessions_query = """
+                    SELECT pg_terminate_backend(pg_stat_activity.pid)
+                    FROM pg_stat_activity
+                    WHERE pg_stat_activity.datname = '%s';
+                """ % database_name
+                logging.info('Executing... "' + close_sessions_query.strip() + '"')
+                try:
+                    cursor.execute(close_sessions_query)
+                except Database.ProgrammingError as e:
+                    logging.exception("Error: %s" % str(e))
+
             drop_query = "DROP DATABASE \"%s\";" % database_name
             logging.info('Executing... "' + drop_query + '"')
-
             try:
                 cursor.execute(drop_query)
             except Database.ProgrammingError as e:

@@ -3,7 +3,7 @@ import six
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-from django.core import urlresolvers
+from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
@@ -17,10 +17,10 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     # Set in subclass to render the widget with a different template
     widget_template = None
     # Set this to the patch of the search view
-    search_path = '../foreignkey_autocomplete/'
+    search_path = None
 
     def _media(self):
-        js_files = ['django_extensions/js/jquery.bgiframe.min.js',
+        js_files = ['django_extensions/js/jquery.bgiframe.js',
                     'django_extensions/js/jquery.ajaxQueue.js',
                     'django_extensions/js/jquery.autocomplete.js']
 
@@ -45,7 +45,9 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
-        related_url = urlresolvers.reverse('admin:%s_%s_changelist' % (app_label, model_name))
+        related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))
+        if not self.search_path:
+            self.search_path = '%s/foreignkey_autocomplete/' % related_url
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])

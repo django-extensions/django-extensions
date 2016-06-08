@@ -43,7 +43,7 @@ from django.db.models import (
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
-    get_apps, get_model_compat, get_models_compat, get_models_for_app
+    list_app_labels, get_model_compat, get_models_for_app
 )
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
@@ -132,8 +132,8 @@ def get_models(app_labels):
 
     # If no app labels are given, return all
     if not app_labels:
-        for app in get_apps():
-            models += [m for m in get_models_compat(app)
+        for app_label in list_app_labels():
+            models += [m for m in get_models_for_app(app_label)
                        if m not in EXCLUDED_MODELS]
         return models
 
@@ -506,7 +506,7 @@ class Script(Code):
 
         # Queue and process the required models
         for model_class in self._queue_models(self.models, context=self.context):
-            msg = 'Processing model: %s\n' % model_class.model.__name__
+            msg = 'Processing model: %s.%s\n' % (model_class.model.__module__, model_class.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             code.append(model_class.import_lines)
@@ -515,7 +515,7 @@ class Script(Code):
 
         # Process left over foreign keys from cyclic models
         for model in self.models:
-            msg = 'Re-processing model: %s\n' % model.model.__name__
+            msg = 'Re-processing model: %s.%s\n' % (model.model.__module__, model.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             for instance in model.instances:

@@ -8,7 +8,7 @@ from django_extensions.db.fields import (
     UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
-from django_extensions.db.models import ActivatorModel
+from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 
 class Secret(models.Model):
@@ -202,5 +202,10 @@ class RandomCharTestModelPunctuation(models.Model):
         include_alpha=False,
     )
 
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'

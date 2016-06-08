@@ -35,7 +35,37 @@ Current Database Model Field Extensions
 
 * *ModificationDateTimeField* - DateTimeField that will automatically set its
   date when an object is saved to the database. Works in the same way as the
-  auto_now keyword.
+  auto_now keyword. It is possible to preserve the current timestamp by setting update_modified to False::
+
+    >>> example = MyTimeStampedModel.objects.get(pk=1)
+
+    >>> print example.modified
+    datetime.datetime(2016, 3, 18, 10, 3, 39, 740349, tzinfo=<UTC>)
+
+    >>> example.save(update_modified=False)
+
+    >>> print example.modified
+    datetime.datetime(2016, 3, 18, 10, 3, 39, 740349, tzinfo=<UTC>)
+
+    >>> example.save()
+
+    >>> print example.modified
+    datetime.datetime(2016, 4, 8, 14, 25, 43, 123456, tzinfo=<UTC>)
+
+  It is also possible to set the attribute directly on the model,
+  for example when you don't use the TimeStampedModel provided in this package, or when you are in a migration::
+
+    >>> example = MyCustomModel.objects.get(pk=1)
+
+    >>> print example.modified
+    datetime.datetime(2016, 3, 18, 10, 3, 39, 740349, tzinfo=<UTC>)
+
+    >>> example.update_modified=False
+
+    >>> example.save()
+
+    >>> print example.modified
+    datetime.datetime(2016, 3, 18, 10, 3, 39, 740349, tzinfo=<UTC>)
 
 * *UUIDField* - UUIDField for Django, supports all uuid versions that are
   natively supported by the uuid python module.

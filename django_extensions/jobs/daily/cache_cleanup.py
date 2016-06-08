@@ -35,12 +35,12 @@ class Job(DailyJob):
                 transaction.commit_unless_managed(using=using)
 
         if hasattr(settings, 'CACHES') and timezone:
-            from django.core.cache import get_cache
+            from django.core.cache import caches
             from django.db import router, connections
 
             for cache_name, cache_options in six.iteritems(settings.CACHES):
                 if cache_options['BACKEND'].endswith("DatabaseCache"):
-                    cache = get_cache(cache_name)
+                    cache = caches[cache_name]
                     db = router.db_for_write(cache.cache_model_class)
                     with atomic(using=db):
                         cursor = connections[db].cursor()

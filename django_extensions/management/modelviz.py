@@ -10,6 +10,7 @@ Based on:
 
 import datetime
 import os
+import re
 
 import six
 import django
@@ -30,7 +31,9 @@ try:
 except ImportError:
     from django.contrib.contenttypes.generic import GenericRelation
 
-from django_extensions.compat import get_app, get_models_compat, list_app_labels, get_model
+from django_extensions.compat import (
+    get_app, get_model_compat, get_models_for_app, list_app_labels
+)
 
 
 __version__ = "1.0"
@@ -47,7 +50,8 @@ __contributors__ = [
     "Joern Hees <gitdev@joernhees.de>",
     "Kevin Cherepski <cherepski@gmail.com>",
     "Jose Tomas Tocino <theom3ga@gmail.com>",
-    "Adam Dobrawy <naczelnik@jawnosc.tk>"
+    "Adam Dobrawy <naczelnik@jawnosc.tk>",
+    "Mikkel Munch Mortensen <https://www.detfalskested.dk/>",
 ]
 
 
@@ -59,6 +63,29 @@ def parse_file_or_list(arg):
     if ',' not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
     return [e.strip() for e in arg.split(',')]
+
+
+def use_model(model_name, include_models, exclude_models):
+    """
+    Decide whether to use a model, based on the model name and the lists of
+    models to exclude and include.
+    """
+    # Check against exclude list.
+    if exclude_models:
+        for model_pattern in exclude_models:
+            model_pattern = \
+                '^%s$' % model_pattern.replace('*', '.*')
+            if re.search(model_pattern, model_name):
+                return False
+    # Check against exclude list.
+    elif include_models:
+        for model_pattern in include_models:
+            model_pattern = \
+                '^%s$' % model_pattern.replace('*', '.*')
+            if re.search(model_pattern, model_name):
+                return True
+    # Return `True` if `include_models` is falsey, otherwise return `False`.
+    return not include_models
 
 
 def generate_graph_data(app_labels, **kwargs):
@@ -101,7 +128,7 @@ def generate_graph_data(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = list(get_models_compat(app_label))
+        appmodels = list(get_models_for_app(app_label))
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
@@ -129,15 +156,11 @@ def generate_graph_data(app_labels, **kwargs):
                 'relations': []
             }
 
-            # consider given model name ?
-            def consider(model_name):
-                if exclude_models and model_name in exclude_models:
-                    return False
-                elif include_models and model_name not in include_models:
-                    return False
-                return not include_models or model_name in include_models
-
-            if not consider(appmodel._meta.object_name):
+            if not use_model(
+                appmodel._meta.object_name,
+                include_models,
+                exclude_models
+            ):
                 continue
 
             if verbose_names and appmodel._meta.verbose_name:
@@ -217,7 +240,12 @@ def generate_graph_data(app_labels, **kwargs):
                     if field.rel.to == 'self':
                         target_model = field.model
                     else:
-                        target_model = get_model(field.rel.to)
+                        if '.' in field.rel.to:
+                            app_label, model_name = field.rel.to.split('.', 1)
+                        else:
+                            app_label = field.model._meta.app_label
+                            model_name = field.rel.to
+                        target_model = get_model_compat(app_label, model_name)
                 else:
                     target_model = field.rel.to
 
@@ -230,7 +258,11 @@ def generate_graph_data(app_labels, **kwargs):
                     'arrows': extras,
                     'needs_node': True
                 }
-                if _rel not in model['relations'] and consider(_rel['target']):
+                if _rel not in model['relations'] and use_model(
+                    _rel['target'],
+                    include_models,
+                    exclude_models
+                ):
                     model['relations'].append(_rel)
 
             for field in appmodel._meta.local_fields:
@@ -275,7 +307,11 @@ def generate_graph_data(app_labels, **kwargs):
                             'needs_node': True,
                         }
                         # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
-                        if _rel not in model['relations'] and consider(_rel['target']):
+                        if _rel not in model['relations'] and use_model(
+                            _rel['target'],
+                            include_models,
+                            exclude_columns
+                        ):
                             model['relations'].append(_rel)
 
             graph['models'].append(model)

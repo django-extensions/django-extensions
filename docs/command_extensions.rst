@@ -53,6 +53,9 @@ Current Command Extensions
 
 * *passwd* - Makes it easy to reset a user's password.
 
+* *pipchecker* - Scan pip requirement file(s)s for out-of-date packages. Similar to
+  ``pip list -o`` which used installed packages (in virtualenv) instead of requirements file(s).
+
 * `print_settings`_ - Similar to ``diffsettings`` but shows *selected*
   active Django settings or *all* if no args passed.
 
