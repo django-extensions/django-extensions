@@ -16,6 +16,7 @@ from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 class Command(BaseCommand):
     """print_settings command"""
 
+    args = '<SETTING>'
     help = "Print the active Django settings."
 
     def add_arguments(self, parser):
