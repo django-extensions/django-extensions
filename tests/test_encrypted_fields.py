@@ -102,7 +102,7 @@ def secret_model():
     establishing the correct KeyCzar settings. This context manager handles
     that process.
 
-    See http://dynamic-models.readthedocs.org/en/latest/ and
+    See https://dynamic-models.readthedocs.io/en/latest/ and
     https://docs.djangoproject.com/en/dev/topics/db/models/
         #differences-between-proxy-inheritance-and-unmanaged-models
     """
