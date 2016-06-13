@@ -24,9 +24,6 @@ Current Command Extensions
   given app name in the current directory.  This is part of the impressive jobs
   system.
 
-* *create_superuser* - Makes it easy to create a superuser for the
-  django.contrib.auth.
-
 * *clear_cache* - Clear django cache, useful when testing or deploying.
 
 * *describe_form* - Used to display a form definition for a model. Copy and
