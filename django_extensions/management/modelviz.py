@@ -278,8 +278,7 @@ def generate_graph_data(app_labels, **kwargs):
                 if skip_field(field):
                     continue
                 if isinstance(field, ManyToManyField):
-                    if (getattr(field, 'creates_table', False) or  # django 1.1.
-                            (hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created)):  # django 1.2
+                    if hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created:
                         add_relation(field, '[arrowhead=dot arrowtail=dot, dir=both]')
                 elif isinstance(field, GenericRelation):
                     add_relation(field, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
