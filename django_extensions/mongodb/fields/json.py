@@ -14,16 +14,10 @@ more information.
 import datetime
 from decimal import Decimal
 
+import json
 import six
 from django.conf import settings
 from mongoengine.fields import StringField
-
-try:
-    # Django >= 1.7
-    import json
-except ImportError:
-    # Django <= 1.6 backwards compatibility
-    from django.utils import simplejson as json
 
 
 class JSONEncoder(json.JSONEncoder):

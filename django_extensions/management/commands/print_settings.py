@@ -6,6 +6,8 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
+import json
+
 from django.conf import settings
 from django.core.management.base import CommandError
 
@@ -42,7 +44,6 @@ class Command(BaseCommand):
         indent = options.get('indent', 4)
 
         if output_format == 'json':
-            json = self.import_json()
             print(json.dumps(a_dict, indent=indent))
         elif output_format == 'yaml':
             import yaml  # requires PyYAML
@@ -78,13 +79,3 @@ class Command(BaseCommand):
 
         for key, value in a_dict.items():
             print('%-40s = %r' % (key, value))
-
-    @staticmethod
-    def import_json():
-        """Import a module for JSON"""
-
-        try:
-            import json
-        except ImportError:
-            import simplejson as json  # NOQA
-        return json
