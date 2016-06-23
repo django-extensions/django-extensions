@@ -9,6 +9,7 @@ set_fake_emails.py
 """
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
@@ -49,7 +50,6 @@ class Command(BaseCommand):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
 
-        from django_extensions.compat import get_user_model
         from django.contrib.auth.models import Group
         email = options.get('default_email', DEFAULT_FAKE_EMAIL)
         include_regexp = options.get('include_regexp', None)

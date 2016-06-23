@@ -1,8 +1,9 @@
 # coding=utf-8
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError
 
-from django_extensions.compat import get_user_model, importlib
+from django_extensions.compat import importlib
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 

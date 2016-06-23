@@ -29,18 +29,6 @@ else:  # pragma: no cover
 #
 # Django compatibility
 #
-try:  # Django 1.5
-    from django.contrib.auth import get_user_model
-except ImportError:  # pragma: no cover
-    assert django.VERSION < (1, 5)
-    from django.contrib.auth.models import User
-    User.USERNAME_FIELD = "username"
-    User.get_username = lambda self: self.username
-
-    def get_user_model():
-        return User
-
-
 def list_apps():
     try:
         # django >= 1.7, to support AppConfig
