@@ -30,7 +30,6 @@ Example:
 
 """
 
-import django
 from django import template
 from django.template import (
     Context, Node, Template, TemplateSyntaxError, Variable,
@@ -49,16 +48,10 @@ except ImportError:
 register = template.Library()
 
 
+@register.filter(is_safe=True)
 @stringfilter
 def parse_template(value):
     return mark_safe(Template(value).render(Context()))
-parse_template.is_safe = True
-
-if django.get_version() >= "1.4":
-    register.filter(parse_template, is_safe=True)
-else:
-    parse_template.is_safe = True
-    register.filter(parse_template)
 
 
 class CodeNode(Node):
