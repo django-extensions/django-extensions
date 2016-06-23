@@ -25,13 +25,6 @@ from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
 
-try:
-    from django.utils.timezone import now as datetime_now
-    assert datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
-
 
 MAX_UNIQUE_QUERY_ATTEMPTS = 100
 

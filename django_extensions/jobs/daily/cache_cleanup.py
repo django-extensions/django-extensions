@@ -10,6 +10,7 @@ from contextlib import contextmanager
 
 import six
 
+from django.utils import timezone
 from django_extensions.management.jobs import DailyJob
 
 
@@ -21,11 +22,6 @@ class Job(DailyJob):
         from django.db import transaction
         import os
 
-        try:
-            from django.utils import timezone
-        except ImportError:
-            timezone = None
-
         if hasattr(transaction, 'atomic'):
             atomic = transaction.atomic
         else:
@@ -34,7 +30,7 @@ class Job(DailyJob):
                 yield
                 transaction.commit_unless_managed(using=using)
 
-        if hasattr(settings, 'CACHES') and timezone:
+        if hasattr(settings, 'CACHES'):
             from django.core.cache import caches
             from django.db import router, connections
 
