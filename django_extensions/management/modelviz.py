@@ -18,13 +18,10 @@ from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
 from django.template import Context, Template, loader
+from django.utils.encoding import force_bytes
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
 
-try:
-    from django.utils.encoding import force_bytes
-except ImportError:
-    from django.utils.encoding import smart_str as force_bytes
 
 try:
     from django.contrib.contenttypes.fields import GenericRelation

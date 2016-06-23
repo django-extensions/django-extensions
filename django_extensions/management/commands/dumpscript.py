@@ -34,23 +34,18 @@ import sys
 
 import django
 import six
-# conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
+from django.utils.encoding import smart_text, force_text
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
     list_app_labels, get_model_compat, get_models_for_app
 )
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.utils.encoding import smart_unicode, force_unicode  # NOQA
-except ImportError:
-    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
 
 
 def orm_item_locator(orm_obj):
@@ -204,7 +199,7 @@ class ModelCode(Code):
         """ Returns a dictionary of import statements, with the variable being
             defined as the key.
         """
-        return {self.model.__name__: smart_unicode(self.model.__module__)}
+        return {self.model.__name__: smart_text(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
@@ -709,7 +704,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
 
     # Post file-storage-refactor, repr() on File/ImageFields no longer returns the path
     elif isinstance(field, FileField):
-        return repr(force_unicode(value))
+        return repr(force_text(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, ForeignKey) and value is not None:

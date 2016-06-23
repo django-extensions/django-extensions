@@ -2,12 +2,8 @@
 import re
 
 from django.template import Library
+from django.utils.encoding import force_text
 
-try:
-    from django.utils.encoding import force_text
-except ImportError:
-    # Django 1.4 compatibility
-    from django.utils.encoding import force_unicode as force_text
 
 register = Library()
 re_widont = re.compile(r'\s+(\S+\s*)$')
