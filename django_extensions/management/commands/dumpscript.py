@@ -517,9 +517,7 @@ class BasicImportHelper(object):
     def pre_import(self):
         pass
 
-    # You probably want to uncomment on of these two lines
-    # @transaction.atomic  # Django 1.6
-    # @transaction.commit_on_success  # Django <1.6
+    @transaction.atomic
     def run_import(self, import_data):
         import_data()
 
