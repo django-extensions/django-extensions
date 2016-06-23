@@ -65,18 +65,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         else:
             info = self.model._meta.app_label, self.model._meta.model_name
 
-        _url = url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete), name='%s_%s_autocomplete' % info)
-
-        # django.conf.urls.patterns is deprecated in django version 1.9 and removed in django version 1.10.
-        # It is replaced by a simple Python list
-        if django.VERSION < (1, 9):
-            from django.conf.urls import patterns
-            urlpatterns = patterns('', _url)
-        else:
-            urlpatterns = [_url]
-
-        urlpatterns += super(ForeignKeyAutocompleteAdmin, self).get_urls()
-        return urlpatterns
+        return [
+            url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
+                name='%s_%s_autocomplete' % info)
+        ] + super(ForeignKeyAutocompleteAdmin, self).get_urls()
 
     def foreignkey_autocomplete(self, request):
         """
