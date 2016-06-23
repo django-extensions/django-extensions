@@ -14,14 +14,10 @@ from django.core.management.base import (BaseCommand, AppCommand, LabelCommand,
 # Python compatibility
 #
 PY3 = sys.version_info[0] == 3
-OLD_PY2 = sys.version_info[:2] < (2, 7)
 
 if PY3:  # pragma: no cover
     from io import StringIO
     import importlib
-elif OLD_PY2:  # pragma: no cover
-    from cStringIO import StringIO
-    from django.utils import importlib
 else:  # pragma: no cover
     from cStringIO import StringIO
     import importlib
