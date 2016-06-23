@@ -1,16 +1,12 @@
 # coding=utf-8
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.base import VALID_KEY_CHARS
 from django.core.management.base import CommandError
 
 from django_extensions.compat import importlib
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.contrib.sessions.backends.base import VALID_KEY_CHARS  # Django 1.5
-except ImportError:
-    VALID_KEY_CHARS = "abcdef0123456789"
 
 
 class Command(BaseCommand):
