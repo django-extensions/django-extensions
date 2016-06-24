@@ -4,7 +4,7 @@ import re
 import sys
 
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import CommandError, LabelCommand
 from django.db import connection
 from django.template import Context, Template
 
@@ -12,7 +12,6 @@ import django_extensions
 from django_extensions.management.utils import _make_writeable, signalcommand
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):

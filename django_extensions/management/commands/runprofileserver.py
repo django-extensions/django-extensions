@@ -15,11 +15,10 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.staticfiles.handlers import StaticFilesHandler
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 

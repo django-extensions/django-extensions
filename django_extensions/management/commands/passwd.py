@@ -2,10 +2,9 @@
 import getpass
 
 from django.contrib.auth import get_user_model
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):

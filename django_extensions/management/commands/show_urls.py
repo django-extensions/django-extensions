@@ -6,13 +6,12 @@ import re
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
 from django.utils import translation
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",

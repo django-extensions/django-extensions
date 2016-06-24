@@ -36,6 +36,7 @@ import six
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management.base import BaseCommand
 from django.db import router
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
@@ -44,7 +45,6 @@ from django.db.models.deletion import Collector
 from django.utils.encoding import smart_text, force_text
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 def orm_item_locator(orm_obj):

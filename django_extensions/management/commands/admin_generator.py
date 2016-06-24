@@ -20,11 +20,11 @@ import sys
 
 from django.apps import apps
 from django.conf import settings
+from django.core.management.base import LabelCommand
 from django.db import models
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 # Configurable constants
 MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)

@@ -6,10 +6,8 @@ sqldns.py - Prints Data Source Name on stdout
 
 import sys
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
-
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):

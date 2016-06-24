@@ -13,7 +13,6 @@ import os
 import re
 
 import six
-import django
 from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
@@ -335,9 +334,7 @@ def generate_dot(graph_data):
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
-    c = Context(graph_data)
-    if django.VERSION >= (1, 8):
-        c = c.flatten()
+    c = Context(graph_data).flatten()
     dot = t.render(c)
 
     return dot

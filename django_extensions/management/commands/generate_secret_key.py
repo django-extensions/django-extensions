@@ -1,8 +1,9 @@
 # coding=utf-8
 from random import choice
 
+from django.core.management.base import BaseCommand
+
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):

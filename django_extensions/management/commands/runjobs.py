@@ -1,9 +1,9 @@
 # coding=utf-8
 from django.apps import apps
+from django.core.management.base import LabelCommand
 
 from django_extensions.management.jobs import get_jobs, print_jobs
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):

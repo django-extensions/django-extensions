@@ -37,16 +37,10 @@ class UniqueFieldMixin(object):
 
     @staticmethod
     def _get_fields(model_cls):
-        if hasattr(model_cls._meta, 'get_fields'):
-            # verbosity due to replacement of deprecated model_cls._meta.get_fields_with_model(),
-            # as explained here: https://docs.djangoproject.com/en/1.9/ref/models/meta/#migrating-from-the-old-api
-            return [
-                (f, f.model if f.model != model_cls else None) for f in model_cls._meta.get_fields()
-                if not f.is_relation or f.one_to_one or (f.many_to_one and f.related_model)
-            ]
-        else:
-            # prior to 1.9
-            return model_cls._meta.get_fields_with_model()
+        return [
+            (f, f.model if f.model != model_cls else None) for f in model_cls._meta.get_fields()
+            if not f.is_relation or f.one_to_one or (f.many_to_one and f.related_model)
+        ]
 
     def get_queryset(self, model_cls, slug_field):
         for field, model in self._get_fields(model_cls):

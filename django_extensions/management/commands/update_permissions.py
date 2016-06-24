@@ -1,9 +1,9 @@
 # coding=utf-8
 from django.apps import apps as django_apps
 from django.contrib.auth.management import create_permissions
+from django.core.management.base import BaseCommand
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):

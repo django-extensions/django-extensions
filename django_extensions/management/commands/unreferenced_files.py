@@ -4,10 +4,10 @@ from collections import defaultdict
 
 from django.apps import apps
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from django.db import models
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):

@@ -1,7 +1,6 @@
 # coding=utf-8
 import traceback
 
-import django
 import six
 
 
@@ -201,11 +200,12 @@ def import_objects(options, style):
             'django.core.urlresolvers': ['reverse'],
             'django.conf': ['settings'],
             'django.db': ['transaction'],
-            'django.db.models': ['Avg', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q', 'Sum'],
+            'django.db.models': [
+                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q',
+                'Sum', 'When',
+            ],
             'django.utils': ['timezone'],
         }
-        if django.VERSION[:2] >= (1, 8):
-            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend(["Case", "When"])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v

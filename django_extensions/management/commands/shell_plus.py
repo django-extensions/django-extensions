@@ -6,13 +6,12 @@ import time
 import traceback
 
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db.backends import utils
 
 from django_extensions.compat import PY3
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 def use_vi_mode():

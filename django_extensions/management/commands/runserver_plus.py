@@ -7,7 +7,7 @@ import sys
 import time
 
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.backends import utils
 from django.db.migrations.executor import MigrationExecutor
@@ -15,7 +15,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.utils.autoreload import gen_filenames
 
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 

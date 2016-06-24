@@ -24,17 +24,15 @@ KNOWN ISSUES:
 import importlib
 import sys
 
-import django
 import six
 from django.apps import apps
-from django.core.management import CommandError, sql as _sql
+from django.core.management import BaseCommand, CommandError, sql as _sql
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction
 from django.db.models.fields import AutoField, IntegerField
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
@@ -146,10 +144,8 @@ class SQLDiff(object):
 
         self.cursor = connection.cursor()
         self.django_tables = self.get_django_tables(options.get('only_existing', True))
-        self.db_tables = self.introspection.get_table_list(self.cursor)
-        if django.VERSION[:2] >= (1, 8):
-            # TODO: We are losing information about tables which are views here
-            self.db_tables = [table_info.name for table_info in self.db_tables]
+        # TODO: We are losing information about tables which are views here
+        self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
         self.unknown_db_fields = {}
         self.new_db_fields = set()
@@ -585,10 +581,6 @@ class MySQLDiff(SQLDiff):
         super(MySQLDiff, self).__init__(app_models, options)
         self.auto_increment = set()
         self.load_auto_increment()
-        if not getattr(connection.features, 'can_introspect_small_integer_field', False):
-            from MySQLdb.constants import FIELD_TYPE
-            # Django version < 1.8 does not support MySQL small integer introspection, adding override.
-            self.DATA_TYPES_REVERSE_OVERRIDE[FIELD_TYPE.SHORT] = 'SmallIntegerField'
 
     def load_null(self):
         tablespace = 'public'

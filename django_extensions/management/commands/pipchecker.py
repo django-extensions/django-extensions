@@ -4,12 +4,11 @@ import os
 from distutils.version import LooseVersion
 
 import pip
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from pip.req import parse_requirements
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 try:
     from urllib.parse import urlparse

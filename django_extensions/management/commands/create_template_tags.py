@@ -2,7 +2,8 @@
 import os
 import sys
 
-from django_extensions.compat import CompatibilityAppCommand as AppCommand
+from django.core.management.base import AppCommand
+
 from django_extensions.management.utils import _make_writeable, signalcommand
 
 

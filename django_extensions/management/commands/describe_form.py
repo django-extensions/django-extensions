@@ -1,10 +1,9 @@
 # coding=utf-8
 from django.apps import apps
-from django.core.management.base import CommandError
+from django.core.management.base import CommandError, LabelCommand
 from django.utils.encoding import force_text
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):
