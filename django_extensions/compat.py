@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import unicode_literals
 
+import importlib
 import sys
 from optparse import make_option
 import django
@@ -17,10 +18,8 @@ PY3 = sys.version_info[0] == 3
 
 if PY3:  # pragma: no cover
     from io import StringIO
-    import importlib
 else:  # pragma: no cover
     from cStringIO import StringIO
-    import importlib
 
 #
 # Django compatibility

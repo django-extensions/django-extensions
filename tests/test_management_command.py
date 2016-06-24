@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import importlib
 import logging
 import os
 import sys
@@ -8,7 +9,7 @@ from django.core.management import (
 )
 from django.test import TestCase
 
-from django_extensions.compat import StringIO, importlib
+from django_extensions.compat import StringIO
 from django_extensions.management.modelviz import use_model
 
 

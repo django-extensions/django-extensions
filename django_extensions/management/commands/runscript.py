@@ -1,9 +1,10 @@
 # coding=utf-8
+import importlib
 import sys
 import traceback
 from optparse import make_option
 
-from django_extensions.compat import importlib, list_apps
+from django_extensions.compat import list_apps
 from django_extensions.management.email_notifications import \
     EmailNotificationCommand
 from django_extensions.management.utils import signalcommand

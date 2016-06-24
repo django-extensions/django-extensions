@@ -21,6 +21,7 @@ KNOWN ISSUES:
      positives or false negatives.
 """
 
+import importlib
 import sys
 
 import django
@@ -272,7 +273,6 @@ class SQLDiff(object):
             kwargs['geography'] = True
 
         if '.' in reverse_type:
-            from django_extensions.compat import importlib
             module_path, package_name = reverse_type.rsplit('.', 1)
             module = importlib.import_module(module_path)
             field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
