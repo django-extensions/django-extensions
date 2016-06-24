@@ -68,10 +68,6 @@ class ActivatorModelManager(models.Manager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
-    def get_query_set(self):
-        """ Proxy to `get_queryset`, drop this when Django < 1.6 is no longer supported """
-        return self.get_queryset()
-
     def get_queryset(self):
         """ Use ActivatorQuerySet for all results """
         return ActivatorQuerySet(model=self.model, using=self._db)
@@ -79,12 +75,12 @@ class ActivatorModelManager(models.Manager):
     def active(self):
         """ Returns active instances of ActivatorModel: SomeModel.objects.active(),
         proxy to ActivatorQuerySet.active """
-        return self.get_query_set().active()
+        return self.get_queryset().active()
 
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive(),
         proxy to ActivatorQuerySet.inactive """
-        return self.get_query_set().inactive()
+        return self.get_queryset().inactive()
 
 
 class ActivatorModel(models.Model):
