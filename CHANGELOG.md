@@ -1,14 +1,24 @@
 Changelog
 =========
 
+1.7.0
+-----
+
+Letting go of the past. Removing support for very old (and unsupported versions) of
+Django and Python.
+
+Changes:
+ - Cleanup: removing backwards compatibility hacks for unsupported versions of Django
+
+
 1.6.7
 -----
 
 Changes:
-- Fix: describe_form, fix No module named 'django.db.models.loading' error
-- Improvement: shell_plus,  Add a setting to prefix all models in an application #887
-- Improvement: pipchecker, check for requirements-{dev,prod}.txt as well
-- Docs: pipchecker, update documentation
+ - Fix: describe_form, fix No module named 'django.db.models.loading' error
+ - Improvement: shell_plus,  Add a setting to prefix all models in an application #887
+ - Improvement: pipchecker, check for requirements-{dev,prod}.txt as well
+ - Docs: pipchecker, update documentation
 
 1.6.6
 -----
