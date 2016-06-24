@@ -260,15 +260,8 @@ class Command(BaseCommand):
                     errno.EADDRINUSE: "That port is already in use.",
                     errno.EADDRNOTAVAIL: "That IP address can't be assigned-to.",
                 }
-                if not isinstance(e, socket.error):  # Django < 1.6
-                    ERRORS[13] = ERRORS.pop(errno.EACCES)
-                    ERRORS[98] = ERRORS.pop(errno.EADDRINUSE)
-                    ERRORS[99] = ERRORS.pop(errno.EADDRNOTAVAIL)
                 try:
-                    if not isinstance(e, socket.error):  # Django < 1.6
-                        error_text = ERRORS[e.args[0].args[0]]
-                    else:
-                        error_text = ERRORS[e.errno]
+                    error_text = ERRORS[e.errno]
                 except (AttributeError, KeyError):
                     error_text = str(e)
                 sys.stderr.write(self.style.ERROR("Error: %s" % error_text) + '\n')
