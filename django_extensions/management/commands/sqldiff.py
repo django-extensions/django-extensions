@@ -26,6 +26,7 @@ import sys
 import django
 import six
 from django.core.management import CommandError, sql as _sql
+from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction
 from django.db.models.fields import AutoField, IntegerField
@@ -33,13 +34,6 @@ from django.db.models.fields import AutoField, IntegerField
 from django_extensions.compat import get_app_models
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.core.management.base import OutputWrapper
-    HAS_OUTPUTWRAPPER = True
-except ImportError:
-    HAS_OUTPUTWRAPPER = False
-
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
@@ -990,10 +984,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
             # self.stderr is not guaranteed to be set here
             stderr = getattr(self, 'stderr', None)
             if not stderr:
-                if HAS_OUTPUTWRAPPER:
-                    stderr = OutputWrapper(sys.stderr, self.style.ERROR)
-                else:
-                    stderr = sys.stderr
+                stderr = OutputWrapper(sys.stderr, self.style.ERROR)
             stderr.write('%s: %s' % (e.__class__.__name__, e))
             sys.exit(2)
 

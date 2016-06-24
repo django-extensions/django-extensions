@@ -10,21 +10,11 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
+from django.core.servers.basehttp import get_internal_wsgi_application
 
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
-
-try:
-    from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
-except ImportError:
-    from django.core.handlers.wsgi import WSGIHandler  # noqa
-
-try:
-    from django.core.servers.basehttp import AdminMediaHandler
-    USE_ADMINMEDIAHANDLER = True
-except ImportError:
-    USE_ADMINMEDIAHANDLER = False
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -73,8 +63,6 @@ class Command(BaseCommand):
                             help='Tells Django to NOT use the auto-reloader.')
         parser.add_argument('--browser', action='store_true', dest='open_browser',
                             help='Tells Django to open a browser.')
-        parser.add_argument('--adminmedia', dest='admin_media_path', default='',
-                            help='Specifies the directory from which to serve admin media.')
         parser.add_argument('--nothreading', action='store_false', dest='threaded',
                             help='Do not run in multithreaded mode.')
         parser.add_argument('--threaded', action='store_true', dest='threaded',
@@ -275,16 +263,7 @@ class Command(BaseCommand):
             print("Development server is running at %s" % (bind_url,))
             print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
             print("Quit the server with %s." % quit_command)
-        path = options.get('admin_media_path', '')
-        if not path:
-            admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
-            if os.path.isdir(admin_media_path):
-                path = admin_media_path
-            else:
-                path = os.path.join(django.__path__[0], 'contrib/admin/media')
-        handler = WSGIHandler()
-        if USE_ADMINMEDIAHANDLER:
-            handler = AdminMediaHandler(handler, path)
+        handler = get_internal_wsgi_application()
         if USE_STATICFILES:
             use_static_handler = options.get('use_static_handler', True)
             insecure_serving = options.get('insecure_serving', False)
