@@ -31,16 +31,16 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 Getting Started
 ===============
 
-The easiest way to figure out what Django Extensions are all about is to watch the 
-`excellent screencast by Eric Holscher`__ (`watch the video on vimeo`__). In a couple 
-minutes Eric walks you through a half a dozen command extensions. There is also a 
+The easiest way to figure out what Django Extensions are all about is to watch the
+`excellent screencast by Eric Holscher`__ (`watch the video on vimeo`__). In a couple
+minutes Eric walks you through a half a dozen command extensions. There is also a
 `short screencast on GoDjango`__ to help show you even more.
 
 
 Requirements
 ============
 
-Django Extensions requires Django 1.6 or later.
+Django Extensions requires Django 1.7 or later.
 
 
 Getting It
@@ -62,7 +62,7 @@ If you want to install it from source, grab the git repository from GitHub and r
 Installing It
 =============
 
-To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects 
+To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects
 `settings.py` file::
 
     INSTALLED_APPS = (

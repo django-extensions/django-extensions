@@ -5,6 +5,7 @@ import importlib
 import sys
 from optparse import make_option
 import django
+from django.apps import apps
 from django.conf import settings
 from django.core.management.base import (BaseCommand, AppCommand, LabelCommand,
                                          CommandError)
@@ -24,130 +25,6 @@ else:  # pragma: no cover
 #
 # Django compatibility
 #
-def list_apps():
-    try:
-        # django >= 1.7, to support AppConfig
-        from django.apps import apps
-    except ImportError:
-        # old way
-        return list(settings.INSTALLED_APPS)
-    else:
-        return [app.name for app in apps.get_app_configs()]
-
-
-def list_app_labels():
-    try:
-        # django >= 1.7, to support AppConfig
-        from django.apps import apps
-    except ImportError:
-        # old way
-        return [app.rsplit(".")[-1] for app in settings.INSTALLED_APPS]
-    else:
-        return [app.label for app in apps.get_app_configs()]
-
-
-def get_app(app_label):
-    try:
-        # django >= 1.7
-        from django.apps import apps
-    except ImportError:
-        from django.db import models
-        return models.get_app(app_label)
-    else:
-        return apps.get_app_config(app_label).models_module
-
-
-def get_apps():
-    try:
-        # django >= 1.7, to support AppConfig
-        from django.apps import apps
-    except ImportError:
-        from django.db import models
-        return models.get_apps()
-    else:
-        return [app.models_module for app in apps.get_app_configs() if app.models_module]
-
-
-def get_apps_from_cache():
-    try:
-        from django.apps import apps
-    except ImportError:
-        from django.db.models.loading import cache
-        return cache.get_apps()
-    else:
-        return [app.models_module for app in apps.get_app_configs() if app.models_module]
-
-
-def get_models_from_cache(app):
-    try:
-        from django.apps import apps
-    except ImportError:
-        from django.db.models.loading import cache
-        return cache.get_models(app)
-    else:
-        return apps.get_models(app)
-
-
-def get_app_models(app_labels=None):
-    if app_labels is None:
-        try:
-            # django >= 1.7, to support AppConfig
-            from django.apps import apps
-        except ImportError:
-            from django.db import models
-            return models.get_models(include_auto_created=True)
-        else:
-            return apps.get_models(include_auto_created=True)
-
-    if not isinstance(app_labels, (list, tuple, set)):
-        app_labels = [app_labels]
-
-    app_models = []
-    try:
-        # django >= 1.7, to support AppConfig
-        from django.apps import apps
-    except ImportError:
-        from django.db import models
-
-        try:
-            app_list = [models.get_app(app_label) for app_label in app_labels]
-        except (models.ImproperlyConfigured, ImportError) as e:
-            raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
-
-        for app in app_list:
-            app_models.extend(models.get_models(app, include_auto_created=True))
-    else:
-        for app_label in app_labels:
-            app_config = apps.get_app_config(app_label)
-            app_models.extend(app_config.get_models(include_auto_created=True))
-
-    return app_models
-
-
-def get_model_compat(app_label, model_name):
-    """Get a model on multiple Django versions."""
-    try:
-        # django >= 1.7
-        from django.apps import apps
-    except ImportError:
-        from django.db.models import get_model
-        return get_model(app_label, model_name)
-    else:
-        return apps.get_model(app_label, model_name)
-
-
-def get_models_for_app(app_label):
-    """Returns the models in the given app for an app label."""
-    try:
-        # django >= 1.7
-        from django.apps import apps
-    except ImportError:
-        from django.db.models import get_app, get_models
-        return get_models(get_app(app_label))
-    else:
-        return apps.get_app_config(app_label).get_models()
-
-
 def load_tag_library(libname):
     """Load a templatetag library on multiple Django versions.
 

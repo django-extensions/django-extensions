@@ -7,6 +7,7 @@ import traceback
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.db.backends import utils
 
 from django_extensions.compat import PY3
 from django_extensions.management.shells import import_objects
@@ -84,13 +85,6 @@ class Command(BaseCommand):
 
         if options.get("print_sql", False):
             # Code from http://gist.github.com/118990
-            try:
-                # Django 1.7 onwards
-                from django.db.backends import utils
-            except ImportError:
-                # Django 1.6 and below
-                from django.db.backends import util as utils
-
             sqlparse = None
             try:
                 import sqlparse

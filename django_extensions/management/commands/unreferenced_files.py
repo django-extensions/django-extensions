@@ -2,12 +2,12 @@
 import os
 from collections import defaultdict
 
+from django.apps import apps
 from django.conf import settings
 from django.db import models
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-from django_extensions.compat import get_apps_from_cache, get_models_from_cache
 
 
 class Command(BaseCommand):
@@ -29,11 +29,10 @@ class Command(BaseCommand):
         # Get list of all fields (value) for each model (key)
         # that is a FileField or subclass of a FileField
         model_dict = defaultdict(list)
-        for app in get_apps_from_cache():
-            for model in get_models_from_cache(app):
-                for field in model._meta.fields:
-                    if issubclass(field.__class__, models.FileField):
-                        model_dict[model].append(field)
+        for model in apps.get_models():
+            for field in model._meta.fields:
+                if issubclass(field.__class__, models.FileField):
+                    model_dict[model].append(field)
 
         # Get a list of all files referenced in the database
         referenced = []

@@ -14,23 +14,15 @@ import re
 
 import six
 import django
+from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
+from django.contrib.contenttypes.fields import GenericRelation
 from django.template import Context, Template, loader
 from django.utils.encoding import force_bytes
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
-
-
-try:
-    from django.contrib.contenttypes.fields import GenericRelation
-except ImportError:
-    from django.contrib.contenttypes.generic import GenericRelation
-
-from django_extensions.compat import (
-    get_app, get_model_compat, get_models_for_app, list_app_labels
-)
 
 
 __version__ = "1.0"
@@ -111,11 +103,11 @@ def generate_graph_data(app_labels, **kwargs):
         return False
 
     if all_applications:
-        app_labels = list_app_labels()
+        app_labels = [app.label for app in apps.get_app_configs()]
 
     graphs = []
     for app_label in app_labels:
-        app = get_app(app_label)
+        app = apps.get_app_config(app_label).models_module
         if not app:
             continue
         graph = Context({
@@ -125,7 +117,7 @@ def generate_graph_data(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = list(get_models_for_app(app_label))
+        appmodels = list(apps.get_app_config(app_label).get_models())
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
@@ -242,7 +234,7 @@ def generate_graph_data(app_labels, **kwargs):
                         else:
                             app_label = field.model._meta.app_label
                             model_name = field.rel.to
-                        target_model = get_model_compat(app_label, model_name)
+                        target_model = apps.get_model(app_label, model_name)
                 else:
                     target_model = field.rel.to
 

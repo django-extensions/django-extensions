@@ -18,10 +18,10 @@ https://github.com/WoLpH/django-admin-generator/
 import re
 import sys
 
+from django.apps import apps
 from django.conf import settings
 from django.db import models
 
-from django_extensions.compat import get_apps, get_models_from_cache
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
@@ -89,7 +89,7 @@ class AdminApp(UnicodeMixin):
         self.options = options
 
     def __iter__(self):
-        for model in get_models_from_cache(self.app):
+        for model in apps.get_models(self.app):
             admin_model = AdminModel(model, **self.options)
 
             for model_re in self.model_res:
@@ -324,7 +324,7 @@ class Command(LabelCommand):
     @signalcommand
     def handle(self, *args, **kwargs):
         self.style = color_style()
-        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in get_apps())
+        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in apps.get_apps())
 
         # Make sure we always have args
         if not args:

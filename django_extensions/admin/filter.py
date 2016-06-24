@@ -2,11 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.admin import FieldListFilter
-try:
-    from django.contrib.admin.utils import prepare_lookup_value
-except ImportError:
-    # django < 1.7
-    from django.contrib.admin.util import prepare_lookup_value
+from django.contrib.admin.utils import prepare_lookup_value
 from django.utils.translation import ugettext_lazy as _
 
 

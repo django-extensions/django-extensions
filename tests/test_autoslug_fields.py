@@ -1,18 +1,14 @@
 # coding=utf-8
-import django
 import pytest
-from django.db import models
+from django.db import migrations, models
+from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
+from django.utils import six
 
+import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel
-
-if django.VERSION >= (1, 7):
-    from django.db import migrations  # NOQA
-    from django.db.migrations.writer import MigrationWriter  # NOQA
-    from django.utils import six  # NOQA
-    import django_extensions  # NOQA
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -106,8 +102,6 @@ class AutoSlugFieldTest(TestCase):
         self.assertEqual(o.slug, 'foo-3')
 
 
-@pytest.mark.skipif(django.VERSION < (1, 7),
-                    reason="Migrations are handled by south in Django <1.7")
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
         l = {}
@@ -122,7 +116,7 @@ class MigrationTest(TestCase):
 
     def test_17_migration(self):
         """
-        Tests making migrations with Django 1.7+'s migration framework
+        Tests making migrations with Django's migration framework
         """
 
         fields = {

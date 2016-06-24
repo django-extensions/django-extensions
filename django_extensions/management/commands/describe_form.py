@@ -1,10 +1,10 @@
 # coding=utf-8
+from django.apps import apps
 from django.core.management.base import CommandError
 from django.utils.encoding import force_text
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
-from django_extensions.compat import get_model_compat as get_model
 
 
 class Command(LabelCommand):
@@ -27,7 +27,7 @@ def describe_form(label, fields=None):
         app_name, model_name = label.split('.')[-2:]
     except (IndexError, ValueError):
         raise CommandError("Need application and model name in the form: appname.model")
-    model = get_model(app_name, model_name)
+    model = apps.get_model(app_name, model_name)
 
     opts = model._meta
     field_list = []

@@ -3,7 +3,6 @@ import os
 import re
 import sys
 
-from django import VERSION
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import connection
@@ -80,7 +79,6 @@ def copy_template(app_template, copy_to, project_name, app_name):
     """copies the specified template directory to the copy_to location"""
     import shutil
 
-    copy_migrations = True if VERSION[:2] >= (1, 7) else False
     app_template = os.path.normpath(app_template)
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(app_template):
@@ -90,8 +88,6 @@ def copy_template(app_template, copy_to, project_name, app_name):
             os.mkdir(d_new)
         for i, subdir in enumerate(subdirs):
             if subdir.startswith('.'):
-                del subdirs[i]
-            elif subdir.startswith('migrations') and not copy_migrations:
                 del subdirs[i]
         replacements = {'app_name': app_name, 'project_name': project_name}
         replacements.update(REPLACEMENTS)

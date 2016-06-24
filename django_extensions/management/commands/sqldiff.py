@@ -26,13 +26,13 @@ import sys
 
 import django
 import six
+from django.apps import apps
 from django.core.management import CommandError, sql as _sql
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction
 from django.db.models.fields import AutoField, IntegerField
 
-from django_extensions.compat import get_app_models
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
@@ -74,7 +74,6 @@ class SQLDiff(object):
 
     IGNORE_MISSING_TABLES = [
         "django_migrations",
-        "south_migrationhistory",
     ]
 
     DIFF_TYPES = [
@@ -416,20 +415,14 @@ class SQLDiff(object):
             if func:
                 model_type, db_type = func(field, description, model_type, db_type)
 
-            if django.VERSION[:2] >= (1, 7):
-                # Django >=1.7
-                model_check = field.db_parameters(connection=connection)['check']
-                if ' CHECK' in db_type:
-                    db_type, db_check = db_type.split(" CHECK", 1)
-                    db_check = db_check.strip().lstrip("(").rstrip(")")
-                else:
-                    db_check = None
-                if not model_type == db_type and not model_check == db_check:
-                    self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
+            model_check = field.db_parameters(connection=connection)['check']
+            if ' CHECK' in db_type:
+                db_type, db_check = db_type.split(" CHECK", 1)
+                db_check = db_check.strip().lstrip("(").rstrip(")")
             else:
-                # Django <1.7
-                if not model_type == db_type:
-                    self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
+                db_check = None
+            if not model_type == db_type and not model_check == db_check:
+                self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
 
     def find_field_notnull_differ(self, meta, table_description, table_name):
         if not self.can_detect_notnull_differ:
@@ -951,12 +944,18 @@ because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
-            app_models = get_app_models()
+            app_models = apps.get_models(include_auto_created=True)
         else:
             if not app_labels:
                 raise CommandError('Enter at least one appname.')
 
-            app_models = get_app_models(app_labels)
+            if not isinstance(app_labels, (list, tuple, set)):
+                app_labels = [app_labels]
+
+            app_models = []
+            for app_label in app_labels:
+                app_config = apps.get_app_config(app_label)
+                app_models.extend(app_config.get_models(include_auto_created=True))
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')

@@ -12,7 +12,7 @@ from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 try:
     from django.db.backends.base.creation import TEST_DATABASE_PREFIX
 except ImportError:
-    # Django < 1.7
+    # Django < 1.8
     from django.db.backends.creation import TEST_DATABASE_PREFIX
 
 
