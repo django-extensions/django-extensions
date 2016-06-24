@@ -1,14 +1,10 @@
 # coding=utf-8
 from django.core.management.base import CommandError
+from django.utils.encoding import force_text
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 from django_extensions.compat import get_model_compat as get_model
-
-try:
-    from django.utils.encoding import force_text
-except:
-    from django.utils.encoding import force_unicode as force_text
 
 
 class Command(LabelCommand):

@@ -8,6 +8,7 @@ set_fake_passwords.py
 
 """
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError
 
 from django_extensions.management.utils import signalcommand
@@ -33,8 +34,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
-
-        from django_extensions.compat import get_user_model
 
         if options.get('prompt_passwd', False):
             from getpass import getpass

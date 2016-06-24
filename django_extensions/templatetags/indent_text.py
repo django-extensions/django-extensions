@@ -29,6 +29,7 @@ class IndentByNode(template.Node):
         return output
 
 
+@register.tag
 def indentby(parser, token):
     """
     Adds indentation to text between the tags by the given indentation level.
@@ -52,5 +53,3 @@ def indentby(parser, token):
     nodelist = parser.parse(('endindentby', ))
     parser.delete_first_token()
     return IndentByNode(nodelist, indent_level, if_statement)
-
-indentby = register.tag(indentby)

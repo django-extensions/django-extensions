@@ -32,25 +32,21 @@ Improvements:
 import datetime
 import sys
 
-import django
 import six
-# conditional import, force_unicode was renamed in Django 1.5
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import router
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
+from django.db.models.deletion import Collector
+from django.utils.encoding import smart_text, force_text
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import (
     list_app_labels, get_model_compat, get_models_for_app
 )
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.utils.encoding import smart_unicode, force_unicode  # NOQA
-except ImportError:
-    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
 
 
 def orm_item_locator(orm_obj):
@@ -204,7 +200,7 @@ class ModelCode(Code):
         """ Returns a dictionary of import statements, with the variable being
             defined as the key.
         """
-        return {self.model.__name__: smart_unicode(self.model.__module__)}
+        return {self.model.__name__: smart_text(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
@@ -304,59 +300,11 @@ class InstanceCode(Code):
         if self.skip_me is not None:
             return self.skip_me
 
-        def get_skip_version():
-            """ Return which version of the skip code should be run
-
-                Django's deletion code was refactored in r14507 which
-                was just two days before 1.3 alpha 1 (r14519)
-            """
-            if not hasattr(self, '_SKIP_VERSION'):
-                version = django.VERSION
-                # no, it isn't lisp. I swear.
-                self._SKIP_VERSION = (
-                    version[0] > 1 or (  # django 2k... someday :)
-                        version[0] == 1 and (  # 1.x
-                            version[1] >= 4 or  # 1.4+
-                            version[1] == 3 and not (  # 1.3.x
-                                (version[3] == 'alpha' and version[1] == 0)
-                            )
-                        )
-                    )
-                ) and 2 or 1  # NOQA
-            return self._SKIP_VERSION
-
-        if get_skip_version() == 1:
-            try:
-                # Django trunk since r7722 uses CollectedObjects instead of dict
-                from django.db.models.query import CollectedObjects
-                sub_objects = CollectedObjects()
-            except ImportError:
-                # previous versions don't have CollectedObjects
-                sub_objects = {}
-            self.instance._collect_sub_objects(sub_objects)
-            sub_objects = sub_objects.keys()
-
-        elif get_skip_version() == 2:
-            from django.db.models.deletion import Collector
-            from django.db import router
-            cls = self.instance.__class__
-            using = router.db_for_write(cls, instance=self.instance)
-            collector = Collector(using=using)
-            collector.collect([self.instance], collect_related=False)
-
-            # collector stores its instances in two places. I *think* we
-            # only need collector.data, but using the batches is needed
-            # to perfectly emulate the old behaviour
-            # TODO: check if batches are really needed. If not, remove them.
-            sub_objects = sum([list(i) for i in collector.data.values()], [])
-
-            if hasattr(collector, 'batches'):
-                # Django 1.6 removed batches for being dead code
-                # https://github.com/django/django/commit/a170c3f755351beb35f8166ec3c7e9d524d9602
-                for batch in collector.batches.values():
-                    # batch.values can be sets, which must be converted to lists
-                    sub_objects += sum([list(i) for i in batch.values()], [])
-
+        cls = self.instance.__class__
+        using = router.db_for_write(cls, instance=self.instance)
+        collector = Collector(using=using)
+        collector.collect([self.instance], collect_related=False)
+        sub_objects = sum([list(i) for i in collector.data.values()], [])
         sub_objects_parents = [so._meta.parents for so in sub_objects]
         if [self.model in p for p in sub_objects_parents].count(True) == 1:
             # since this instance isn't explicitly created, it's variable name
@@ -569,9 +517,7 @@ class BasicImportHelper(object):
     def pre_import(self):
         pass
 
-    # You probably want to uncomment on of these two lines
-    # @transaction.atomic  # Django 1.6
-    # @transaction.commit_on_success  # Django <1.6
+    @transaction.atomic
     def run_import(self, import_data):
         import_data()
 
@@ -709,7 +655,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
 
     # Post file-storage-refactor, repr() on File/ImageFields no longer returns the path
     elif isinstance(field, FileField):
-        return repr(force_unicode(value))
+        return repr(force_text(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, ForeignKey) and value is not None:

@@ -21,20 +21,9 @@ except ImportError:
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import DateTimeField, CharField, SlugField
-from django.utils.crypto import get_random_string
 from django.template.defaultfilters import slugify
-
-try:
-    from django.utils.timezone import now as datetime_now
-    assert datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
-
-try:
-    from django.utils.encoding import force_unicode  # NOQA
-except ImportError:
-    from django.utils.encoding import force_text as force_unicode  # NOQA
+from django.utils.crypto import get_random_string
+from django.utils.encoding import force_text
 
 
 MAX_UNIQUE_QUERY_ATTEMPTS = 100
@@ -191,7 +180,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def pre_save(self, model_instance, add):
-        value = force_unicode(self.create_slug(model_instance, add))
+        value = force_text(self.create_slug(model_instance, add))
         return value
 
     def get_internal_type(self):
@@ -477,12 +466,12 @@ class UUIDField(CharField):
     def pre_save(self, model_instance, add):
         value = super(UUIDField, self).pre_save(model_instance, add)
         if self.auto and add and value is None:
-            value = force_unicode(self.create_uuid())
+            value = force_text(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:
             if self.auto and not value:
-                value = force_unicode(self.create_uuid())
+                value = force_text(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value
 

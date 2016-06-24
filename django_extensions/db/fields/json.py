@@ -12,17 +12,11 @@ more information.
 """
 from __future__ import absolute_import
 
+import json
 import six
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-
-try:
-    # Django >= 1.7
-    import json
-except ImportError:
-    # Django <= 1.6 backwards compatibility
-    from django.utils import simplejson as json
 
 
 def dumps(value):

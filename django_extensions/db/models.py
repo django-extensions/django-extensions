@@ -3,18 +3,12 @@
 Django Extensions abstract base model classes.
 """
 from django.db import models
+from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 from django_extensions.db.fields import (
     AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
 )
-
-try:
-    from django.utils.timezone import now as datetime_now
-    assert datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
 
 
 class TimeStampedModel(models.Model):
@@ -113,5 +107,5 @@ class ActivatorModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.activate_date:
-            self.activate_date = datetime_now()
+            self.activate_date = now()
         super(ActivatorModel, self).save(*args, **kwargs)

@@ -13,7 +13,7 @@ import codecs
 import gzip
 import re
 import sys
-from xml.dom.minidom import *  # NOQA
+from xml.dom.minidom import Node, parseString
 
 import six
 

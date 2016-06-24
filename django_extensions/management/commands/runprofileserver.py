@@ -14,16 +14,14 @@ import sys
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.staticfiles.handlers import StaticFilesHandler
 from django.core.management.base import CommandError
+from django.core.servers.basehttp import get_internal_wsgi_application
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
-try:
-    from django.contrib.staticfiles.handlers import StaticFilesHandler
-    USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
-except ImportError as e:
-    USE_STATICFILES = False
+USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 
 
 class KCacheGrind(object):
@@ -101,9 +99,6 @@ class Command(BaseCommand):
             default=True,
             help='Tells Django to NOT use the auto-reloader.')
         parser.add_argument(
-            '--adminmedia', dest='admin_media_path', default='',
-            help='Specifies the directory from which to serve admin media.')
-        parser.add_argument(
             '--prof-path', dest='prof_path', default='/tmp',
             help='Specifies the directory which to save profile information '
             'in.')
@@ -114,7 +109,7 @@ class Command(BaseCommand):
             '"{path}.{duration:06d}ms.{time}".')
         parser.add_argument(
             '--nomedia', action='store_true', dest='no_media', default=False,
-            help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL')
+            help='Do not profile MEDIA_URL')
         parser.add_argument(
             '--use-cprofile', action='store_true', dest='use_cprofile',
             default=False,
@@ -143,21 +138,6 @@ class Command(BaseCommand):
         import socket
         import errno
         from django.core.servers.basehttp import run
-        try:
-            from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
-        except ImportError:
-            from django.core.handlers.wsgi import WSGIHandler  # noqa
-
-        try:
-            from django.core.servers.basehttp import AdminMediaHandler
-            HAS_ADMINMEDIAHANDLER = True
-        except ImportError:
-            HAS_ADMINMEDIAHANDLER = False
-
-        try:
-            from django.core.servers.basehttp import WSGIServerException as wsgi_server_exc_cls
-        except ImportError:  # Django 1.6
-            wsgi_server_exc_cls = socket.error
 
         if args:
             raise CommandError('Usage is runserver %s' % self.args)
@@ -220,9 +200,6 @@ class Command(BaseCommand):
                 static_url = getattr(settings, 'STATIC_URL', None)
                 if static_url:
                     exclude_paths.append(static_url)
-                admin_media_prefix = getattr(settings, 'ADMIN_MEDIA_PREFIX', None)
-                if admin_media_prefix:
-                    exclude_paths.append(admin_media_prefix)
                 return exclude_paths
 
             def make_profiler_handler(inner_handler):
@@ -267,17 +244,8 @@ class Command(BaseCommand):
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at http://%s:%s/" % (addr, port))
             print("Quit the server with %s." % quit_command)
-            path = options.get('admin_media_path', '')
-            if not path:
-                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
-                if os.path.isdir(admin_media_path):
-                    path = admin_media_path
-                else:
-                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
             try:
-                handler = WSGIHandler()
-                if HAS_ADMINMEDIAHANDLER:
-                    handler = AdminMediaHandler(handler, path)
+                handler = get_internal_wsgi_application()
                 if USE_STATICFILES:
                     use_static_handler = options.get('use_static_handler', True)
                     insecure_serving = options.get('insecure_serving', False)
@@ -285,7 +253,7 @@ class Command(BaseCommand):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)
-            except wsgi_server_exc_cls as e:
+            except socket.error as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {
                     errno.EACCES: "You don't have permission to access that port.",

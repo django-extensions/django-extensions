@@ -2,19 +2,14 @@
 import inspect
 import os
 
-import six
 from django.conf import settings
 from django.core.management import color
 from django.utils import termcolors
+from django.utils.encoding import smart_text
 
 from django_extensions.compat import load_tag_library
 from django_extensions.management.utils import signalcommand
 from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.utils.encoding import smart_text
-except ImportError:
-    smart_text = six.u
 
 
 def color_style():

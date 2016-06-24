@@ -2,18 +2,15 @@
 import re
 
 from django.template import Library
+from django.utils.encoding import force_text
 
-try:
-    from django.utils.encoding import force_text
-except ImportError:
-    # Django 1.4 compatibility
-    from django.utils.encoding import force_unicode as force_text
 
 register = Library()
 re_widont = re.compile(r'\s+(\S+\s*)$')
 re_widont_html = re.compile(r'([^<>\s])\s+([^<>\s]+\s*)(</?(?:address|blockquote|br|dd|div|dt|fieldset|form|h[1-6]|li|noscript|p|td|th)[^>]*>|$)', re.IGNORECASE)
 
 
+@register.filter
 def widont(value, count=1):
     """
     Adds an HTML non-breaking space between the final two words of the string to
@@ -37,6 +34,7 @@ def widont(value, count=1):
     return value
 
 
+@register.filter
 def widont_html(value):
     """
     Adds an HTML non-breaking space between the final two words at the end of
@@ -58,8 +56,6 @@ def widont_html(value):
         return force_text('%s&nbsp;%s%s' % matchobj.groups())
     return re_widont_html.sub(replace, force_text(value))
 
-register.filter(widont)
-register.filter(widont_html)
 
 if __name__ == "__main__":
     def _test():
