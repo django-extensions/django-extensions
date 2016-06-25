@@ -3,10 +3,10 @@ import os
 import sys
 import shutil
 
+from django.core.management.base import AppCommand
 from django.core.management.color import color_style
 
 from django_extensions.management.utils import _make_writeable, signalcommand
-from django_extensions.compat import CompatibilityAppCommand as AppCommand
 
 
 class Command(AppCommand):

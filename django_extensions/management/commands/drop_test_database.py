@@ -2,18 +2,12 @@
 import logging
 
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
+from django.db.backends.base.creation import TEST_DATABASE_PREFIX
 from six.moves import input
 
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
-
-try:
-    from django.db.backends.base.creation import TEST_DATABASE_PREFIX
-except ImportError:
-    # Django < 1.7
-    from django.db.backends.creation import TEST_DATABASE_PREFIX
 
 
 class Command(BaseCommand):

@@ -9,8 +9,8 @@ Introduction
 
 This item requires that you have the `Werkzeug WSGI utilities` installed.
 Included with Werkzeug_ is a kick ass debugger that renders nice
-debugging tracebacks and adds an AJAX based debugger (which allows code execution 
-in the context of the traceback’s frames).  Additionally it provides a nice 
+debugging tracebacks and adds an AJAX based debugger (which allows code execution
+in the context of the traceback’s frames).  Additionally it provides a nice
 access view to the source code.
 
 
@@ -28,7 +28,7 @@ To get started we just use the *runserver_plus* command instead of the normal
   Validating models...
   0 errors found
 
-  Django version 0.97-newforms-admin-SVN-unknown, using settings 'screencasts.settings'
+  Django version X.Y.Z, using settings 'screencasts.settings'
   Development server is running at http://127.0.0.1:8000/
   Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
   Quit the server with CONTROL-C.
@@ -40,7 +40,7 @@ the port number or the host information, you can do so like you would normally.
 Usage
 -----
 
-Instead of the default Django traceback page, the Werkzeug traceback page 
+Instead of the default Django traceback page, the Werkzeug traceback page
 will be shown when an exception occurs.
 
 .. image:: https://f.cloud.github.com/assets/202559/1261027/2637f826-2c22-11e3-83c6-646acc87808b.png
@@ -65,7 +65,7 @@ This displays the source underneath the traceback:
     :alt: werkzeug-source
 
 Being able to view the source file is handy because it provides more
-context information around the error.  The actual traceback areas are 
+context information around the error.  The actual traceback areas are
 highlighted so they are easy to spot.
 
 One awkward aspect of the UI is that the page is not scrolled to the bottom.
@@ -96,15 +96,15 @@ server.  You've been warned.
 SSL
 ^^^
 
-runserver_plus also supports SSL, so that you can easily debug bugs that to pop up 
-when https is used. To use SSL simply provide a file name for certificates;  
+runserver_plus also supports SSL, so that you can easily debug bugs that to pop up
+when https is used. To use SSL simply provide a file name for certificates;
 a key and certificate file will be automatically generated::
 
   $ python manage.py runserver_plus --cert cert
   Validating models...
   0 errors found
 
-  Django version 1.6.dev20130122125534, using settings 'mysite.settings'
+  Django version X.Y.Z, using settings 'mysite.settings'
   Development server is running at http://127.0.0.1:8000/
   Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
   Quit the server with CONTROL-C.
@@ -113,24 +113,24 @@ a key and certificate file will be automatically generated::
   Validating models...
   0 errors found
 
-  Django version 1.6.dev20130122125534, using settings 'mysite.settings'
+  Django version X.Y.Z, using settings 'mysite.settings'
   Development server is running at http://127.0.0.1:8000/
   Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
   Quit the server with CONTROL-C.
-  
-After running this command, your web application can be accessed through 
-https://127.0.0.1:8000. 
 
-You will also find that two files are created in  the current working directory: 
-a key file and a certificate file. If you run the above command again, these 
-certificate files will be reused so that you do not have to keep accepting the 
-self-generated certificates from your browser every time. You can also provide 
+After running this command, your web application can be accessed through
+https://127.0.0.1:8000.
+
+You will also find that two files are created in  the current working directory:
+a key file and a certificate file. If you run the above command again, these
+certificate files will be reused so that you do not have to keep accepting the
+self-generated certificates from your browser every time. You can also provide
 a specific file for the certificate to be used if you already have one::
 
-  $ python manage.py runserver_plus --cert /tmp/cert 
-  
-Note that you need the OpenSSL library to use SSL, and Werkzeug 0.9 or later 
-if you want to reuse existing certificates. 
+  $ python manage.py runserver_plus --cert /tmp/cert
+
+Note that you need the OpenSSL library to use SSL, and Werkzeug 0.9 or later
+if you want to reuse existing certificates.
 
 To install OpenSSL::
 
@@ -189,7 +189,7 @@ If possible try to install the Watchdog_ package, this should automatically caus
 
 You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/0.10/serving/#reloader>`_
 
-You can also increase the poll interval when using `stat polling` from the default of 1 second. This 
+You can also increase the poll interval when using `stat polling` from the default of 1 second. This
 will decrease the CPU load at the expense of file edits taking longer to pick up.
 
 This can be set two ways, in the django settings file:
@@ -206,7 +206,7 @@ Debugger PIN
 
 .. epigraph::
    The following text about the debugger PIN is taken verbatim from the Werkzeug documentation.
-   
+
    -- http://werkzeug.pocoo.org/docs/0.11/debug/#debugger-pin
 
 Starting with Werkzeug 0.11 the debugger is additionally protected by a PIN. This is a security helper to

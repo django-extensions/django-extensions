@@ -2,7 +2,6 @@
 import tempfile
 from contextlib import contextmanager
 
-import django
 import pytest
 from django.conf import settings
 from django.db import connection, models
@@ -124,7 +123,7 @@ def secret_model():
         raise  # Reraise any exceptions.
 
 
-@pytest.mark.skipif(keyczar_active is False or django.VERSION < (1, 7),
+@pytest.mark.skipif(keyczar_active is False,
                     reason="Encrypted fields needs that keyczar is installed")
 @pytest.mark.usefixtures("admin_user", "keyczar_keys")
 class EncryptedFieldsTestCase(TestCase):

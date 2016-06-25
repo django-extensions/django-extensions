@@ -4,10 +4,9 @@ import sys
 from logging import getLogger
 from smtpd import SMTPServer
 
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import setup_logger, signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 logger = getLogger(__name__)
 

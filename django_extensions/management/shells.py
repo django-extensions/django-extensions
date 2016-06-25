@@ -1,7 +1,6 @@
 # coding=utf-8
 import traceback
 
-import django
 import six
 
 
@@ -82,30 +81,15 @@ def import_items(import_directives, style, quiet_load=False):
 
 
 def import_objects(options, style):
-    # Django 1.7 introduced the app registry which must be initialized before we
-    # can call get_apps(). Django already does this for us when we are invoked
-    # as manage.py command, but we have to do it ourselves if when running as
-    # iPython notebook extension, so we call django.setup() if the app registry
-    # isn't initialized yet. The try/except can be removed when support for
-    # Django 1.6 is dropped.
-    try:
-        from django.apps import apps
-        from django import setup
-    except ImportError:
-        from django.db.models.loading import get_models, get_apps
+    from django.apps import apps
+    from django import setup
+    if not apps.ready:
+        setup()
 
-        def get_apps_and_models():
-            for app_mod in get_apps():
-                app_models = get_models(app_mod)
-                yield app_mod, app_models
-    else:
-        if not apps.ready:
-            setup()
-
-        def get_apps_and_models():
-            for app in apps.get_app_configs():
-                if app.models_module:
-                    yield app.models_module, app.get_models()
+    def get_apps_and_models():
+        for app in apps.get_app_configs():
+            if app.models_module:
+                yield app.models_module, app.get_models()
 
     mongoengine = False
     try:
@@ -216,13 +200,12 @@ def import_objects(options, style):
             'django.core.urlresolvers': ['reverse'],
             'django.conf': ['settings'],
             'django.db': ['transaction'],
-            'django.db.models': ['Avg', 'Count', 'F', 'Max', 'Min', 'Sum', 'Q'],
+            'django.db.models': [
+                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q',
+                'Sum', 'When',
+            ],
             'django.utils': ['timezone'],
         }
-        if django.VERSION[:2] >= (1, 7):
-            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].append("Prefetch")
-        if django.VERSION[:2] >= (1, 8):
-            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend(["Case", "When"])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v

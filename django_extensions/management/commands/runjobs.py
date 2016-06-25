@@ -1,7 +1,9 @@
 # coding=utf-8
+from django.apps import apps
+from django.core.management.base import LabelCommand
+
 from django_extensions.management.jobs import get_jobs, print_jobs
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):
@@ -36,7 +38,6 @@ class Command(LabelCommand):
     def runjobs_by_signals(self, when, options):
         """ Run jobs from the signals """
         # Thanks for Ian Holsman for the idea and code
-        from django_extensions.compat import get_apps
         from django_extensions.management import signals
         from django.conf import settings
 
@@ -47,7 +48,7 @@ class Command(LabelCommand):
             except ImportError:
                 pass
 
-        for app in get_apps():
+        for app in (app.models_module for app in apps.get_app_configs() if app.models_module):
             if verbosity > 1:
                 app_name = '.'.join(app.__name__.rsplit('.')[:-1])
                 print("Sending %s job signal for: %s" % (when, app_name))

@@ -4,8 +4,7 @@ import traceback
 
 from django.conf import settings
 from django.core.mail import send_mail
-
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
+from django.core.management import BaseCommand
 
 
 class EmailNotificationCommand(BaseCommand):

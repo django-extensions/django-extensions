@@ -15,11 +15,10 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.staticfiles.handlers import StaticFilesHandler
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 
@@ -260,15 +259,8 @@ class Command(BaseCommand):
                     errno.EADDRINUSE: "That port is already in use.",
                     errno.EADDRNOTAVAIL: "That IP address can't be assigned-to.",
                 }
-                if not isinstance(e, socket.error):  # Django < 1.6
-                    ERRORS[13] = ERRORS.pop(errno.EACCES)
-                    ERRORS[98] = ERRORS.pop(errno.EADDRINUSE)
-                    ERRORS[99] = ERRORS.pop(errno.EADDRNOTAVAIL)
                 try:
-                    if not isinstance(e, socket.error):  # Django < 1.6
-                        error_text = ERRORS[e.args[0].args[0]]
-                    else:
-                        error_text = ERRORS[e.errno]
+                    error_text = ERRORS[e.errno]
                 except (AttributeError, KeyError):
                     error_text = str(e)
                 sys.stderr.write(self.style.ERROR("Error: %s" % error_text) + '\n')

@@ -33,8 +33,10 @@ import datetime
 import sys
 
 import six
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management.base import BaseCommand
 from django.db import router
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
@@ -43,10 +45,6 @@ from django.db.models.deletion import Collector
 from django.utils.encoding import smart_text, force_text
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import (
-    list_app_labels, get_model_compat, get_models_for_app
-)
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 def orm_item_locator(orm_obj):
@@ -128,8 +126,8 @@ def get_models(app_labels):
 
     # If no app labels are given, return all
     if not app_labels:
-        for app_label in list_app_labels():
-            models += [m for m in get_models_for_app(app_label)
+        for app in apps.get_app_configs():
+            models += [m for m in apps.get_app_config(app.label).get_models()
                        if m not in EXCLUDED_MODELS]
         return models
 
@@ -138,10 +136,10 @@ def get_models(app_labels):
         # If a specific model is mentioned, get only that model
         if "." in app_label:
             app_label, model_name = app_label.split(".", 1)
-            models.append(get_model_compat(app_label, model_name))
+            models.append(apps.get_model(app_label, model_name))
         # Get all models for a given app
         else:
-            models += [m for m in get_models_for_app(app_label)
+            models += [m for m in apps.get_app_config(app_label).get_models()
                        if m not in EXCLUDED_MODELS]
 
     return models

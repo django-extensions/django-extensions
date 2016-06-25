@@ -15,11 +15,11 @@ from contextlib import contextmanager
 from functools import wraps
 
 import six
+from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.db import connection, transaction
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 if hasattr(transaction, 'set_autocommit'):
     @contextmanager

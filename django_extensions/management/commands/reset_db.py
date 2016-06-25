@@ -6,12 +6,11 @@ import logging
 
 import django
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 class Command(BaseCommand):
@@ -175,12 +174,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             if engine == 'postgis' and django.VERSION < (1, 9):
                 # For PostGIS 1.5, fetch template name if it exists
-                if django.VERSION < (1, 8):
-                    from django.contrib.gis.db.backends.postgis.creation import PostGISCreation
-                    postgis_template = PostGISCreation(connection).template_postgis
-                else:
-                    from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper
-                    postgis_template = DatabaseWrapper(dbinfo).template_postgis
+                from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper
+                postgis_template = DatabaseWrapper(dbinfo).template_postgis
                 if postgis_template is not None:
                     create_query += ' TEMPLATE = %s' % postgis_template
 

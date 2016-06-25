@@ -3,9 +3,8 @@ import os
 import re
 import sys
 
-from django import VERSION
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import CommandError, LabelCommand
 from django.db import connection
 from django.template import Context, Template
 
@@ -13,7 +12,6 @@ import django_extensions
 from django_extensions.management.utils import _make_writeable, signalcommand
 from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
-from django_extensions.compat import CompatibilityLabelCommand as LabelCommand
 
 
 class Command(LabelCommand):
@@ -80,7 +78,6 @@ def copy_template(app_template, copy_to, project_name, app_name):
     """copies the specified template directory to the copy_to location"""
     import shutil
 
-    copy_migrations = True if VERSION[:2] >= (1, 7) else False
     app_template = os.path.normpath(app_template)
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(app_template):
@@ -90,8 +87,6 @@ def copy_template(app_template, copy_to, project_name, app_name):
             os.mkdir(d_new)
         for i, subdir in enumerate(subdirs):
             if subdir.startswith('.'):
-                del subdirs[i]
-            elif subdir.startswith('migrations') and not copy_migrations:
                 del subdirs[i]
         replacements = {'app_name': app_name, 'project_name': project_name}
         replacements.update(REPLACEMENTS)

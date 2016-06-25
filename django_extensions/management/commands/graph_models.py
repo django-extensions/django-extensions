@@ -4,9 +4,8 @@ import json
 
 import six
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 from django_extensions.management.modelviz import generate_graph_data, generate_dot
 from django_extensions.management.utils import signalcommand
 

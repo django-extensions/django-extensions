@@ -25,7 +25,7 @@ data file is saved.
 
 By default the profile-data-files are saved in /tmp use the --prof-path option
 to specify your own target directory. Saving the data in a meaningful directory
-structure helps to keep your profile data organized and keeps /tmp uncluttered. 
+structure helps to keep your profile data organized and keeps /tmp uncluttered.
 (Yes this probably malfunctions systems such as Windows where /tmp does not exist)
 
 To define profile filenames use --prof-file option. Default format
@@ -48,16 +48,16 @@ is located inside the *bin* directory of your Django distribution.
 
 Profiler choice
 ---------------
-*runprofileserver* supports two profilers: *hotshot* and *cProfile*. Both come 
+*runprofileserver* supports two profilers: *hotshot* and *cProfile*. Both come
 with the standard Python library but *cProfile* is more recent and may not be
 available on all systems. For this reason, *hotshot* is the default profiler.
 
 However, *hotshot* `is not maintained anymore <https://docs.python.org/2/library/profile.html#introduction-to-the-profilers>`_
-and using *cProfile* is usually the recommended way. 
+and using *cProfile* is usually the recommended way.
 If it is available on your system, you can use it with the option ``--use-cprofile``.
 
 Example::
-  
+
   $ mkdir /tmp/my-profile-data
   $ ./manage.py runprofileserver --use-cprofile --prof-path=/tmp/my-profile-data
 
@@ -80,7 +80,7 @@ Example::
   Validating models...
   0 errors found
 
-  Django version 1.0-post-release-SVN-SVN-unknown, using settings 'complete_project.settings'
+  Django version X.Y.Z, using settings 'complete_project.settings'
   Development server is running at http://127.0.0.1:8000/
   Quit the server with CONTROL-C.
   [13/Nov/2008 06:29:38] "GET / HTTP/1.1" 200 41107

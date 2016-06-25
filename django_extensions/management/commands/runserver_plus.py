@@ -7,12 +7,14 @@ import sys
 import time
 
 from django.conf import settings
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
+from django.db.backends import utils
+from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
 from django.core.servers.basehttp import get_internal_wsgi_application
+from django.utils.autoreload import gen_filenames
 
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
 
@@ -29,13 +31,6 @@ try:
         USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
-
-try:
-    from django.db.migrations.executor import MigrationExecutor
-    HAS_MIGRATIONS = True
-except ImportError:
-    HAS_MIGRATIONS = False
-
 
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
@@ -120,13 +115,6 @@ class Command(BaseCommand):
         werklogger.propagate = False
 
         if options.get("print_sql", False):
-            try:
-                # Django 1.7 onwards
-                from django.db.backends import utils
-            except ImportError:
-                # Django 1.6 below
-                from django.db.backends import util as utils
-
             try:
                 import sqlparse
             except ImportError:
@@ -253,11 +241,10 @@ class Command(BaseCommand):
             self.check(display_num_errors=self.show_startup_messages)
         else:
             self.validate(display_num_errors=self.show_startup_messages)
-        if HAS_MIGRATIONS:
-            try:
-                self.check_migrations()
-            except ImproperlyConfigured:
-                pass
+        try:
+            self.check_migrations()
+        except ImproperlyConfigured:
+            pass
         if self.show_startup_messages:
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
@@ -312,12 +299,7 @@ class Command(BaseCommand):
             ssl_context = None
 
         if use_reloader and settings.USE_I18N:
-            try:
-                from django.utils.autoreload import gen_filenames
-            except ImportError:
-                pass
-            else:
-                extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
+            extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.

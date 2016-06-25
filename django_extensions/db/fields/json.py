@@ -99,15 +99,6 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
         return value
 
-    def south_field_triple(self):
-        """Returns a suitable description of this field for South."""
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.TextField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return field_class, args, kwargs
-
     def deconstruct(self):
         name, path, args, kwargs = super(JSONField, self).deconstruct()
         if self.default == '{}':

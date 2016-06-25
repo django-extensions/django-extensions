@@ -7,7 +7,7 @@ import operator
 from functools import update_wrapper
 from six.moves import reduce
 
-import django
+from django.apps import apps
 from django.http import HttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.db import models
@@ -18,7 +18,6 @@ from django.utils.text import get_text_list
 from django.contrib.admin import ModelAdmin
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
-from django_extensions.compat import get_model_compat
 
 
 class ForeignKeyAutocompleteAdmin(ModelAdmin):
@@ -58,16 +57,9 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
 
-        # model._meta.module_name is deprecated in django version 1.7 and removed in django version 1.8.
-        # It is replaced by model._meta.model_name
-        if django.VERSION < (1, 7):
-            info = self.model._meta.app_label, self.model._meta.module_name
-        else:
-            info = self.model._meta.app_label, self.model._meta.model_name
-
         return [
             url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
-                name='%s_%s_autocomplete' % info)
+                name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
         ] + super(ForeignKeyAutocompleteAdmin, self).get_urls()
 
     def foreignkey_autocomplete(self, request):
@@ -101,8 +93,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 else:
                     return "%s__icontains" % field_name
 
-            # As of Django 1.7 the 'get_model' method was moved to 'apps'
-            model = get_model_compat(app_label, model_name)
+            model = apps.get_model(app_label, model_name)
 
             queryset = model._default_manager.all()
             data = ''

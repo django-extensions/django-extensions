@@ -5,9 +5,9 @@ import os
 import re
 
 from django.conf import settings
+from django.core.management.base import BaseCommand
 
 from django_extensions.management.utils import signalcommand
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
 ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")

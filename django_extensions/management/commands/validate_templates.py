@@ -1,14 +1,13 @@
 # coding=utf-8
 import os
 
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.template.loader import get_template
 
 from django_extensions.compat import add_to_builtins_compat
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils import validatingtemplatetags
-from django_extensions.compat import CompatibilityBaseCommand as BaseCommand
 
 
 #
