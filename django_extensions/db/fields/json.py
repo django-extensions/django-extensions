@@ -70,17 +70,21 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
-        if value is None or value == '':
+        if value is None and not self.null:
             return {}
         elif isinstance(value, six.string_types):
-            res = loads(value)
-            if isinstance(res, dict):
-                return JSONDict(**res)
-            elif isinstance(res, six.string_types):
-                return JSONUnicode(res)
-            elif isinstance(res, list):
-                return JSONList(res)
-            return res
+            try:
+                res = loads(value)
+                if isinstance(res, dict):
+                    return JSONDict(**res)
+                elif isinstance(res, six.string_types):
+                    return JSONUnicode(res)
+                elif isinstance(res, list):
+                    return JSONList(res)
+                return res
+            except ValueError:
+                # value is not JSON encoded string
+                return value
         else:
             return value
 

@@ -1,48 +1,81 @@
 # coding=utf-8
-import six
-from django.test import TestCase
+import pytest
 
-from .testapp.models import JSONFieldTestModel
-from django_extensions.db.fields.json import dumps, JSONField
+from django_extensions.db.fields.json import JSONField, dumps
+from .testapp.models import (
+    InheritedFromAbstractModel, InheritedFromConcreteModel, JSONFieldModel,
+    NullableJSONFieldModel,
+)
+
+pytestmark = pytest.mark.django_db
 
 
-class JsonFieldTest(TestCase):
-    def test_char_field_create(self):
-        j = JSONFieldTestModel.objects.create(a=6, j_field=dict(foo='bar'))
-        self.assertEqual(j.a, 6)
-        self.assertEqual(j.j_field, {'foo': 'bar'})
+DEFAULT = {}
 
-    def test_default(self):
-        j = JSONFieldTestModel.objects.create(a=1)
-        self.assertEqual(j.j_field, {})
 
-    def test_empty_list(self):
-        j = JSONFieldTestModel.objects.create(a=6, j_field=[])
-        self.assertTrue(isinstance(j.j_field, list))
-        self.assertEqual(j.j_field, [])
+@pytest.mark.parametrize(
+    'model', (
+        JSONFieldModel,
+        InheritedFromConcreteModel,
+        InheritedFromAbstractModel,
+        NullableJSONFieldModel,
+    )
+)
+@pytest.mark.parametrize(
+    'create_kwargs',
+    (
+        DEFAULT,
+        {'field': {'foo': 'bar'}},
+        {'field': []},
+        {'field': [1, 2, 3]},
+        {'field': True},
+        {'field': 'foo'},
+        {'field': ''},
+    )
+)
+def test_json_field_create(model, create_kwargs):
+    expected = create_kwargs.get('field', DEFAULT)
 
-    def test_float_values(self):
-        """ Tests that float values in JSONFields are correctly serialized over repeated saves.
-            Regression test for c382398b, which fixes floats being returned as strings after a second save.
-        """
-        test_instance = JSONFieldTestModel(a=6, j_field={'test': 0.1})
-        test_instance.save()
+    instance = model.objects.create(**create_kwargs)
+    assert instance.field == expected
 
-        test_instance = JSONFieldTestModel.objects.get()
-        test_instance.save()
+    from_db = model.objects.get()
+    assert from_db.field == expected
 
-        test_instance = JSONFieldTestModel.objects.get()
-        self.assertEqual(test_instance.j_field['test'], 0.1)
 
-    def test_get_db_prep_save(self):
-        j_field = JSONField()
+@pytest.mark.parametrize(
+    'model, expected',
+    (
+        (JSONFieldModel, {}),
+        (NullableJSONFieldModel, None),
+    )
+)
+def test_default_value(model, expected):
+    instance = model.objects.create(field=None)
+    assert instance.field == expected
+    from_db = model.objects.get()
+    assert from_db.field == expected
 
-        self.assertEqual(
-            six.u(dumps([{'a': 'a'}])),
-            j_field.get_db_prep_save(value=[{'a': 'a'}], connection=None)
-        )
 
-        self.assertEqual(
-            six.u('[{"a": "a"}]'),
-            j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None)
-        )
+def test_float_values():
+    """ Tests that float values in JSONFields are correctly serialized over repeated saves.
+        Regression test for c382398b, which fixes floats being returned as strings after a second save.
+    """
+    JSONFieldModel.objects.create(field={'test': 0.1})
+
+    test_instance = JSONFieldModel.objects.get()
+    test_instance.save()
+
+    test_instance = JSONFieldModel.objects.get()
+    assert test_instance.field['test'] == 0.1
+
+
+@pytest.mark.parametrize(
+    'value, expected',
+    (
+        ([{'a': 'a'}], dumps([{'a': 'a'}])),
+        ('[{"a": "a"}]', '[{"a": "a"}]'),
+    )
+)
+def test_get_db_prep_save(value, expected):
+    assert JSONField().get_db_prep_save(value=value, connection=None) == expected

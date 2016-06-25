@@ -2,10 +2,7 @@
 from django.db import models
 
 from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-    UUIDField,
+    AutoSlugField, RandomCharField, ShortUUIDField, UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
@@ -63,12 +60,32 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
-class JSONFieldTestModel(models.Model):
-    a = models.IntegerField()
-    j_field = JSONField()
+class JSONFieldModel(models.Model):
+    field = JSONField()
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class NullableJSONFieldModel(models.Model):
+    field = JSONField(null=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class InheritedFromConcreteModel(Name):
+    field = JSONField()
+
+
+class AbstractModel(models.Model):
+
+    class Meta:
+        abstract = True
+
+
+class InheritedFromAbstractModel(Name):
+    field = JSONField()
 
 
 class UUIDTestModel_field(models.Model):
