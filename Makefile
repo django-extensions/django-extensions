@@ -29,7 +29,7 @@ clean-test:
 	rm -fr htmlcov/
 
 test:
-	python setup.py test --pytest-args="tests --ds=tests.testapp.settings --cov=django_extensions"
+	python setup.py test --pytest-args="tests django_extensions --ds=tests.testapp.settings --cov=django_extensions"
 
 coverage:
 	coverage run --source django_extensions setup.py test
