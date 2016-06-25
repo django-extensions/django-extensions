@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import print_function
 import re
 
 from django.template import Library
@@ -21,8 +22,8 @@ def widont(value, count=1):
     >>> print(widont('Test   me   out'))
     Test   me&nbsp;out
 
-    >>> widont('It works with trailing spaces too  ')
-    u'It works with trailing spaces&nbsp;too  '
+    >>> print("'",widont('It works with trailing spaces too  '), "'")
+    ' It works with trailing spaces&nbsp;too   '
 
     >>> print(widont('NoEffect'))
     NoEffect
