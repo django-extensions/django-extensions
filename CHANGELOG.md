@@ -4,11 +4,11 @@ Changelog
 1.7.0
 -----
 
-Letting go of the past. Removing support for very old (and unsupported versions) of
-Django and Python.
+The "Letting go of the past" release.
+From this moment on Django Extensions requires version 1.8 or higher.
 
 Changes:
- - Cleanup: removing backwards compatibility hacks for unsupported versions of Django
+ - Cleanup: removing backwards compatibility hacks for (now) unsupported versions of Django
 
 
 1.6.7
