@@ -8,8 +8,8 @@ from django.core.management import (
     call_command, find_commands, load_command_class,
 )
 from django.test import TestCase
+from django.utils.six import StringIO
 
-from django_extensions.compat import StringIO
 from django_extensions.management.modelviz import use_model
 
 

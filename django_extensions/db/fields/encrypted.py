@@ -1,5 +1,4 @@
 # coding=utf-8
-import sys
 import warnings
 
 import six
@@ -75,9 +74,8 @@ class BaseEncryptedField(models.Field):
         elif value and (value.startswith(self.prefix)):
             if hasattr(self.crypt, 'Decrypt'):
                 retval = self.crypt.Decrypt(value[len(self.prefix):])
-                if sys.version_info < (3,):
-                    if retval:
-                        retval = retval.decode('utf-8')
+                if six.PY2 and retval:
+                    retval = retval.decode('utf-8')
             else:
                 retval = value
         else:
@@ -88,7 +86,7 @@ class BaseEncryptedField(models.Field):
         if value and not value.startswith(self.prefix):
             # We need to encode a unicode string into a byte string, first.
             # keyczar expects a bytestring, not a unicode string.
-            if sys.version_info < (3,):
+            if six.PY2:
                 if type(value) == six.types.UnicodeType:
                     value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,

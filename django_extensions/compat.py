@@ -2,24 +2,8 @@
 from __future__ import unicode_literals
 
 import importlib
-import sys
 import django
-from django.apps import apps
-from django.conf import settings
-from django.core.management.base import (BaseCommand, AppCommand, LabelCommand,
-                                         CommandError)
 
-# flake8: noqa
-
-#
-# Python compatibility
-#
-PY3 = sys.version_info[0] == 3
-
-if PY3:  # pragma: no cover
-    from io import StringIO
-else:  # pragma: no cover
-    from cStringIO import StringIO
 
 #
 # Django compatibility

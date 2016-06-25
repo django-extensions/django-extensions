@@ -65,8 +65,8 @@ import time
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.six import StringIO
 
-from django_extensions.compat import StringIO
 from django_extensions.management.utils import signalcommand
 
 # Make sure boto is available

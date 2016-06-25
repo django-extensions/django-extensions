@@ -22,6 +22,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management.base import LabelCommand
 from django.db import models
+from django.utils import six
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -74,7 +75,7 @@ class UnicodeMixin(object):
     """Mixin class to handle defining the proper __str__/__unicode__
     methods in Python 2 or 3."""
 
-    if sys.version_info[0] >= 3:  # Python 3
+    if six.PY3:  # Python 3
         def __str__(self):
             return self.__unicode__()
     else:  # Python 2
