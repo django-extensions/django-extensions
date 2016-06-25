@@ -33,15 +33,6 @@ def load_tag_library(libname):
             return None
 
 
-def add_to_builtins_compat(name):
-    if django.VERSION < (1, 9):
-        from django.template.base import add_to_builtins
-        add_to_builtins(name)
-    else:
-        from django.template import engines
-        engines['django'].engine.builtins.append(name)
-
-
 def get_template_setting(template_key, default=None):
     """ Read template settings pre and post django 1.8 """
     templates_var = getattr(settings, 'TEMPLATES', None)
