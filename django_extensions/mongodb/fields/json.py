@@ -10,6 +10,7 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
+from __future__ import absolute_import
 
 import datetime
 from decimal import Decimal
