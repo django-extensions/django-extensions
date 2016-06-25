@@ -14,7 +14,6 @@ env:
   - TOX_ENV=py27-dj19
   - TOX_ENV=py27-dj110
   - TOX_ENV=py27-djmaster
-  - TOX_ENV=py32-dj18
   - TOX_ENV=py33-dj18
   - TOX_ENV=py34-dj18
   - TOX_ENV=py34-dj19
@@ -36,7 +35,6 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    - env: TOX_ENV=py32-dj18
     - env: TOX_ENV=py35-djmaster
     - env: TOX_ENV=py34-djmaster
     - env: TOX_ENV=py27-djmaster
@@ -47,8 +45,7 @@ matrix:
     - env: TOX_ENV=pypy3-djmaster
 
 install:
-  # virtualenv<14.0.0 is for Python 3.2 compatibility
-  - pip install "virtualenv<14.0.0" tox coveralls
+  - pip install virtualenv tox coveralls
 
 script:
   - tox -e $TOX_ENV

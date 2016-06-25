@@ -1,6 +1,8 @@
 Changelog
 =========
 
+ - Cleanup: removing support for end-of-life Python 3.2.
+
 1.7.4
 -----
 
