@@ -19,8 +19,8 @@ class TimeStampedModel(Document):
     An abstract base class model that provides self-managed "created" and
     "modified" fields.
     """
-    created = CreationDateTimeField(_('created'))
-    modified = ModificationDateTimeField(_('modified'))
+    created = CreationDateTimeField()
+    modified = ModificationDateTimeField()
 
     class Meta:
         abstract = True
@@ -31,9 +31,9 @@ class TitleSlugDescriptionModel(Document):
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
-    title = StringField(_('title'), max_length=255)
-    slug = AutoSlugField(_('slug'), populate_from='title')
-    description = StringField(_('description'), blank=True, null=True)
+    title = StringField(max_length=255)
+    slug = AutoSlugField(populate_from='title')
+    description = StringField(blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -60,7 +60,7 @@ class ActivatorModel(Document):
         (0, _('Inactive')),
         (1, _('Active')),
     )
-    status = IntField(_('status'), choices=STATUS_CHOICES, default=1)
+    status = IntField(choices=STATUS_CHOICES, default=1)
     activate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for an immediate activation'))
     deactivate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for indefinite activation'))
     objects = ActivatorModelManager()
