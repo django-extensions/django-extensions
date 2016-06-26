@@ -34,6 +34,13 @@ You can also set the configuration option SHELL_PLUS to explicitly specify which
   SHELL_PLUS = "ipython"
 
 
+It is also possible to use `IPython Notebook`_, an interactive Python shell which
+uses a web browser as its user interface, as an alternative shell::
+
+    $ ./manage.py shell_plus --notebook
+
+In addition to being savable, IPython Notebooks can be updated (while running) to reflect changes in a Django application's code with the menu command `Kernel > Restart`.
+
 
 Configuration
 -------------
@@ -70,11 +77,6 @@ It is possible to ignore autoloaded modules when using manage.py, like::
 
 Commandline parameters and settings in the configuration file are merged, so you can
 safely append modules to ignore from the commandline for one-time usage.
-
-It is possible to use `IPython Notebook`_, an interactive Python shell which
-uses a web browser as its user interface, as an alternative shell::
-
-    $ ./manage.py shell_plus --notebook
 
 There are two settings that you can use to pass your custom options to the IPython
 Notebook in your Django settings.
