@@ -168,6 +168,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         original_slug = slug
 
         if self.allow_duplicates:
+            setattr(model_instance, self.attname, slug)
             return slug
 
         return super(AutoSlugField, self).find_unique(
