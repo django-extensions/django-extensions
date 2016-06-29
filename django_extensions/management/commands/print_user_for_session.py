@@ -58,10 +58,10 @@ class Command(BaseCommand):
             print("No user associated with that id.")
             return
 
-        username_field = 'username'
+	    # use django standrd api for reporting
+        print("full name: %s" % user.get_full_name())
+        print("short name: %s" % user.get_short_name())
+        print("username: %s" % user.get_username())
+        if hasattr(user, 'email'):
+            print("email: %s" % user.email)
 
-        if hasattr(User, 'USERNAME_FIELD') and User.USERNAME_FIELD is not None:
-            username_field = User.USERNAME_FIELD
-
-        for key in [username_field, 'email', 'first_name', 'last_name']:
-            print("%s: %s" % (key, getattr(user, key)))
