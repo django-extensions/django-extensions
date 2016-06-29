@@ -64,4 +64,3 @@ class Command(BaseCommand):
         print("username: %s" % user.get_username())
         if hasattr(user, 'email'):
             print("email: %s" % user.email)
-
