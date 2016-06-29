@@ -58,7 +58,7 @@ class Command(BaseCommand):
             print("No user associated with that id.")
             return
 
-	    # use django standrd api for reporting
+        # use django standrd api for reporting
         print("full name: %s" % user.get_full_name())
         print("short name: %s" % user.get_short_name())
         print("username: %s" % user.get_username())
