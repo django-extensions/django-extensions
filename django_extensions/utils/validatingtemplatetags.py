@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.template import defaulttags
 from django.template import Library, Node
-from django.templatetags import future
+try:
+    from django.templatetags.future import url as future_url
+    ONLY_NEW_STYLE_URL_TAGS = False
+except ImportError:
+    ONLY_NEW_STYLE_URL_TAGS = True
 
 register = Library()
 
@@ -49,8 +53,11 @@ def load(parser, token):
     if len(bits) >= 4 and bits[-2] == "from" and bits[-1] == "future":
         for name in bits[1:-2]:
             if name == "url":
-                new_style_url_tag = True
-                reloaded_url_tag = True
+                if ONLY_NEW_STYLE_URL_TAGS:
+                    _error("url template tag are removed from the future template tag library as of Django 1.9")
+                else:
+                    new_style_url_tag = True
+                    reloaded_url_tag = True
 
     try:
         return defaulttags.load(parser, token)
@@ -59,31 +66,31 @@ def load(parser, token):
             parser.tags['url'] = new_style_url
 
 
-@register.tag(name='url')
-def old_style_url(parser, token):
-    global error_on_old_style_url_tag
+if not ONLY_NEW_STYLE_URL_TAGS:
+    @register.tag(name='url')
+    def old_style_url(parser, token):
+        global error_on_old_style_url_tag
 
-    bits = token.split_contents()
-    view = bits[1]
+        bits = token.split_contents()
+        view = bits[1]
 
-    if error_on_old_style_url_tag:
-        _error("Old style url tag used (only reported once per file): {%% %s %%}" % (" ".join(bits)), token)
-        error_on_old_style_url_tag = False
+        if error_on_old_style_url_tag:
+            _error("Old style url tag used (only reported once per file): {%% %s %%}" % (" ".join(bits)), token)
+            error_on_old_style_url_tag = False
 
-    if view[0] in "\"'" and view[0] == view[-1]:
-        _error("Old style url tag with quotes around view name: {%% %s %%}" % (" ".join(bits)), token)
+        if view[0] in "\"'" and view[0] == view[-1]:
+            _error("Old style url tag with quotes around view name: {%% %s %%}" % (" ".join(bits)), token)
 
-    return defaulttags.url(parser, token)
+        return defaulttags.url(parser, token)
 
+    def new_style_url(parser, token):
+        bits = token.split_contents()
+        view = bits[1]
 
-def new_style_url(parser, token):
-    bits = token.split_contents()
-    view = bits[1]
+        if view[0] not in "\"'" or view[0] != view[-1]:
+            _error("New style url tag without quotes around view name: {%% %s %%}" % (" ".join(bits)), token)
 
-    if view[0] not in "\"'" or view[0] != view[-1]:
-        _error("New style url tag without quotes around view name: {%% %s %%}" % (" ".join(bits)), token)
-
-    return future.url(parser, token)
+        return future_url(parser, token)
 
 
 def _error(message, token):
