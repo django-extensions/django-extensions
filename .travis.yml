@@ -9,6 +9,7 @@ env:
     - TOX_ENV=py27-flake8
     - TOX_ENV=py34-flake8
     - TOX_ENV=py35-flake8
+    - TOX_ENV=precommit
     - TOX_ENV=py27-dj18
     - TOX_ENV=py27-dj19
     - TOX_ENV=py27-djmaster
@@ -20,8 +21,10 @@ env:
     - TOX_ENV=py35-dj19
     - TOX_ENV=py35-djmaster
     - TOX_ENV=pypy-dj18
+    - TOX_ENV=pypy-dj19
     - TOX_ENV=pypy-djmaster
     - TOX_ENV=pypy3-dj18
+    - TOX_ENV=pypy3-dj19
     - TOX_ENV=pypy3-djmaster
 
 matrix:
@@ -34,6 +37,7 @@ matrix:
     - env: TOX_ENV=pypy3-djmaster
 
 install:
+  # virtualenv<14.0.0 is for Python 3.2 compatibility
   - pip install "virtualenv<14.0.0" tox coveralls
 
 script:
