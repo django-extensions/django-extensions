@@ -82,6 +82,9 @@ class BaseEncryptedField(models.Field):
             retval = value
         return retval
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
             # We need to encode a unicode string into a byte string, first.
@@ -107,8 +110,7 @@ class BaseEncryptedField(models.Field):
         return name, path, args, kwargs
 
 
-class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedTextField(BaseEncryptedField):
     def get_internal_type(self):
         return 'TextField'
 
@@ -118,8 +120,7 @@ class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
         return super(EncryptedTextField, self).formfield(**defaults)
 
 
-class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedCharField(BaseEncryptedField):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
