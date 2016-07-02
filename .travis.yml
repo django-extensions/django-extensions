@@ -34,6 +34,8 @@ matrix:
     - env: TOX_ENV=py34-djmaster
     - env: TOX_ENV=py27-djmaster
     - env: TOX_ENV=pypy-djmaster
+    # pypy3 is not >=3.4 compatible yet
+    - env: TOX_ENV=pypy3-dj19
     - env: TOX_ENV=pypy3-djmaster
 
 install:
