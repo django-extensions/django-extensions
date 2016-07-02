@@ -1,57 +1,52 @@
 # -*- coding: utf-8 -*-
-import importlib
 import sys
+import importlib
 import traceback
-from optparse import make_option
 
 from django.apps import apps
 
-from django_extensions.management.email_notifications import \
-    EmailNotificationCommand
+from django_extensions.management.email_notifications import EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
 
 
-def vararg_callback(option, opt_str, opt_value, parser):
-    parser.rargs.insert(0, opt_value)
-    value = []
-    for arg in parser.rargs:
-        # stop on --foo like options
-        if arg[:2] == "--" and len(arg) > 2:
-            break
-        # stop on -a like options
-        if arg[:1] == "-":
-            break
-        value.append(arg)
-
-    del parser.rargs[:len(value)]
-    setattr(parser.values, option.dest, value)
-
-
 class Command(EmailNotificationCommand):
-    option_list = EmailNotificationCommand.option_list + (
-        make_option('--fixtures', action='store_true', dest='infixtures', default=False,
-                    help='Only look in app.fixtures subdir'),
-        make_option('--noscripts', action='store_true', dest='noscripts', default=False,
-                    help='Look in app.scripts subdir'),
-        make_option('-s', '--silent', action='store_true', dest='silent', default=False,
-                    help='Run silently, do not show errors and tracebacks'),
-        make_option('--no-traceback', action='store_true', dest='no_traceback', default=False,
-                    help='Do not show tracebacks'),
-        make_option('--script-args', action='callback', callback=vararg_callback, type='string',
-                    help='Space-separated argument list to be passed to the scripts. Note that the '
-                         'same arguments will be passed to all named scripts.'),
-    )
     help = 'Runs a script in django context.'
     args = "script [script ...]"
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('script', nargs='+')
+        parser.add_argument(
+            '--fixtures', action='store_true', dest='infixtures', default=False,
+            help='Only look in app.fixtures subdir',
+        )
+        parser.add_argument(
+            '--noscripts', action='store_true', dest='noscripts', default=False,
+            help='Look in app.scripts subdir',
+        )
+        parser.add_argument(
+            '-s', '--silent', action='store_true', dest='silent', default=False,
+            help='Run silently, do not show errors and tracebacks',
+        )
+        parser.add_argument(
+            '--no-traceback', action='store_true', dest='no_traceback', default=False,
+            help='Do not show tracebacks',
+        )
+        parser.add_argument(
+            '--script-args', nargs='*', type=str,
+            help='Space-separated argument list to be passed to the scripts. Note that the '
+                 'same arguments will be passed to all named scripts.',
+        )
+
     @signalcommand
-    def handle(self, *scripts, **options):
+    def handle(self, *args, **options):
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
         ERROR2 = self.style.NOTICE
 
         subdirs = []
+        scripts = options['script']
 
         if not options.get('noscripts'):
             subdirs.append('scripts')
