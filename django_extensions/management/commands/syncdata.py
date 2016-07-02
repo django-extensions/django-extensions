@@ -11,8 +11,6 @@ and anything extra will of been deleted.
 
 import os
 import sys
-from contextlib import contextmanager
-from functools import wraps
 
 import six
 from django.core.management.base import BaseCommand
@@ -20,29 +18,6 @@ from django.core.management.color import no_style
 from django.db import connection, transaction
 
 from django_extensions.management.utils import signalcommand
-
-if hasattr(transaction, 'set_autocommit'):
-    @contextmanager
-    def _custom_transaction(using=None):
-        transaction.set_autocommit(False)
-        yield
-        transaction.set_autocommit(True)
-else:
-    @contextmanager
-    def _custom_transaction(using=None):
-        transaction.commit_unless_managed()
-        transaction.enter_transaction_management()
-        transaction.managed(True)
-        yield
-        transaction.leave_transaction_management()
-
-
-def custom_transaction(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        with _custom_transaction():
-            return func(*args, **kwargs)
-    return wrapper
 
 
 class Command(BaseCommand):
@@ -85,7 +60,7 @@ class Command(BaseCommand):
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
     @signalcommand
-    @custom_transaction
+    @transaction.atomic
     def handle(self, *fixture_labels, **options):
         """ Main method of a Django command """
         from django.db.models import get_apps
