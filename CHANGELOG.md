@@ -6,9 +6,27 @@ Changelog
 
 The "Letting go of the past" release.
 From this moment on Django Extensions requires version 1.8 or higher.
+A lot of work has been done to remove old backwards compatibility code and
+make sure that Django Extensions uses the current Django API's. This should
+result in better and easier to maintain code (and hopefully less bugs :).
 
 Changes:
  - Cleanup: removing backwards compatibility hacks for (now) unsupported versions of Django
+ - Cleanup: use six instead of home grown functions
+ - Fix: AutoSlugField, allow_duplicates didn't set slug value to model instance
+ - Fix: MongoDB fields, verbose_name on mongoengine fields does not seem to be supported
+ - Fix: MongoDB fields, fix relative import problem with json.py
+ - Improvement: Start using pre-commit
+ - Improvement: syncdata, Replace custom transaction logic with transaction.atomic
+ - Improvement: Django 1.10, use from_db_value instead of models.SubfieldBase
+ - Improvement: print_user_session, support for non standard user model
+ - Improvement: widont, tests to work with py2 and py3
+ - Improvement: runserver_plus, Prevent 2nd reload of debugger on runserver_plus
+ - Improvement: reset_db, add argument to make closing sessions optional
+ - Improvement: print_settings, Fix positional arguments
+ - Improvement: runscript, migrate to argparse and add_arguments
+ - Docs: Convert readthedocs links for their .org -> .io migration
+
 
 
 1.6.7
