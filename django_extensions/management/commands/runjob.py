@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from django.core.management.base import LabelCommand
 
 from django_extensions.management.jobs import get_job, print_jobs

@@ -1,0 +1,31 @@
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: 493665a5fc24deb2204fc48b8398be77e6c9e5d5
+    hooks:
+    -   id: trailing-whitespace
+    -   id: check-added-large-files
+        args:
+        - --maxkb=128
+    -   id: check-ast
+    -   id: check-case-conflict
+    -   id: check-docstring-first
+    -   id: check-json
+    -   id: check-merge-conflict
+    -   id: check-xml
+    -   id: check-yaml
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+    -   id: fix-encoding-pragma
+    -   id: name-tests-test
+        args:
+        - --django
+        exclude: '^tests/testapp/|^tests/management/'
+-   repo: git://github.com/Lucas-C/pre-commit-hooks.git
+    sha: 0f5055d31f39ea3ac1f5335a0cca320200cd0c51
+    hooks:
+    -   id: forbid-crlf
+-   repo: git://github.com/trbs/pre-commit-hooks-trbs.git
+    sha: c94ad5f83406a96b0750869e8930669af074975b
+    hooks:
+    -   id: forbid-executables
+        exclude: manage.py|setup.py
+    -   id: flake8

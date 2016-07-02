@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import pytest
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter

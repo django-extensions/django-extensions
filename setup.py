@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Based entirely on Django's own ``setup.py``.
 """

@@ -1,18 +1,50 @@
-# -*- coding: utf-8 -*-
-import traceback
+# coding=utf-8
 
+import ast
+import django
 import six
+import traceback
+import importlib
 
 
 class ObjectImportError(Exception):
     pass
 
 
+class InvalidImportLine(ObjectImportError):
+    pass
+
+
+class MissingImportLine(ObjectImportError):
+    pass
+
+
+def parse_import_line(import_line):
+    if not isinstance(import_line, six.string_types):
+        raise TypeError("Argument must be a string type")
+    node = ast.parse(import_line)
+    if len(node.body) != 1:
+        raise InvalidImportLine("Invalid import line. Please only specify exactly one import.")
+    node = node.body[0]
+    if not isinstance(node, (ast.Import, ast.ImportFrom)):
+        raise MissingImportLine("Only specify import statements")
+    from_module = getattr(node, 'module', None)
+    for n in node.names:
+        yield (from_module, n.name, n.asname)
+
+
 def import_items(import_directives, style, quiet_load=False):
     """
     Import the items in import_directives and return a list of the imported items
 
-    Each item in import_directives should be one of the following forms
+    Each item in import_directives can be specified as a regular python import line:
+        * import foo
+        * import foo as foofoo
+        * from bar import foo
+        * from bar import foo as foofoo
+        * from bar.foo import *
+
+    The old forms are still supported for backwards compatibility but will be removed in the future:
         * a tuple like ('module.submodule', ('classname1', 'classname2')), which indicates a 'from module.submodule import classname1, classname2'
         * a tuple like ('module.submodule', 'classname1'), which indicates a 'from module.submodule import classname1'
         * a tuple like ('module.submodule', '*'), which indicates a 'from module.submodule import *'
@@ -25,11 +57,32 @@ def import_items(import_directives, style, quiet_load=False):
         try:
             # First try a straight import
             if isinstance(directive, six.string_types):
-                imported_object = __import__(directive)
-                imported_objects[directive.split('.')[0]] = imported_object
-                if not quiet_load:
-                    print(style.SQL_COLTYPE("import %s" % directive))
-                continue
+                try:
+                    import_tuples = parse_import_line(directive)
+                except MissingImportLine:
+                    # backwards compatibility try the old way
+                    imported_object = __import__(directive)
+                    imported_objects[directive.split('.')[0]] = imported_object
+                    if not quiet_load:
+                        print(style.SQL_COLTYPE("import %s" % directive))
+                    continue
+                else:
+                    for module, name, as_name in import_tuples:
+                        #import_name = "%s.%s" % (module, name) if module else name
+                        #print import_name
+                        #imported_object = importlib.import_module(import_name)
+                        #imported_objects[as_name or name] = imported_object
+
+                        if directive[1] == '*':
+                            imported_object = __import__(directive[0], {}, {}, directive[1])
+                            for k in dir(imported_object):
+                                imported_objects[k] = getattr(imported_object, k)
+                        else:
+                            imported_object = getattr(__import__(directive[0], {}, {}, [directive[1]]), directive[1])
+                            imported_objects[as_name or name] = imported_object
+                    else:
+                        if not quiet_load:
+                            print(style.SQL_COLTYPE(directive))
             elif isinstance(directive, (list, tuple)) and len(directive) == 2:
                 if not isinstance(directive[0], six.string_types):
                     if not quiet_load:
@@ -81,15 +134,30 @@ def import_items(import_directives, style, quiet_load=False):
 
 
 def import_objects(options, style):
-    from django.apps import apps
-    from django import setup
-    if not apps.ready:
-        setup()
+    # Django 1.7 introduced the app registry which must be initialized before we
+    # can call get_apps(). Django already does this for us when we are invoked
+    # as manage.py command, but we have to do it ourselves if when running as
+    # iPython notebook extension, so we call django.setup() if the app registry
+    # isn't initialized yet. The try/except can be removed when support for
+    # Django 1.6 is dropped.
+    try:
+        from django.apps import apps
+        from django import setup
+    except ImportError:
+        from django.db.models.loading import get_models, get_apps
 
-    def get_apps_and_models():
-        for app in apps.get_app_configs():
-            if app.models_module:
-                yield app.models_module, app.get_models()
+        def get_apps_and_models():
+            for app_mod in get_apps():
+                app_models = get_models(app_mod)
+                yield app_mod, app_models
+    else:
+        if not apps.ready:
+            setup()
+
+        def get_apps_and_models():
+            for app in apps.get_app_configs():
+                if app.models_module:
+                    yield app.models_module, app.get_models()
 
     mongoengine = False
     try:
@@ -200,12 +268,13 @@ def import_objects(options, style):
             'django.core.urlresolvers': ['reverse'],
             'django.conf': ['settings'],
             'django.db': ['transaction'],
-            'django.db.models': [
-                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q',
-                'Sum', 'When',
-            ],
+            'django.db.models': ['Avg', 'Count', 'F', 'Max', 'Min', 'Sum', 'Q'],
             'django.utils': ['timezone'],
         }
+        if django.VERSION[:2] >= (1, 7):
+            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].append("Prefetch")
+        if django.VERSION[:2] >= (1, 8):
+            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend(["Case", "When"])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v

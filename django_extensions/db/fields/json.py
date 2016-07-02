@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 JSONField automatically serializes most Python terms to JSON data.
 Creates a TEXT field with a default value of "{}".  See test_json.py for

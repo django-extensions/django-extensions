@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from django.apps import apps as django_apps
 from django.contrib.auth.management import create_permissions
 from django.core.management.base import BaseCommand

@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from random import choice
 
 from django.core.management.base import BaseCommand

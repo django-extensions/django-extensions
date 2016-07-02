@@ -48,4 +48,3 @@ Push changes back to github::
 
   $ git push --tags
   $ git push
-

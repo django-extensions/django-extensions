@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """

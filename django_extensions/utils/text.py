@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import six
 from django.utils.encoding import force_text
 from django.utils.functional import allow_lazy

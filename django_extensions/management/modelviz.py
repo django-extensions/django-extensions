@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 modelviz.py - DOT file generator for Django Models
 

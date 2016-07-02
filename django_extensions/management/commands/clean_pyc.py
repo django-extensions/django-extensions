@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import fnmatch
 import os
 from os.path import join as _j

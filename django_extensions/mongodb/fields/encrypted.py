@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 Encrypted fields from Django Extensions, modified for use with mongoDB
 """

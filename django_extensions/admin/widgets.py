@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import six
 from django import forms
 from django.contrib.admin.sites import site

@@ -283,7 +283,7 @@ Changes:
  - New: validators.py, NoControlCharactersValidator and NoWhitespaceValidator
  - New: EmailNotificationCommand class, email exceptions from Django Commands
  - Improvement: runserver_plus, enable threading by default and added --nothreading
- - Improvement: runscript, better detection when import error occured in script 
+ - Improvement: runscript, better detection when import error occured in script
  - Improvement: runscript, use EmailNotificationCommand class
  - Deprecation: deprecated UUIDField since Django 1.8 will have a native version.
  - Removed: completely remove support for automatically finding project root.
@@ -377,7 +377,7 @@ Changes:
 
 Changes:
  - Feature: shell_plus, add --kernel option to start as standalone IPython kernel
- - Feature: reset_db, Programatically determine PostGIS template 
+ - Feature: reset_db, Programatically determine PostGIS template
  - Feature: sqldiff, add support for PointField and MultiPolygonField
  - Test: renamed test app
  - Fix: runserver_plus, --print-sql for Django 1.7

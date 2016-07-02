@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 sqldiff.py - Prints the (approximated) difference between models and database
 

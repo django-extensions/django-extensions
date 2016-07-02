@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import getpass
 
 from django.contrib.auth import get_user_model

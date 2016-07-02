@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from django.apps import apps
 from django.core.management.base import CommandError, LabelCommand
 from django.utils.encoding import force_text

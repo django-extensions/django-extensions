@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 """
 Similar to syntax_color.py but this is intended more for being able to
 copy+paste actual code into your Django templates without needing to
