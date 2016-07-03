@@ -97,9 +97,9 @@ class DescribeFormTests(TestCase):
         self.assertIn("class SecretForm(forms.Form):", output)
         self.assertRegexpMatches(output, "name = forms.CharField\(.*max_length=255")
         self.assertRegexpMatches(output, "name = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, "name = forms.CharField\(label=u?'Name'")
+        self.assertRegexpMatches(output, "name = forms.CharField\(.*label=u?'Name'")
         self.assertRegexpMatches(output, "text = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, "text = forms.CharField\(label=u?'Text'")
+        self.assertRegexpMatches(output, "text = forms.CharField\(.*label=u?'Text'")
 
 
 class UpdatePermissionsTests(TestCase):
