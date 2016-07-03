@@ -343,4 +343,4 @@ class Command(LabelCommand):
         for arg in options['model_name']:
             model_res.append(re.compile(arg, re.IGNORECASE))
 
-        self.stdout.write(unicode(AdminApp(app, model_res, **options)))
+        self.stdout.write(AdminApp(app, model_res, **options).__str__())
