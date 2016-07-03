@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-import importlib
-import logging
 import os
 import sys
+import shutil
+import logging
+import importlib
 
-from django.core.management import (
-    call_command, find_commands, load_command_class,
-)
+from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
 from django.utils.six import StringIO
 
@@ -56,6 +55,24 @@ class ShowTemplateTagsTests(TestCase):
         self.assertIn('django_extensions', output)
         # let's check at least one
         self.assertIn('truncate_letters', output)
+
+
+class CreateAppTests(TestCase):
+    def test_command(self):
+        tmpname = "testapptest"
+        tmpdir = "/tmp"
+        tmppath = os.path.join(tmpdir, tmpname)
+        self.assertFalse(os.path.isdir(tmppath))
+
+        out = StringIO()
+        try:
+            call_command('create_app', tmpname, parent_path=tmpdir, stdout=out)
+        finally:
+            if os.path.isdir(tmppath):
+                shutil.rmtree(tmppath)
+
+        output = out.getvalue()
+        self.assertIn("Application '%s' created." % tmpname, output)
 
 
 class AdminGeneratorTests(TestCase):

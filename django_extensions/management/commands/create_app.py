@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+import warnings
 
 from django.conf import settings
 from django.core.management.base import CommandError, LabelCommand
@@ -16,13 +17,13 @@ from django_extensions.utils.dia2django import dia2django
 
 class Command(LabelCommand):
     help = "Creates an application directory structure for the specified application name."
-    args = "APP_NAME"
     label = 'application name'
 
     requires_system_checks = False
     can_import_settings = True
 
     def add_arguments(self, parser):
+        parser.add_argument('app_name')
         parser.add_argument(
             '--template', '-t', action='store', dest='app_template',
             help='The path to the app template')
@@ -37,10 +38,17 @@ class Command(LabelCommand):
             help='The diagram path of the app to be created. -d is implied')
 
     @signalcommand
-    def handle_label(self, label, **options):
+    def handle(self, *args, **options):
+        from django_extensions.utils.deprecation import MarkedForDeprecationWarning
+        warnings.warn(
+            "Deprecated: "
+            "\"create_app\" is marked for depreciaton and will be most likely"
+            "be removed in future releases. Use \"startapp --template\" instead.",
+            MarkedForDeprecationWarning
+        )
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]
-        app_name = label
+        app_name = options['app_name']
         app_template = options.get('app_template') or os.path.join(django_extensions.__path__[0], 'conf', 'app_template')
         app_dir = os.path.join(options.get('parent_path') or project_dir, app_name)
         dia_path = options.get('dia_path') or os.path.join(project_dir, '%s.dia' % app_name)
@@ -48,8 +56,8 @@ class Command(LabelCommand):
         if not os.path.exists(app_template):
             raise CommandError("The template path, %r, does not exist." % app_template)
 
-        if not re.search(r'^\w+$', label):
-            raise CommandError("%r is not a valid application name. Please use only numbers, letters and underscores." % label)
+        if not re.search(r'^\w+$', app_name):
+            raise CommandError("%r is not a valid application name. Please use only numbers, letters and underscores." % app_name)
 
         dia_parse = options.get('dia_path') or options.get('dia_parse')
         if dia_parse:
@@ -70,8 +78,9 @@ class Command(LabelCommand):
 
         if dia_parse:
             generate_models_and_admin(dia_path, app_dir, project_name, app_name)
-            print("Application %r created." % app_name)
-            print("Please add now %r and any other dependent application in settings.INSTALLED_APPS, and run 'manage syncdb'" % app_name)
+
+        self.stdout.write("Application %r created.\n" % app_name)
+        self.stdout.write("Please add now %r and any other dependent application in settings.INSTALLED_APPS, and run 'manage syncdb'\n" % app_name)
 
 
 def copy_template(app_template, copy_to, project_name, app_name):
