@@ -10,10 +10,9 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 class Command(AppCommand):
     help = ("Creates a Django template tags directory structure for the given app name"
             " in the apps's directory")
-    args = "[appname]"
-    label = 'application name'
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--name', '-n', action='store', dest='tag_library_name',
             default='appname_tags',
@@ -26,8 +25,8 @@ class Command(AppCommand):
     can_import_settings = True
 
     @signalcommand
-    def handle_app(self, app, **options):
-        app_dir = os.path.dirname(app.__file__)
+    def handle_app_config(self, app_config, **options):
+        app_dir = app_config.path
         tag_library_name = options.get('tag_library_name')
         if tag_library_name == 'appname_tags':
             tag_library_name = '%s_tags' % os.path.basename(app_dir)
