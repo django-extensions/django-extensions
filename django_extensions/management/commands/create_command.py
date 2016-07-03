@@ -13,7 +13,6 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 class Command(AppCommand):
     help = ("Creates a Django management command directory structure for the given app name"
             " in the app's directory.")
-    label = 'application name'
 
     requires_system_checks = False
     # Can't import settings during this command, because they haven't
@@ -21,14 +20,14 @@ class Command(AppCommand):
     can_import_settings = True
 
     def add_arguments(self, parser):
-        parser.add_argument('app_name')
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--name', '-n', action='store', dest='command_name',
             default='sample',
             help='The name to use for the management command')
 
     @signalcommand
-    def handle(self, *args, **options):
+    def handle_app_config(self, *args, **options):
         app = apps.get_app_config(options['app_name'])
         copy_template('command_template', app.path, **options)
 
