@@ -58,6 +58,16 @@ class ShowTemplateTagsTests(TestCase):
         self.assertIn('truncate_letters', output)
 
 
+class AdminGeneratorTests(TestCase):
+    def test_command(self):
+        out = StringIO()
+        call_command('admin_generator', 'testapp', stdout=out)
+        output = out.getvalue()
+        self.assertIn("class SecretAdmin(admin.ModelAdmin):", output)
+        self.assertIn("list_display = (u'id', 'name', 'text')", output)
+        self.assertIn("search_fields = ('name',)", output)
+
+
 class UpdatePermissionsTests(TestCase):
     def test_works(self):
         from django.db import models

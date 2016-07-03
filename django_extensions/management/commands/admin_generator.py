@@ -84,13 +84,13 @@ class UnicodeMixin(object):
 
 
 class AdminApp(UnicodeMixin):
-    def __init__(self, app, model_res, **options):
-        self.app = app
+    def __init__(self, app_config, model_res, **options):
+        self.app_config = app_config
         self.model_res = model_res
         self.options = options
 
     def __iter__(self):
-        for model in apps.get_models(self.app):
+        for model in self.app_config.get_models():
             admin_model = AdminModel(model, **self.options)
 
             for model_re in self.model_res:
@@ -120,7 +120,7 @@ class AdminApp(UnicodeMixin):
     def __repr__(self):
         return '<%s[%s]>' % (
             self.__class__.__name__,
-            self.app,
+            self.app.name,
         )
 
 
@@ -291,10 +291,12 @@ class AdminModel(UnicodeMixin):
 
 class Command(LabelCommand):
     help = '''Generate a `admin.py` file for the given app (models)'''
-    args = "[app_name]"
+    # args = "[app_name]"
     can_import_settings = True
 
     def add_arguments(self, parser):
+        parser.add_argument('app_name')
+        parser.add_argument('model_name', nargs='*')
         parser.add_argument(
             '-s', '--search-field', action='append',
             default=SEARCH_FIELD_NAMES,
@@ -323,26 +325,22 @@ class Command(LabelCommand):
             'it will be added to `list_filter` [default: %(default)s]')
 
     @signalcommand
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **options):
         self.style = color_style()
-        installed_apps = dict((a.__name__.rsplit('.', 1)[0], a) for a in apps.get_apps())
 
-        # Make sure we always have args
-        if not args:
-            args = [False]
-        app = installed_apps.get(args[0])
-        if not app:
+        app_name = options['app_name']
+        try:
+            app = apps.get_app_config(app_name)
+        except LookupError:
             print(self.style.WARN('This command requires an existing app name as argument'))
             print(self.style.WARN('Available apps:'))
-            for app in sorted(installed_apps):
-                print(self.style.WARN('    %s' % app))
+            app_labels = [app.label for app in apps.get_app_configs()]
+            for label in sorted(app_labels):
+                print(self.style.WARN('    %s' % label))
             sys.exit(1)
 
         model_res = []
-        for arg in args[1:]:
+        for arg in options['model_name']:
             model_res.append(re.compile(arg, re.IGNORECASE))
 
-        self.handle_app(app, model_res, **kwargs)
-
-    def handle_app(self, app, model_res, **options):
-        print(AdminApp(app, model_res, **options))
+        self.stdout.write(unicode(AdminApp(app, model_res, **options)))
