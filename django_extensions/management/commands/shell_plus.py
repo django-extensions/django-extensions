@@ -26,6 +26,7 @@ class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--plain', action='store_true', dest='plain',
             help='Tells Django to use plain Python, not BPython nor IPython.')

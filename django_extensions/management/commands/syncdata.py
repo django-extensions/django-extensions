@@ -27,6 +27,7 @@ class Command(BaseCommand):
     args = "fixture [fixture ...]"
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--skip-remove', action='store_false',
                             dest='remove', default=True,
                             help='Avoid remove any object from db'),

@@ -22,6 +22,7 @@ class Command(BaseCommand):
     requires_system_checks = False
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--email', dest='default_email', default=DEFAULT_FAKE_EMAIL,
             help='Use this as the new email format.')

@@ -19,6 +19,7 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('-R', '--router', action='store',
                     dest='router', default='default',
                     help='Use this router-database other then default')

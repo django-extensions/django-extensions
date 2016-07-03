@@ -896,6 +896,7 @@ to check/debug ur models compared to the real database tables and columns."""
     args = '<appname appname ...>'
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--all-applications', '-a', action='store_true',
             dest='all_applications',

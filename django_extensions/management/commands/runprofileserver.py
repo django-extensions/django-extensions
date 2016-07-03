@@ -93,6 +93,7 @@ class Command(BaseCommand):
     args = '[optional port number, or ipaddr:port]'
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--noreload', action='store_false', dest='use_reloader',
             default=True,

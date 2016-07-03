@@ -35,6 +35,7 @@ class Command(BaseCommand):
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--group', '-g', action='store', dest='group', default=None,
             help='Limit to users which are part of the supplied group name'),

@@ -105,6 +105,7 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('-p', '--prefix',
                     dest='prefix',
                     default=getattr(settings, 'SYNC_S3_PREFIX', ''),

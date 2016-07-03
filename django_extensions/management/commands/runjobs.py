@@ -12,6 +12,7 @@ class Command(LabelCommand):
     label = ""
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--list', '-l', action="store_true", dest="list_jobs",
             help="List all jobs with their description")

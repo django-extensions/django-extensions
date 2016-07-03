@@ -15,7 +15,6 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-
         if settings.MEDIA_ROOT == '':
             print("MEDIA_ROOT is not set, nothing to do")
             return

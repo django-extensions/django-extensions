@@ -27,6 +27,7 @@ class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             "--unsorted", "-u", action="store_true", dest="unsorted",
             help="Show urls unsorted but same order as found in url patterns")

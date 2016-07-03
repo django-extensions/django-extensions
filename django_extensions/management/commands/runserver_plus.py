@@ -52,6 +52,7 @@ class Command(BaseCommand):
     requires_system_checks = False
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
                             help='Tells Django to use a IPv6 address.')
         parser.add_argument('--noreload', action='store_false', dest='use_reloader', default=True,

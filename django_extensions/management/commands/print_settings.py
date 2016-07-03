@@ -21,6 +21,7 @@ class Command(BaseCommand):
     help = "Print the active Django settings."
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--format', default='simple', dest='format',
                             help='Specifies output format.')
         parser.add_argument('--indent', default=4, dest='indent', type=int,
