@@ -82,15 +82,17 @@ def orm_item_locator(orm_obj):
 
 class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
-    args = '[appname ...]'
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('appname', nargs='+')
         parser.add_argument(
             '--autofield', action='store_false', dest='skip_autofield',
             default=True, help='Include Autofields (like pk fields)')
 
     @signalcommand
-    def handle(self, *app_labels, **options):
+    def handle(self, *args, **options):
+        app_labels = options['appname']
 
         # Get the models we want to export
         models = get_models(app_labels)
