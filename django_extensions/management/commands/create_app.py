@@ -5,7 +5,7 @@ import sys
 import warnings
 
 from django.conf import settings
-from django.core.management.base import CommandError, LabelCommand
+from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
 from django.template import Context, Template
 
@@ -15,9 +15,8 @@ from django_extensions.settings import REPLACEMENTS
 from django_extensions.utils.dia2django import dia2django
 
 
-class Command(LabelCommand):
+class Command(BaseCommand):
     help = "Creates an application directory structure for the specified application name."
-    label = 'application name'
 
     requires_system_checks = False
     can_import_settings = True
