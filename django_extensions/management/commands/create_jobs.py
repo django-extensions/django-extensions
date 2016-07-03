@@ -11,8 +11,6 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 
 class Command(AppCommand):
     help = "Creates a Django jobs command directory structure for the given app name in the current directory."
-    args = "[appname]"
-    label = 'application name'
 
     requires_system_checks = False
     # Can't import settings during this command, because they haven't
@@ -22,12 +20,6 @@ class Command(AppCommand):
     @signalcommand
     def handle_app_config(self, app, **options):
         copy_template('jobs_template', app.path, **options)
-
-    @signalcommand
-    def handle_app(self, app, **options):
-        # handle_app is RemovedInDjango19
-        app_dir = os.path.dirname(app.__file__)
-        copy_template('jobs_template', app_dir, **options)
 
 
 def copy_template(template_name, copy_to, **options):
