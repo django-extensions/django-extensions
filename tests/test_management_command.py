@@ -89,6 +89,19 @@ class AdminGeneratorTests(TestCase):
             self.assertIn("search_fields = (u'name',)", output)
 
 
+class DescribeFormTests(TestCase):
+    def test_command(self):
+        out = StringIO()
+        call_command('describe_form', 'django_extensions.Secret', stdout=out)
+        output = out.getvalue()
+        self.assertIn("class SecretForm(forms.Form):", output)
+        self.assertRegexpMatches(output, "name = forms.CharField\(.*max_length=255")
+        self.assertRegexpMatches(output, "name = forms.CharField\(.*required=False")
+        self.assertRegexpMatches(output, "name = forms.CharField\(label=u?'Name'")
+        self.assertRegexpMatches(output, "text = forms.CharField\(.*required=False")
+        self.assertRegexpMatches(output, "text = forms.CharField\(label=u?'Text'")
+
+
 class UpdatePermissionsTests(TestCase):
     def test_works(self):
         from django.db import models
