@@ -7,7 +7,7 @@ import importlib
 
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
-from django.utils.six import StringIO
+from django.utils.six import StringIO, PY3
 
 from django_extensions.management.modelviz import use_model
 
@@ -78,11 +78,15 @@ class CreateAppTests(TestCase):
 class AdminGeneratorTests(TestCase):
     def test_command(self):
         out = StringIO()
-        call_command('admin_generator', 'testapp', stdout=out)
+        call_command('admin_generator', 'django_extensions', stdout=out)
         output = out.getvalue()
         self.assertIn("class SecretAdmin(admin.ModelAdmin):", output)
-        self.assertIn("list_display = (u'id', 'name', 'text')", output)
-        self.assertIn("search_fields = ('name',)", output)
+        if PY3:
+            self.assertIn("list_display = ('id', 'name', 'text')", output)
+            self.assertIn("search_fields = ('name',)", output)
+        else:
+            self.assertIn("list_display = (u'id', u'name', u'text')", output)
+            self.assertIn("search_fields = (u'name',)", output)
 
 
 class UpdatePermissionsTests(TestCase):

@@ -198,17 +198,18 @@ class AdminModel(UnicodeMixin):
         if field in parent_fields:
             return
 
-        self.list_display.append(field.name)
+        field_name = six.text_type(field.name)
+        self.list_display.append(field_name)
         if isinstance(field, LIST_FILTER):
             if isinstance(field, models.ForeignKey):
                 self._process_foreign_key(field)
             else:
-                self.list_filter.append(field.name)
+                self.list_filter.append(field_name)
 
         if field.name in self.search_field_names:
-            self.search_fields.append(field.name)
+            self.search_fields.append(field_name)
 
-        return field.name
+        return field_name
 
     def __unicode__(self):
         return ''.join(self._unicode_generator())
