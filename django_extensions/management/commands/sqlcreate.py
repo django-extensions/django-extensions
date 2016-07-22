@@ -56,7 +56,7 @@ The envisioned use case is something like this:
                 dbname, dbuser, dbclient, dbpass
             ))
 
-        elif engine == 'postgresql_psycopg2':
+        elif engine in ('postgresql', 'postgresql_psycopg2'):
             if options.get('drop'):
                 print("DROP DATABASE IF EXISTS %s;" % (dbname,))
                 print("DROP USER IF EXISTS %s;" % (dbuser,))

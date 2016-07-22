@@ -32,7 +32,7 @@ class Command(BaseCommand):
             '--force-new-urls', '-n', action='store_true',
             dest='force_new_urls',
             default=False, help="Error on usage of old style url tags "
-            "(without {% load urls from future %}")
+            "(without {%% load urls from future %%}")
         parser.add_argument(
             '--include', '-i', action='append', dest='includes',
             default=[], help="Append these paths to TEMPLATE_DIRS")

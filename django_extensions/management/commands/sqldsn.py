@@ -75,7 +75,7 @@ class Command(BaseCommand):
                                      dbuser,
                                      dbpass))
 
-        elif engine in ['postgresql_psycopg2', 'postgis']:
+        elif engine in ['postgresql', 'postgresql_psycopg2', 'postgis']:
             dsn = self.postgresql(dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style)
 
         elif engine == 'sqlite3':
