@@ -114,10 +114,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             logging.info('Executing: "' + drop_query + '"')
             connection.query(drop_query)
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-            if engine == 'postgresql':
-                import psycopg as Database  # NOQA
-            elif engine in ('postgresql_psycopg2', 'postgis'):
-                import psycopg2 as Database  # NOQA
+            import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
             if user:
