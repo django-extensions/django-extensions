@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-from django.core.management.base import LabelCommand
+from django.core.management.base import BaseCommand
 
 from django_extensions.management.jobs import get_job, print_jobs
 from django_extensions.management.utils import signalcommand
 
 
-class Command(LabelCommand):
+class Command(BaseCommand):
     help = "Run a single maintenance job."
-    args = "[app_name] job_name"
-    label = ""
+    missing_args_message = "test"
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+        parser.add_argument('app_name', nargs='?')
+        parser.add_argument('job_name', nargs='?')
         parser.add_argument(
             '--list', '-l', action="store_true", dest="list_jobs",
             help="List all jobs with their description")
@@ -40,12 +41,14 @@ class Command(LabelCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        app_name = None
-        job_name = None
-        if len(args) == 1:
-            job_name = args[0]
-        elif len(args) == 2:
-            app_name, job_name = args
+        app_name = options.get('app_name')
+        job_name = options.get('job_name')
+
+        # hack since we are using job_name nargs='?' for -l to work
+        if app_name and not job_name:
+            job_name = app_name
+            app_name = None
+
         if options.get('list_jobs'):
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)
         else:

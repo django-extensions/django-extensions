@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.apps import apps
-from django.core.management.base import LabelCommand
+from django.core.management.base import BaseCommand
 
 from django_extensions.management.jobs import get_jobs, print_jobs
 from django_extensions.management.utils import signalcommand
 
 
-class Command(LabelCommand):
+class Command(BaseCommand):
     help = "Runs scheduled maintenance jobs."
     args = "[minutely quarter_hourly hourly daily weekly monthly yearly]"
-    label = ""
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
