@@ -16,7 +16,10 @@ except ImportError:
     HAS_PYGRAPHVIZ = False
 
 try:
-    import pydot
+    try:
+        import pydotplus as pydot
+    except ImportError:
+        import pydot
     HAS_PYDOT = True
 except ImportError:
     HAS_PYDOT = False
