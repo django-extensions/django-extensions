@@ -3,7 +3,6 @@ import os
 import sys
 import shutil
 
-#from django.apps import apps
 from django.core.management.base import AppCommand
 from django.core.management.color import color_style
 
