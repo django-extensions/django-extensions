@@ -3,7 +3,7 @@ import os
 import sys
 import shutil
 
-from django.apps import apps
+#from django.apps import apps
 from django.core.management.base import AppCommand
 from django.core.management.color import color_style
 
@@ -27,8 +27,8 @@ class Command(AppCommand):
             help='The name to use for the management command')
 
     @signalcommand
-    def handle_app_config(self, *args, **options):
-        app = apps.get_app_config(options['app_name'])
+    def handle_app_config(self, args, **options):
+        app = args
         copy_template('command_template', app.path, **options)
 
 
