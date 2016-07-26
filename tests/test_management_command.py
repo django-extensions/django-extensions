@@ -149,12 +149,14 @@ class CommandSignalTests(TestCase):
 
 
 class CommandClassTests(TestCase):
-    """Try to load every management command to catch exceptions."""
+    def setUp(self):
+        management_dir = os.path.join('django_extensions', 'management')
+        self.commands = find_commands(management_dir)
+
     def test_load_commands(self):
+        """Try to load every management command to catch exceptions."""
         try:
-            management_dir = os.path.join('django_extensions', 'management')
-            commands = find_commands(management_dir)
-            for command in commands:
+            for command in self.commands:
                 load_command_class('django_extensions', command)
         except Exception as e:
             self.fail("Can't load command class of {0}\n{1}".format(command, e))
