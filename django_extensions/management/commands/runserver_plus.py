@@ -53,6 +53,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+        parser.add_argument('addrport', nargs='?')
         parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
                             help='Tells Django to use a IPv6 address.')
         parser.add_argument('--noreload', action='store_false', dest='use_reloader', default=True,
@@ -89,7 +90,8 @@ class Command(BaseCommand):
                                 help='Allows serving static files even if DEBUG is False.')
 
     @signalcommand
-    def handle(self, addrport='', *args, **options):
+    def handle(self, *args, **options):
+        addrport = options.get('addrport')
         startup_messages = options.get('startup_messages', 'reload')
         if startup_messages == "reload":
             self.show_startup_messages = os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
