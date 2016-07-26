@@ -15,6 +15,7 @@
     -   id: detect-private-key
     -   id: end-of-file-fixer
     -   id: fix-encoding-pragma
+    -   id: flake8
     -   id: name-tests-test
         args:
         - --django
@@ -28,4 +29,3 @@
     hooks:
     -   id: forbid-executables
         exclude: manage.py|setup.py
-    -   id: flake8
