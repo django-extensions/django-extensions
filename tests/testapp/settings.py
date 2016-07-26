@@ -28,7 +28,7 @@ MEDIA_ROOT = '/tmp/django_extensions_test_media/'
 
 MEDIA_PATH = '/media/'
 
-ROOT_URLCONF = 'tests.urls'
+ROOT_URLCONF = 'tests.testapp.urls'
 
 DEBUG = True
 
@@ -39,6 +39,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
+        'TEMPLATE_DEBUG': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
