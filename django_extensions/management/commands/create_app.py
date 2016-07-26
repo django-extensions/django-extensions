@@ -4,6 +4,7 @@ import re
 import sys
 import warnings
 
+import django
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 from django.db import connection
@@ -45,6 +46,9 @@ class Command(BaseCommand):
             "be removed in future releases. Use \"startapp --template\" instead.",
             MarkedForDeprecationWarning
         )
+        if django.VERSION[:2] >= (1, 10):
+            raise CommandError("This command is deprecated. Please use \"startapp --template\" instead.")
+
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]
         app_name = options['app_name']
