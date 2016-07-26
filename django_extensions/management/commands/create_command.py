@@ -24,6 +24,9 @@ class Command(AppCommand):
             '--name', '-n', action='store', dest='command_name',
             default='sample',
             help='The name to use for the management command')
+        parser.add_argument(
+            '--dry-run', action='store_true', default=False,
+            help='Do not actually create any files')
 
     @signalcommand
     def handle_app_config(self, args, **options):
@@ -40,6 +43,7 @@ def copy_template(template_name, copy_to, **options):
     SUCCESS = getattr(style, 'SUCCESS', lambda x: x)
 
     command_name, base_command = options.get('command_name'), '%sCommand' % options.get('base_command')
+    dry_run = options.get('dry_run', False)
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
 
@@ -47,7 +51,8 @@ def copy_template(template_name, copy_to, **options):
     for d, subdirs, files in os.walk(template_dir):
         relative_dir = d[len(template_dir) + 1:]
         if relative_dir and not os.path.exists(os.path.join(copy_to, relative_dir)):
-            os.mkdir(os.path.join(copy_to, relative_dir))
+            if not dry_run:
+                os.mkdir(os.path.join(copy_to, relative_dir))
         for i, subdir in enumerate(subdirs):
             if subdir.startswith('.'):
                 del subdirs[i]
@@ -65,10 +70,15 @@ def copy_template(template_name, copy_to, **options):
             if options.get('verbosity', 1) > 1:
                 print(SUCCESS("%s" % path_new))
             with open(path_old, 'r') as fp_orig:
-                with open(path_new, 'w') as fp_new:
-                    fp_new.write(fp_orig.read().replace('{{ command_name }}', command_name).replace('{{ base_command }}', base_command))
-            try:
-                shutil.copymode(path_old, path_new)
-                _make_writeable(path_new)
-            except OSError:
-                sys.stderr.write("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new)
+                data = fp_orig.read()
+                data = data.replace('{{ command_name }}', command_name)
+                data = data.replace('{{ base_command }}', base_command)
+                if not dry_run:
+                    with open(path_new, 'w') as fp_new:
+                        fp_new.write(data)
+            if not dry_run:
+                try:
+                    shutil.copymode(path_old, path_new)
+                    _make_writeable(path_new)
+                except OSError:
+                    sys.stderr.write("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new)
