@@ -27,8 +27,8 @@ class Command(AppCommand):
             help='The name to use for the management command')
 
     @signalcommand
-    def handle_app_config(self, *args, **options):
-        app = apps.get_app_config(options['app_name'])
+    def handle_app_config(self, args, **options):
+        app = args
         copy_template('command_template', app.path, **options)
 
 
