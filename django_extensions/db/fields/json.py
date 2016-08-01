@@ -15,6 +15,7 @@ from __future__ import absolute_import
 import json
 import six
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
@@ -40,14 +41,6 @@ class JSONDict(dict):
         return dumps(self)
 
 
-class JSONUnicode(six.text_type):
-    """
-    As above
-    """
-    def __repr__(self):
-        return dumps(self)
-
-
 class JSONList(list):
     """
     As above
@@ -61,31 +54,39 @@ class JSONField(models.TextField):
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
     def __init__(self, *args, **kwargs):
-        default = kwargs.get('default', None)
-        if default is None:
-            kwargs['default'] = {}
-        elif isinstance(default, (list, dict)):
-            kwargs['default'] = dumps(default)
+        kwargs['default'] = kwargs.get('default', dict)
         models.TextField.__init__(self, *args, **kwargs)
+
+    def get_default(self):
+        if self.has_default():
+            default = self.default
+
+            if callable(default):
+                default = default()
+
+            return self.to_python(default)
+        return super(JSONField, self).get_default()
 
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
         if value is None or value == '':
             return {}
-        elif isinstance(value, six.string_types):
+
+        if isinstance(value, six.string_types):
             res = loads(value)
-            if isinstance(res, dict):
-                return JSONDict(**res)
-            elif isinstance(res, six.string_types):
-                return JSONUnicode(res)
-            elif isinstance(res, list):
-                return JSONList(res)
-            return res
         else:
-            return value
+            res = value
+
+        if isinstance(res, dict):
+            return JSONDict(**res)
+        elif isinstance(res, list):
+            return JSONList(res)
+
+        return value
 
     def get_prep_value(self, value):
-        """Do not call `to_python` method."""
+        if not isinstance(value, six.string_types):
+            return dumps(value)
         return super(models.TextField, self).get_prep_value(value)
 
     def from_db_value(self, value, expression, connection, context):
