@@ -70,6 +70,12 @@ class Command(BaseCommand):
             dest='no_browser',
             help='Don\'t open the notebook in a browser after startup.')
 
+    def get_ipython_arguments(self, options):
+        return getattr(settings, 'IPYTHON_ARGUMENTS', [])
+
+    def get_notebook_arguments(self, options):
+        return getattr(settings, 'NOTEBOOK_ARGUMENTS', [])
+
     @signalcommand
     def handle(self, *args, **options):
         use_kernel = options.get('kernel', False)
@@ -181,12 +187,12 @@ class Command(BaseCommand):
                 app = NotebookApp.instance()
 
                 # Treat IPYTHON_ARGUMENTS from settings
-                ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                ipython_arguments = self.get_ipython_arguments(options)
                 if 'django_extensions.management.notebook_extension' not in ipython_arguments:
                     ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
 
                 # Treat NOTEBOOK_ARGUMENTS from settings
-                notebook_arguments = getattr(settings, 'NOTEBOOK_ARGUMENTS', [])
+                notebook_arguments = self.get_notebook_arguments(options)
                 if no_browser and '--no-browser' not in notebook_arguments:
                     notebook_arguments.append('--no-browser')
                 if '--notebook-dir' not in notebook_arguments:
@@ -261,7 +267,7 @@ class Command(BaseCommand):
 
                 def run_ipython():
                     imported_objects = import_objects(options, self.style)
-                    ipython_arguments = getattr(settings, 'IPYTHON_ARGUMENTS', [])
+                    ipython_arguments = self.get_ipython_arguments(options)
                     start_ipython(argv=ipython_arguments, user_ns=imported_objects)
                 return run_ipython
             except ImportError:
