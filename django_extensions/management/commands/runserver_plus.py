@@ -46,14 +46,14 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = "Starts a lightweight Web server for development."
-    args = '[optional port number, or ipaddr:port]'
 
     # Validation is called explicitly each time the server is reloaded.
     requires_system_checks = False
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('addrport', nargs='?')
+        parser.add_argument('addrport', nargs='?',
+                            help='Optional port number, or ipaddr:port')
         parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
                             help='Tells Django to use a IPv6 address.')
         parser.add_argument('--noreload', action='store_false', dest='use_reloader', default=True,
