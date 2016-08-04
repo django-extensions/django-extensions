@@ -116,7 +116,7 @@ def generate_graph_data(app_labels, **kwargs):
             'models': []
         })
 
-        appmodels = list(apps.get_app_config(app_label).get_models())
+        appmodels = list(app.get_models())
         abstract_models = []
         for appmodel in appmodels:
             abstract_models = abstract_models + [abstract_model for abstract_model in appmodel.__bases__ if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract]
