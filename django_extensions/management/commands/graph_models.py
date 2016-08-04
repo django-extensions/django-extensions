@@ -27,8 +27,6 @@ except ImportError:
 
 class Command(BaseCommand):
     help = "Creates a GraphViz dot file for the specified app names. You can pass multiple app names and they will all be combined into a single model. Output is usually directed to a dot file."
-    args = "[appname]"
-    label = 'application name'
 
     can_import_settings = True
 
@@ -130,12 +128,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         """Unpack self.arguments for parser.add_arguments."""
+        parser.add_argument('app_label', nargs='*')
         for argument in self.arguments:
             parser.add_argument(*argument.split(' '),
                                 **self.arguments[argument])
 
     @signalcommand
     def handle(self, *args, **options):
+        args = options['app_label']
         if len(args) < 1 and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
