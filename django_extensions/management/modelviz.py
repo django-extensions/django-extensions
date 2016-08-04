@@ -106,13 +106,13 @@ def generate_graph_data(app_labels, **kwargs):
 
     graphs = []
     for app_label in app_labels:
-        app = apps.get_app_config(app_label).models_module
+        app = apps.get_app_config(app_label)
         if not app:
             continue
         graph = Context({
-            'name': '"%s"' % app.__name__,
-            'app_name': "%s" % '.'.join(app.__name__.split('.')[:-1]),
-            'cluster_app_name': "cluster_%s" % app.__name__.replace(".", "_"),
+            'name': '"%s"' % app.name,
+            'app_name': "%s" % app.name,
+            'cluster_app_name': "cluster_%s" % app.name.replace(".", "_"),
             'models': []
         })
 
