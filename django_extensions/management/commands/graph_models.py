@@ -26,7 +26,7 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    help = "Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file."
+    help = "Creates a GraphViz dot file for the specified app names. You can pass multiple app names and they will all be combined into a single model. Output is usually directed to a dot file."
     args = "[appname]"
     label = 'application name'
 
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 'help': 'Use PyGraphViz to generate the image.'},
 
             '--pydot': {'action': 'store_true', 'dest': 'pydot',
-                        'help': 'Use PyDot to generate the image.'},
+                        'help': 'Use PyDot(Plus) to generate the image.'},
 
             '--disable-fields -d': {
                 'action': 'store_true', 'dest': 'disable_fields',
@@ -165,7 +165,7 @@ class Command(BaseCommand):
             elif use_pydot:
                 self.render_output_pydot(dotdata, **options)
             else:
-                raise CommandError("Neither pygraphviz nor pydot could be found to generate the image")
+                raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image")
         else:
             self.print_output(dotdata)
 
