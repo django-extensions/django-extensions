@@ -8,16 +8,20 @@ from django_extensions.management.utils import signalcommand
 
 class Command(BaseCommand):
     help = "Runs scheduled maintenance jobs."
-    args = "[minutely quarter_hourly hourly daily weekly monthly yearly]"
+
+    when_options = ['minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            'when', nargs='?',
+            help="options: %s" % ', '.join(self.when_options))
         parser.add_argument(
             '--list', '-l', action="store_true", dest="list_jobs",
             help="List all jobs with their description")
 
     def usage_msg(self):
-        print("Run scheduled jobs. Please specify 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly' or 'yearly'")
+        print("%s Please specify: %s" % (self.help, ', '.join(self.when_options)))
 
     def runjobs(self, when, options):
         verbosity = int(options.get('verbosity', 1))
@@ -69,21 +73,12 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        when = None
-        if len(args) > 1:
-            self.usage_msg()
-            return
-        elif len(args) == 1:
-            if not args[0] in ['minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']:
-                self.usage_msg()
-                return
-            else:
-                when = args[0]
+        when = options.get('when')
+
         if options.get('list_jobs'):
             print_jobs(when, only_scheduled=True, show_when=True, show_appname=True)
-        else:
-            if not when:
-                self.usage_msg()
-                return
+        elif when in self.when_options:
             self.runjobs(when, options)
             self.runjobs_by_signals(when, options)
+        else:
+            self.usage_msg()
