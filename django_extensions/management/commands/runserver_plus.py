@@ -82,6 +82,10 @@ class Command(BaseCommand):
                             help='Drop into (i)pdb shell if an exception is raised in a view.')
         parser.add_argument('--startup-messages', dest='startup_messages', action="store", default='reload',
                             help='When to show startup messages: reload [default], once, always, never.')
+        parser.add_argument('--keep-meta-shutdown', dest='keep_meta_shutdown_func', action='store_true', default=False,
+                            help="Keep request.META['werkzeug.server.shutdown'] function which is automatically removed "
+                                 "because Django debug pages tries to call the function and unintentionally shuts down "
+                                 "the Werkzeug server.")
 
         if USE_STATICFILES:
             parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
@@ -215,6 +219,7 @@ class Command(BaseCommand):
 
         try:
             from werkzeug import run_simple, DebuggedApplication
+            from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
 
             # Set colored output
             if settings.DEBUG:
@@ -227,6 +232,13 @@ class Command(BaseCommand):
 
         except ImportError:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+
+        class WSGIRequestHandler(_WSGIRequestHandler):
+            def make_environ(self):
+                environ = super(WSGIRequestHandler, self).make_environ()
+                if not options.get('keep_meta_shutdown_func'):
+                    del environ['werkzeug.server.shutdown']
+                return environ
 
         threaded = options.get('threaded', True)
         use_reloader = options.get('use_reloader', True)
@@ -324,6 +336,7 @@ class Command(BaseCommand):
             extra_files=extra_files,
             reloader_interval=reloader_interval,
             threaded=threaded,
+            request_handler=WSGIRequestHandler,
             ssl_context=ssl_context,
         )
 
