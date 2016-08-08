@@ -5,10 +5,17 @@ Changelog
 -----
 
 The "Letting go of the past" release.
+
 From this moment on Django Extensions requires version 1.8 or higher.
 A lot of work has been done to remove old backwards compatibility code and
 make sure that Django Extensions uses the current Django API's. This should
 result in better and easier to maintain code (and hopefully less bugs :).
+
+This release touches a lot of code if you have any issues please report them
+at https://github.com/django-extensions/django-extensions/issues
+
+We still need more tests to make sure we don't break people's projects when
+refactoring. If you have some spare time please contribute tests !
 
 Changes:
  - Cleanup: removing backwards compatibility hacks for (now) unsupported versions of Django
@@ -21,10 +28,13 @@ Changes:
  - Improvement: Django 1.10, use from_db_value instead of models.SubfieldBase
  - Improvement: print_user_session, support for non standard user model
  - Improvement: widont, tests to work with py2 and py3
- - Improvement: runserver_plus, Prevent 2nd reload of debugger on runserver_plus
+ - Improvement: runserver_plus, prevent 2nd reload of debugger on runserver_plus
+ - Improvement: runserver_plus, prevent killing the server when request.META values are evaluated
  - Improvement: reset_db, add argument to make closing sessions optional
  - Improvement: print_settings, Fix positional arguments
  - Improvement: runscript, migrate to argparse and add_arguments
+ - Improvement: graph_models, do not rely on .models_module for inclusion in output
+ - Improvement: jsonfield, fix issues with mutable default
  - Docs: Convert readthedocs links for their .org -> .io migration
 
 
