@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.7.1
+-----
+
+Changes:
+ - Fix: sqldiff, fix optional app_label arguments
+ - Fix: runscript, remove args from command class
+ - Doc: runscript, remove = from --script-args example
+
+
 1.7.0
 -----
 
@@ -36,7 +45,6 @@ Changes:
  - Improvement: graph_models, do not rely on .models_module for inclusion in output
  - Improvement: jsonfield, fix issues with mutable default
  - Docs: Convert readthedocs links for their .org -> .io migration
-
 
 
 1.6.7
