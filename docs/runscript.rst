@@ -74,7 +74,7 @@ Passing arguments
 You can pass arguments from the command line to your script by passing a space separated
 list of values with ``--script-args``. For example::
 
-  $ python manage.py runscript delete_all_questions --script-args=staleonly
+  $ python manage.py runscript delete_all_questions --script-args staleonly
 
 The list of argument values gets passed as arguments to your *run()* function. For
 example::
