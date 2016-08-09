@@ -11,7 +11,6 @@ from django_extensions.management.utils import signalcommand
 
 class Command(EmailNotificationCommand):
     help = 'Runs a script in django context.'
-    args = "script [script ...]"
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
