@@ -10,7 +10,7 @@ from django.core.management import call_command, find_commands, load_command_cla
 from django.test import TestCase
 from django.utils.six import StringIO, PY3
 
-from django_extensions.management.modelviz import use_model
+from django_extensions.management.modelviz import use_model, generate_graph_data
 
 
 class MockLoggingHandler(logging.Handler):
@@ -267,3 +267,7 @@ class GraphModelsTests(TestCase):
             None,
             exclude_models
         ))
+
+    def test_no_models_dot_py(self):
+        data = generate_graph_data(['testapp_with_no_models_file'])
+        self.assertEqual(len(data['graphs']), 1)
