@@ -271,3 +271,6 @@ class GraphModelsTests(TestCase):
     def test_no_models_dot_py(self):
         data = generate_graph_data(['testapp_with_no_models_file'])
         self.assertEqual(len(data['graphs']), 1)
+
+        model_name = data['graphs'][0]['models'][0]['name']
+        self.assertEqual(model_name, 'TeslaCar')
