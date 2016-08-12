@@ -88,8 +88,10 @@ class Command(BaseCommand):
         use_pythonrc = options.get('use_pythonrc', True)
         no_browser = options.get('no_browser', False)
         verbosity = int(options.get('verbosity', 1))
+        print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
 
-        if options.get("print_sql", False):
+        if options.get("print_sql", False) or print_sql:
+
             # Code from http://gist.github.com/118990
             sqlparse = None
             try:
