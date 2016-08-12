@@ -157,3 +157,19 @@ Database application signature
 
 If using PostgreSQL the ``application_name`` is set by default to
 ``django_shell`` to help  identify queries made under shell_plus.
+
+
+SQL queries
+-------------------------
+
+It is possible to print SQL queries as they're executed in shell_plus like::
+
+  $ ./manage.py shell_plus --print-sql
+
+
+You can also set the configuration option SHELL_PLUS_PRINT_SQL to omit the above command line option.
+
+::
+
+  # print SQL queries in shell_plus
+  SHELL_PLUS_PRINT_SQL = True
