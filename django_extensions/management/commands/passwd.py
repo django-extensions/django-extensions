@@ -12,23 +12,20 @@ class Command(BaseCommand):
 
     requires_system_checks = False
 
+    def add_arguments(self, parser):
+        parser.add_argument('username', nargs='?', type=str)
+
     @signalcommand
     def handle(self, *args, **options):
-        if len(args) > 1:
-            raise CommandError("need exactly one or zero arguments for username")
-
-        if args:
-            username, = args
-        else:
-            username = getpass.getuser()
+        username = options['username'] or getpass.getuser()
 
         User = get_user_model()
         try:
-            u = User.objects.get(username=username)
+            u = User.objects.get_by_natural_key(username)
         except User.DoesNotExist:
             raise CommandError("user %s does not exist" % username)
 
-        print("Changing password for user: %s" % u.username)
+        print("Changing password for user: %s" % username)
         p1 = p2 = ""
         while "" in (p1, p2) or p1 != p2:
             p1 = getpass.getpass()
@@ -41,4 +38,4 @@ class Command(BaseCommand):
         u.set_password(p1)
         u.save()
 
-        return "Password changed successfully for user %s\n" % u.username
+        return "Password changed successfully for user %s\n" % username
