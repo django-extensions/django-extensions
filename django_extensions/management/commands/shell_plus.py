@@ -48,6 +48,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--kernel', action='store_true', dest='kernel',
             help='Tells Django to start an IPython Kernel.')
+        parser.add_argument('--connection_file', action='store', dest='connection_file',
+                    help='Specifies the connection file to use if using the --kernel option'),
         parser.add_argument(
             '--use-pythonrc', action='store_true', dest='use_pythonrc',
             help='Tells Django to execute PYTHONSTARTUP file '
@@ -123,13 +125,16 @@ class Command(BaseCommand):
                 if release.version_info[0] < 2:
                     print(self.style.ERROR("--kernel requires at least IPython version 2.0"))
                     return
-                from IPython import embed_kernel
+                from IPython import start_kernel
             except ImportError:
                 return traceback.format_exc()
 
             def run_kernel():
                 imported_objects = import_objects(options, self.style)
-                embed_kernel(local_ns=imported_objects)
+                if options.get('connection_file'):
+                    start_kernel(argv=[], user_ns=imported_objects, connection_file=options.get('connection_file'))
+                else:
+                    start_kernel(argv=[], user_ns=imported_objects)
             return run_kernel
 
         def get_notebook():
