@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.7.2
+-----
+
+Changes:
+ - Fix: passwd, Update passwd command up to Django>=1.8
+ - Improvement: shell_plus, add settings.SHELL_PLUS_PRINT_SQL config option
+ - Improvement: shell_plus, allow to specifies the connection file to use if using the --kernel option
+
+
 1.7.1
 -----
 
