@@ -48,7 +48,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--kernel', action='store_true', dest='kernel',
             help='Tells Django to start an IPython Kernel.')
-        parser.add_argument('--connection_file', action='store', dest='connection_file',
+        parser.add_argument('--connection-file', action='store', dest='connection_file',
                     help='Specifies the connection file to use if using the --kernel option'),
         parser.add_argument(
             '--use-pythonrc', action='store_true', dest='use_pythonrc',
