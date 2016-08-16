@@ -1,8 +1,5 @@
 language: python
 
-cache:
-  pip: true
-
 python:
   - 3.5
 
