@@ -131,10 +131,14 @@ class Command(BaseCommand):
 
             def run_kernel():
                 imported_objects = import_objects(options, self.style)
-                if options.get('connection_file'):
-                    start_kernel(argv=[], user_ns=imported_objects, connection_file=options.get('connection_file'))
-                else:
-                    start_kernel(argv=[], user_ns=imported_objects)
+                kwargs = dict(
+                    argv=[],
+                    user_ns=imported_objects,
+                )
+                connection_file = options.get('connection_file')
+                if connection_file:
+                    kwargs['connection_file'] = connection_file
+                start_kernel(**kwargs)
             return run_kernel
 
         def get_notebook():
