@@ -85,3 +85,6 @@ Current Database Model Field Extensions
 * *ShortUUIDField* - CharField which transparently generates a UUID and pass it to base57. It result in shorter 22 characters values useful e.g. for concise, unambiguous URLS. It's possible to get shorter values with length parameter: they are not Universal Unique any more but probability of collision is still low
 
 * *JSONField* - a generic TextField that neatly serializes/unserializes JSON objects seamlessly
+
+  .. deprecated:: 1.7.3
+     Django 1.9 features a native JSONField. Django-Extensions will support *JSONField* at the very least until Django 1.8 becomes unsupported.
