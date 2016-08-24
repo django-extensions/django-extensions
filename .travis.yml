@@ -36,6 +36,7 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
+    - env: TOX_ENV=py32-dj18
     - env: TOX_ENV=py35-djmaster
     - env: TOX_ENV=py34-djmaster
     - env: TOX_ENV=py27-djmaster
