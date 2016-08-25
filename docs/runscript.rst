@@ -91,6 +91,6 @@ example::
       questions = Question.objects.all()
       if 'staleonly' in args:
           # Only get questions more than 100 days old
-          questions = all_questions.filter(pub_date__lt=timezone.now() - timedelta(days=100))
+          questions = questions.filter(pub_date__lt=timezone.now() - timedelta(days=100))
       # Delete questions
       questions.delete()
