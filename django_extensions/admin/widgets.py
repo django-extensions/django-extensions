@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import six
+from six.moves import urllib
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
@@ -47,7 +48,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         model_name = opts.object_name.lower()
         related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))
         if not self.search_path:
-            self.search_path = '%s/foreignkey_autocomplete/' % related_url
+            self.search_path = urllib.parse.urljoin(related_url, 'foreignkey_autocomplete/')
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
