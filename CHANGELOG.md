@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.7.3
+-----
+
+Changes:
+ - Fix: ForeignKeySearchInput, fix bug with constructing search_path urls
+ - Docs: runscript, fix runscript example
+ - Deprecation: JSONField, Django now includes JSONField our field is now deprecated
+
+
 1.7.2
 -----
 
