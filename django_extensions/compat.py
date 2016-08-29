@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 import importlib
 import django
 
+from django.conf import settings
+
 
 #
 # Django compatibility
@@ -38,3 +40,15 @@ def add_to_builtins_compat(name):
     else:
         from django.template import engines
         engines['django'].engine.builtins.append(name)
+
+
+def get_template_setting(template_key, default=None):
+    """ Read template settings pre and post django 1.8 """
+    templates_var = getattr(settings, 'TEMPLATES', None)
+    if templates_var is not None and template_key in templates_var[0]:
+        return templates_var[0][template_key]
+    if template_key == 'DIRS':
+        pre18_template_key = 'TEMPLATES_%s' % template_key
+        value = getattr(settings, pre18_template_key, default)
+        return value
+    return default

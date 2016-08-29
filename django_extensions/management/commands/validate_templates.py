@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.template.loader import get_template
 
-from django_extensions.compat import add_to_builtins_compat
+from django_extensions.compat import add_to_builtins_compat, get_template_setting
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils import validatingtemplatetags
 
@@ -35,23 +35,22 @@ class Command(BaseCommand):
             "(without {%% load urls from future %%}")
         parser.add_argument(
             '--include', '-i', action='append', dest='includes',
-            default=[], help="Append these paths to TEMPLATE_DIRS")
+            default=[], help="Append these paths to TEMPLATE DIRS")
 
     @signalcommand
     def handle(self, *args, **options):
         from django.conf import settings
         style = color_style()
-        template_dirs = set(settings.TEMPLATE_DIRS)
+        template_dirs = set(get_template_setting('DIRS'))
         template_dirs |= set(options.get('includes', []))
         template_dirs |= set(getattr(settings, 'VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS', []))
 
-        # Load in Templates from 1.8
+        # This is unsafe:
+        # https://docs.djangoproject.com/en/1.10/topics/settings/#altering-settings-at-runtime
         if hasattr(settings, 'TEMPLATES'):
-            for template_engine in settings.TEMPLATES:
-                if 'DIRS' in template_engine:
-                    template_dirs |= set(template_engine['DIRS'])
-
-        settings.TEMPLATE_DIRS = list(template_dirs)
+            settings.TEMPLATES[0]['DIRS'] = list(template_dirs)
+        else:
+            settings.TEMPLATE_DIRS = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
         verbosity = int(options.get('verbosity', 1))
         errors = 0
@@ -73,7 +72,7 @@ class Command(BaseCommand):
                         print(filepath)
                     validatingtemplatetags.before_new_template(options.get('force_new_urls', False))
                     try:
-                        get_template(filename, [root])
+                        get_template(filepath)
                     except Exception as e:
                         errors += 1
                         print("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))

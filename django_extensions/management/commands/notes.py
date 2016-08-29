@@ -7,6 +7,7 @@ import re
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from django_extensions.compat import get_template_setting
 from django_extensions.management.utils import signalcommand
 
 ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
@@ -22,7 +23,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # don't add django internal code
         apps = [app for app in filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)]
-        template_dirs = getattr(settings, 'TEMPLATE_DIRS', [])
+        template_dirs = get_template_setting('DIRS', [])
         if template_dirs:
             apps += template_dirs
         for app_dir in apps:
