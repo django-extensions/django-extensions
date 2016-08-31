@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import os
 import sys
 import shutil
@@ -274,3 +276,14 @@ class GraphModelsTests(TestCase):
 
         model_name = data['graphs'][0]['models'][0]['name']
         self.assertEqual(model_name, 'TeslaCar')
+
+
+class ShowUrlsTests(TestCase):
+    """
+    Tests for the `show_urls` management command.
+    """
+    def test_no_color(self):
+        out = StringIO()
+        call_command('show_urls', '--no-color', stdout=out)
+        self.output = out.getvalue()
+        self.assertNotIn('\x1b', self.output)
