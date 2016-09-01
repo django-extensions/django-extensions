@@ -81,6 +81,8 @@ Current Command Extensions
 * `runserver_plus`_ - The standard runserver stuff but with
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
 
+* *set_fake_emails* - Give all users a new email based on their account data ("%(username)s@example.com" by default). Possible parameters are: username, first_name, last_name. *DEBUG only*
+
 * *set_fake_passwords* -  Sets all user passwords to a common value (*password* by default). *DEBUG only*.
 
 * *show_urls* - Displays the url routes that are defined in your project. Very
@@ -102,6 +104,8 @@ Current Command Extensions
   caching.
 
 * *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
+
+* *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
 
 .. _`create_app`: create_app.html
