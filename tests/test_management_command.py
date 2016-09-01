@@ -13,6 +13,7 @@ from django.test import TestCase
 from django.utils.six import StringIO, PY3
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
+from . import force_color_support
 
 
 class MockLoggingHandler(logging.Handler):
@@ -282,8 +283,16 @@ class ShowUrlsTests(TestCase):
     """
     Tests for the `show_urls` management command.
     """
+    def test_color(self):
+        with force_color_support:
+            out = StringIO()
+            call_command('show_urls', stdout=out)
+            self.output = out.getvalue()
+            self.assertIn('\x1b', self.output)
+
     def test_no_color(self):
-        out = StringIO()
-        call_command('show_urls', '--no-color', stdout=out)
-        self.output = out.getvalue()
-        self.assertNotIn('\x1b', self.output)
+        with force_color_support:
+            out = StringIO()
+            call_command('show_urls', '--no-color', stdout=out)
+            self.output = out.getvalue()
+            self.assertNotIn('\x1b', self.output)
