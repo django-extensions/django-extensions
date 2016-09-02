@@ -49,7 +49,7 @@ class Command(BaseCommand):
         if args:
             appname, = args
 
-        if options['no_color']:
+        if options.get('no_color', False):
             style = no_style()
         else:
             style = color_style()
