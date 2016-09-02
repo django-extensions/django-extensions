@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
 from django.utils import translation
 
-from django_extensions.management.color import color_style
+from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
 
 FMTR = {
@@ -49,7 +49,10 @@ class Command(BaseCommand):
         if args:
             appname, = args
 
-        style = color_style()
+        if options.get('no_color', False):
+            style = no_style()
+        else:
+            style = color_style()
 
         if getattr(settings, 'ADMIN_FOR', None):
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
