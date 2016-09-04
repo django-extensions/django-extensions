@@ -195,9 +195,9 @@ def import_objects(options, style):
     if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus Django Imports"))
+        from django import VERSION as DJANGO_VERSION
         SHELL_PLUS_DJANGO_IMPORTS = {
             'django.core.cache': ['cache'],
-            'django.core.urlresolvers': ['reverse'],
             'django.conf': ['settings'],
             'django.db': ['transaction'],
             'django.db.models': [
@@ -206,6 +206,14 @@ def import_objects(options, style):
             ],
             'django.utils': ['timezone'],
         }
+        if DJANGO_VERSION < (1, 10):
+            SHELL_PLUS_DJANGO_IMPORTS.update({
+                'django.core.urlresolvers': ['reverse'],
+            })
+        else:
+            SHELL_PLUS_DJANGO_IMPORTS.update({
+                'django.urls': ['reverse'],
+            })
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v
