@@ -42,7 +42,7 @@ class Command(BaseCommand):
         from django_extensions.utils.deprecation import MarkedForDeprecationWarning
         warnings.warn(
             "Deprecated: "
-            "\"create_app\" is marked for depreciaton and will be most likely"
+            "\"create_app\" is marked for depreciaton and will most likely "
             "be removed in future releases. Use \"startapp --template\" instead.",
             MarkedForDeprecationWarning
         )
