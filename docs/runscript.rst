@@ -94,3 +94,10 @@ example::
           questions = questions.filter(pub_date__lt=timezone.now() - timedelta(days=100))
       # Delete questions
       questions.delete()
+
+Debugging
+---------
+
+If an exception occurs you will not get a traceback by default.  To get a traceback specify ``--traceback``. For example::
+
+  $ python manage.py runscript delete_all_questions --traceback
