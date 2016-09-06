@@ -5,7 +5,7 @@
 .. image:: https://img.shields.io/pypi/l/django-extensions.svg
    :target: https://raw.githubusercontent.com/django-extensions/django-extensions/master/LICENSE
 
-.. image:: https://secure.travis-ci.org/django-extensions/django-extensions.png?branch=master
+.. image:: https://secure.travis-ci.org/django-extensions/django-extensions.svg?branch=master
     :alt: Build Status
     :target: http://travis-ci.org/django-extensions/django-extensions
 
