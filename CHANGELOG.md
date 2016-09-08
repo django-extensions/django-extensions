@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.7.4
+-----
+
+Changes:
+ - Improvement: show_urls, support --no-color option
+ - Fix: notes, Fix reading templates setting after django 1.8
+ - Fix: create_app, Fixed typo in deprecation warning
+ - Fix: shell_plus, Use new location for url reverse import
+ - Docs: some commands where missing from the docs
+ - Docs: runscript, added documentation for --traceback
+
+
 1.7.3
 -----
 
