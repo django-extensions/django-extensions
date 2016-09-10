@@ -212,6 +212,11 @@ class Command(BaseCommand):
         graph = pydot.graph_from_dot_data(dotdata)
         if not graph:
             raise CommandError("pydot returned an error")
+        if isinstance(graph, (list, tuple)):
+            if len(graph) > 1:
+                sys.stderr.write("Found more then one graph, rendering only the first one.\n")
+            graph = graph[0]
+
         output_file = kwargs['outputfile']
         formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
                    'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
