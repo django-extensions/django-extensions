@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.7.5
+-----
+
+Changes:
+ - Removed: validate_templatetags, remove support for pre django-1.5 style {% url %} tags
+
+
 1.7.4
 -----
 
