@@ -5,6 +5,7 @@ Changelog
 -----
 
 Changes:
+ - Fix: graph_models, Support PyDot 1.2.0 and higher
  - Removed: validate_templatetags, remove support for pre django-1.5 style {% url %} tags
  - Cleanup: removing support for end-of-life Python 3.2.
 
