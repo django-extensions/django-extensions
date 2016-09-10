@@ -6,6 +6,7 @@ Changelog
 
 Changes:
  - Removed: validate_templatetags, remove support for pre django-1.5 style {% url %} tags
+ - Cleanup: removing support for end-of-life Python 3.2.
 
 
 1.7.4
