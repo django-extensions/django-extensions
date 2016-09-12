@@ -92,7 +92,10 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        app_labels = options['appname']
+        if 'appname' in options:
+            app_labels = options['appname']
+        else:
+            app_labels = args
 
         # Get the models we want to export
         models = get_models(app_labels)
