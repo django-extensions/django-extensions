@@ -107,7 +107,7 @@ class Command(EmailNotificationCommand):
                     finally:
                         exc_traceback = None
 
-                if verbosity > 1:
+                if verbosity > 0 and not silent:
                     if verbosity > 2:
                         traceback.print_exc()
                     print(ERROR("Cannot import module '%s': %s." % (mod, e)))
