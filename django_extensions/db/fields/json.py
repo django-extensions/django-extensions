@@ -14,7 +14,6 @@ from __future__ import absolute_import
 
 import json
 import six
-import warnings
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
