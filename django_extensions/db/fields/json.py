@@ -55,9 +55,6 @@ class JSONField(models.TextField):
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn("Django 1.9 features a native JsonField, this JSONField will "
-            "be removed somewhere after Django 1.8 becomes unsupported.",
-            DeprecationWarning)
         kwargs['default'] = kwargs.get('default', dict)
         models.TextField.__init__(self, *args, **kwargs)
 
