@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from unittest import skipIf, skipUnless
-
 import six
 from django.test import SimpleTestCase
 from django_extensions.management.modelviz import generate_graph_data
