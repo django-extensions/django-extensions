@@ -6,7 +6,7 @@ import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from django_extensions.management.modelviz import generate_graph_data, generate_dot
+from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -146,7 +146,9 @@ class Command(BaseCommand):
             raise CommandError("Cannot specify --json with --pydot or --pygraphviz")
 
         cli_options = ' '.join(sys.argv[2:])
-        graph_data = generate_graph_data(args, cli_options=cli_options, **options)
+        graph_models = ModelGraph(args, cli_options=cli_options, **options)
+        graph_models.generate_graph_data()
+        graph_data = graph_models.get_graph_data()
         if use_json:
             self.render_output_json(graph_data, **options)
             return
