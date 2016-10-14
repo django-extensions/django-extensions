@@ -6,6 +6,9 @@ Current Command Extensions
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
 
+* *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
+  source code at STDOUT.
+
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
   can indicate a template directory structure to use as your default.
@@ -21,8 +24,7 @@ Current Command Extensions
   given app name in the current directory.  This is part of the impressive jobs
   system.
 
-* *create_superuser* - Makes it easy to create a superuser for the
-  django.contrib.auth.
+* *clear_cache* - Clear django cache, useful when testing or deploying.
 
 * *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
@@ -48,12 +50,21 @@ Current Command Extensions
 
 * *passwd* - Makes it easy to reset a user's password.
 
+* *pipchecker* - Scan pip requirement file(s)s for out-of-date packages. Similar to
+  ``pip list -o`` which used installed packages (in virtualenv) instead of requirements file(s).
+
 * `print_settings`_ - Similar to ``diffsettings`` but shows *selected*
   active Django settings or *all* if no args passed.
 
 * *print_user_for_session* - Print the user information for the provided
   session key. this is very helpful when trying to track down the person who
   experienced a site crash.
+  It seems this works only if setting ``SESSION_ENGINE`` is
+  ``'django.contrib.sessions.backends.db'`` (default value).
+
+* *drop_test_database* - Drops the test database. Usefull when running Django
+  test via some automated system (BuildBot, Jenkins, etc) and making sure that
+  the test database is always dropped at the end.
 
 * *reset_db* - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
@@ -70,6 +81,8 @@ Current Command Extensions
 * `runserver_plus`_ - The standard runserver stuff but with
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
 
+* *set_fake_emails* - Give all users a new email based on their account data ("%(username)s@example.com" by default). Possible parameters are: username, first_name, last_name. *DEBUG only*
+
 * *set_fake_passwords* -  Sets all user passwords to a common value (*password* by default). *DEBUG only*.
 
 * *show_urls* - Displays the url routes that are defined in your project. Very
@@ -82,10 +95,17 @@ Current Command Extensions
 * :doc:`sqlcreate` - Generates the SQL to create your database for you, as specified
   in settings.py.
 
+* :doc:`sqldsn` - Reads the Django settings and extracts the parameters needed
+  to connect to databases using other programs.
+
 * `sync_s3`_ - Copies files found in settings.MEDIA_ROOT to S3.
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser
   caching.
+
+* *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
+
+* *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
 
 .. _`create_app`: create_app.html

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 runprofileserver.py
 
@@ -9,36 +10,17 @@ Credits for kcachegrind support taken from lsprofcalltree.py go to:
  Johan Dahlin
 """
 
-from django.core.management.base import BaseCommand, CommandError
-from optparse import make_option
-from datetime import datetime
-from django.conf import settings
 import sys
+from datetime import datetime
 
-try:
-    from django.contrib.staticfiles.handlers import StaticFilesHandler
-    USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
-except ImportError as e:
-    USE_STATICFILES = False
+from django.conf import settings
+from django.contrib.staticfiles.handlers import StaticFilesHandler
+from django.core.management.base import BaseCommand, CommandError
+from django.core.servers.basehttp import get_internal_wsgi_application
 
-try:
-    any
-except NameError:
-    # backwards compatibility for <2.5
-    def any(iterable):
-        for element in iterable:
-            if element:
-                return True
-        return False
+from django_extensions.management.utils import signalcommand
 
-
-def label(code):
-    if isinstance(code, str):
-        return ('~', 0, code)    # built-in functions ('~' sorts at the end)
-    else:
-        return '%s %s:%d' % (code.co_name,
-                             code.co_filename,
-                             code.co_firstlineno)
+USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 
 
 class KCacheGrind(object):
@@ -64,12 +46,11 @@ class KCacheGrind(object):
         out_file = self.out_file
 
         code = entry.code
-        #print >> out_file, 'ob=%s' % (code.co_filename,)
         if isinstance(code, str):
-            out_file.write('fi=~\n')
+            out_file.write('fn=%s\n' % code)
         else:
-            out_file.write('fi=%s\n' % (code.co_filename,))
-        out_file.write('fn=%s\n' % (label(code),))
+            out_file.write('fl=%s\n' % code.co_filename)
+            out_file.write('fn=%s\n' % code.co_name)
 
         inlinetime = int(entry.inlinetime * 1000)
         if isinstance(code, str):
@@ -95,13 +76,12 @@ class KCacheGrind(object):
     def _subentry(self, lineno, subentry):
         out_file = self.out_file
         code = subentry.code
-        #out_file.write('cob=%s\n' % (code.co_filename,))
-        out_file.write('cfn=%s\n' % (label(code),))
         if isinstance(code, str):
-            out_file.write('cfi=~\n')
+            out_file.write('cfn=%s\n' % code)
             out_file.write('calls=%d 0\n' % (subentry.callcount,))
         else:
-            out_file.write('cfi=%s\n' % (code.co_filename,))
+            out_file.write('cfl=%s\n' % code.co_filename)
+            out_file.write('cfn=%s\n' % code.co_name)
             out_file.write('calls=%d %d\n' % (subentry.callcount, code.co_firstlineno))
 
         totaltime = int(subentry.totaltime * 1000)
@@ -109,55 +89,55 @@ class KCacheGrind(object):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--noreload', action='store_false', dest='use_reloader', default=True,
-                    help='Tells Django to NOT use the auto-reloader.'),
-        make_option('--adminmedia', dest='admin_media_path', default='',
-                    help='Specifies the directory from which to serve admin media.'),
-        make_option('--prof-path', dest='prof_path', default='/tmp',
-                    help='Specifies the directory which to save profile information in.'),
-        make_option('--prof-file', dest='prof_file', default='{path}.{duration:06d}ms.{time}',
-                    help='Set filename format, default if "{path}.{duration:06d}ms.{time}".'),
-        make_option('--nomedia', action='store_true', dest='no_media', default=False,
-                    help='Do not profile MEDIA_URL and ADMIN_MEDIA_URL'),
-        make_option('--use-cprofile', action='store_true', dest='use_cprofile', default=False,
-                    help='Use cProfile if available, this is disabled per default because of incompatibilities.'),
-        make_option('--kcachegrind', action='store_true', dest='use_lsprof', default=False,
-                    help='Create kcachegrind compatible lsprof files, this requires and automatically enables cProfile.'),
-    )
-    if USE_STATICFILES:
-        option_list += (
-            make_option('--nostatic', action="store_false", dest='use_static_handler', default=True,
-                        help='Tells Django to NOT automatically serve static files at STATIC_URL.'),
-            make_option('--insecure', action="store_true", dest='insecure_serving', default=False,
-                        help='Allows serving static files even if DEBUG is False.'),
-        )
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
 
-    # Validation is called explicitly each time the server is reloaded.
-    requires_model_validation = False
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--noreload', action='store_false', dest='use_reloader',
+            default=True,
+            help='Tells Django to NOT use the auto-reloader.')
+        parser.add_argument(
+            '--prof-path', dest='prof_path', default='/tmp',
+            help='Specifies the directory which to save profile information '
+            'in.')
+        parser.add_argument(
+            '--prof-file', dest='prof_file',
+            default='{path}.{duration:06d}ms.{time}',
+            help='Set filename format, default if '
+            '"{path}.{duration:06d}ms.{time}".')
+        parser.add_argument(
+            '--nomedia', action='store_true', dest='no_media', default=False,
+            help='Do not profile MEDIA_URL')
+        parser.add_argument(
+            '--use-cprofile', action='store_true', dest='use_cprofile',
+            default=False,
+            help='Use cProfile if available, this is disabled per default '
+            'because of incompatibilities.')
+        parser.add_argument(
+            '--kcachegrind', action='store_true', dest='use_lsprof',
+            default=False,
+            help='Create kcachegrind compatible lsprof files, this requires '
+            'and automatically enables cProfile.')
 
+        if USE_STATICFILES:
+            parser.add_argument(
+                '--nostatic', action="store_false", dest='use_static_handler',
+                default=True,
+                help='Tells Django to NOT automatically serve static files '
+                'at STATIC_URL.')
+            parser.add_argument(
+                '--insecure', action="store_true", dest='insecure_serving',
+                default=False,
+                help='Allows serving static files even if DEBUG is False.')
+
+    @signalcommand
     def handle(self, addrport='', *args, **options):
         import django
         import socket
         import errno
         from django.core.servers.basehttp import run
-        try:
-            from django.core.servers.basehttp import get_internal_wsgi_application as WSGIHandler
-        except ImportError:
-            from django.core.handlers.wsgi import WSGIHandler  # noqa
-
-        try:
-            from django.core.servers.basehttp import AdminMediaHandler
-            HAS_ADMINMEDIAHANDLER = True
-        except ImportError:
-            HAS_ADMINMEDIAHANDLER = False
-
-        try:
-            from django.core.servers.basehttp import WSGIServerException as wsgi_server_exc_cls
-        except ImportError:  # Django 1.6
-            wsgi_server_exc_cls = socket.error
 
         if args:
             raise CommandError('Usage is runserver %s' % self.args)
@@ -185,8 +165,9 @@ class Command(BaseCommand):
             import time
             try:
                 import hotshot
+                HAS_HOTSHOT = True
             except ImportError:
-                pass            # python 3.x
+                HAS_HOTSHOT = False  # python 3.x
             USE_CPROFILE = options.get('use_cprofile', False)
             USE_LSPROF = options.get('use_lsprof', False)
             if USE_LSPROF:
@@ -199,7 +180,11 @@ class Command(BaseCommand):
                     print("cProfile disabled, module cannot be imported!")
                     USE_CPROFILE = False
             if USE_LSPROF and not USE_CPROFILE:
-                raise SystemExit("Kcachegrind compatible output format required cProfile from Python 2.5")
+                raise CommandError("Kcachegrind compatible output format required cProfile from Python 2.5")
+
+            if not HAS_HOTSHOT and not USE_CPROFILE:
+                raise CommandError("Hotshot profile library not found. (and not using cProfile)")
+
             prof_path = options.get('prof_path', '/tmp')
 
             prof_file = options.get('prof_file', '{path}.{duration:06d}ms.{time}')
@@ -215,9 +200,6 @@ class Command(BaseCommand):
                 static_url = getattr(settings, 'STATIC_URL', None)
                 if static_url:
                     exclude_paths.append(static_url)
-                admin_media_prefix = getattr(settings, 'ADMIN_MEDIA_PREFIX', None)
-                if admin_media_prefix:
-                    exclude_paths.append(admin_media_prefix)
                 return exclude_paths
 
             def make_profiler_handler(inner_handler):
@@ -243,7 +225,8 @@ class Command(BaseCommand):
                         elapms = elap.seconds * 1000.0 + elap.microseconds / 1000.0
                         if USE_LSPROF:
                             kg = KCacheGrind(prof)
-                            kg.output(open(profname, 'w'))
+                            with open(profname, 'w') as f:
+                                kg.output(f)
                         elif USE_CPROFILE:
                             prof.dump_stats(profname)
                         profname2 = prof_file.format(path=path_name, duration=int(elapms), time=int(time.time()))
@@ -254,44 +237,31 @@ class Command(BaseCommand):
                 return handler
 
             print("Validating models...")
-            self.validate(display_num_errors=True)
+            if hasattr(self, 'check'):
+                self.check(display_num_errors=True)
+            else:
+                self.validate(display_num_errors=True)
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at http://%s:%s/" % (addr, port))
             print("Quit the server with %s." % quit_command)
-            path = options.get('admin_media_path', '')
-            if not path:
-                admin_media_path = os.path.join(django.__path__[0], 'contrib/admin/static/admin')
-                if os.path.isdir(admin_media_path):
-                    path = admin_media_path
-                else:
-                    path = os.path.join(django.__path__[0], 'contrib/admin/media')
             try:
-                handler = WSGIHandler()
-                if HAS_ADMINMEDIAHANDLER:
-                    handler = AdminMediaHandler(handler, path)
+                handler = get_internal_wsgi_application()
                 if USE_STATICFILES:
                     use_static_handler = options.get('use_static_handler', True)
                     insecure_serving = options.get('insecure_serving', False)
-                    if (use_static_handler and (settings.DEBUG or insecure_serving)):
+                    if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
                 run(addr, int(port), handler)
-            except wsgi_server_exc_cls as e:
+            except socket.error as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {
                     errno.EACCES: "You don't have permission to access that port.",
                     errno.EADDRINUSE: "That port is already in use.",
                     errno.EADDRNOTAVAIL: "That IP address can't be assigned-to.",
                 }
-                if not isinstance(e, socket.error):  # Django < 1.6
-                    ERRORS[13] = ERRORS.pop(errno.EACCES)
-                    ERRORS[98] = ERRORS.pop(errno.EADDRINUSE)
-                    ERRORS[99] = ERRORS.pop(errno.EADDRNOTAVAIL)
                 try:
-                    if not isinstance(e, socket.error):  # Django < 1.6
-                        error_text = ERRORS[e.args[0].args[0]]
-                    else:
-                        error_text = ERRORS[e.errno]
+                    error_text = ERRORS[e.errno]
                 except (AttributeError, KeyError):
                     error_text = str(e)
                 sys.stderr.write(self.style.ERROR("Error: %s" % error_text) + '\n')

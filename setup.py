@@ -1,14 +1,40 @@
+# -*- coding: utf-8 -*-
 """
 Based entirely on Django's own ``setup.py``.
 """
 import os
 import sys
-from distutils.command.install_data import install_data
 from distutils.command.install import INSTALL_SCHEMES
+from distutils.command.install_data import install_data
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup  # NOQA
+
+try:
+    from setuptools.command.test import test as TestCommand
+
+    class PyTest(TestCommand):
+        user_options = [('pytest-args=', 'a', "Arguments to pass into py.test")]
+
+        def initialize_options(self):
+            TestCommand.initialize_options(self)
+            self.pytest_args = []
+
+        def finalize_options(self):
+            TestCommand.finalize_options(self)
+            self.test_args = []
+            self.test_suite = True
+
+        def run_tests(self):
+            import pytest
+
+            errno = pytest.main(self.pytest_args)
+            sys.exit(errno)
+
+except ImportError:
+    PyTest = None
 
 
 class osx_install_data(install_data):
@@ -29,6 +55,9 @@ if sys.platform == "darwin":
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
+
+if PyTest:
+    cmdclasses['test'] = PyTest
 
 
 def fullsplit(path, result=None):
@@ -98,18 +127,30 @@ additions for Django projects. See the project page for more information:
     cmdclass=cmdclasses,
     package_data=package_data,
     install_requires=['six>=1.2'],
-    tests_require=['Django', 'shortuuid', 'python-dateutil'],
-    test_suite='run_tests.main',
+    tests_require=[
+        'Django',
+        'shortuuid',
+        'python-dateutil',
+        'pytest',
+        'pytest-django',
+        'pytest-cov',
+        'tox',
+        'mock',
+    ],
     classifiers=[
-        'Development Status :: 4 - Beta',
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
     ],
 )

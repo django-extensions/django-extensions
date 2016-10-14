@@ -1,49 +1,51 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
-from optparse import make_option
-import imp
+# -*- coding: utf-8 -*-
+import sys
+import importlib
+import traceback
+
+from django.apps import apps
+
+from django_extensions.management.email_notifications import EmailNotificationCommand
+from django_extensions.management.utils import signalcommand
 
 
-def vararg_callback(option, opt_str, opt_value, parser):
-    parser.rargs.insert(0, opt_value)
-    value = []
-    for arg in parser.rargs:
-        # stop on --foo like options
-        if arg[:2] == "--" and len(arg) > 2:
-            break
-        # stop on -a like options
-        if arg[:1] == "-":
-            break
-        value.append(arg)
-
-    del parser.rargs[:len(value)]
-    setattr(parser.values, option.dest, value)
-
-
-class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--fixtures', action='store_true', dest='infixtures', default=False,
-                    help='Only look in app.fixtures subdir'),
-        make_option('--noscripts', action='store_true', dest='noscripts', default=False,
-                    help='Look in app.scripts subdir'),
-        make_option('-s', '--silent', action='store_true', dest='silent', default=False,
-                    help='Run silently, do not show errors and tracebacks'),
-        make_option('--no-traceback', action='store_true', dest='no_traceback', default=False,
-                    help='Do not show tracebacks'),
-        make_option('--script-args', action='callback', callback=vararg_callback, type='string',
-                    help='Space-separated argument list to be passed to the scripts. Note that the '
-                         'same arguments will be passed to all named scripts.'),
-    )
+class Command(EmailNotificationCommand):
     help = 'Runs a script in django context.'
-    args = "script [script ...]"
 
-    def handle(self, *scripts, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('script', nargs='+')
+        parser.add_argument(
+            '--fixtures', action='store_true', dest='infixtures', default=False,
+            help='Only look in app.fixtures subdir',
+        )
+        parser.add_argument(
+            '--noscripts', action='store_true', dest='noscripts', default=False,
+            help='Look in app.scripts subdir',
+        )
+        parser.add_argument(
+            '-s', '--silent', action='store_true', dest='silent', default=False,
+            help='Run silently, do not show errors and tracebacks',
+        )
+        parser.add_argument(
+            '--no-traceback', action='store_true', dest='no_traceback', default=False,
+            help='Do not show tracebacks',
+        )
+        parser.add_argument(
+            '--script-args', nargs='*', type=str,
+            help='Space-separated argument list to be passed to the scripts. Note that the '
+                 'same arguments will be passed to all named scripts.',
+        )
+
+    @signalcommand
+    def handle(self, *args, **options):
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
         ERROR2 = self.style.NOTICE
 
         subdirs = []
+        scripts = options['script']
 
         if not options.get('noscripts'):
             subdirs.append('scripts')
@@ -60,6 +62,7 @@ class Command(BaseCommand):
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
+        email_notifications = options.get('email_notifications', False)
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -72,11 +75,16 @@ class Command(BaseCommand):
         def run_script(mod, *script_args):
             try:
                 mod.run(*script_args)
+                if email_notifications:
+                    self.send_email_notification(notification_id=mod.__name__)
             except Exception:
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
+                if email_notifications:
+                    self.send_email_notification(
+                        notification_id=mod.__name__, include_traceback=True)
                 if show_traceback:
                     raise
 
@@ -85,22 +93,30 @@ class Command(BaseCommand):
                 print(NOTICE("Check for %s" % mod))
             # check if module exists before importing
             try:
-                path = None
-                for package in mod.split('.')[:-1]:
-                    module_tuple = imp.find_module(package, path)
-                    path = imp.load_module(package, *module_tuple).__path__
-                imp.find_module(mod.split('.')[-1], path)
+                importlib.import_module(mod)
                 t = __import__(mod, [], [], [" "])
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as e:
+                if str(e).startswith('No module named'):
+                    try:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        try:
+                            if exc_traceback.tb_next.tb_next is None:
+                                return False
+                        except AttributeError:
+                            pass
+                    finally:
+                        exc_traceback = None
+
+                if verbosity > 1:
+                    if verbosity > 2:
+                        traceback.print_exc()
+                    print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+
                 return False
 
-            #if verbosity > 1:
-            #    print(NOTICE("Found script %s ..." % mod))
             if hasattr(t, "run"):
                 if verbosity > 1:
                     print(NOTICE2("Found script '%s' ..." % mod))
-                #if verbosity > 1:
-                #    print(NOTICE("found run() in %s. executing..." % mod))
                 return t
             else:
                 if verbosity > 1:
@@ -110,9 +126,9 @@ class Command(BaseCommand):
             """ find script module which contains 'run' attribute """
             modules = []
             # first look in apps
-            for app in settings.INSTALLED_APPS:
+            for app in apps.get_app_configs():
                 for subdir in subdirs:
-                    mod = my_import("%s.%s.%s" % (app, subdir, script))
+                    mod = my_import("%s.%s.%s" % (app.name, subdir, script))
                     if mod:
                         modules.append(mod)
 
@@ -140,7 +156,9 @@ class Command(BaseCommand):
             modules = find_modules_for_script(script)
             if not modules:
                 if verbosity > 0 and not silent:
-                    print(ERROR("No module for script '%s' found" % script))
+                    print(ERROR("No (valid) module for script '%s' found" % script))
+                    if verbosity < 2:
+                        print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
             for mod in modules:
                 if verbosity > 1:
                     print(NOTICE2("Running script '%s' ..." % mod.__name__))

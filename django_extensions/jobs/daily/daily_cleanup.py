@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Daily cleanup job.
 
@@ -13,4 +14,4 @@ class Job(DailyJob):
 
     def execute(self):
         from django.core import management
-        management.call_command("cleanup")
+        management.call_command("clearsessions")

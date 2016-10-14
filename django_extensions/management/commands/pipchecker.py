@@ -1,13 +1,15 @@
-import os
-import pip
-import sys
+# -*- coding: utf-8 -*-
 import json
-
+import os
 from distutils.version import LooseVersion
-from django.core.management.base import NoArgsCommand
-from django_extensions.management.color import color_style
-from optparse import make_option
+
+import pip
+from django.core.management.base import BaseCommand, CommandError
 from pip.req import parse_requirements
+
+from django_extensions.management.color import color_style
+from django_extensions.management.utils import signalcommand
+
 try:
     from urllib.parse import urlparse
     from urllib.error import HTTPError
@@ -26,26 +28,28 @@ except ImportError:
     HAS_REQUESTS = False
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option(
-            "-t", "--github-api-token", action="store", dest="github_api_token",
-            help="A github api authentication token."
-        ),
-        make_option(
-            "-r", "--requirement", action="append", dest="requirements",
-            default=[], metavar="FILENAME",
-            help="Check all the packages listed in the given requirements file. "
-                 "This option can be used multiple times."
-        ),
-        make_option(
-            "-n", "--newer", action="store_true", dest="show_newer",
-            help="Also show when newer version then available is installed."
-        ),
-    )
+class Command(BaseCommand):
     help = "Scan pip requirement files for out-of-date packages."
 
-    def handle_noargs(self, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            "-t", "--github-api-token", action="store",
+            dest="github_api_token", help="A github api authentication token."
+        )
+        parser.add_argument(
+            "-r", "--requirement", action="append", dest="requirements",
+            default=[], metavar="FILENAME",
+            help="Check all the packages listed in the given requirements "
+                 "file. This option can be used multiple times."
+        ),
+        parser.add_argument(
+            "-n", "--newer", action="store_true", dest="show_newer",
+            help="Also show when newer version then available is installed."
+        )
+
+    @signalcommand
+    def handle(self, *args, **options):
         self.style = color_style()
 
         self.options = options
@@ -57,21 +61,33 @@ class Command(NoArgsCommand):
             req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
                          if os.path.isfile(os.path.join("requirements", f)) and
                          f.lower().endswith(".txt")]
+        elif os.path.exists("requirements-dev.txt"):
+            req_files = ["requirements-dev.txt"]
+        elif os.path.exists("requirements-prod.txt"):
+            req_files = ["requirements-prod.txt"]
         else:
-            sys.exit("requirements not found")
+            raise CommandError("Requirements file(s) not found")
+
+        try:
+            from pip.download import PipSession
+        except ImportError:
+            raise CommandError("Pip version 6 or higher is required")
 
         self.reqs = {}
-        for filename in req_files:
-            class Object(object):
-                pass
-            mockoptions = Object()
-            mockoptions.default_vcs = "git"
-            mockoptions.skip_requirements_regex = None
-            for req in parse_requirements(filename, options=mockoptions):
-                self.reqs[req.name] = {
-                    "pip_req": req,
-                    "url": req.url,
-                }
+        with PipSession() as session:
+            for filename in req_files:
+                for req in parse_requirements(filename, session=session):
+                    # url attribute changed to link in pip version 6.1.0 and above
+                    if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
+                        self.reqs[req.name] = {
+                            "pip_req": req,
+                            "url": req.link,
+                        }
+                    else:
+                        self.reqs[req.name] = {
+                            "pip_req": req,
+                            "url": req.url,
+                        }
 
         if options["github_api_token"]:
             self.github_api_token = options["github_api_token"]
@@ -101,14 +117,14 @@ class Command(NoArgsCommand):
             if name in self.reqs.keys():
                 self.reqs[name]["dist"] = dist
 
-        pypi = ServerProxy("http://pypi.python.org/pypi")
+        pypi = ServerProxy("https://pypi.python.org/pypi")
         for name, req in list(self.reqs.items()):
             if req["url"]:
                 continue  # skipping github packages.
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].url_name)
+                available = pypi.package_releases(req["pip_req"].name)
                 try:
                     available_version = LooseVersion(available[0])
                 except IndexError:
@@ -176,6 +192,7 @@ class Command(NoArgsCommand):
             req_url = req["url"]
             if not req_url:
                 continue
+            req_url = str(req_url)
             if req_url.startswith("git") and "github.com/" not in req_url:
                 continue
             if req_url.endswith(".tar.gz") or req_url.endswith(".tar.bz2") or req_url.endswith(".zip"):
@@ -193,7 +210,6 @@ class Command(NoArgsCommand):
                 continue
 
             try:
-                #test_auth = self._urlopen_as_json("https://api.github.com/django/", headers=headers)
                 test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             except HTTPError as e:
                 print("\n%s\n" % str(e))
@@ -219,13 +235,11 @@ class Command(NoArgsCommand):
 
             if frozen_commit_sha:
                 branch_url = "https://api.github.com/repos/{0}/{1}/branches".format(user, repo_name)
-                #branch_data = self._urlopen_as_json(branch_url, headers=headers)
                 branch_data = requests.get(branch_url, headers=headers).json()
 
                 frozen_commit_url = "https://api.github.com/repos/{0}/{1}/commits/{2}".format(
                     user, repo_name, frozen_commit_sha
                 )
-                #frozen_commit_data = self._urlopen_as_json(frozen_commit_url, headers=headers)
                 frozen_commit_data = requests.get(frozen_commit_url, headers=headers).json()
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":

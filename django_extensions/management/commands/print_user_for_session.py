@@ -1,16 +1,12 @@
-from importlib import import_module
+# -*- coding: utf-8 -*-
+import importlib
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.base import VALID_KEY_CHARS
 from django.core.management.base import BaseCommand, CommandError
 
-try:
-    from django.contrib.auth import get_user_model  # Django 1.5
-except ImportError:
-    from django_extensions.future_1_5 import get_user_model
-
-try:
-    from django.contrib.sessions.backends.base import VALID_KEY_CHARS  # Django 1.5
-except ImportError:
-    VALID_KEY_CHARS = "abcdef0123456789"
+from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
@@ -20,9 +16,9 @@ class Command(BaseCommand):
     args = "session_key"
     label = 'session key for the user'
 
-    requires_model_validation = True
     can_import_settings = True
 
+    @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("extra arguments supplied")
@@ -35,7 +31,7 @@ class Command(BaseCommand):
         if not set(key).issubset(set(VALID_KEY_CHARS)):
             raise CommandError("malformed session key")
 
-        engine = import_module(settings.SESSION_ENGINE)
+        engine = importlib.import_module(settings.SESSION_ENGINE)
 
         if not engine.SessionStore().exists(key):
             print("Session Key does not exist. Expired?")
@@ -62,10 +58,9 @@ class Command(BaseCommand):
             print("No user associated with that id.")
             return
 
-        username_field = 'username'
-
-        if hasattr(User, 'USERNAME_FIELD') and User.USERNAME_FIELD is not None:
-            username_field = User.USERNAME_FIELD
-
-        for key in [username_field, 'email', 'first_name', 'last_name']:
-            print("%s: %s" % (key, getattr(user, key)))
+        # use django standrd api for reporting
+        print("full name: %s" % user.get_full_name())
+        print("short name: %s" % user.get_short_name())
+        print("username: %s" % user.get_username())
+        if hasattr(user, 'email'):
+            print("email: %s" % user.email)

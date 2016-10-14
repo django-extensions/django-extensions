@@ -1,17 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Django Extensions abstract base model classes.
 """
 from django.db import models
+from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from django_extensions.db.fields import (ModificationDateTimeField,
-                                         CreationDateTimeField, AutoSlugField)
 
-try:
-    from django.utils.timezone import now as datetime_now
-    assert datetime_now
-except ImportError:
-    import datetime
-    datetime_now = datetime.datetime.now
+from django_extensions.db.fields import (
+    AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
+)
 
 
 class TimeStampedModel(models.Model):
@@ -22,20 +19,33 @@ class TimeStampedModel(models.Model):
     created = CreationDateTimeField(_('created'))
     modified = ModificationDateTimeField(_('modified'))
 
+    def save(self, **kwargs):
+        self.update_modified = kwargs.pop('update_modified', getattr(self, 'update_modified', True))
+        super(TimeStampedModel, self).save(**kwargs)
+
     class Meta:
         get_latest_by = 'modified'
         ordering = ('-modified', '-created',)
         abstract = True
 
 
-class TitleSlugDescriptionModel(models.Model):
+class TitleDescriptionModel(models.Model):
+    """ TitleDescriptionModel
+    An abstract base class model that provides title and description fields.
+    """
+    title = models.CharField(_('title'), max_length=255)
+    description = models.TextField(_('description'), blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class TitleSlugDescriptionModel(TitleDescriptionModel):
     """ TitleSlugDescriptionModel
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
-    title = models.CharField(_('title'), max_length=255)
     slug = AutoSlugField(_('slug'), populate_from='title')
-    description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -58,10 +68,6 @@ class ActivatorModelManager(models.Manager):
     """ ActivatorModelManager
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
-    def get_query_set(self):
-        """ Proxy to `get_queryset`, drop this when Django < 1.6 is no longer supported """
-        return self.get_queryset()
-
     def get_queryset(self):
         """ Use ActivatorQuerySet for all results """
         return ActivatorQuerySet(model=self.model, using=self._db)
@@ -69,12 +75,12 @@ class ActivatorModelManager(models.Manager):
     def active(self):
         """ Returns active instances of ActivatorModel: SomeModel.objects.active(),
         proxy to ActivatorQuerySet.active """
-        return self.get_query_set().active()
+        return self.get_queryset().active()
 
     def inactive(self):
         """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive(),
         proxy to ActivatorQuerySet.inactive """
-        return self.get_query_set().inactive()
+        return self.get_queryset().inactive()
 
 
 class ActivatorModel(models.Model):
@@ -97,5 +103,5 @@ class ActivatorModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.activate_date:
-            self.activate_date = datetime_now()
+            self.activate_date = now()
         super(ActivatorModel, self).save(*args, **kwargs)

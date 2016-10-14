@@ -1,27 +1,9 @@
-from django.conf import settings
+# -*- coding: utf-8 -*-
+import logging
 import os
 import sys
-import logging
 
-try:
-    from importlib import import_module
-except ImportError:
-    try:
-        from django.utils.importlib import import_module
-    except ImportError:
-        def import_module(module):
-            return __import__(module, {}, {}, [''])
-
-
-def get_project_root():
-    """ get the project root directory """
-    django_settings_module = os.environ.get('DJANGO_SETTINGS_MODULE')
-    if not django_settings_module:
-        module_str = settings.SETTINGS_MODULE
-    else:
-        module_str = django_settings_module.split(".")[0]
-    mod = import_module(module_str)
-    return os.path.dirname(os.path.abspath(mod.__file__))
+from django_extensions.management.signals import post_command, pre_command
 
 
 def _make_writeable(filename):
@@ -67,3 +49,22 @@ class RedirectHandler(logging.Handler):
 
     def emit(self, record):
         self.logger.handle(record)
+
+
+def signalcommand(func):
+    """A decorator for management command handle defs that sends out a pre/post signal."""
+    def inner(self, *args, **kwargs):
+        pre_command.send(self.__class__, args=args, kwargs=kwargs)
+        ret = func(self, *args, **kwargs)
+        post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
+        return ret
+    return inner
+
+
+def has_ipdb():
+    try:
+        import ipdb  # noqa
+        import IPython  # noqa
+        return True
+    except ImportError:
+        return False

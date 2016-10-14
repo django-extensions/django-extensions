@@ -1,12 +1,13 @@
+# -*- coding: utf-8 -*-
 import six
-import django
-
+from six.moves import urllib
 from django import forms
 from django.contrib.admin.sites import site
+from django.contrib.admin.widgets import ForeignKeyRawIdWidget
+from django.core.urlresolvers import reverse
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django.template.loader import render_to_string
-from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 
 
 class ForeignKeySearchInput(ForeignKeyRawIdWidget):
@@ -17,17 +18,12 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     # Set in subclass to render the widget with a different template
     widget_template = None
     # Set this to the patch of the search view
-    search_path = '../foreignkey_autocomplete/'
+    search_path = None
 
     def _media(self):
-        js_files = ['django_extensions/js/jquery.bgiframe.min.js',
+        js_files = ['django_extensions/js/jquery.bgiframe.js',
                     'django_extensions/js/jquery.ajaxQueue.js',
                     'django_extensions/js/jquery.autocomplete.js']
-
-        # Use a newer version of jquery if django version <= 1.5.x
-        # When removing this compatibility code also remove jquery-1.7.2.min.js file.
-        if int(django.get_version()[2]) <= 5:
-            js_files.insert(0, 'django_extensions/js/jquery-1.7.2.min.js')
 
         return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
                            js=js_files)
@@ -47,11 +43,12 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        #output = [super(ForeignKeySearchInput, self).render(name, value, attrs)]
         opts = self.rel.to._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
-        related_url = '../../../%s/%s/' % (app_label, model_name)
+        related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))
+        if not self.search_path:
+            self.search_path = urllib.parse.urljoin(related_url, 'foreignkey_autocomplete/')
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])

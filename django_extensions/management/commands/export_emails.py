@@ -1,13 +1,13 @@
-from django.core.management.base import BaseCommand, CommandError
-try:
-    from django.contrib.auth import get_user_model  # Django 1.5
-except ImportError:
-    from django_extensions.future_1_5 import get_user_model
-from django.contrib.auth.models import Group
-from optparse import make_option
-from sys import stdout
+# -*- coding: utf-8 -*-
 from csv import writer
+from sys import stdout
+
 import six
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 FORMATS = [
     'address',
@@ -27,21 +27,24 @@ def full_name(first_name, last_name, username, **extra):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--group', '-g', action='store', dest='group', default=None,
-                    help='Limit to users which are part of the supplied group name'),
-        make_option('--format', '-f', action='store', dest='format', default=FORMATS[0],
-                    help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
-    )
-
-    help = ("Export user email address list in one of a number of formats.")
+    help = "Export user email address list in one of a number of formats."
     args = "[output file]"
     label = 'filename to save to'
 
-    requires_model_validation = True
     can_import_settings = True
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--group', '-g', action='store', dest='group', default=None,
+            help='Limit to users which are part of the supplied group name'),
+        parser.add_argument(
+            '--format', '-f', action='store', dest='format', default=FORMATS[0],
+            help="output format. May be one of '" + "', '".join(FORMATS) +
+            "'."),
+
+    @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
             raise CommandError("extra arguments supplied")

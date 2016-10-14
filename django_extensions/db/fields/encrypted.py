@@ -1,10 +1,11 @@
-import sys
+# -*- coding: utf-8 -*-
+import warnings
+
 import six
-from django.db import models
-from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
-import warnings
+from django.core.exceptions import ImproperlyConfigured
+from django.db import models
 
 try:
     from keyczar import keyczar
@@ -30,12 +31,16 @@ class BaseEncryptedField(models.Field):
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
-            max_length = len(self.prefix) + len(self.crypt.Encrypt('x' * max_length))
-            # TODO: Re-examine if this logic will actually make a large-enough
-            # max-length for unicode strings that have non-ascii characters in them.
-            kwargs['max_length'] = max_length
+            kwargs['max_length'] = self.calculate_crypt_max_length(max_length)
 
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
+
+    def calculate_crypt_max_length(self, unencrypted_length):
+        # TODO: Re-examine if this logic will actually make a large-enough
+        # max-length for unicode strings that have non-ascii characters in them.
+        # For PostGreSQL we might as well always use textfield since there is little
+        # difference (except for length checking) between varchar and text in PG.
+        return len(self.prefix) + len(self.crypt.Encrypt('x' * unencrypted_length))
 
     def get_crypt_class(self):
         """
@@ -69,20 +74,22 @@ class BaseEncryptedField(models.Field):
         elif value and (value.startswith(self.prefix)):
             if hasattr(self.crypt, 'Decrypt'):
                 retval = self.crypt.Decrypt(value[len(self.prefix):])
-                if sys.version_info < (3,):
-                    if retval:
-                        retval = retval.decode('utf-8')
+                if six.PY2 and retval:
+                    retval = retval.decode('utf-8')
             else:
                 retval = value
         else:
             retval = value
         return retval
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
             # We need to encode a unicode string into a byte string, first.
             # keyczar expects a bytestring, not a unicode string.
-            if sys.version_info < (3,):
+            if six.PY2:
                 if type(value) == six.types.UnicodeType:
                     value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
@@ -99,12 +106,11 @@ class BaseEncryptedField(models.Field):
 
     def deconstruct(self):
         name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
-        kwargs['max_length'] = self.max_length
+        kwargs['max_length'] = self.unencrypted_length
         return name, path, args, kwargs
 
 
-class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedTextField(BaseEncryptedField):
     def get_internal_type(self):
         return 'TextField'
 
@@ -113,18 +119,8 @@ class EncryptedTextField(six.with_metaclass(models.SubfieldBase,
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
 
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.TextField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return (field_class, args, kwargs)
 
-
-class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
-                                            BaseEncryptedField)):
+class EncryptedCharField(BaseEncryptedField):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
@@ -135,12 +131,3 @@ class EncryptedCharField(six.with_metaclass(models.SubfieldBase,
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
-
-    def south_field_triple(self):
-        "Returns a suitable description of this field for South."
-        # We'll just introspect the _actual_ field.
-        from south.modelsinspector import introspector
-        field_class = "django.db.models.fields.CharField"
-        args, kwargs = introspector(self)
-        # That's our definition!
-        return (field_class, args, kwargs)

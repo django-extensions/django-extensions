@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 set_fake_passwords.py
 
@@ -6,32 +7,33 @@ set_fake_passwords.py
     setting.DEBUG is True.
 
 """
-from optparse import make_option
-
 from django.conf import settings
-from django.core.management.base import NoArgsCommand, CommandError
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 DEFAULT_FAKE_PASSWORD = 'password'
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option('--prompt', dest='prompt_passwd', default=False, action='store_true',
-                    help='Prompts for the new password to apply to all users'),
-        make_option('--password', dest='default_passwd', default=DEFAULT_FAKE_PASSWORD,
-                    help='Use this as default password.'),
-    )
+class Command(BaseCommand):
     help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
     requires_model_validation = False
 
-    def handle_noargs(self, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--prompt', dest='prompt_passwd', default=False,
+            action='store_true',
+            help='Prompts for the new password to apply to all users')
+        parser.add_argument(
+            '--password', dest='default_passwd', default=DEFAULT_FAKE_PASSWORD,
+            help='Use this as default password.')
+
+    @signalcommand
+    def handle(self, *args, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
-
-        try:
-            from django.contrib.auth import get_user_model  # Django 1.5
-        except ImportError:
-            from django_extensions.future_1_5 import get_user_model
 
         if options.get('prompt_passwd', False):
             from getpass import getpass

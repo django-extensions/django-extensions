@@ -1,5 +1,9 @@
-from django.core.management.base import LabelCommand, CommandError
-from django.utils.encoding import force_unicode
+# -*- coding: utf-8 -*-
+from django.apps import apps
+from django.core.management.base import CommandError, LabelCommand
+from django.utils.encoding import force_text
+
+from django_extensions.management.utils import signalcommand
 
 
 class Command(LabelCommand):
@@ -7,9 +11,9 @@ class Command(LabelCommand):
     args = "[app.model]"
     label = 'application name and model name'
 
-    requires_model_validation = True
     can_import_settings = True
 
+    @signalcommand
     def handle_label(self, label, **options):
         return describe_form(label)
 
@@ -18,12 +22,11 @@ def describe_form(label, fields=None):
     """
     Returns a string describing a form based on the model
     """
-    from django.db.models.loading import get_model
     try:
         app_name, model_name = label.split('.')[-2:]
     except (IndexError, ValueError):
         raise CommandError("Need application and model name in the form: appname.model")
-    model = get_model(app_name, model_name)
+    model = apps.get_model(app_name, model_name)
 
     opts = model._meta
     field_list = []
@@ -47,7 +50,7 @@ def describe_form(label, fields=None):
                 if k == 'widget':
                     attrs[k] = v.__class__
                 elif k in ['help_text', 'label']:
-                    attrs[k] = force_unicode(v).strip()
+                    attrs[k] = force_text(v).strip()
                 else:
                     attrs[k] = v
 

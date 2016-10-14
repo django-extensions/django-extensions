@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 print_settings
 ==============
@@ -5,23 +6,28 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
-from django.core.management.base import BaseCommand, CommandError
+import json
+
 from django.conf import settings
-from optparse import make_option
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
     """print_settings command"""
 
+    args = '<SETTING>'
     help = "Print the active Django settings."
 
-    option_list = BaseCommand.option_list + (
-        make_option('--format', default='simple', dest='format',
-                    help='Specifies output format.'),
-        make_option('--indent', default=4, dest='indent', type='int',
-                    help='Specifies indent level for JSON and YAML'),
-    )
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--format', default='simple', dest='format',
+                            help='Specifies output format.')
+        parser.add_argument('--indent', default=4, dest='indent', type=int,
+                            help='Specifies indent level for JSON and YAML')
 
+    @signalcommand
     def handle(self, *args, **options):
         a_dict = {}
 
@@ -38,7 +44,6 @@ class Command(BaseCommand):
         indent = options.get('indent', 4)
 
         if output_format == 'json':
-            json = self.import_json()
             print(json.dumps(a_dict, indent=indent))
         elif output_format == 'yaml':
             import yaml  # requires PyYAML
@@ -46,6 +51,12 @@ class Command(BaseCommand):
         elif output_format == 'pprint':
             from pprint import pprint
             pprint(a_dict)
+        elif output_format == 'text':
+            for key, value in a_dict.items():
+                print("%s = %s" % (key, value))
+        elif output_format == 'value':
+            for value in a_dict.values():
+                print(value)
         else:
             self.print_simple(a_dict)
 
@@ -68,13 +79,3 @@ class Command(BaseCommand):
 
         for key, value in a_dict.items():
             print('%-40s = %r' % (key, value))
-
-    @staticmethod
-    def import_json():
-        """Import a module for JSON"""
-
-        try:
-            import json
-        except ImportError:
-            import simplejson as json  # NOQA
-        return json

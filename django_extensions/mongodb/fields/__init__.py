@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 MongoDB model fields emulating Django Extensions' additional model fields
 
@@ -5,19 +6,15 @@ These fields are essentially identical to existing Extensions fields, but South 
 
 """
 
-import six
-from django.template.defaultfilters import slugify
-from django import forms
-from mongoengine.fields import StringField, DateTimeField
-import datetime
 import re
+import six
+import datetime
+from django import forms
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
+from mongoengine.fields import StringField, DateTimeField
 
-try:
-    import uuid
-    assert uuid
-except ImportError:
-    from django_extensions.utils import uuid
+import uuid
 
 
 class SlugField(StringField):
@@ -69,6 +66,8 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
+
+        self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         super(AutoSlugField, self).__init__(*args, **kwargs)
@@ -86,7 +85,7 @@ class AutoSlugField(SlugField):
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
     def slugify_func(self, content):
-        return slugify(content)
+        return self.slugify_function(content)
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set

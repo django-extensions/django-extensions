@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 Encrypted fields from Django Extensions, modified for use with mongoDB
 """
-from mongoengine.base import BaseField
-from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from mongoengine.base import BaseField
 
 try:
     from keyczar import keyczar
@@ -22,7 +23,7 @@ class BaseEncryptedField(BaseField):
         super(BaseEncryptedField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if (value.startswith(self.prefix)):
+        if value.startswith(self.prefix):
             retval = self.crypt.Decrypt(value[len(self.prefix):])
         else:
             retval = value

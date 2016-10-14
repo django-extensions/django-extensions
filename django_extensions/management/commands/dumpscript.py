@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 """
       Title: Dumpscript management command
     Project: Hardytools (queryset-refactor version)
@@ -29,21 +29,22 @@ Improvements:
 
 """
 
-import sys
 import datetime
-import six
+import sys
 
-import django
-from django.db.models import AutoField, BooleanField, FileField, ForeignKey, DateField, DateTimeField
+import six
+from django.apps import apps
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
+from django.db import router
+from django.db.models import (
+    AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
+)
+from django.db.models.deletion import Collector
+from django.utils.encoding import smart_text, force_text
 
-# conditional import, force_unicode was renamed in Django 1.5
-from django.contrib.contenttypes.models import ContentType
-try:
-    from django.utils.encoding import smart_unicode, force_unicode  # NOQA
-except ImportError:
-    from django.utils.encoding import smart_text as smart_unicode, force_text as force_unicode  # NOQA
+from django_extensions.management.utils import signalcommand
 
 
 def orm_item_locator(orm_obj):
@@ -81,9 +82,17 @@ def orm_item_locator(orm_obj):
 
 class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
-    args = '[appname ...]'
 
-    def handle(self, *app_labels, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('appname', nargs='+')
+        parser.add_argument(
+            '--autofield', action='store_false', dest='skip_autofield',
+            default=True, help='Include Autofields (like pk fields)')
+
+    @signalcommand
+    def handle(self, *args, **options):
+        app_labels = options['appname']
 
         # Get the models we want to export
         models = get_models(app_labels)
@@ -94,7 +103,14 @@ class Command(BaseCommand):
         context = {}
 
         # Create a dumpscript object and let it format itself as a string
-        self.stdout.write(str(Script(models=models, context=context, stdout=self.stdout, stderr=self.stderr)))
+        script = Script(
+            models=models,
+            context=context,
+            stdout=self.stdout,
+            stderr=self.stderr,
+            options=options,
+        )
+        self.stdout.write(str(script))
         self.stdout.write("\n")
 
 
@@ -104,9 +120,6 @@ def get_models(app_labels):
         Or at least discovered with a get_or_create() call.
     """
 
-    from django.db.models import get_app, get_apps, get_model
-    from django.db.models import get_models as get_all_models
-
     # These models are not to be output, e.g. because they can be generated automatically
     # TODO: This should be "appname.modelname" string
     EXCLUDED_MODELS = (ContentType, )
@@ -115,18 +128,21 @@ def get_models(app_labels):
 
     # If no app labels are given, return all
     if not app_labels:
-        for app in get_apps():
-            models += [m for m in get_all_models(app) if m not in EXCLUDED_MODELS]
+        for app in apps.get_app_configs():
+            models += [m for m in apps.get_app_config(app.label).get_models()
+                       if m not in EXCLUDED_MODELS]
+        return models
 
     # Get all relevant apps
     for app_label in app_labels:
         # If a specific model is mentioned, get only that model
         if "." in app_label:
             app_label, model_name = app_label.split(".", 1)
-            models.append(get_model(app_label, model_name))
+            models.append(apps.get_model(app_label, model_name))
         # Get all models for a given app
         else:
-            models += [m for m in get_all_models(get_app(app_label)) if m not in EXCLUDED_MODELS]
+            models += [m for m in apps.get_app_config(app_label).get_models()
+                       if m not in EXCLUDED_MODELS]
 
     return models
 
@@ -169,21 +185,22 @@ class Code(object):
 
 
 class ModelCode(Code):
-    " Produces a python script that can recreate data for a given model class. "
+    """ Produces a python script that can recreate data for a given model class. """
 
-    def __init__(self, model, context=None, stdout=None, stderr=None):
+    def __init__(self, model, context=None, stdout=None, stderr=None, options=None):
         super(ModelCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
         self.model = model
         if context is None:
             context = {}
         self.context = context
+        self.options = options
         self.instances = []
 
     def get_imports(self):
         """ Returns a dictionary of import statements, with the variable being
             defined as the key.
         """
-        return {self.model.__name__: smart_unicode(self.model.__module__)}
+        return {self.model.__name__: smart_text(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
@@ -193,7 +210,7 @@ class ModelCode(Code):
         code = []
 
         for counter, item in enumerate(self.model._default_manager.all()):
-            instance = InstanceCode(instance=item, id=counter + 1, context=self.context, stdout=self.stdout, stderr=self.stderr)
+            instance = InstanceCode(instance=item, id=counter + 1, context=self.context, stdout=self.stdout, stderr=self.stderr, options=self.options)
             self.instances.append(instance)
             if instance.waiting_list:
                 code += instance.lines
@@ -210,14 +227,15 @@ class ModelCode(Code):
 
 
 class InstanceCode(Code):
-    " Produces a python script that can recreate data for a given model instance. "
+    """ Produces a python script that can recreate data for a given model instance. """
 
-    def __init__(self, instance, id, context=None, stdout=None, stderr=None):
+    def __init__(self, instance, id, context=None, stdout=None, stderr=None, options=None):
         """ We need the instance in question and an id """
 
         super(InstanceCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
         self.imports = {}
 
+        self.options = options
         self.instance = instance
         self.model = self.instance.__class__
         if context is None:
@@ -282,59 +300,11 @@ class InstanceCode(Code):
         if self.skip_me is not None:
             return self.skip_me
 
-        def get_skip_version():
-            """ Return which version of the skip code should be run
-
-                Django's deletion code was refactored in r14507 which
-                was just two days before 1.3 alpha 1 (r14519)
-            """
-            if not hasattr(self, '_SKIP_VERSION'):
-                version = django.VERSION
-                # no, it isn't lisp. I swear.
-                self._SKIP_VERSION = (
-                    version[0] > 1 or (  # django 2k... someday :)
-                        version[0] == 1 and (  # 1.x
-                            version[1] >= 4 or  # 1.4+
-                            version[1] == 3 and not (  # 1.3.x
-                                (version[3] == 'alpha' and version[1] == 0)
-                            )
-                        )
-                    )
-                ) and 2 or 1  # NOQA
-            return self._SKIP_VERSION
-
-        if get_skip_version() == 1:
-            try:
-                # Django trunk since r7722 uses CollectedObjects instead of dict
-                from django.db.models.query import CollectedObjects
-                sub_objects = CollectedObjects()
-            except ImportError:
-                # previous versions don't have CollectedObjects
-                sub_objects = {}
-            self.instance._collect_sub_objects(sub_objects)
-            sub_objects = sub_objects.keys()
-
-        elif get_skip_version() == 2:
-            from django.db.models.deletion import Collector
-            from django.db import router
-            cls = self.instance.__class__
-            using = router.db_for_write(cls, instance=self.instance)
-            collector = Collector(using=using)
-            collector.collect([self.instance], collect_related=False)
-
-            # collector stores its instances in two places. I *think* we
-            # only need collector.data, but using the batches is needed
-            # to perfectly emulate the old behaviour
-            # TODO: check if batches are really needed. If not, remove them.
-            sub_objects = sum([list(i) for i in collector.data.values()], [])
-
-            if hasattr(collector, 'batches'):
-                # Django 1.6 removed batches for being dead code
-                # https://github.com/django/django/commit/a170c3f755351beb35f8166ec3c7e9d524d9602
-                for batch in collector.batches.values():
-                    # batch.values can be sets, which must be converted to lists
-                    sub_objects += sum([list(i) for i in batch.values()], [])
-
+        cls = self.instance.__class__
+        using = router.db_for_write(cls, instance=self.instance)
+        collector = Collector(using=using)
+        collector.collect([self.instance], collect_related=False)
+        sub_objects = sum([list(i) for i in collector.data.values()], [])
         sub_objects_parents = [so._meta.parents for so in sub_objects]
         if [self.model in p for p in sub_objects_parents].count(True) == 1:
             # since this instance isn't explicitly created, it's variable name
@@ -349,7 +319,7 @@ class InstanceCode(Code):
         return self.skip_me
 
     def instantiate(self):
-        " Write lines for instantiation "
+        """ Write lines for instantiation """
         # e.g. model_name_35 = Model()
         code_lines = []
 
@@ -365,15 +335,16 @@ class InstanceCode(Code):
         return code_lines
 
     def get_waiting_list(self, force=False):
-        " Add lines for any waiting fields that can be completed now. "
+        """ Add lines for any waiting fields that can be completed now. """
 
         code_lines = []
+        skip_autofield = self.options.get('skip_autofield', True)
 
         # Process normal fields
         for field in list(self.waiting_list):
             try:
                 # Find the value, add the line, remove from waiting list and move on
-                value = get_attribute_value(self.instance, field, self.context, force=force)
+                value = get_attribute_value(self.instance, field, self.context, force=force, skip_autofield=skip_autofield)
                 code_lines.append('%s.%s = %s' % (self.variable_name, field.name, value))
                 self.waiting_list.remove(field)
             except SkipValue:
@@ -413,9 +384,9 @@ class InstanceCode(Code):
 
 
 class Script(Code):
-    " Produces a complete python script that can recreate data for the given apps. "
+    """ Produces a complete python script that can recreate data for the given apps. """
 
-    def __init__(self, models, context=None, stdout=None, stderr=None):
+    def __init__(self, models, context=None, stdout=None, stderr=None, options=None):
         super(Script, self).__init__(stdout=stdout, stderr=stderr)
         self.imports = {}
 
@@ -426,6 +397,8 @@ class Script(Code):
 
         self.context["__avaliable_models"] = set(models)
         self.context["__extra_imports"] = {}
+
+        self.options = options
 
     def _queue_models(self, models, context):
         """ Works an an appropriate ordering for the models.
@@ -447,7 +420,7 @@ class Script(Code):
 
             # If the model is ready to be processed, add it to the list
             if check_dependencies(model, model_queue, context["__avaliable_models"]):
-                model_class = ModelCode(model=model, context=context, stdout=self.stdout, stderr=self.stderr)
+                model_class = ModelCode(model=model, context=context, stdout=self.stdout, stderr=self.stderr, options=self.options)
                 model_queue.append(model_class)
 
             # Otherwise put the model back at the end of the list
@@ -462,7 +435,7 @@ class Script(Code):
                 allowed_cycles -= 1
                 if allowed_cycles <= 0:
                     # Add the remaining models, but do not remove them from the model list
-                    missing_models = [ModelCode(model=m, context=context, stdout=self.stdout, stderr=self.stderr) for m in models]
+                    missing_models = [ModelCode(model=m, context=context, stdout=self.stdout, stderr=self.stderr, options=self.options) for m in models]
                     model_queue += missing_models
                     # Replace the models with the model class objects
                     # (sure, this is a little bit of hackery)
@@ -481,7 +454,7 @@ class Script(Code):
 
         # Queue and process the required models
         for model_class in self._queue_models(self.models, context=self.context):
-            msg = 'Processing model: %s\n' % model_class.model.__name__
+            msg = 'Processing model: %s.%s\n' % (model_class.model.__module__, model_class.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             code.append(model_class.import_lines)
@@ -490,7 +463,7 @@ class Script(Code):
 
         # Process left over foreign keys from cyclic models
         for model in self.models:
-            msg = 'Re-processing model: %s\n' % model.model.__name__
+            msg = 'Re-processing model: %s.%s\n' % (model.model.__module__, model.model.__name__)
             self.stderr.write(msg)
             code.append("    # " + msg)
             for instance in model.instances:
@@ -536,7 +509,7 @@ class Script(Code):
 # and the script is at ./some_folder/some_script.py
 # you must make sure ./some_folder/__init__.py exists
 # and run  ./manage.py runscript some_folder.some_script
-
+import os, sys
 from django.db import transaction
 
 class BasicImportHelper(object):
@@ -544,9 +517,7 @@ class BasicImportHelper(object):
     def pre_import(self):
         pass
 
-    # You probably want to uncomment on of these two lines
-    # @transaction.atomic  # Django 1.6
-    # @transaction.commit_on_success  # Django <1.6
+    @transaction.atomic
     def run_import(self, import_data):
         import_data()
 
@@ -617,7 +588,8 @@ try:
     # has no knowlodge of this class
     importer = type("DynamicImportHelper", (import_helper.ImportHelper, BasicImportHelper ) , {} )()
 except ImportError as e:
-    if str(e) == "No module named import_helper":
+    # From Python 3.3 we can check e.name - string match is for backward compatibility.
+    if 'import_helper' in str(e):
         importer = BasicImportHelper()
     else:
         raise
@@ -643,7 +615,7 @@ def import_data():
 
 
 # HELPER FUNCTIONS
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 def flatten_blocks(lines, num_indents=-1):
     """ Takes a list (block) or string (statement) and flattens it into a string
@@ -664,7 +636,7 @@ def flatten_blocks(lines, num_indents=-1):
     return "\n".join([flatten_blocks(line, num_indents + 1) for line in lines])
 
 
-def get_attribute_value(item, field, context, force=False):
+def get_attribute_value(item, field, context, force=False, skip_autofield=True):
     """ Gets a string version of the given attribute's value, like repr() might. """
 
     # Find the value of the field, catching any database issues
@@ -674,7 +646,7 @@ def get_attribute_value(item, field, context, force=False):
         raise SkipValue('Could not find object for %s.%s, ignoring.\n' % (item.__class__.__name__, field.name))
 
     # AutoField: We don't include the auto fields, they'll be automatically recreated
-    if isinstance(field, AutoField):
+    if skip_autofield and isinstance(field, AutoField):
         raise SkipValue()
 
     # Some databases (eg MySQL) might store boolean values as 0/1, this needs to be cast as a bool
@@ -683,7 +655,7 @@ def get_attribute_value(item, field, context, force=False):
 
     # Post file-storage-refactor, repr() on File/ImageFields no longer returns the path
     elif isinstance(field, FileField):
-        return repr(force_unicode(value))
+        return repr(force_text(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, ForeignKey) and value is not None:
@@ -714,7 +686,7 @@ def get_attribute_value(item, field, context, force=False):
         else:
             raise DoLater('(FK) %s.%s\n' % (item.__class__.__name__, field.name))
 
-    elif isinstance(field, (DateField, DateTimeField)):
+    elif isinstance(field, (DateField, DateTimeField)) and value is not None:
         return "dateutil.parser.parse(\"%s\")" % value.isoformat()
 
     # A normal field (e.g. a python built-in)
@@ -731,7 +703,7 @@ def make_clean_dict(the_dict):
 
 
 def check_dependencies(model, model_queue, avaliable_models):
-    " Check that all the depenedencies for this model are already in the queue. "
+    """ Check that all the depenedencies for this model are already in the queue. """
 
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
@@ -752,7 +724,7 @@ def check_dependencies(model, model_queue, avaliable_models):
 
 
 # EXCEPTIONS
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class SkipValue(Exception):
     """ Value could not be parsed or should simply be skipped. """

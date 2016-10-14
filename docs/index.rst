@@ -11,7 +11,7 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 These include management commands, additional database fields, admin extensions and
 much more.
 
-`这篇文档当然还有中文版 <http://django-extensions-zh.readthedocs.org/zh_CN/latest/>`_
+`这篇文档当然还有中文版 <https://django-extensions-zh.readthedocs.io/zh_CN/latest/>`_
 
 Getting Started
 ===============
@@ -42,7 +42,7 @@ We follow the Django guidelines for supported Python and Django versions. See mo
 
 This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
 
-At the time of writing we support: Python 2.6, 2.7 and 3.3. Django supported versions are 1.4, 1.5 and 1.6.
+At this time we test on and thrive to support valid combinations of Python 2.7, 3.4, 3.5, pypy and pypy3 with Django versions 1.8 and 1.9.
 
 Contents
 ========
@@ -53,6 +53,7 @@ Contents
    installation_instructions
    command_extensions
    command_extension_ideas
+   command_signals
    admin_extensions
    shell_plus
    create_app
@@ -70,6 +71,7 @@ Contents
    sync_s3
    sqldiff
    sqlcreate
+   sqldsn
    validate_templates
 
 

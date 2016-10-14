@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 sqldiff.py - Prints the (approximated) difference between models and database
 
@@ -12,7 +13,7 @@ TODO:
 KNOWN ISSUES:
  - MySQL has by far the most problems with introspection. Please be
    carefull when using MySQL with sqldiff.
-   - Booleans are reported back as Integers, so there's know way to know if
+   - Booleans are reported back as Integers, so there's no way to know if
      there was a real change.
    - Varchar sizes are reported back without unicode support so their size
      may change in comparison to the real length of the varchar.
@@ -20,14 +21,18 @@ KNOWN ISSUES:
      positives or false negatives.
 """
 
+import importlib
+import sys
+
 import six
-from django.core.management.base import BaseCommand
-from django.core.management import sql as _sql
-from django.core.management import CommandError
+from django.apps import apps
+from django.core.management import BaseCommand, CommandError, sql as _sql
+from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
-from django.db import transaction, connection
-from django.db.models.fields import IntegerField
-from optparse import make_option
+from django.db import connection, transaction
+from django.db.models.fields import AutoField, IntegerField
+
+from django_extensions.management.utils import signalcommand
 
 ORDERING_FIELD = IntegerField('_order', null=True)
 
@@ -50,26 +55,30 @@ def flatten(l, ltypes=(list, tuple)):
 
 def all_local_fields(meta):
     all_fields = []
-    if meta.managed:
-        if meta.proxy:
-            for parent in meta.parents:
-                all_fields.extend(all_local_fields(parent._meta))
-        else:
-            for f in meta.local_fields:
-                col_type = f.db_type(connection=connection)
-                if col_type is None:
-                    continue
-                all_fields.append(f)
+    if meta.proxy:
+        for parent in meta.parents:
+            all_fields.extend(all_local_fields(parent._meta))
+    else:
+        for f in meta.local_fields:
+            col_type = f.db_type(connection=connection)
+            if col_type is None:
+                continue
+            all_fields.append(f)
     return all_fields
 
 
 class SQLDiff(object):
     DATA_TYPES_REVERSE_OVERRIDE = {}
 
+    IGNORE_MISSING_TABLES = [
+        "django_migrations",
+    ]
+
     DIFF_TYPES = [
         'error',
         'comment',
         'table-missing-in-db',
+        'table-missing-in-model',
         'field-missing-in-db',
         'field-missing-in-model',
         'fkey-missing-in-db',
@@ -86,6 +95,7 @@ class SQLDiff(object):
         'error': 'error: %(0)s',
         'comment': 'comment: %(0)s',
         'table-missing-in-db': "table '%(0)s' missing in database",
+        'table-missing-in-model': "table '%(0)s' missing in models",
         'field-missing-in-db': "field '%(1)s' defined in model but missing in database",
         'field-missing-in-model': "field '%(1)s' defined in database but missing in model",
         'fkey-missing-in-db': "field '%(1)s' FOREIGN KEY defined in model but missing in database",
@@ -96,7 +106,7 @@ class SQLDiff(object):
         'unique-missing-in-model': "field '%(1)s' UNIQUE defined in database schema but missing in model",
         'field-type-differ': "field '%(1)s' not of same type: db='%(3)s', model='%(2)s'",
         'field-parameter-differ': "field '%(1)s' parameters differ: db='%(3)s', model='%(2)s'",
-        'notnull-differ': "field '%(1)s' null differ: db='%(3)s', model='%(2)s'",
+        'notnull-differ': "field '%(1)s' null constraint should be '%(2)s' in the database",
     }
 
     SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ADD COLUMN'), style.SQL_FIELD(qn(args[1])), ' '.join(style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a) for i, a in enumerate(args[2:])))
@@ -114,10 +124,14 @@ class SQLDiff(object):
     SQL_ERROR = lambda self, style, qn, args: style.NOTICE('-- Error: %s' % style.ERROR(args[0]))
     SQL_COMMENT = lambda self, style, qn, args: style.NOTICE('-- Comment: %s' % style.SQL_TABLE(args[0]))
     SQL_TABLE_MISSING_IN_DB = lambda self, style, qn, args: style.NOTICE('-- Table missing: %s' % args[0])
+    SQL_TABLE_MISSING_IN_MODEL = lambda self, style, qn, args: style.NOTICE('-- Model missing for table: %s' % args[0])
 
     can_detect_notnull_differ = False
+    can_detect_unsigned_differ = False
+    unsigned_suffix = None
 
     def __init__(self, app_models, options):
+        self.has_differences = None
         self.app_models = app_models
         self.options = options
         self.dense = options.get('dense_output', False)
@@ -130,16 +144,19 @@ class SQLDiff(object):
 
         self.cursor = connection.cursor()
         self.django_tables = self.get_django_tables(options.get('only_existing', True))
-        self.db_tables = self.introspection.get_table_list(self.cursor)
+        # TODO: We are losing information about tables which are views here
+        self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
         self.unknown_db_fields = {}
         self.new_db_fields = set()
         self.null = {}
+        self.unsigned = set()
 
         self.DIFF_SQL = {
             'error': self.SQL_ERROR,
             'comment': self.SQL_COMMENT,
             'table-missing-in-db': self.SQL_TABLE_MISSING_IN_DB,
+            'table-missing-in-model': self.SQL_TABLE_MISSING_IN_MODEL,
             'field-missing-in-db': self.SQL_FIELD_MISSING_IN_DB,
             'field-missing-in-model': self.SQL_FIELD_MISSING_IN_MODEL,
             'fkey-missing-in-db': self.SQL_FKEY_MISSING_IN_DB,
@@ -156,8 +173,14 @@ class SQLDiff(object):
         if self.can_detect_notnull_differ:
             self.load_null()
 
+        if self.can_detect_unsigned_differ:
+            self.load_unsigned()
+
     def load_null(self):
         raise NotImplementedError("load_null functions must be implemented if diff backend has 'can_detect_notnull_differ' set to True")
+
+    def load_unsigned(self):
+        raise NotImplementedError("load_unsigned function must be implemented if diff backend has 'can_detect_unsigned_differ' set to True")
 
     def add_app_model_marker(self, app_label, model_name):
         self.differences.append((app_label, model_name, []))
@@ -200,7 +223,7 @@ class SQLDiff(object):
     def get_field_db_type(self, description, field=None, table_name=None):
         from django.db import models
         # DB-API cursor.description
-        #(name, type_code, display_size, internal_size, precision, scale, null_ok) = description
+        # (name, type_code, display_size, internal_size, precision, scale, null_ok) = description
         type_code = description[1]
         if type_code in self.DATA_TYPES_REVERSE_OVERRIDE:
             reverse_type = self.DATA_TYPES_REVERSE_OVERRIDE[type_code]
@@ -222,6 +245,9 @@ class SQLDiff(object):
                     return None
 
         kwargs = {}
+        if type_code == 16946 and field and getattr(field, 'geom_type', None) == 'POINT':
+            reverse_type = 'django.contrib.gis.db.models.fields.PointField'
+
         if isinstance(reverse_type, tuple):
             kwargs.update(reverse_type[1])
             reverse_type = reverse_type[0]
@@ -238,15 +264,22 @@ class SQLDiff(object):
             if reverse_type not in ('TextField', 'CharField'):
                 kwargs['null'] = True
 
+        if field and getattr(field, 'geography', False):
+            kwargs['geography'] = True
+
         if '.' in reverse_type:
-            from django.utils import importlib
-            # TODO: when was importlib added to django.utils ? and do we
-            # need to add backwards compatibility code ?
             module_path, package_name = reverse_type.rsplit('.', 1)
             module = importlib.import_module(module_path)
             field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
         else:
             field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
+
+        tablespace = field.db_tablespace
+        if not tablespace:
+            tablespace = "public"
+        if (tablespace, table_name, field.column) in self.unsigned:
+            field_db_type = '%s %s' % (field_db_type, self.unsigned_suffix)
+
         return field_db_type
 
     def get_field_db_type_lookup(self, type_code):
@@ -256,7 +289,8 @@ class SQLDiff(object):
         tablespace = field.db_tablespace
         if tablespace == "":
             tablespace = "public"
-        return self.null.get((tablespace, table_name, field.attname), 'fixme')
+        attname = field.db_column or field.attname
+        return self.null.get((tablespace, table_name, attname), 'fixme')
 
     def strip_parameters(self, field_type):
         if field_type and field_type != 'double precision':
@@ -265,11 +299,11 @@ class SQLDiff(object):
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
         for field in all_local_fields(meta):
-            if field.unique:
+            if field.unique and meta.managed:
                 attname = field.db_column or field.attname
-                db_field_unique = table_indexes[attname]['unique']
+                db_field_unique = table_indexes.get(attname, {}).get('unique')
                 if not db_field_unique and table_constraints:
-                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if attname in constraint['columns'])
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if [attname] == constraint['columns'])
                 if attname in table_indexes and db_field_unique:
                     continue
                 self.add_difference('unique-missing-in-db', table_name, attname)
@@ -308,6 +342,8 @@ class SQLDiff(object):
                 if not db_field_unique and table_constraints:
                     db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if att_name in constraint['columns'])
                 if field.db_index:
+                    continue
+                if getattr(field, 'spatial_index', False):
                     continue
                 if att_opts['primary_key'] and field.primary_key:
                     continue
@@ -349,7 +385,7 @@ class SQLDiff(object):
             description = db_fields[field.name]
 
             model_type = self.get_field_model_type(field)
-            db_type = self.get_field_db_type(description, field)
+            db_type = self.get_field_db_type(description, field, table_name)
 
             # use callback function if defined
             if func:
@@ -375,7 +411,13 @@ class SQLDiff(object):
             if func:
                 model_type, db_type = func(field, description, model_type, db_type)
 
-            if not model_type == db_type:
+            model_check = field.db_parameters(connection=connection)['check']
+            if ' CHECK' in db_type:
+                db_type, db_check = db_type.split(" CHECK", 1)
+                db_check = db_check.strip().lstrip("(").rstrip(")")
+            else:
+                db_check = None
+            if not model_type == db_type and not model_check == db_check:
                 self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
 
     def find_field_notnull_differ(self, meta, table_description, table_name):
@@ -383,18 +425,24 @@ class SQLDiff(object):
             return
 
         for field in all_local_fields(meta):
-            if (table_name, field.attname) in self.new_db_fields:
+            attname = field.db_column or field.attname
+            if (table_name, attname) in self.new_db_fields:
                 continue
             null = self.get_field_db_nullable(field, table_name)
             if field.null != null:
                 action = field.null and 'DROP' or 'SET'
-                self.add_difference('notnull-differ', table_name, field.attname, action)
+                self.add_difference('notnull-differ', table_name, attname, action)
 
     def get_constraints(self, cursor, table_name, introspection):
         return {}
 
-    @transaction.commit_manually
     def find_differences(self):
+        if self.options['all_applications']:
+            self.add_app_model_marker(None, None)
+            for table in self.db_tables:
+                if table not in self.django_tables and table not in self.IGNORE_MISSING_TABLES:
+                    self.add_difference('table-missing-in-model', table)
+
         cur_app_label = None
         for app_model in self.app_models:
             meta = app_model._meta
@@ -428,8 +476,6 @@ class SQLDiff(object):
                 self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
-            else:
-                transaction.commit()
 
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
@@ -454,6 +500,7 @@ class SQLDiff(object):
             self.find_field_parameter_differ(meta, table_description, table_name)
             # 9) find: 'field-notnull'
             self.find_field_notnull_differ(meta, table_description, table_name)
+        self.has_differences = max([len(diffs) for _app_label, _model_name, diffs in self.differences])
 
     def print_diff(self, style=no_style()):
         """ print differences to stdout """
@@ -467,14 +514,18 @@ class SQLDiff(object):
             print(style.NOTICE("# Detecting notnull changes not implemented for this database backend"))
             print("")
 
+        if not self.can_detect_unsigned_differ:
+            print(style.NOTICE("# Detecting unsigned changes not implemented for this database backend"))
+            print("")
+
         cur_app_label = None
         for app_label, model_name, diffs in self.differences:
             if not diffs:
                 continue
-            if not self.dense and cur_app_label != app_label:
+            if not self.dense and app_label and cur_app_label != app_label:
                 print("%s %s" % (style.NOTICE("+ Application:"), style.SQL_TABLE(app_label)))
                 cur_app_label = app_label
-            if not self.dense:
+            if not self.dense and model_name:
                 print("%s %s" % (style.NOTICE("|-+ Differences for model:"), style.SQL_TABLE(model_name)))
             for diff in diffs:
                 diff_type, diff_args = diff
@@ -483,7 +534,10 @@ class SQLDiff(object):
                 if not self.dense:
                     print("%s %s" % (style.NOTICE("|--+"), text))
                 else:
-                    print("%s %s %s %s %s" % (style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text))
+                    if app_label:
+                        print("%s %s %s %s %s" % (style.NOTICE("App"), style.SQL_TABLE(app_label), style.NOTICE('Model'), style.SQL_TABLE(model_name), text))
+                    else:
+                        print(text)
 
     def print_diff_sql(self, style):
         if not self.can_detect_notnull_differ:
@@ -492,8 +546,7 @@ class SQLDiff(object):
 
         cur_app_label = None
         qn = connection.ops.quote_name
-        has_differences = max([len(diffs) for app_label, model_name, diffs in self.differences])
-        if not has_differences:
+        if not self.has_differences:
             if not self.dense:
                 print(style.SQL_KEYWORD("-- No differences"))
         else:
@@ -504,7 +557,7 @@ class SQLDiff(object):
                 if not self.dense and cur_app_label != app_label:
                     print(style.NOTICE("-- Application: %s" % style.SQL_TABLE(app_label)))
                     cur_app_label = app_label
-                if not self.dense:
+                if not self.dense and model_name:
                     print(style.NOTICE("-- Model: %s" % style.SQL_TABLE(model_name)))
                 for diff in diffs:
                     diff_type, diff_args = diff
@@ -520,26 +573,61 @@ class GenericSQLDiff(SQLDiff):
 
 
 class MySQLDiff(SQLDiff):
-    can_detect_notnull_differ = False
+    can_detect_notnull_differ = True
+    can_detect_unsigned_differ = True
+    unsigned_suffix = 'UNSIGNED'
+
+    def __init__(self, app_models, options):
+        super(MySQLDiff, self).__init__(app_models, options)
+        self.auto_increment = set()
+        self.load_auto_increment()
+
+    def load_null(self):
+        tablespace = 'public'
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name, is_nullable
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                    AND table_name = %s""", [table_name])
+            for table_info in result:
+                key = (tablespace, table_name, table_info['column_name'])
+                self.null[key] = table_info['is_nullable'] == 'YES'
+
+    def load_unsigned(self):
+        tablespace = 'public'
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                    AND table_name = %s
+                    AND column_type LIKE '%%unsigned'""", [table_name])
+            for table_info in result:
+                key = (tablespace, table_name, table_info['column_name'])
+                self.unsigned.add(key)
+
+    def load_auto_increment(self):
+        for table_name in self.db_tables:
+            result = self.sql_to_dict("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                   AND table_name = %s
+                   AND extra = 'auto_increment'""", [table_name])
+            for table_info in result:
+                key = (table_name, table_info['column_name'])
+                self.auto_increment.add(key)
 
     # All the MySQL hacks together create something of a problem
     # Fixing one bug in MySQL creates another issue. So just keep in mind
     # that this is way unreliable for MySQL atm.
     def get_field_db_type(self, description, field=None, table_name=None):
         from MySQLdb.constants import FIELD_TYPE
-        # weird bug? in mysql db-api where it returns three times the correct value for field length
-        # if i remember correctly it had something todo with unicode strings
-        # TODO: Fix this is a more meaningful and better understood manner
-        description = list(description)
-        if description[1] not in [FIELD_TYPE.TINY, FIELD_TYPE.SHORT]:  # exclude tinyints from conversion.
-            description[3] = description[3] / 3
-            description[4] = description[4] / 3
-        db_type = super(MySQLDiff, self).get_field_db_type(description)
+        db_type = super(MySQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
-            if field.primary_key and (db_type == 'integer' or db_type == 'bigint'):
-                db_type += ' AUTO_INCREMENT'
             # MySQL isn't really sure about char's and varchar's like sqlite
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
@@ -549,8 +637,8 @@ class MySQLDiff(SQLDiff):
             # just convert it back to it's proper type, a bool is a bool and nothing else.
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
                 db_type = 'bool'
-            if db_type == 'integer' and description[1] == FIELD_TYPE.SHORT:
-                db_type = 'smallint UNSIGNED'  # FIXME: what about if it's not UNSIGNED ?
+            if (table_name, field.column) in self.auto_increment:
+                db_type += ' AUTO_INCREMENT'
         return db_type
 
 
@@ -589,7 +677,7 @@ class SqliteSQLDiff(SQLDiff):
         pass
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(SqliteSQLDiff, self).get_field_db_type(description)
+        db_type = super(SqliteSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
@@ -602,12 +690,15 @@ class SqliteSQLDiff(SQLDiff):
 
 class PostgresqlSQLDiff(SQLDiff):
     can_detect_notnull_differ = True
+    can_detect_unsigned_differ = True
 
     DATA_TYPES_REVERSE_OVERRIDE = {
         1042: 'CharField',
         # postgis types (TODO: support is very incomplete)
         17506: 'django.contrib.gis.db.models.fields.PointField',
+        16392: 'django.contrib.gis.db.models.fields.PointField',
         55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
+        16946: 'django.contrib.gis.db.models.fields.MultiPolygonField'
     }
 
     DATA_TYPES_REVERSE_NAME = {
@@ -636,7 +727,7 @@ class PostgresqlSQLDiff(SQLDiff):
     SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
     def __init__(self, app_models, options):
-        SQLDiff.__init__(self, app_models, options)
+        super(PostgresqlSQLDiff, self).__init__(app_models, options)
         self.check_constraints = {}
         self.load_constraints()
 
@@ -644,6 +735,11 @@ class PostgresqlSQLDiff(SQLDiff):
         for dct in self.sql_to_dict(self.SQL_LOAD_NULL, []):
             key = (dct['nspname'], dct['relname'], dct['attname'])
             self.null[key] = not dct['attnotnull']
+
+    def load_unsigned(self):
+        # PostgreSQL does not support unsigned, so no columns are
+        # unsigned. Nothing to do.
+        pass
 
     def load_constraints(self):
         for dct in self.sql_to_dict(self.SQL_LOAD_CONSTRAINTS, []):
@@ -739,11 +835,11 @@ class PostgresqlSQLDiff(SQLDiff):
         return constraints
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description)
+        db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
-            if field.primary_key:
+            if field.primary_key and isinstance(field, AutoField):
                 if db_type == 'integer':
                     db_type = 'serial'
                 elif db_type == 'bigint':
@@ -752,7 +848,8 @@ class PostgresqlSQLDiff(SQLDiff):
                 tablespace = field.db_tablespace
                 if tablespace == "":
                     tablespace = "public"
-                check_constraint = self.check_constraints.get((tablespace, table_name, field.attname), {}).get('pg_get_constraintdef', None)
+                attname = field.db_column or field.attname
+                check_constraint = self.check_constraints.get((tablespace, table_name, attname), {}).get('pg_get_constraintdef', None)
                 if check_constraint:
                     check_constraint = check_constraint.replace("((", "(")
                     check_constraint = check_constraint.replace("))", ")")
@@ -761,7 +858,6 @@ class PostgresqlSQLDiff(SQLDiff):
                     db_type += ' ' + check_constraint
         return db_type
 
-    @transaction.autocommit
     def get_field_db_type_lookup(self, type_code):
         try:
             name = self.sql_to_dict("SELECT typname FROM pg_type WHERE typelem=%s;", [type_code])[0]['typname']
@@ -789,17 +885,6 @@ DATABASE_SQLDIFF_CLASSES = {
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--all-applications', '-a', action='store_true', dest='all_applications',
-                    help="Automaticly include all application from INSTALLED_APPS."),
-        make_option('--not-only-existing', '-e', action='store_false', dest='only_existing',
-                    help="Check all tables that exist in the database, not only tables that should exist based on models."),
-        make_option('--dense-output', '-d', action='store_true', dest='dense_output',
-                    help="Shows the output in dense format, normally output is spreaded over multiple lines."),
-        make_option('--output_text', '-t', action='store_false', dest='sql', default=True,
-                    help="Outputs the differences as descriptive text instead of SQL"),
-    )
-
     help = """Prints the (approximated) difference between models and fields in the database for the given app name(s).
 
 It indicates how columns in the database are different from the sql that would
@@ -808,12 +893,37 @@ it can certainly help) It's purpose is to show the current differences as a way
 to check/debug ur models compared to the real database tables and columns."""
 
     output_transaction = False
-    args = '<appname appname ...>'
 
-    def handle(self, *app_labels, **options):
-        from django.db import models
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('app_label', nargs='*')
+        parser.add_argument(
+            '--all-applications', '-a', action='store_true',
+            dest='all_applications',
+            help="Automaticly include all application from INSTALLED_APPS.")
+        parser.add_argument(
+            '--not-only-existing', '-e', action='store_false',
+            dest='only_existing',
+            help="Check all tables that exist in the database, not only "
+            "tables that should exist based on models.")
+        parser.add_argument(
+            '--dense-output', '-d', action='store_true', dest='dense_output',
+            help="Shows the output in dense format, normally output is "
+            "spreaded over multiple lines.")
+        parser.add_argument(
+            '--output_text', '-t', action='store_false', dest='sql',
+            default=True,
+            help="Outputs the differences as descriptive text instead of SQL")
+
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.exit_code = 1
+
+    @signalcommand
+    def handle(self, *args, **options):
         from django.conf import settings
 
+        app_labels = options.get('app_label')
         engine = None
         if hasattr(settings, 'DATABASES'):
             engine = settings.DATABASES['default']['ENGINE']
@@ -828,21 +938,18 @@ because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
         if options.get('all_applications', False):
-            app_models = models.get_models(include_auto_created=True)
+            app_models = apps.get_models(include_auto_created=True)
         else:
             if not app_labels:
                 raise CommandError('Enter at least one appname.')
-            try:
-                app_list = [models.get_app(app_label) for app_label in app_labels]
-            except (models.ImproperlyConfigured, ImportError) as e:
-                raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
+
+            if not isinstance(app_labels, (list, tuple, set)):
+                app_labels = [app_labels]
 
             app_models = []
-            for app in app_list:
-                app_models.extend(models.get_models(app, include_auto_created=True))
-
-        ## remove all models that are not managed by Django
-        #app_models = [model for model in app_models if getattr(model._meta, 'managed', True)]
+            for app_label in app_labels:
+                app_config = apps.get_app_config(app_label)
+                app_models.extend(app_config.get_models(include_auto_created=True))
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')
@@ -856,5 +963,24 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
         cls = DATABASE_SQLDIFF_CLASSES.get(engine, GenericSQLDiff)
         sqldiff_instance = cls(app_models, options)
         sqldiff_instance.find_differences()
+        if not sqldiff_instance.has_differences:
+            self.exit_code = 0
         sqldiff_instance.print_diff(self.style)
-        return
+
+    def execute(self, *args, **options):
+        try:
+            super(Command, self).execute(*args, **options)
+        except CommandError as e:
+            if options.get('traceback', False):
+                raise
+
+            # self.stderr is not guaranteed to be set here
+            stderr = getattr(self, 'stderr', None)
+            if not stderr:
+                stderr = OutputWrapper(sys.stderr, self.style.ERROR)
+            stderr.write('%s: %s' % (e.__class__.__name__, e))
+            sys.exit(2)
+
+    def run_from_argv(self, argv):
+        super(Command, self).run_from_argv(argv)
+        sys.exit(self.exit_code)

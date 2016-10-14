@@ -1,6 +1,3 @@
-try:
-    from django.conf.urls import *
-except ImportError:  # django < 1.4
-    from django.conf.urls.defaults import *
+from django.conf.urls import include, url
 
 # place app url patterns here

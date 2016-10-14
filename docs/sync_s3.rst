@@ -45,7 +45,7 @@ Required libraries and settings
 This management command requires the boto library and was tested with version
 1.4c:
 
-  http://code.google.com/p/boto/
+  https://github.com/boto/boto
 
 It also requires an account with Amazon Web Services (AWS) and the AWS S3 keys.
 Bucket name is required and cannot be empty.

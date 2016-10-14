@@ -1,30 +1,32 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
+
 from django.core.management.base import AppCommand
-from django_extensions.management.utils import _make_writeable
-from optparse import make_option
+
+from django_extensions.management.utils import _make_writeable, signalcommand
 
 
 class Command(AppCommand):
-    option_list = AppCommand.option_list + (
-        make_option('--name', '-n', action='store', dest='tag_library_name', default='appname_tags',
-                    help='The name to use for the template tag base name. Defaults to `appname`_tags.'),
-        make_option('--base', '-b', action='store', dest='base_command', default='Base',
-                    help='The base class used for implementation of this command. Should be one of Base, App, Label, or NoArgs'),
-    )
-
     help = ("Creates a Django template tags directory structure for the given app name"
             " in the apps's directory")
-    args = "[appname]"
-    label = 'application name'
 
-    requires_model_validation = False
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--name', '-n', action='store', dest='tag_library_name',
+            default='appname_tags',
+            help='The name to use for the template tag base name. '
+            'Defaults to `appname`_tags.')
+
+    requires_system_checks = False
     # Can't import settings during this command, because they haven't
     # necessarily been created.
     can_import_settings = True
 
-    def handle_app(self, app, **options):
-        app_dir = os.path.dirname(app.__file__)
+    @signalcommand
+    def handle_app_config(self, app_config, **options):
+        app_dir = app_config.path
         tag_library_name = options.get('tag_library_name')
         if tag_library_name == 'appname_tags':
             tag_library_name = '%s_tags' % os.path.basename(app_dir)

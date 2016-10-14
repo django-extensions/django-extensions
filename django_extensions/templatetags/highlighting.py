@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Similar to syntax_color.py but this is intended more for being able to
 copy+paste actual code into your Django templates without needing to
@@ -30,24 +31,27 @@ Example:
 """
 
 from django import template
-from django.template import Template, Context, Node, Variable, TemplateSyntaxError
+from django.template import (
+    Context, Node, Template, TemplateSyntaxError, Variable,
+)
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
+
 try:
     from pygments import highlight as pyghighlight
     from pygments.lexers import get_lexer_by_name
     from pygments.formatters import HtmlFormatter
+    HAS_PYGMENTS = True
 except ImportError:
-    raise ImportError("Please install 'pygments' library to use highlighting.")
+    HAS_PYGMENTS = False
 
 register = template.Library()
 
 
-@register.filter
+@register.filter(is_safe=True)
 @stringfilter
 def parse_template(value):
     return mark_safe(Template(value).render(Context()))
-parse_template.is_safe = True
 
 
 class CodeNode(Node):
@@ -66,7 +70,7 @@ class CodeNode(Node):
         html = ""
         if self.name:
             name = self.name.resolve(context)
-            html = '<div class="predesc"><span>%s</span></div>' % (name)
+            html = '<div class="predesc"><span>%s</span></div>' % name
         return html + pyghighlight(code, lexer, formatter)
 
 
@@ -89,6 +93,8 @@ def highlight(parser, token):
       {% endhighlight %}
 
     """
+    if not HAS_PYGMENTS:
+        raise ImportError("Please install 'pygments' library to use highlighting.")
     nodelist = parser.parse(('endhighlight',))
     parser.delete_first_token()
     bits = token.split_contents()[1:]

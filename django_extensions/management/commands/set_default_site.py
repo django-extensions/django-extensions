@@ -1,25 +1,31 @@
+# -*- coding: utf-8 -*-
 """
 set_default_site.py
 """
 import socket
-from optparse import make_option
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        make_option('--name', dest='site_name', default=None,
-                    help='Use this as site name.'),
-        make_option('--domain', dest='site_domain', default=None,
-                    help='Use this as site domain.'),
-        make_option('--system-fqdn', dest='set_as_system_fqdn', default=False,
-                    action="store_true", help='Use the systems FQDN (Fully Qualified Domain Name) as name and domain. Can be used in combination with --name'),
-    )
+class Command(BaseCommand):
     help = "Set parameters of the default django.contrib.sites Site"
-    requires_model_validation = True
 
-    def handle_noargs(self, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--name', dest='site_name', default=None,
+                            help='Use this as site name.')
+        parser.add_argument('--domain', dest='site_domain', default=None,
+                            help='Use this as site domain.')
+        parser.add_argument(
+            '--system-fqdn', dest='set_as_system_fqdn', default=False,
+            action="store_true",
+            help='Use the systems FQDN (Fully Qualified Domain Name) as name '
+            'and domain. Can be used in combination with --name')
+
+    @signalcommand
+    def handle(self, *args, **options):
         from django.contrib.sites.models import Site
 
         try:

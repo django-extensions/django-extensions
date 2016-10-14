@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JSONField automatically serializes most Python terms to JSON data.
 Creates a TEXT field with a default value of "{}".  See test_json.py for
@@ -9,23 +10,25 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
+from __future__ import absolute_import
 
-import six
 import datetime
 from decimal import Decimal
+
+import json
+import six
 from django.conf import settings
-from django.utils import simplejson
 from mongoengine.fields import StringField
 
 
-class JSONEncoder(simplejson.JSONEncoder):
+class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             assert settings.TIME_ZONE == 'UTC'
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-        return simplejson.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def dumps(value):
@@ -34,7 +37,7 @@ def dumps(value):
 
 
 def loads(txt):
-    value = simplejson.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
+    value = json.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
     assert isinstance(value, dict)
     return value
 
@@ -74,4 +77,3 @@ class JSONField(StringField):
             return super(JSONField, self).get_db_prep_save("")
         else:
             return super(JSONField, self).get_db_prep_save(dumps(value))
-

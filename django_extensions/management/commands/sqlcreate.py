@@ -1,32 +1,35 @@
-import sys
+# -*- coding: utf-8 -*-
 import socket
-
-from optparse import make_option
+import sys
 
 from django.conf import settings
-from django.core.management.base import CommandError, BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+
+from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then defined in settings.py'),
-        make_option('-D', '--drop', action='store_true',
-                    dest='drop', default=False,
-                    help='If given, includes commands to drop any existing user and database.'),
-    )
     help = """Generates the SQL to create your database for you, as specified in settings.py
 The envisioned use case is something like this:
 
     ./manage.py sqlcreate [--router=<routername>] | mysql -u <db_administrator> -p
     ./manage.py sqlcreate [--router=<routername>] | psql -U <db_administrator> -W"""
 
-    requires_model_validation = False
+    requires_system_checks = False
     can_import_settings = True
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '-R', '--router', action='store', dest='router', default='default',
+            help='Use this router-database other then defined in settings.py')
+        parser.add_argument(
+            '-D', '--drop', action='store_true', dest='drop', default=False,
+            help='If given, includes commands to drop any existing user '
+            'and database.')
 
+    @signalcommand
+    def handle(self, *args, **options):
         router = options.get('router')
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
@@ -53,7 +56,7 @@ The envisioned use case is something like this:
                 dbname, dbuser, dbclient, dbpass
             ))
 
-        elif engine == 'postgresql_psycopg2':
+        elif engine in ('postgresql', 'postgresql_psycopg2'):
             if options.get('drop'):
                 print("DROP DATABASE IF EXISTS %s;" % (dbname,))
                 print("DROP USER IF EXISTS %s;" % (dbuser,))

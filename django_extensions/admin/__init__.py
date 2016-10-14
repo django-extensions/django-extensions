@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
 #
 # Autocomplete feature for admin panel
 #
 import six
 import operator
+from functools import update_wrapper
 from six.moves import reduce
 
+from django.apps import apps
 from django.http import HttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.db import models
@@ -13,12 +16,6 @@ from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
 from django.contrib.admin import ModelAdmin
-
-try:
-    from functools import update_wrapper
-    assert update_wrapper
-except ImportError:
-    from django.utils.functional import update_wrapper
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
@@ -53,18 +50,17 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
     autocomplete_limit = getattr(settings, 'FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):
-        from django.conf.urls import patterns, url
+        from django.conf.urls import url
 
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
             return update_wrapper(wrapper, view)
 
-        info = self.model._meta.app_label, self.model._meta.module_name
-
-        urlpatterns = patterns('', url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete), name='%s_%s_autocomplete' % info))
-        urlpatterns += super(ForeignKeyAutocompleteAdmin, self).get_urls()
-        return urlpatterns
+        return [
+            url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
+                name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
+        ] + super(ForeignKeyAutocompleteAdmin, self).get_urls()
 
     def foreignkey_autocomplete(self, request):
         """
@@ -80,7 +76,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
-            to_string_function = lambda x: x.__unicode__()
+            if six.PY3:
+                to_string_function = lambda x: x.__str__()
+            else:
+                to_string_function = lambda x: x.__unicode__()
 
         if search_fields and app_label and model_name and (query or object_pk):
             def construct_search(field_name):
@@ -93,7 +92,9 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     return "%s__search" % field_name[1:]
                 else:
                     return "%s__icontains" % field_name
-            model = models.get_model(app_label, model_name)
+
+            model = apps.get_model(app_label, model_name)
+
             queryset = model._default_manager.all()
             data = ''
             if query:
@@ -103,6 +104,10 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     other_qs.query.select_related = queryset.query.select_related
                     other_qs = other_qs.filter(reduce(operator.or_, or_queries))
                     queryset = queryset & other_qs
+
+                additional_filter = self.get_related_filter(model, request)
+                if additional_filter:
+                    queryset = queryset.filter(additional_filter)
 
                 if self.autocomplete_limit:
                     queryset = queryset[:self.autocomplete_limit]
@@ -117,6 +122,12 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                     data = to_string_function(obj)
             return HttpResponse(data)
         return HttpResponseNotFound()
+
+    def get_related_filter(self, model, request):
+        """Given a model class and current request return an optional Q object
+        that should be applied as an additional filter for autocomplete query.
+        If no additional filtering is needed, this method should return
+        None."""
 
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)
@@ -133,7 +144,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         Overrides the default widget for Foreignkey fields if they are
         specified in the related_search_fields class attribute.
         """
-        if (isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields):
+        if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:
             model_name = db_field.rel.to._meta.object_name
             help_text = self.get_help_text(db_field.name, model_name)
             if kwargs.get('help_text'):

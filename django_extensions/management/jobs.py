@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 django_extensions.management.jobs
 """
@@ -153,8 +154,10 @@ def get_job(app_name, job_name):
 def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True):
     jobmap = get_jobs(when, only_scheduled=only_scheduled)
     print("Job List: %i jobs" % len(jobmap))
-    jlist = jobmap.keys()
-    jlist.sort()
+    jlist = sorted(jobmap.keys())
+    if not jlist:
+        return
+
     appname_spacer = "%%-%is" % max(len(e[0]) for e in jlist)
     name_spacer = "%%-%is" % max(len(e[1]) for e in jlist)
     when_spacer = "%%-%is" % max(len(e.when) for e in jobmap.values() if e.when)

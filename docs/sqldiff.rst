@@ -24,6 +24,11 @@ Currently the following databases are supported:
 
 Patches to support other databases are welcome! :-)
 
+Exit Codes
+----------
+
+Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
+
 
 Example Usage
 -------------
