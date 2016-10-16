@@ -138,7 +138,6 @@ def import_objects(options, style):
         if app_name in dont_load:
             continue
 
-        app_aliases = model_aliases.get(app_name, {})
         for mod in app_models:
             if "%s.%s" % (app_name, mod.__name__) in dont_load:
                 continue
@@ -170,10 +169,11 @@ def import_objects(options, style):
 
                 alias = app_aliases.get(model_name)
 
-                if not alias and prefix:
-                    alias = "%s_%s" % (prefix, model_name)
-                else:
-                    alias = model_name
+                if not alias:
+                    if prefix:
+                        alias = "%s_%s" % (prefix, model_name)
+                    else:
+                        alias = model_name
 
                 imported_objects[alias] = imported_object
                 if model_name == alias:
