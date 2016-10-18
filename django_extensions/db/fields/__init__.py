@@ -19,6 +19,7 @@ try:
 except ImportError:
     HAS_SHORT_UUID = False
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import DateTimeField, CharField, SlugField
 from django.template.defaultfilters import slugify
@@ -26,7 +27,7 @@ from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
 
 
-MAX_UNIQUE_QUERY_ATTEMPTS = 100
+MAX_UNIQUE_QUERY_ATTEMPTS = getattr(settings, 'EXTENSIONS_MAX_UNIQUE_QUERY_ATTEMPTS', 100)
 
 
 class UniqueFieldMixin(object):
@@ -108,6 +109,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         self.check_is_bool('overwrite')
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
         self.check_is_bool('allow_duplicates')
+        self.max_unique_query_attempts = kwargs.pop('max_unique_query_attempts', MAX_UNIQUE_QUERY_ATTEMPTS)
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -129,7 +131,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def slug_generator(self, original_slug, start):
         yield original_slug
-        for i in range(start, MAX_UNIQUE_QUERY_ATTEMPTS):
+        for i in range(start, self.max_unique_query_attempts):
             slug = original_slug
             end = '%s%s' % (self.separator, i)
             end_len = len(end)
@@ -138,8 +140,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
             yield slug
-        raise RuntimeError('max slug attempts for %s exceeded (%s)' %
-            (original_slug, MAX_UNIQUE_QUERY_ATTEMPTS))
+        raise RuntimeError('max slug attempts for %s exceeded (%s)' % (original_slug, self.max_unique_query_attempts))
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
@@ -244,6 +245,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         self.check_is_bool('include_alpha')
         self.include_punctuation = kwargs.pop('include_punctuation', False)
         self.check_is_bool('include_punctuation')
+        self.max_unique_query_attempts = kwargs.pop('max_unique_query_attempts', MAX_UNIQUE_QUERY_ATTEMPTS)
 
         # Set unique=False unless it's been set manually.
         if 'unique' not in kwargs:
@@ -252,10 +254,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
         super(RandomCharField, self).__init__(*args, **kwargs)
 
     def random_char_generator(self, chars):
-        for i in range(MAX_UNIQUE_QUERY_ATTEMPTS):
+        for i in range(self.max_unique_query_attempts):
             yield ''.join(get_random_string(self.length, chars))
-        raise RuntimeError('max random character attempts exceeded (%s)' %
-            MAX_UNIQUE_QUERY_ATTEMPTS)
+        raise RuntimeError('max random character attempts exceeded (%s)' % self.max_unique_query_attempts)
 
     def pre_save(self, model_instance, add):
         if not add and getattr(model_instance, self.attname) != '':
