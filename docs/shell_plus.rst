@@ -88,8 +88,8 @@ The first one is ``NOTEBOOK_ARGUMENTS`` that can be used to hold those options t
 For example::
 
     NOTEBOOK_ARGUMENTS = [
-        '--ip=x.x.x.x',
-        '--port=xx',
+        '--ip', 'x.x.x.x',
+        '--port', 'xx',
     ]
 
 Another one is ``IPYTHON_ARGUMENTS`` that for those options that available via::
