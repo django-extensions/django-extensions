@@ -4,33 +4,47 @@ Installation instructions
 :synopsis: Installing django-extensions
 
 
-Download and installation
--------------------------
+Installation
+------------
 
-Pip and easy_install
-^^^^^^^^^^^^^^^^^^^^
+For usage
+^^^^^^^^^
 
-You can use pip or easy_install to install django-extensions::
+You can use pip to install django-extensions for usage::
 
   $ pip install django-extensions
 
-or::
+For development
+^^^^^^^^^^^^^^^
 
-  $ easy_install django-extensions
+Django-extensions is hosted on github::
 
-Download
-^^^^^^^^
+ https://github.com/django-extensions/django-extensions
 
-Download the latest packaged version from
-http://pypi.python.org/pypi/django-extensions/ and unpack it. Inside is a
-script called setup.py. Enter this command::
+Source code can be accessed by performing a Git clone.
 
-  python setup.py install
+Tracking the development version of *django command extensions* should be
+pretty stable and will keep you up-to-date with the latests fixes.
 
-...and the package will install automatically.
+  $ pip install -e git+https://github.com/django-extensions/django-extensions.git#egg=django-extensions
+  
+You find the sources in src/django-extensions now.
 
-Installation
-^^^^^^^^^^^^
+You can verify that the application is available on your PYTHONPATH by opening a python interpreter and entering the following commands:
+
+::
+
+  >>> import django_extensions
+  >>> django_extensions.VERSION
+  (0, 8)
+
+Keep in mind that the current code in the git repository may be different from the
+packaged release. It may contain bugs and backwards-incompatible changes but most
+likely also new goodies to play with.
+
+
+Configuration
+^^^^^^^^^^^^^
 
 You will need to add the *django_extensions* application to the INSTALLED_APPS
 setting of your Django project *settings.py* file.::
@@ -56,45 +70,4 @@ for example:
 If the given application or python library is not installed on your system (or
 not in the python path) the executed command will raise an exception and inform
 you of the missing dependency.
-
-Version Control
----------------
-
-Django-extensions is hosted on github::
-
- https://github.com/django-extensions/django-extensions
-
-Source code can be accessed by performing a Git clone.
-
-Tracking the development version of *django command extensions* should be
-pretty stable and will keep you up-to-date with the latests fixes.
-
-The following command will check the application's source code out to a
-directory called *django-extensions*:
-
-Git::
-
-  git clone git://github.com/django-extensions/django-extensions.git
-
-You should either install the resulting project with *python setup.py install*
-or put the *extensions* directory into your PYTHONPATH. The most common way
-is to symlink (junction, if you're on Windows) the extensions directory inside
-a directory which is on your PYTHONPATH, such as your python installation's
-site-packages directory.
-
-::
-
-  ln -sf /full/path/to/django-extensions/django_extensions /usr/lib/python2.7/site-packages/django_extensions
-
-You can verify that the application is available on your PYTHONPATH by opening a python interpreter and entering the following commands:
-
-::
-
-  >>> import django_extensions
-  >>> django_extensions.VERSION
-  (0, 8)
-
-Keep in mind that the current code in the git repository may be different from the
-packaged release. It may contain bugs and backwards-incompatible changes but most
-likely also new goodies to play with.
 
