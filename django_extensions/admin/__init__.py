@@ -15,12 +15,12 @@ from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 from django.utils.text import get_text_list
-from django.contrib.admin import ModelAdmin
+from django.contrib import admin
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
 
-class ForeignKeyAutocompleteAdmin(ModelAdmin):
+class ForeignKeyAutocompleteAdminMixin(object):
     """Admin class for models using the autocomplete feature.
 
     There are two additional fields:
@@ -60,7 +60,7 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
         return [
             url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
                 name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
-        ] + super(ForeignKeyAutocompleteAdmin, self).get_urls()
+        ] + super(ForeignKeyAutocompleteAdminMixin, self).get_urls()
 
     def foreignkey_autocomplete(self, request):
         """
@@ -151,4 +151,16 @@ class ForeignKeyAutocompleteAdmin(ModelAdmin):
                 help_text = six.u('%s %s' % (kwargs['help_text'], help_text))
             kwargs['widget'] = ForeignKeySearchInput(db_field.rel, self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
-        return super(ForeignKeyAutocompleteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(ForeignKeyAutocompleteAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
+
+
+class ForeignKeyAutocompleteAdmin(ForeignKeyAutocompleteAdminMixin, admin.ModelAdmin):
+    pass
+
+
+class ForeignKeyAutocompleteTabularInline(ForeignKeyAutocompleteAdminMixin, admin.TabularInline):
+    pass
+
+
+class ForeignKeyAutocompleteStackedInline(ForeignKeyAutocompleteAdminMixin, admin.StackedInline):
+    pass
