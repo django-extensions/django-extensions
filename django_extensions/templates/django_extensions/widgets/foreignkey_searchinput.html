@@ -5,6 +5,9 @@
 </a>
 <script type="text/javascript">
 (function($) {
+    var current_value = $('#id_{{ name }}').val();
+    var new_value = null;
+
     // Show lookup input
     $('#lookup_{{ name }}').show();
     function reset() {
@@ -18,7 +21,7 @@
             'object_pk': query
         }, function(data) {
             $('#lookup_{{ name }}').val(data);
-            {{ name }}_value = query;
+            current_value = query;
         });
     };
     $('#id_{{ name }}').bind('keyup', function(event) {
@@ -47,12 +50,11 @@
             $('#id_{{ name }}').val(item.data[0]);
         }
     });
-    var {{ name }}_value = $('#id_{{ name }}').val();
     function check() {
-        {{ name }}_check = $('#id_{{ name }}').val();
-        if ({{ name }}_check) {
-            if ({{ name }}_check != {{ name }}_value) {
-                lookup({{ name }}_check);
+        new_value = $('#id_{{ name }}').val();
+        if (new_value) {
+            if (new_value != current_value) {
+                lookup(new_value);
             }
         }
     };
