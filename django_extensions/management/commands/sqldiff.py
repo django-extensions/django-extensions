@@ -874,6 +874,7 @@ class PostgresqlSQLDiff(SQLDiff):
         super(PostgresqlSQLDiff, self).find_field_type_differ(meta, table_description, table_name, callback)
     """
 
+
 DATABASE_SQLDIFF_CLASSES = {
     'postgis': PostgresqlSQLDiff,
     'postgresql_psycopg2': PostgresqlSQLDiff,

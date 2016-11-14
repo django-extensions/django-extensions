@@ -15,4 +15,6 @@ def truncate_letters(s, num):
         if not s.endswith('...'):
             s += '...'
     return s
+
+
 truncate_letters = allow_lazy(truncate_letters, six.text_type)

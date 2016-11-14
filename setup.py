@@ -51,6 +51,7 @@ class osx_install_data(install_data):
         self.set_undefined_options('install', ('install_lib', 'install_dir'))
         install_data.finalize_options(self)
 
+
 if sys.platform == "darwin":
     cmdclasses = {'install_data': osx_install_data}
 else:
@@ -73,6 +74,7 @@ def fullsplit(path, result=None):
     if head == path:
         return result
     return fullsplit(head, [tail] + result)
+
 
 # Tell distutils to put the data_files in platform-specific installation
 # locations. See here for an explanation:
