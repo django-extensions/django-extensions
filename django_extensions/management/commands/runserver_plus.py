@@ -86,6 +86,8 @@ class Command(BaseCommand):
                             help="Keep request.META['werkzeug.server.shutdown'] function which is automatically removed "
                                  "because Django debug pages tries to call the function and unintentionally shuts down "
                                  "the Werkzeug server.")
+        parser.add_argument("--nopin", dest="nopin", action="store_true", default=False,
+                            help="Disable the PIN in werkzeug. USE IT WISELY!"),
 
         if USE_STATICFILES:
             parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
@@ -250,6 +252,8 @@ class Command(BaseCommand):
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
 
+        self.nopin = options.get('nopin', False)
+
         if self.show_startup_messages:
             print("Performing system checks...\n")
         if hasattr(self, 'check'):
@@ -325,6 +329,8 @@ class Command(BaseCommand):
         # Don't run a second instance of the debugger / reloader
         # See also: https://github.com/django-extensions/django-extensions/issues/832
         if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+            if self.nopin: 
+                os.environ['WERKZEUG_DEBUG_PIN'] = 'off'
             handler = DebuggedApplication(handler, True)
 
         run_simple(
