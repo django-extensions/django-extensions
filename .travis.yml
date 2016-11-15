@@ -10,6 +10,7 @@ env:
   - TOX_ENV=py34-flake8
   - TOX_ENV=py35-flake8
   - TOX_ENV=precommit
+  - TOX_ENV=safety
   - TOX_ENV=py27-dj18
   - TOX_ENV=py27-dj19
   - TOX_ENV=py27-dj110
