@@ -54,19 +54,16 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
   # Rename the automatic loaded module Messages in the app blog to blog_messages.
   SHELL_PLUS_MODEL_ALIASES = {'blog': {'Messages': 'blog_messages'},}
-  }
 
 ::
 
   # Prefix all automatically loaded models in the app blog with myblog.
   SHELL_PLUS_APP_PREFIXES = {'blog': 'myblog',}
-  }
 
 ::
 
   # Dont load the 'sites' app, and skip the model 'pictures' in the app 'blog'
   SHELL_PLUS_DONT_LOAD = ['sites', 'blog.pictures']
-  }
 
 
 You can also combine model_aliases and dont_load.
