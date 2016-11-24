@@ -5,9 +5,17 @@ Changelog
 -----
 
 Changes:
+ - New: ForeignKeyAutocompleteAdmin, Add autocomplete for inline model admins
+ - Improvement: graph_models, Rewrite modelviz module from method to class based processor
+ - Improvement: db fields, make MAX_UNIQUE_QUERY_ATTEMPTS configurable per field and via settings
+ - Improvement: runserver_plus, Added nopin option to disable pin
  - Fix: graph_models, Support PyDot 1.2.0 and higher
+ - Fix: shell_plus, Fix that aliases from SHELL_PLUS_MODEL_ALIASES were not applied
  - Removed: validate_templatetags, remove support for pre django-1.5 style {% url %} tags
- - Cleanup: removing support for end-of-life Python 3.2.
+ - Cleanup: removing support for end-of-life Python 3.2
+ - Docs: simplify installation instructions
+ - Docs: fix example for NOTEBOOK_ARGUMENTS
+ - Docs: Remove extraneous '}' characters from shell_plus docs
 
 
 1.7.4
