@@ -108,6 +108,14 @@ class Command(BaseCommand):
         req = Request(url, headers=headers)
         return json.loads(urlopen(req).read())
 
+    def _available_version(self, dist_version, available):
+        if self._is_stable(dist_version):
+            stable = [v for v in available if self._is_stable(LooseVersion(v))]
+            if stable:
+                return LooseVersion(stable[0])
+
+        return LooseVersion(available[0]) if available else None
+
     def check_pypi(self):
         """
         If the requirement is frozen to pypi, check for a new version.
@@ -124,11 +132,8 @@ class Command(BaseCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].name)
-                try:
-                    available_version = LooseVersion(available[0])
-                except IndexError:
-                    available_version = None
+                available = pypi.package_releases(req["pip_req"].name, True)
+                available_version = self._available_version(dist_version, available)
 
                 if not available_version:
                     msg = self.style.WARN("release is not on pypi (check capitalization and/or --extra-index-url)")
