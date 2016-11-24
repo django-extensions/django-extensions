@@ -29,7 +29,7 @@ Tag it::
 
 Remove old build directory (if exists)::
 
-  $ rm -r build
+  $ rm -r build dist
 
 Prepare the release tarball::
 
@@ -37,7 +37,7 @@ Prepare the release tarball::
 
 Upload release to pypi::
 
-  $ python ./setup.py sdist bdist_wheel upload -s
+  $ twine upload -s dist/*
 
 Bumb version number to new in-development pre version::
 
