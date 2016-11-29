@@ -449,6 +449,9 @@ class SQLDiff(object):
             table_name = meta.db_table
             app_label = meta.app_label
 
+            if meta.proxy:
+                continue
+
             if cur_app_label != app_label:
                 # Marker indicating start of difference scan for this table_name
                 self.add_app_model_marker(app_label, app_model.__name__)
