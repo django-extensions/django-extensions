@@ -449,7 +449,7 @@ class SQLDiff(object):
             table_name = meta.db_table
             app_label = meta.app_label
 
-            if meta.proxy:
+            if self.options.get('include_proxy_models', False) and meta.proxy:
                 continue
 
             if cur_app_label != app_label:
@@ -918,6 +918,10 @@ to check/debug ur models compared to the real database tables and columns."""
             '--output_text', '-t', action='store_false', dest='sql',
             default=True,
             help="Outputs the differences as descriptive text instead of SQL")
+        parser.add_argument(
+            '--include-proxy-models', action='store_true', dest='include_proxy_models',
+            default=False,
+            help="Include proxy models in the graph")
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
