@@ -5,7 +5,7 @@ Changelog
 -----
 
 Changes:
- -
+ - Improvement: sqldiff, ignore proxy models in diff (with cli option to include them if wanted)
 
 
 1.7.5
