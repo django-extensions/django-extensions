@@ -199,6 +199,7 @@ def import_objects(options, style):
         SHELL_PLUS_DJANGO_IMPORTS = {
             'django.core.cache': ['cache'],
             'django.conf': ['settings'],
+            'django.contrib.auth': ['get_user_model'],
             'django.db': ['transaction'],
             'django.db.models': [
                 'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q',
