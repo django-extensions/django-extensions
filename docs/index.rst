@@ -57,6 +57,7 @@ Contents
    admin_extensions
    shell_plus
    create_app
+   delete_squashed_migrations
    dumpscript
    runscript
    export_emails
