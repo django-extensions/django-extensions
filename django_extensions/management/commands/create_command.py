@@ -25,6 +25,10 @@ class Command(AppCommand):
             default='sample',
             help='The name to use for the management command')
         parser.add_argument(
+            '--base', '-b', action='store', dest='base_command',
+            default='Base', help='The base class used for implementation of '
+            'this command. Should be one of Base, App, Label, or NoArgs')
+        parser.add_argument(
             '--dry-run', action='store_true', default=False,
             help='Do not actually create any files')
 
