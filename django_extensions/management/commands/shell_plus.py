@@ -49,7 +49,7 @@ class Command(BaseCommand):
             '--kernel', action='store_true', dest='kernel',
             help='Tells Django to start an IPython Kernel.')
         parser.add_argument('--connection-file', action='store', dest='connection_file',
-                    help='Specifies the connection file to use if using the --kernel option'),
+            help='Specifies the connection file to use if using the --kernel option'),
         parser.add_argument(
             '--use-pythonrc', action='store_true', dest='use_pythonrc',
             help='Tells Django to execute PYTHONSTARTUP file '
@@ -76,7 +76,11 @@ class Command(BaseCommand):
         return getattr(settings, 'IPYTHON_ARGUMENTS', [])
 
     def get_notebook_arguments(self, options):
-        return getattr(settings, 'NOTEBOOK_ARGUMENTS', [])
+        notebook_args = 'NOTEBOOK_ARGUMENTS'
+        arguments = getattr(settings, notebook_args, [])
+        if not arguments:
+            arguments = os.environ.get(notebook_args, '').split()
+        return arguments
 
     @signalcommand
     def handle(self, *args, **options):

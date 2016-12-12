@@ -29,6 +29,9 @@ Current Command Extensions
 * *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 
+* :doc:`delete_squashed_migrations` - Deletes leftover migrations after
+  squashing and converts squashed migration to a normal one.
+
 * :doc:`dumpscript <dumpscript>` - Generates a Python script that will
   repopulate the database using objects. The advantage of this approach is that
   it is easy to understand, and more flexible than directly populating the
