@@ -92,8 +92,9 @@ class ModelGraph(object):
         for graph in self.graphs:
             for model in graph['models']:
                 for relation in model['relations']:
-                    if relation['target'] in nodes:
-                        relation['needs_node'] = False
+                    if relation is not None:
+                        if relation['target'] in nodes:
+                            relation['needs_node'] = False
 
     def get_graph_data(self):
         now = datetime.datetime.now()
