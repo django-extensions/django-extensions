@@ -64,9 +64,16 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *fixture_labels, **options):
         """ Main method of a Django command """
-        from django.db.models import get_apps
         from django.core import serializers
         from django.conf import settings
+        from django.apps import apps
+        
+        def get_app_modules():
+            result = list()
+            for app in apps.get_app_configs():
+                result.append(app.module)
+                pass
+            return result
 
         self.style = no_style()
 
@@ -86,7 +93,7 @@ class Command(BaseCommand):
         # it isn't already initialized).
         cursor = connection.cursor()
 
-        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in get_apps()]
+        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in get_app_modules()]
         for fixture_label in fixture_labels:
             parts = fixture_label.split('.')
             if len(parts) == 1:
