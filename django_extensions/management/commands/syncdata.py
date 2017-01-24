@@ -67,13 +67,6 @@ class Command(BaseCommand):
         from django.core import serializers
         from django.conf import settings
         from django.apps import apps
-        
-        def get_app_modules():
-            result = list()
-            for app in apps.get_app_configs():
-                result.append(app.module)
-                pass
-            return result
 
         self.style = no_style()
 
@@ -93,7 +86,8 @@ class Command(BaseCommand):
         # it isn't already initialized).
         cursor = connection.cursor()
 
-        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in get_app_modules()]
+        app_modules = [app.module for app in apps.get_app_configs()]
+        app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in app_modules]
         for fixture_label in fixture_labels:
             parts = fixture_label.split('.')
             if len(parts) == 1:
