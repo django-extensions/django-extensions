@@ -19,7 +19,7 @@ from django.db.models.fields.related import (
 )
 from django.contrib.contenttypes.fields import GenericRelation
 from django.template import Context, Template, loader
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_str
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
 
@@ -143,7 +143,7 @@ class ModelGraph(object):
             related_query_name = field.related_query_name()
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
-            label = '{} ({})'.format(label, force_bytes(related_query_name))
+            label = '{} ({})'.format(label, force_str(related_query_name))
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.rel.to, six.string_types):
