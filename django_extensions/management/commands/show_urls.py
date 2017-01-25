@@ -7,7 +7,10 @@ from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+try:
+    from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+except ImportError:
+    from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
 from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
