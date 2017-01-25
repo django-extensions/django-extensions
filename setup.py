@@ -28,11 +28,10 @@ try:
             self.test_suite = True
 
         def run_tests(self):
+            import shlex
             import pytest
-
-            errno = pytest.main(self.pytest_args)
+            errno = pytest.main(shlex.split(self.pytest_args))
             sys.exit(errno)
-
 except ImportError:
     PyTest = None
 
