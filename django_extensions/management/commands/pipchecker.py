@@ -108,6 +108,9 @@ class Command(BaseCommand):
         req = Request(url, headers=headers)
         return json.loads(urlopen(req).read())
 
+    def _is_stable(self, version):
+        return not re.search(r'[ab]\d+$', str(version))
+
     def _available_version(self, dist_version, available):
         if self._is_stable(dist_version):
             stable = [v for v in available if self._is_stable(LooseVersion(v))]
