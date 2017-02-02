@@ -187,7 +187,7 @@ class ModelGraph(object):
             attributes = [field for field in appmodel._meta.local_fields]
         else:
             # Find all the 'real' attributes. Relations are depicted as graph edges instead of attributes
-            attributes = [field for field in attributes if not
+            attributes = [field for field in appmodel._meta.local_fields if not
                           isinstance(field, RelatedField)]
         return attributes
 
