@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import re
 from distutils.version import LooseVersion
 
 import pip
@@ -107,6 +108,9 @@ class Command(BaseCommand):
         """Shorcut for return contents as json"""
         req = Request(url, headers=headers)
         return json.loads(urlopen(req).read())
+
+    def _is_stable(self, version):
+        return not re.search(r'[ab]\d+$', str(version))
 
     def _available_version(self, dist_version, available):
         if self._is_stable(dist_version):
