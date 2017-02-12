@@ -654,7 +654,7 @@ class SqliteSQLDiff(SQLDiff):
             tablespace = "public"
             # index, column_name, column_type, nullable, default_value
             # see: http://www.sqlite.org/pragma.html#pragma_table_info
-            for table_info in self.sql_to_dict("PRAGMA table_info(%s);" % table_name, []):
+            for table_info in self.sql_to_dict("PRAGMA table_info('%s');" % table_name, []):
                 key = (tablespace, table_name, table_info['name'])
                 self.null[key] = not table_info['notnull']
 
