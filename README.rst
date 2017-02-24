@@ -13,10 +13,6 @@
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/pypi/dm/django-extensions.svg
-    :target: https://pypi.python.org/pypi/django-extensions/
-    :alt: Number of PyPI downloads
-
 .. image:: https://img.shields.io/pypi/wheel/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Supports Wheel format
