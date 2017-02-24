@@ -1,6 +1,16 @@
 Changelog
 =========
 
+1.7.7
+-----
+
+Changes:
+ - Improvement: admin_generator, use decorator style for registring ModelAdmins.
+ - Improvement: sqldiff, quote tablename for PRAGMA in sqlite
+ - Fix: graph_models, Fix `attributes` referenced before assignment
+ - Fix: pipchecker, Fix AttributeError caused by missing method
+
+
 1.7.6
 -----
 
