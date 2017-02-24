@@ -93,9 +93,8 @@ class Command(EmailNotificationCommand):
                 print(NOTICE("Check for %s" % mod))
             # check if module exists before importing
             try:
-                importlib.import_module(mod)
-                t = __import__(mod, [], [], [" "])
-            except (ImportError, AttributeError) as e:
+                t = importlib.import_module(mod)
+            except ImportError as e:
                 if str(e).startswith('No module named'):
                     try:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -107,9 +106,8 @@ class Command(EmailNotificationCommand):
                     finally:
                         exc_traceback = None
 
-                if verbosity > 0 and not silent:
-                    if verbosity > 2:
-                        traceback.print_exc()
+                if not silent:
+                    traceback.print_exc()
                     print(ERROR("Cannot import module '%s': %s." % (mod, e)))
 
                 return False
@@ -120,7 +118,7 @@ class Command(EmailNotificationCommand):
                 return t
             else:
                 if verbosity > 1:
-                    print(ERROR2("Find script '%s' but no run() function found." % mod))
+                    print(ERROR2("Found script '%s' but no run() function found." % mod))
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
