@@ -63,8 +63,8 @@ from .models import %(models)s
 
 PRINT_ADMIN_CLASS = getattr(settings, 'PRINT_ADMIN_CLASS', '''
 
+@admin.register(%(name)s)
 class %(name)sAdmin(admin.ModelAdmin):%(class_)s
-admin.site.register(%(name)s, %(name)sAdmin)
 ''')
 
 PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
