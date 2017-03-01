@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
-from django.conf import settings
-from django.test.utils import override_settings
-from django_extensions.management.commands.sync_s3 import Command
 import django_extensions.management.commands.sync_s3
 import os, shutil
+
+from django.test import TestCase
+from django.test.utils import override_settings
+from django_extensions.management.commands.sync_s3 import Command
 
 class SyncS3Tests(TestCase):
     def setUp(self):
