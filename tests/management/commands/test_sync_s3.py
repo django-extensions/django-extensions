@@ -22,14 +22,14 @@ class SyncS3Tests(TestCase):
         test_sub_dir = os.path.join(media_root, "testdir2", "testsubdir1")
         os.mkdir(test_sub_dir)
 
-        test_sub_dir_base =  os.path.join(media_root,"testdir1")
+        test_sub_dir_base = os.path.join(media_root, "testdir1")
         test_sub_dirs = [os.path.join(test_sub_dir_base, "testsubdir1"), os.path.join(test_sub_dir_base, "testsubdir2"),
                          os.path.join(test_sub_dir_base, "testsubdir3"), os.path.join(test_sub_dir_base, "testsubdir4"), ]
 
         for dir in test_sub_dirs:
             os.mkdir(dir)
 
-        test_sub_dir_base2 =  os.path.join(media_root, "testdir3")
+        test_sub_dir_base2 = os.path.join(media_root, "testdir3")
         test_sub_dirs_2 = [os.path.join(test_sub_dir_base2, "testsubdir1"), os.path.join(test_sub_dir_base2, "testsubdir2"),
                          os.path.join(test_sub_dir_base2, "testsubdir3"), os.path.join(test_sub_dir_base2, "testsubdir4"),
                          os.path.join(test_sub_dir_base2, "testsamenamedir"), ]
@@ -55,7 +55,7 @@ class SyncS3Tests(TestCase):
                 ["manage.py", "sync_s3", "--acl=authenticated-read", "--filter-list=testsamenamedir,testdir1"])
         except:
             # Exception is expected, we're not actually attempting to connect to S3
-            self.assertEqual(0,0)
+            self.assertEqual(0, 0)
 
         for directory in sync_s3_command.DIRECTORIES:
             for root, dirs, files in os.walk(directory):
