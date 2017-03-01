@@ -66,5 +66,3 @@ class SyncS3Tests(TestCase):
                     self.assertEqual(len(dirs), 1)
                 elif (dir_name == "testdir3"):
                     self.assertEqual(len(dirs), 5)
-
-
