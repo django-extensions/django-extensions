@@ -186,12 +186,18 @@ class Command(BaseCommand):
 
         Freeze at the commit hash (sha)::
             git+git://github.com/django/django.git@393c268e725f5b229ecb554f3fac02cfc250d2df#egg=Django
+            https://github.com/django/django/archive/393c268e725f5b229ecb554f3fac02cfc250d2df.tar.gz#egg=Django
+            https://github.com/django/django/archive/393c268e725f5b229ecb554f3fac02cfc250d2df.zip#egg=Django
 
         Freeze with a branch name::
             git+git://github.com/django/django.git@master#egg=Django
+            https://github.com/django/django/archive/master.tar.gz#egg=Django
+            https://github.com/django/django/archive/master.zip#egg=Django
 
         Freeze with a tag::
             git+git://github.com/django/django.git@1.5b2#egg=Django
+            https://github.com/django/django/archive/1.5b2.tar.gz#egg=Django
+            https://github.com/django/django/archive/1.5b2.zip#egg=Django
 
         Do not freeze::
             git+git://github.com/django/django.git#egg=Django
@@ -213,7 +219,21 @@ class Command(BaseCommand):
             if self.github_api_token:
                 headers["Authorization"] = "token {0}".format(self.github_api_token)
             try:
-                user, repo = urlparse(req_url).path.split("#")[0].strip("/").rstrip("/").split("/")
+                path_parts = urlparse(req_url).path.split("#", 1)[0].strip("/").rstrip("/").split("/")
+
+                if len(path_parts) == 2:
+                    user, repo = path_parts
+
+                elif 'archive' in path_parts:
+                    # Supports URL of format:
+                    # https://github.com/django/django/archive/master.tar.gz#egg=Django
+                    # https://github.com/django/django/archive/master.zip#egg=Django
+                    user, repo = path_parts[:2]
+                    repo += '@' + path_parts[-1].replace('.tar.gz', '').replace('.zip', '')
+
+                else:
+                    self.style.ERROR("\nFailed to parse %r\n" % (req_url, ))
+                    continue
             except (ValueError, IndexError) as e:
                 print(self.style.ERROR("\nFailed to parse %r: %s\n" % (req_url, e)))
                 continue
