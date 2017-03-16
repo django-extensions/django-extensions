@@ -209,3 +209,10 @@ class RandomCharTestModelPunctuation(models.Model):
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'
+
+
+class UnicodeVerboseNameModel(models.Model):
+    cafe = models.IntegerField(verbose_name=u'café')
+
+    class Meta:
+        app_label = 'django_extensions'
