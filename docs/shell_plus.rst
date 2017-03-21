@@ -68,6 +68,14 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
 You can also combine model_aliases and dont_load.
 
+When referencing nested modules, e.g. `somepackage.someapp.models.somemodel`, omit the
+package name and the reference to `models`. For example:
+
+::
+
+    SHELL_PLUS_DONT_LOAD = ['someapp.somemodel', ]  # This works
+    SHELL_PLUS_DONT_LOAD = ['somepackage.someapp.models.somemodel', ]  # This does NOT work
+
 It is possible to ignore autoloaded modules when using manage.py, like::
 
   $ ./manage.py shell_plus --dont-load app1 --dont-load app2.module1
