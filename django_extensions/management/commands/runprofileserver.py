@@ -95,6 +95,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
+            'addrport', nargs='?',
+            help='Optional port number, or ipaddr:port'
+        )
+        parser.add_argument(
             '--noreload', action='store_false', dest='use_reloader',
             default=True,
             help='Tells Django to NOT use the auto-reloader.')
