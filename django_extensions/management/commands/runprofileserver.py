@@ -103,6 +103,10 @@ class Command(BaseCommand):
             default=True,
             help='Tells Django to NOT use the auto-reloader.')
         parser.add_argument(
+            '--nothreading', action='store_false', dest='use_threading', default=True,
+            help='Tells Django to NOT use threading.',
+        )
+        parser.add_argument(
             '--prof-path', dest='prof_path', default='/tmp',
             help='Specifies the directory which to save profile information '
             'in.')
