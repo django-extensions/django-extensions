@@ -260,7 +260,7 @@ class Command(BaseCommand):
                     if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
-                run(addr, int(port), handler)
+                run(addr, int(port), handler, threading=options.get('use_threading', True))
             except socket.error as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {
