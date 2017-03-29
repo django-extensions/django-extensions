@@ -1,6 +1,20 @@
 Changelog
 =========
 
+1.7.8
+-----
+
+Changes:
+ - Improvement: django 1.11, add testing for Django 1.11
+ - Improvement: pipchecker, make it possible to parse https github urls
+ - Improvement: unreferenced_files, make command much faster by using set()
+ - Docs: add undocumented commands
+ - Docs: shell_plus, additional documentation for referencing nested modules
+ - Fix: sync_s3, fix exclusion of directories
+ - Fix: runprofileserver, fix ip:port specification
+ - Fix: runprofileserver, support --nothreading
+
+
 1.7.7
 -----
 
