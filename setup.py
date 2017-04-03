@@ -20,7 +20,7 @@ try:
 
         def initialize_options(self):
             TestCommand.initialize_options(self)
-            self.pytest_args = []
+            self.pytest_args = 'tests django_extensions --ds=tests.testapp.settings --cov=django_extensions'
 
         def finalize_options(self):
             TestCommand.finalize_options(self)
