@@ -137,12 +137,12 @@ other imports. Both have similar syntax. So in your settings.py file:
 
 ::
 
-    SHELL_PLUS_PRE_IMPORTS = (
+    SHELL_PLUS_PRE_IMPORTS = [
         ('module.submodule1', ('class1', 'function2')),
         ('module.submodule2', 'function3'),
         ('module.submodule3', '*'),
         'module.submodule4'
-    )
+    ]
 
 The above example would directly translate to the following python code which would be executed before
 the automatic imports:
