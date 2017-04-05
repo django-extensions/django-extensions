@@ -40,6 +40,7 @@ naiveip_re = re.compile(r"""^(?:
 ):)?(?P<port>\d+)$""", re.X)
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
+DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,8 @@ class Command(BaseCommand):
                             help='auto-reload whenever the given file changes too (can be specified multiple times)')
         parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
                             help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
+        parser.add_argument('--reloader-type', dest='reloader_type', action="store", type=str, default=DEFAULT_POLLER_RELOADER_TYPE,
+                            help='Werkzeug reloader type [options are auto, watchdog, or stat, default=%s]' % DEFAULT_POLLER_RELOADER_TYPE)
         parser.add_argument('--pdb', action='store_true', dest='pdb', default=False,
                             help='Drop into pdb shell at the start of any view.')
         parser.add_argument('--ipdb', action='store_true', dest='ipdb', default=False,
@@ -251,6 +254,7 @@ class Command(BaseCommand):
             self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
+        reloader_type = options.get('reloader_type', 'auto')
 
         self.nopin = options.get('nopin', False)
 
@@ -341,6 +345,7 @@ class Command(BaseCommand):
             use_debugger=True,
             extra_files=extra_files,
             reloader_interval=reloader_interval,
+            reloader_type=reloader_type,
             threaded=threaded,
             request_handler=WSGIRequestHandler,
             ssl_context=ssl_context,
