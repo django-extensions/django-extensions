@@ -82,6 +82,9 @@ class Command(BaseCommand):
             arguments = os.environ.get(notebook_args, '').split()
         return arguments
 
+    def get_imported_objects(self, options):
+        return import_objects(options, self.style)
+
     @signalcommand
     def handle(self, *args, **options):
         use_kernel = options.get('kernel', False)
@@ -134,7 +137,7 @@ class Command(BaseCommand):
                 return traceback.format_exc()
 
             def run_kernel():
-                imported_objects = import_objects(options, self.style)
+                imported_objects = self.get_imported_objects(options)
                 kwargs = dict(
                     argv=[],
                     user_ns=imported_objects,
@@ -230,7 +233,7 @@ class Command(BaseCommand):
         def get_plain():
             # Using normal Python shell
             import code
-            imported_objects = import_objects(options, self.style)
+            imported_objects = self.get_imported_objects(options)
             try:
                 # Try activating rlcompleter, because it's handy.
                 import readline
@@ -272,7 +275,7 @@ class Command(BaseCommand):
                 return traceback.format_exc()
 
             def run_bpython():
-                imported_objects = import_objects(options, self.style)
+                imported_objects = self.get_imported_objects(options)
                 embed(imported_objects)
             return run_bpython
 
@@ -281,7 +284,7 @@ class Command(BaseCommand):
                 from IPython import start_ipython
 
                 def run_ipython():
-                    imported_objects = import_objects(options, self.style)
+                    imported_objects = self.get_imported_objects(options)
                     ipython_arguments = self.get_ipython_arguments(options)
                     start_ipython(argv=ipython_arguments, user_ns=imported_objects)
                 return run_ipython
@@ -297,7 +300,7 @@ class Command(BaseCommand):
                     return str_exc + "\n" + traceback.format_exc()
 
                 def run_ipython():
-                    imported_objects = import_objects(options, self.style)
+                    imported_objects = self.get_imported_objects(options)
                     shell = IPShell(argv=[], user_ns=imported_objects)
                     shell.mainloop()
                 return run_ipython
@@ -313,7 +316,7 @@ class Command(BaseCommand):
                     return tb
 
             def run_ptpython():
-                imported_objects = import_objects(options, self.style)
+                imported_objects = self.get_imported_objects(options)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(globals=imported_objects, history_filename=history_filename,
                       vi_mode=options.get('vi_mode', False), configure=run_config)
@@ -332,7 +335,7 @@ class Command(BaseCommand):
                     return tb
 
             def run_ptipython():
-                imported_objects = import_objects(options, self.style)
+                imported_objects = self.get_imported_objects(options)
                 history_filename = os.path.expanduser('~/.ptpython_history')
                 embed(user_ns=imported_objects, history_filename=history_filename,
                       vi_mode=options.get('vi_mode', False), configure=run_config)
