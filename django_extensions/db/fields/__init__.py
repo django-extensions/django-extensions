@@ -22,6 +22,7 @@ except ImportError:
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import DateTimeField, CharField, SlugField
+from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
@@ -80,7 +81,12 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
     Required arguments:
 
     populate_from
-        Specifies which field or list of fields the slug is populated from.
+        Specifies which field, list of fields, or model method
+        the slug will be populated from.
+
+        populate_from can traverse a ForeignKey relationship
+        by using Django ORM syntax:
+            populate_from = 'related_model__field'
 
     Optional arguments:
 
@@ -150,7 +156,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
+            slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             start = 2
         else:
@@ -174,6 +180,22 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
         return super(AutoSlugField, self).find_unique(
             model_instance, slug_field, self.slug_generator(original_slug, start))
+
+    def get_slug_fields(self, model_instance, lookup_value):
+        lookup_value_path = lookup_value.split(LOOKUP_SEP)
+        attr = model_instance
+        for elem in lookup_value_path:
+            try:
+                attr = getattr(attr, elem)
+            except AttributeError:
+                raise AttributeError(
+                    "value {} in AutoSlugField's 'populate_from' argument {} returned an error - {} has no attribute {}".format(
+                        elem, lookup_value, attr, elem))
+
+        if callable(attr):
+            return "%s" % attr()
+
+        return attr
 
     def pre_save(self, model_instance, add):
         value = force_text(self.create_slug(model_instance, add))

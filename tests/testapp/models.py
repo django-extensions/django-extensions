@@ -63,6 +63,33 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
+class ModelMethodSluggedTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='get_readable_title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+    def get_readable_title(self):
+        return "The title is {}".format(self.title)
+
+
+class FKSluggedTestModel(models.Model):
+    related_field = models.ForeignKey(SluggedTestModel)
+    slug = AutoSlugField(populate_from="related_field__title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class FKSluggedTestModelCallable(models.Model):
+    related_field = models.ForeignKey(ModelMethodSluggedTestModel)
+    slug = AutoSlugField(populate_from="related_field__get_readable_title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class JSONFieldTestModel(models.Model):
     a = models.IntegerField()
     j_field = JSONField()

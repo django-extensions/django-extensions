@@ -9,7 +9,16 @@ Current Database Model Field Extensions
 
 * *AutoSlugField* - AutoSlugfield will automatically create a unique slug
   incrementing an appended number on the slug until it is unique. Inspired by
-  SmileyChris' Unique Slugify snippet.
+  SmileyChris' Unique Slugify snippet. 
+
+  AutoSlugField takes a `popuate_from` argument that specifies which field, list of
+  fields, or model method the slug will be populated from, for instance::
+
+    slug = AutoSlugField(populate_from=['title', 'description', 'get_author_name'])
+ 
+  `populate_from` can traverse a ForeignKey relationship by using Django ORM syntax::
+
+    slug = AutoSlugField(populate_from=['related_model__title', 'related_model__get_readable_name'])
 
 * *RandomCharField* - AutoRandomCharField will automatically create a
   unique random character field with the specified length. By default
