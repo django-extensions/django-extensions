@@ -2,6 +2,7 @@
 from random import choice
 
 from django.core.management.base import BaseCommand
+from django.core.management.utils import get_random_secret_key
 
 from django_extensions.management.utils import signalcommand
 
@@ -13,4 +14,4 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        return ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+        return get_random_secret_key()
