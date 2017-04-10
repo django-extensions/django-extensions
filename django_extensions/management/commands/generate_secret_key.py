@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from random import choice
-
 from django.core.management.base import BaseCommand
+from django.utils.crypto import get_random_string
 
 from django_extensions.management.utils import signalcommand
 
@@ -13,4 +12,5 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        return ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+        chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+        return get_random_string(50, chars)
