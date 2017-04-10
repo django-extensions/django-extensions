@@ -10,7 +10,9 @@ from django.utils.encoding import force_bytes
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
-from .testapp.models import ChildSluggedTestModel, SluggedTestModel
+from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
+    FKSluggedTestModel, FKSluggedTestModelCallable, \
+    ModelMethodSluggedTestModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -91,6 +93,18 @@ class AutoSlugFieldTest(TestCase):
         n.save()
         self.assertEqual(n.slug, '-3')
 
+    def test_callable_slug_source(self):
+        m = ModelMethodSluggedTestModel(title='-foo')
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
+
+        n = ModelMethodSluggedTestModel(title='-foo')
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
     def test_inheritance_creates_next_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
@@ -102,6 +116,20 @@ class AutoSlugFieldTest(TestCase):
         o = SluggedTestModel(title='foo')
         o.save()
         self.assertEqual(o.slug, 'foo-3')
+
+    def test_foreign_key_populate_from_field(self):
+        m_fk = SluggedTestModel(title='foo')
+        m_fk.save()
+        m = FKSluggedTestModel(related_field=m_fk)
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+    def test_foreign_key_populate_from_callable(self):
+        m_fk = ModelMethodSluggedTestModel(title='foo')
+        m_fk.save()
+        m = FKSluggedTestModelCallable(related_field=m_fk)
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
 
 
 class MigrationTest(TestCase):

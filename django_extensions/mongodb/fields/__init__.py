@@ -10,6 +10,7 @@ import re
 import six
 import datetime
 from django import forms
+from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from mongoengine.fields import StringField, DateTimeField
@@ -95,7 +96,7 @@ class AutoSlugField(SlugField):
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
+            slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             next = 2
         else:
@@ -144,6 +145,22 @@ class AutoSlugField(SlugField):
             kwargs[self.attname] = slug
             next += 1
         return slug
+
+    def get_slug_fields(self, model_instance, lookup_value):
+        lookup_value_path = lookup_value.split(LOOKUP_SEP)
+        attr = model_instance
+        for elem in lookup_value_path:
+            try:
+                attr = getattr(attr, elem)
+            except AttributeError:
+                raise AttributeError(
+                    "value {} in AutoSlugField's 'populate_from' argument {} returned an error - {} has no attribute {}".format(
+                        elem, lookup_value, attr, elem))
+
+        if callable(attr):
+            return "%s" % attr()
+
+        return attr
 
     def pre_save(self, model_instance, add):
         value = six.u(self.create_slug(model_instance, add))
