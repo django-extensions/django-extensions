@@ -204,7 +204,7 @@ class Command(BaseCommand):
 
         """
         for name, req in list(self.reqs.items()):
-            req_url = req["url"]
+            req_url = str(req["url"])
             if not req_url:
                 continue
             req_url = str(req_url)
