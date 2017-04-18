@@ -116,7 +116,7 @@ Current Command Extensions
   Content-Encoding header, and also set a far future expires header for browser
   caching.
   
-* *sync_data* - Makes the current database have the same data as the fixture(s), no more, no less.
+* *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
 
 * *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
 
