@@ -132,19 +132,35 @@ class Command(BaseCommand):
             except ImportError:
                 sqlparse = None  # noqa
 
+            try:
+                import pygments.lexers
+                import pygments.formatters
+            except ImportError:
+                pygments = None
+
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
                         return self.cursor.execute(sql, params)
                     finally:
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
                         execution_time = time.time() - starttime
-                        therest = ' -- [Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias)
+                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+
                         if sqlparse:
-                            logger.info(sqlparse.format(raw_sql, reindent=True) + therest)
-                        else:
-                            logger.info(raw_sql + therest)
+                            raw_sql = sqlparse.format(raw_sql, reindent=True)
+
+                        if pygments:
+                            raw_sql = pygments.highlight(
+                                raw_sql,
+                                pygments.lexers.get_lexer_by_name("sql"),
+                                pygments.formatters.TerminalFormatter()
+                            )
+
+                        logger.info(raw_sql)
+                        logger.info("")
+                        logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
+                        logger.info("")
 
             utils.CursorDebugWrapper = PrintQueryWrapper
 
