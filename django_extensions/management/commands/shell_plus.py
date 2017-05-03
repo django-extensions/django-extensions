@@ -102,11 +102,16 @@ class Command(BaseCommand):
         if options.get("print_sql", False) or print_sql:
 
             # Code from http://gist.github.com/118990
-            sqlparse = None
             try:
                 import sqlparse
             except ImportError:
-                pass
+                sqlparse = None
+
+            try:
+                import pygments.lexers
+                import pygments.formatters
+            except ImportError:
+                pygments = None
 
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
@@ -116,10 +121,18 @@ class Command(BaseCommand):
                     finally:
                         execution_time = time.time() - starttime
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+
                         if sqlparse:
-                            print(sqlparse.format(raw_sql, reindent=True))
-                        else:
-                            print(raw_sql)
+                            raw_sql = sqlparse.format(raw_sql, reindent=True)
+
+                        if pygments:
+                            raw_sql = pygments.highlight(
+                                raw_sql,
+                                pygments.lexers.get_lexer_by_name("sql"),
+                                pygments.formatters.TerminalFormatter()
+                            )
+
+                        print(raw_sql)
                         print("")
                         print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
                         print("")
