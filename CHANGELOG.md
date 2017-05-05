@@ -1,6 +1,23 @@
 Changelog
 =========
 
+1.7.9
+-----
+
+Changes:
+ - Fix: AutoSlugField, foreignkey relationships
+ - Fix: shell_plus, supported backends 'postgresql' for set_application_name
+ - Improvement: various commands, Add syntax highlighting when printing SQL
+ - Improvement: pipchecker, treat rc versions as unstable
+ - Improvement: shell_plus, allow to subclass and overwrite import_objects
+ - Improvement: shell_plus, fix SHELL_PLUS_PRE_IMPORTS example
+ - Improvement: setup.py, fix and unify running tests
+ - Improvement: runserver_plus, add RUNSERVERPLUS_POLLER_RELOADER_TYPE setting
+ - Improvement: generate_secret_key, use algoritme from django
+ - Docs: fix grammer and spelling mistakes
+
+
+
 1.7.8
 -----
 
