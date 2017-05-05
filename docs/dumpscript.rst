@@ -37,20 +37,11 @@ Features
 * *ForeignKey* and *ManyToManyFields* (using python variables, not object IDs)
 * Self-referencing *ForeignKey* (and M2M) fields
 * Sub-classed models
-* *ContentType* fields and generic relationships (but see issue 43)
+* *ContentType* fields and generic relationships
 * Recursive references
 * *AutoFields* are excluded
 * Parent models are only included when no other child model links to it
 * Individual models can be referenced
-
-
-What it can't do (yet!)
------------------------
-
-* Ideal handling of generic relationships (ie no *AutoField* references):
-  issue 43
-* Intermediate join tables: issue 48
-* GIS fields: issue 72
 
 
 How?
