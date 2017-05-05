@@ -362,7 +362,8 @@ class Command(BaseCommand):
 
             http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
             """
-            supported_backends = ['django.db.backends.postgresql_psycopg2']
+            supported_backends = ['django.db.backends.postgresql',
+                                  'django.db.backends.postgresql_psycopg2']
             opt_name = 'fallback_application_name'
             default_app_name = 'django_shell'
             app_name = default_app_name
