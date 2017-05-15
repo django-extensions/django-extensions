@@ -148,7 +148,8 @@ class Command(BaseCommand):
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
 
                         if sqlparse:
-                            raw_sql = sqlparse.format(raw_sql, reindent=True)
+                            raw_sql = raw_sql[:1000]
+                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
 
                         if pygments:
                             raw_sql = pygments.highlight(
