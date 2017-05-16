@@ -5,7 +5,6 @@ from django_extensions.db.fields import (
     AutoSlugField,
     RandomCharField,
     ShortUUIDField,
-    UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
@@ -93,35 +92,6 @@ class FKSluggedTestModelCallable(models.Model):
 class JSONFieldTestModel(models.Model):
     a = models.IntegerField()
     j_field = JSONField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_field(models.Model):
-    a = models.IntegerField()
-    uuid_field = UUIDField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_pk(models.Model):
-    uuid_field = UUIDField(primary_key=True)
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestAgregateModel(UUIDTestModel_pk):
-    a = models.IntegerField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestManyToManyModel(UUIDTestModel_pk):
-    many = models.ManyToManyField(UUIDTestModel_field)
 
     class Meta:
         app_label = 'django_extensions'
