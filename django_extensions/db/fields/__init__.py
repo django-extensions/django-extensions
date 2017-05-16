@@ -5,7 +5,6 @@ Django Extensions additional model fields
 import re
 import six
 import string
-import warnings
 
 try:
     import uuid
@@ -390,8 +389,8 @@ class UUIDVersionError(Exception):
     pass
 
 
-class UUIDField(CharField):
-    """ UUIDField
+class UUIDFieldMixin(object):
+    """ UUIDFieldMixin
 
     By default uses UUID version 4 (randomly generated UUID).
 
@@ -400,23 +399,29 @@ class UUIDField(CharField):
     """
     DEFAULT_MAX_LENGTH = 36
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, uuid_name=None, *args, **kwargs):
-        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
-
+    def __init__(
+            self, verbose_name=None, name=None, auto=True, version=4,
+            node=None, clock_seq=None, namespace=None, uuid_name=None, *args,
+            **kwargs):
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
+
         kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)
+
         if auto:
             self.empty_strings_allowed = False
             kwargs['blank'] = True
             kwargs.setdefault('editable', False)
+
         self.auto = auto
         self.version = version
         self.node = node
         self.clock_seq = clock_seq
         self.namespace = namespace
         self.uuid_name = uuid_name or name
-        super(UUIDField, self).__init__(verbose_name=verbose_name, *args, **kwargs)
+
+        super(UUIDFieldMixin, self).__init__(
+            verbose_name=verbose_name, *args, **kwargs)
 
     def create_uuid(self):
         if not self.version or self.version == 4:
@@ -433,7 +438,8 @@ class UUIDField(CharField):
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
 
     def pre_save(self, model_instance, add):
-        value = super(UUIDField, self).pre_save(model_instance, add)
+        value = super(UUIDFieldMixin, self).pre_save(model_instance, add)
+
         if self.auto and add and value is None:
             value = force_text(self.create_uuid())
             setattr(model_instance, self.attname, value)
@@ -442,15 +448,17 @@ class UUIDField(CharField):
             if self.auto and not value:
                 value = force_text(self.create_uuid())
                 setattr(model_instance, self.attname, value)
+
         return value
 
     def formfield(self, **kwargs):
         if self.auto:
             return None
-        return super(UUIDField, self).formfield(**kwargs)
+        return super(UUIDFieldMixin, self).formfield(**kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(UUIDField, self).deconstruct()
+        name, path, args, kwargs = super(UUIDFieldMixin, self).deconstruct()
+
         if kwargs.get('max_length', None) == self.DEFAULT_MAX_LENGTH:
             del kwargs['max_length']
         if self.auto is not True:
@@ -465,30 +473,11 @@ class UUIDField(CharField):
             kwargs['namespace'] = self.namespace
         if self.uuid_name is not None:
             kwargs['uuid_name'] = self.name
+
         return name, path, args, kwargs
 
 
-class PostgreSQLUUIDField(UUIDField):
-    def __init__(self, *args, **kwargs):
-        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
-        super(PostgreSQLUUIDField, self).__init__(*args, **kwargs)
-
-    def db_type(self, connection=None):
-        return "UUID"
-
-    def get_db_prep_value(self, value, connection, prepared=False):
-        if isinstance(value, six.integer_types):
-            value = uuid.UUID(int=value)
-        elif isinstance(value, (six.string_types, six.binary_type)):
-            if len(value) == 16:
-                value = uuid.UUID(bytes=value)
-            else:
-                value = uuid.UUID(value)
-        return super(PostgreSQLUUIDField, self).get_db_prep_value(
-            value, connection, prepared=False)
-
-
-class ShortUUIDField(UUIDField):
+class ShortUUIDField(UUIDFieldMixin, CharField):
     """ ShortUUIDFied
 
     Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
