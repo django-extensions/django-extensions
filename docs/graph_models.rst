@@ -104,6 +104,16 @@ image by using the *graph_models* command::
   # Create a dot file for only the 'foo' and 'bar' applications of your project
   $ ./manage.py graph_models foo bar > my_project.dot
 
+::
+
+  # Create a graph for only certain models
+  $ ./manage.py graph_models -a -I Foo,Bar -o my_project_subsystem.png
+
+::
+
+  # Create a excluding certain models
+  $ ./manage.py graph_models -a -X Foo,Bar -o my_project_sans_foo_bar.png
+
 
 .. _GraphViz: http://www.graphviz.org/
 .. _pygraphviz: https://pygraphviz.github.io/
