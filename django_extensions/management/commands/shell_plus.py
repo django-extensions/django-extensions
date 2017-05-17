@@ -98,6 +98,7 @@ class Command(BaseCommand):
         no_browser = options.get('no_browser', False)
         verbosity = int(options.get('verbosity', 1))
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
+        truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
         if options.get("print_sql", False) or print_sql:
 
@@ -123,7 +124,7 @@ class Command(BaseCommand):
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
 
                         if sqlparse:
-                            raw_sql = raw_sql[:1000]
+                            raw_sql = raw_sql[:truncate]
                             raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
 
                         if pygments:

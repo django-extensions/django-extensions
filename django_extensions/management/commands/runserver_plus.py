@@ -138,6 +138,8 @@ class Command(BaseCommand):
             except ImportError:
                 pygments = None
 
+            truncate = getattr(settings, 'RUNSERVER_PLUS_PRINT_SQL_TRUNCATE', 1000)
+
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
@@ -148,7 +150,7 @@ class Command(BaseCommand):
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
 
                         if sqlparse:
-                            raw_sql = raw_sql[:1000]
+                            raw_sql = raw_sql[:truncate]
                             raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
 
                         if pygments:
