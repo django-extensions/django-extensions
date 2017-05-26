@@ -14,9 +14,14 @@ IPython::
   $ ./manage.py shell_plus --ipython
 
 
-BPython::
+bpython::
 
   $ ./manage.py shell_plus --bpython
+
+
+ptpython::
+
+  $ ./manage.py shell_plus --ptpython
 
 
 Python::
@@ -24,7 +29,7 @@ Python::
   $ ./manage.py shell_plus --plain
 
 
-The default resolution order is: bpython, ipython, python.
+The default resolution order is: ptpython, bpython, ipython, python.
 
 You can also set the configuration option SHELL_PLUS to explicitly specify which version you want.
 
