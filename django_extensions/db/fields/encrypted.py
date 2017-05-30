@@ -68,6 +68,9 @@ class BaseEncryptedField(models.Field):
                 'or ENCRYPT, not %s.' % crypt_type)
         return getattr(keyczar, crypt_class_name)
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
     def to_python(self, value):
         if isinstance(self.crypt.primary_key, keyczar.keys.RsaPublicKey):
             retval = value
