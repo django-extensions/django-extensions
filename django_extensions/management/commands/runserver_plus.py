@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -7,16 +9,19 @@ import sys
 import time
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.core.servers.basehttp import get_internal_wsgi_application
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.backends import utils
 from django.db.migrations.executor import MigrationExecutor
-from django.core.exceptions import ImproperlyConfigured
-from django.core.servers.basehttp import get_internal_wsgi_application
 from django.utils.autoreload import gen_filenames
 
-from django_extensions.management.technical_response import null_technical_500_response
-from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
+from django_extensions.management.technical_response import \
+    null_technical_500_response
+from django_extensions.management.utils import (
+    RedirectHandler, has_ipdb, setup_logger, signalcommand,
+)
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -196,8 +201,7 @@ class Command(BaseCommand):
                 else:
                     import pdb
                     p = pdb
-                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
-                                                                   exc_value)
+                print("Exception occured: %s, %s" % (exc_type, exc_value), file=sys.stderr)
                 p.post_mortem(tb)
 
         # usurp django's handler
