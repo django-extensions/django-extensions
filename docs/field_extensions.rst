@@ -11,7 +11,7 @@ Current Database Model Field Extensions
   incrementing an appended number on the slug until it is unique. Inspired by
   SmileyChris' Unique Slugify snippet. 
 
-  AutoSlugField takes a `popuate_from` argument that specifies which field, list of
+  AutoSlugField takes a `populate_from` argument that specifies which field, list of
   fields, or model method the slug will be populated from, for instance::
 
     slug = AutoSlugField(populate_from=['title', 'description', 'get_author_name'])
