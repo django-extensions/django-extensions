@@ -56,7 +56,7 @@ class Command(BaseCommand):
         if len(args) and args[0] != '-':
             outfile = open(args[0], 'w')
         else:
-            outfile = self.stdout
+            outfile = self.stdout # using wrapper around stdout/stderr provided by BaseCommand
 
         User = get_user_model()
         qs = User.objects.all().order_by('last_name', 'first_name', 'username', 'email')
