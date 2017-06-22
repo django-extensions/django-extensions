@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from csv import writer
-from sys import stdout
 
 import six
 from django.contrib.auth import get_user_model
@@ -57,7 +56,7 @@ class Command(BaseCommand):
         if len(args) and args[0] != '-':
             outfile = open(args[0], 'w')
         else:
-            outfile = stdout
+            outfile = self.stdout
 
         User = get_user_model()
         qs = User.objects.all().order_by('last_name', 'first_name', 'username', 'email')
