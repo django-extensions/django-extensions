@@ -372,6 +372,8 @@ class SQLDiff(object):
                 else:
                     op = 'field-missing-in-db'
                 field_output.append(field.db_type(connection=connection))
+                if field.has_default():
+                    field_output.append('DEFAULT %s' % field.get_prep_value(field.get_default()))
                 if not field.null:
                     field_output.append('NOT NULL')
                 self.add_difference(op, table_name, field_name, *field_output)
