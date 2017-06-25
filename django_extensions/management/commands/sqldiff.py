@@ -638,7 +638,7 @@ class MySQLDiff(SQLDiff):
                 db_type = db_type.lstrip("var")
             # They like to call 'bool's 'tinyint(1)' and introspection makes that a integer
             # just convert it back to it's proper type, a bool is a bool and nothing else.
-            if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
+            if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[2] == 1:
                 db_type = 'bool'
             if (table_name, field.column) in self.auto_increment:
                 db_type += ' AUTO_INCREMENT'
