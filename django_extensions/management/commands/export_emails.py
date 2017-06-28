@@ -116,13 +116,14 @@ class Command(BaseCommand):
 
     def vcard(self, qs):
         """VCARD format."""
-
         try:
             import vobject
         except ImportError:
             print(self.style.ERROR("Please install python-vobject to use the vcard export format."))
             import sys
             sys.exit(1)
+        import sys
+        out = sys.stdout
         for ent in qs:
             card = vobject.vCard()
             card.add('fn').value = full_name(**ent)
@@ -134,5 +135,5 @@ class Command(BaseCommand):
             emailpart = card.add('email')
             emailpart.value = ent['email']
             emailpart.type_param = 'INTERNET'
-            import sys
-            sys.stdout.write(card.serialize())
+
+            out.write(card.serialize())

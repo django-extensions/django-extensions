@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from collections import namedtuple
-import sys
 from django.core.management import call_command
 
 from django_extensions.management.commands.export_emails import Command, full_name
@@ -75,6 +73,7 @@ def test_do_export_emails_format_google(capsys):
     out, err = capsys.readouterr()
     assert out.startswith('Name,Email')
 
+
 @pytest.mark.django_db()
 def test_do_export_emails_format_outlook(capsys):
     """Testing python manage.py export_emails -f outlook"""
@@ -86,7 +85,7 @@ def test_do_export_emails_format_outlook(capsys):
     assert 'frederic_mistral@gmail.com' in out
 
 
-@pytest.mark.skipif(sys.version_info < (3.0), reason='issues with vobject library on PY2x')
+@pytest.mark.skipif("sys.version_info < (3, 0)", reason='issues with vobject library on PY2x')
 @pytest.mark.django_db()
 def test_do_export_emails_format_vcard_start(capsys):
     """Testing python manage.py export_emails -f vcard"""
@@ -97,6 +96,7 @@ def test_do_export_emails_format_vcard_start(capsys):
 
     assert 'N:Bulgakóv;Mijaíl;;;' in out
     assert out.startswith('BEGIN:VCARD')
+
 
 @pytest.mark.django_db()
 def test_full_name():
