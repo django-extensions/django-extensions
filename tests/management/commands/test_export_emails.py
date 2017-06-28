@@ -65,6 +65,16 @@ def test_do_export_emails_format_email(capsys):
 
 
 @pytest.mark.django_db()
+def test_do_export_emails_address(capsys):
+    """Testing python manage export_emails -f address"""
+    export_emails = Command()
+    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=address'])
+
+    out, err = capsys.readouterr()
+    assert '"Frédéric Mistral"' in out
+
+
+@pytest.mark.django_db()
 def test_do_export_emails_format_google(capsys):
     """Testing python manage export_emails -f google"""
     export_emails = Command()
