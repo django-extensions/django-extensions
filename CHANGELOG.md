@@ -1,6 +1,25 @@
 Changelog
 =========
 
+1.8.0
+-----
+
+UUIDField has been removed after being deprecated.
+
+Deprecation schedule for JSONField has been removed after requests from the
+community.
+
+Changes:
+ - Fix: runserver_plus, fixed Python 3 print syntax
+ - Fix: sqldiff, Use 'display_size', not 'precision' to identify MySQL bool field
+ - Fix: export_emails, fix and refactor the command and all its output options
+ - Improvement: clear_cache, add --cache option to support multiple caches
+ - Improvement: runserver_plus, limit printing SQL queries to avoid flooding the terminal
+ - Improvement: shell_plus, limit printing SQL queries to avoid flooding the terminal
+ - Docs: graph_models, document including/excluding specific models
+ - Docs: shell_plus, added PTPython
+
+
 1.7.9
 -----
 
