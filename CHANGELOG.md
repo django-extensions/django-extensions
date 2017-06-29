@@ -13,6 +13,7 @@ Changes:
  - Fix: runserver_plus, fixed Python 3 print syntax
  - Fix: sqldiff, Use 'display_size', not 'precision' to identify MySQL bool field
  - Fix: export_emails, fix and refactor the command and all its output options
+ - Improvement: tests, added Python 3.6 and PyPy3.5-5.8.0
  - Improvement: clear_cache, add --cache option to support multiple caches
  - Improvement: runserver_plus, limit printing SQL queries to avoid flooding the terminal
  - Improvement: shell_plus, limit printing SQL queries to avoid flooding the terminal
