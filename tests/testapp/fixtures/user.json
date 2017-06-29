@@ -1,0 +1,54 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$36000$90bEBUbbgBEO$L8mP32NfNI8IYyrFFUejJ1J8Mb7nWXAXfc4o40NZcVw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "Frederic",
+    "first_name": "Fr\u00e9d\u00e9ric",
+    "last_name": "Mistral",
+    "email": "frederic_mistral@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "groups": [
+      1
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$36000$DQjI1J5Sb0y7$qcHMl08/2DTYusG4s42c28EBZIzl0inoWmB3znGBLfI=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "Gabriel",
+    "first_name": "Gabriel Garcia",
+    "last_name": "Marqu\u00e9z",
+    "email": "gabriel_marquez@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "groups": [
+      1
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$36000$PnIDqW2Atwye$ZKCDEzn+KsGMHrAb4Cq7MDpWVrW4smFl0MK/7Ehxp6g=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "Mijail",
+    "first_name": "Mija\u00edl",
+    "last_name": "Bulgak\u00f3v",
+    "email": "mijail_bulgakov@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]
