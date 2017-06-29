@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.utils import signalcommand, UnicodeWriter
 
 if six.PY2:
-    writer = UnicodeWriter # noqa
+    writer = UnicodeWriter  # noqa
 
 FORMATS = [
     'address',
