@@ -23,8 +23,6 @@ matrix:
       env: TOX_ENV=py27-dj110
     - python: 2.7
       env: TOX_ENV=py27-dj111
-    - python: 2.7
-      env: TOX_ENV=py27-djmaster
     - python: 3.3
       env: TOX_ENV=py33-dj18
     - python: 3.4
@@ -33,8 +31,6 @@ matrix:
       env: TOX_ENV=py34-dj110
     - python: 3.4
       env: TOX_ENV=py34-dj111
-    - python: 3.4
-      env: TOX_ENV=py34-djmaster
     - python: 3.5
       env: TOX_ENV=py35-dj18
     - python: 3.5
@@ -67,10 +63,6 @@ matrix:
       env: TOX_ENV=pypy3-djmaster
 
   allow_failures:
-    - python: 2.7
-      env: TOX_ENV=py27-djmaster
-    - python: 3.4
-      env: TOX_ENV=py34-djmaster
     - python: 3.5
       env: TOX_ENV=py35-djmaster
     - python: 3.6
