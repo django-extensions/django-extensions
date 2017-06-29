@@ -68,19 +68,19 @@ matrix:
 
   allow_failures:
     - python: 2.7
-    - env: TOX_ENV=py27-djmaster
+      env: TOX_ENV=py27-djmaster
     - python: 3.4
-    - env: TOX_ENV=py34-djmaster
+      env: TOX_ENV=py34-djmaster
     - python: 3.5
-    - env: TOX_ENV=py35-djmaster
+      env: TOX_ENV=py35-djmaster
     - python: 3.6
-    - env: TOX_ENV=py36-djmaster
+      env: TOX_ENV=py36-djmaster
     - python: pypy
-    - env: TOX_ENV=pypy-djmaster
+      env: TOX_ENV=pypy-djmaster
     - python: pypy3.5-5.8.0
-    - env: TOX_ENV=pypy3-dj110
+      env: TOX_ENV=pypy3-dj110
     - python: pypy3.5-5.8.0
-    - env: TOX_ENV=pypy3-djmaster
+      env: TOX_ENV=pypy3-djmaster
 
 install:
   - pip install virtualenv tox coveralls
