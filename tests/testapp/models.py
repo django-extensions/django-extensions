@@ -33,7 +33,7 @@ class Note(models.Model):
 
 
 class Person(models.Model):
-    name = models.ForeignKey(Name)
+    name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
     children = models.ManyToManyField('self')
     notes = models.ManyToManyField(Note)
@@ -74,7 +74,7 @@ class ModelMethodSluggedTestModel(models.Model):
 
 
 class FKSluggedTestModel(models.Model):
-    related_field = models.ForeignKey(SluggedTestModel)
+    related_field = models.ForeignKey(SluggedTestModel, on_delete=models.CASCADE)
     slug = AutoSlugField(populate_from="related_field__title")
 
     class Meta:
@@ -82,7 +82,7 @@ class FKSluggedTestModel(models.Model):
 
 
 class FKSluggedTestModelCallable(models.Model):
-    related_field = models.ForeignKey(ModelMethodSluggedTestModel)
+    related_field = models.ForeignKey(ModelMethodSluggedTestModel, on_delete=models.CASCADE)
     slug = AutoSlugField(populate_from="related_field__get_readable_title")
 
     class Meta:
