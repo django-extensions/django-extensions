@@ -1,7 +1,7 @@
 language: python
 
 python:
-  - 3.5
+  - 3.6
 
 sudo: false
 
@@ -12,40 +12,39 @@ env:
   - TOX_ENV=precommit
   - TOX_ENV=safety
   - TOX_ENV=py27-dj18
-  - TOX_ENV=py27-dj19
   - TOX_ENV=py27-dj110
   - TOX_ENV=py27-dj111
   - TOX_ENV=py27-djmaster
   - TOX_ENV=py33-dj18
   - TOX_ENV=py34-dj18
-  - TOX_ENV=py34-dj19
   - TOX_ENV=py34-dj110
   - TOX_ENV=py34-dj111
   - TOX_ENV=py34-djmaster
   - TOX_ENV=py35-dj18
-  - TOX_ENV=py35-dj19
   - TOX_ENV=py35-dj110
   - TOX_ENV=py35-dj111
   - TOX_ENV=py35-djmaster
+  - TOX_ENV=py36-dj18
+  - TOX_ENV=py36-dj110
+  - TOX_ENV=py36-dj111
+  - TOX_ENV=py35-djmaster
   - TOX_ENV=pypy-dj18
-  - TOX_ENV=pypy-dj19
   - TOX_ENV=pypy-dj110
   - TOX_ENV=pypy-dj111
   - TOX_ENV=pypy-djmaster
   # - TOX_ENV=pypy3-dj18
-  # - TOX_ENV=pypy3-dj19
   # - TOX_ENV=pypy3-dj110
   - TOX_ENV=pypy3-djmaster
 
 matrix:
   fast_finish: true
   allow_failures:
-    - env: TOX_ENV=py35-djmaster
-    - env: TOX_ENV=py34-djmaster
     - env: TOX_ENV=py27-djmaster
+    - env: TOX_ENV=py34-djmaster
+    - env: TOX_ENV=py35-djmaster
+    - env: TOX_ENV=py36-djmaster
     - env: TOX_ENV=pypy-djmaster
     # pypy3 is not >=3.4 compatible yet
-    # - env: TOX_ENV=pypy3-dj19
     # - env: TOX_ENV=pypy3-dj110
     - env: TOX_ENV=pypy3-djmaster
 
