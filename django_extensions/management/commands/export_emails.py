@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
 import sys
-import six
-from csv import writer  # noqa
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 
-from django_extensions.management.utils import signalcommand, UnicodeWriter
+from django_extensions.compat import csv_writer as writer
+from django_extensions.management.utils import signalcommand
 
-if six.PY2:
-    writer = UnicodeWriter  # noqa
 
 FORMATS = [
     'address',

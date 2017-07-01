@@ -36,9 +36,7 @@ def django_db_setup(django_db_setup, django_db_blocker):  # noqa
 def test_do_export_emails_stdout_start(capsys):
     """Testing export_emails command without args.stdout starts."""
     export_emails = Command()
-    export_emails.run_from_argv(
-        ['manage.py', 'export_emails']
-    )
+    export_emails.run_from_argv(['manage.py', 'export_emails'])
 
     out, err = capsys.readouterr()
     assert out.startswith('"Mijaíl Bulgakóv')
@@ -82,6 +80,18 @@ def test_do_export_emails_format_google(capsys):
 
     out, err = capsys.readouterr()
     assert out.startswith('Name,Email')
+
+
+@pytest.mark.django_db()
+def test_do_export_emails_format_linkedin(capsys):
+    """Testing python manage.py export_emails -f linkedin"""
+    export_emails = Command()
+    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=linkedin'])
+
+    out, err = capsys.readouterr()
+
+    assert out.startswith('First Name,')
+    assert 'Gabriel Garcia,Marquéz' in out
 
 
 @pytest.mark.django_db()
