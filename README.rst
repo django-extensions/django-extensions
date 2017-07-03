@@ -42,11 +42,9 @@ Django Extensions requires Django 1.8 or later.
 Getting It
 ==========
 
-You can get Django Extensions by using pip or easy_install::
+You can get Django Extensions by using pip::
 
     $ pip install django-extensions
-    or
-    $ easy_install django-extensions
 
 If you want to install it from source, grab the git repository from GitHub and run setup.py::
 

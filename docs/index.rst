@@ -21,11 +21,9 @@ The easiest way to figure out what Django Extensions are all about is to watch t
 Getting it
 ==========
 
-You can get Django Extensions by using pip or easy_install::
+You can get Django Extensions by using pip::
 
  $ pip install django-extensions
- or
- $ easy_install django-extensions
 
 If you want to install it from source, grab the git repository and run setup.py::
 
