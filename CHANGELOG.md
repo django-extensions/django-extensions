@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.8.1
+-----
+
+Changes:
+ - Build: use tox's 'TOXENV' environment variable
+ - Fix: resetdb, fix problem that 'utf8_support' option is ignored
+ - Improvement: export_emails, moved custom csv UnicodeWriter (for py2) into compat.py
+ - Translations: pt, removed since it was causing issues with the builds
+                     if anybody wants to update and fix it that would be
+                     much appreciated !
+
+
+
 1.8.0
 -----
 
