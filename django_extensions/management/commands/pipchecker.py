@@ -273,7 +273,7 @@ class Command(BaseCommand):
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
                     msg = self.style.ERROR("{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name))
-                elif frozen_commit_sha in [branch["commit"]["sha"] for branch in branch_data]:
+                elif frozen_commit_data["sha"] in [branch["commit"]["sha"] for branch in branch_data]:
                     msg = self.style.BOLD("up to date")
                 else:
                     msg = self.style.INFO("{0} is not the head of any branch".format(frozen_commit_data["sha"][:10]))
