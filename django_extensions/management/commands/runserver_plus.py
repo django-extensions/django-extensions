@@ -273,8 +273,6 @@ class Command(BaseCommand):
         open_browser = options.get('open_browser', False)
         cert_path = options.get("cert_path")
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-        bind_url = "http://%s:%s/" % (
-            self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
         reloader_type = options.get('reloader_type', 'auto')
@@ -291,20 +289,12 @@ class Command(BaseCommand):
             self.check_migrations()
         except ImproperlyConfigured:
             pass
-        if self.show_startup_messages:
-            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-            print("Quit the server with %s." % quit_command)
         handler = get_internal_wsgi_application()
         if USE_STATICFILES:
             use_static_handler = options.get('use_static_handler', True)
             insecure_serving = options.get('insecure_serving', False)
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
-        if open_browser:
-            import webbrowser
-            webbrowser.open(bind_url)
         if cert_path:
             """
             OpenSSL is needed for SSL support.
@@ -343,6 +333,19 @@ class Command(BaseCommand):
 
         else:
             ssl_context = None
+
+        bind_url = "%s://%s:%s/" % (
+            "https" if ssl_context else "http", self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
+
+        if self.show_startup_messages:
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at %s" % (bind_url,))
+            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Quit the server with %s." % quit_command)
+
+        if open_browser:
+            import webbrowser
+            webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
             extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
