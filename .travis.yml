@@ -49,11 +49,11 @@ matrix:
       env: TOXENV=py36-dj111
     - python: 3.6
       env: TOXENV=py36-djmaster
-    - python: pypy
+    - python: pypy2.7-5.8.0
       env: TOXENV=pypy-dj18
-    - python: pypy
+    - python: pypy2.7-5.8.0
       env: TOXENV=pypy-dj110
-    - python: pypy
+    - python: pypy2.7-5.8.0
       env: TOXENV=pypy-dj111
     - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-dj18
@@ -67,8 +67,6 @@ matrix:
       env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-djmaster
-    - python: pypy3.5-5.8.0
-      env: TOXENV=pypy3-dj110
     - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-djmaster
 
