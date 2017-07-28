@@ -79,7 +79,7 @@ Documentation on how to create dot files can be found here: http://www.graphviz.
 
   An example of this is
   the Django app *django-template-minifier* this automatically removed the newlines before/after
-  template tags even for none-html templates which leads to a mallformed file.
+  template tags even for non-HTML templates which leads to a malformed file.
 
 Example Usage
 -------------
