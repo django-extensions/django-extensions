@@ -10,6 +10,7 @@ unless --no-startup is set.
 
 Changes:
  - Fix: pipchecker, fix up-to-date check for Github sha commits
+ - Fix: JSONField, fix handling to_python() for strings with tests
  - Improvement: shell_plus, update PYTHONSTARTUP / pythonrc handling to match Django
  - Improvement: runserver_plus, startup message now accounts for https
  - Docs: jobs, improve documentation about jobs scheduling
