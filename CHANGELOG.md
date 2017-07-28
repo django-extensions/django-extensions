@@ -1,6 +1,17 @@
 Changelog
 =========
 
+1.9.0
+-----
+
+The change to --no-startup/--use-pythonrc in `shell_plus` changes the
+default behaviour to automatically load PYTHONSTARTUP and ~/.pythonrc.py
+unless --no-startup is set.
+
+Changes:
+ - Improvement: shell_plus, update PYTHONSTARTUP / pythonrc handling to match Django
+
+
 1.8.1
 -----
 

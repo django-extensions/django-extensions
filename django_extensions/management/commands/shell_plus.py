@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.backends import utils
 from django.utils.six import PY3
+from django.utils.datastructures import OrderedSet
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
@@ -48,12 +49,15 @@ class Command(BaseCommand):
         parser.add_argument(
             '--kernel', action='store_true', dest='kernel',
             help='Tells Django to start an IPython Kernel.')
-        parser.add_argument('--connection-file', action='store', dest='connection_file',
+        parser.add_argument(
+            '--connection-file', action='store', dest='connection_file',
             help='Specifies the connection file to use if using the --kernel option'),
         parser.add_argument(
+            '--no-startup', action='store_true', dest='no_startup',
+            help='When using plain Python, ignore the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.')
+        parser.add_argument(
             '--use-pythonrc', action='store_true', dest='use_pythonrc',
-            help='Tells Django to execute PYTHONSTARTUP file '
-            '(BE CAREFULL WITH THIS!)')
+            help='When using plain Python, load the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.')
         parser.add_argument(
             '--print-sql', action='store_true', default=False,
             help="Print SQL queries as they're executed")
@@ -94,7 +98,8 @@ class Command(BaseCommand):
         use_plain = options.get('plain', False)
         use_ptpython = options.get('ptpython', False)
         use_ptipython = options.get('ptipython', False)
-        use_pythonrc = options.get('use_pythonrc', True)
+        use_pythonrc = options.get('use_pythonrc', False)
+        no_startup = options.get('no_startup', False)
         no_browser = options.get('no_browser', False)
         verbosity = int(options.get('verbosity', 1))
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
@@ -262,22 +267,21 @@ class Command(BaseCommand):
                 readline.parse_and_bind("tab:complete")
 
             # We want to honor both $PYTHONSTARTUP and .pythonrc.py, so follow system
-            # conventions and get $PYTHONSTARTUP first then import user.
-            if use_pythonrc:
-                pythonrc = os.environ.get("PYTHONSTARTUP")
-                if pythonrc and os.path.isfile(pythonrc):
-                    global_ns = {}
-                    with open(pythonrc) as rcfile:
-                        try:
-                            six.exec_(compile(rcfile.read(), pythonrc, 'exec'), global_ns)
-                            imported_objects.update(global_ns)
-                        except NameError:
-                            pass
-                # This will import .pythonrc.py as a side-effect
-                try:
-                    import user  # NOQA
-                except ImportError:
-                    pass
+            # conventions and get $PYTHONSTARTUP first then .pythonrc.py.
+            if use_pythonrc or not no_startup:
+                for pythonrc in OrderedSet([os.environ.get("PYTHONSTARTUP"), os.path.expanduser('~/.pythonrc.py')]):
+                    if not pythonrc:
+                        continue
+                    if not os.path.isfile(pythonrc):
+                        continue
+                    with open(pythonrc) as handle:
+                        pythonrc_code = handle.read()
+                    # Match the behavior of the cpython shell where an error in
+                    # PYTHONSTARTUP prints an exception and continues.
+                    try:
+                        exec(compile(pythonrc_code, pythonrc, 'exec'), imported_objects)
+                    except Exception:
+                        traceback.print_exc()
 
             def run_plain():
                 code.interact(local=imported_objects)
