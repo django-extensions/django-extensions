@@ -82,7 +82,7 @@ class JSONField(models.TextField):
         elif isinstance(res, list):
             return JSONList(res)
 
-        return value
+        return res
 
     def get_prep_value(self, value):
         if not isinstance(value, six.string_types):
