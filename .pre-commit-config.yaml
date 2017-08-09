@@ -1,5 +1,5 @@
 -   repo: git://github.com/pre-commit/pre-commit-hooks
-    sha: v0.7.0
+    sha: v0.9.1
     hooks:
     -   id: trailing-whitespace
     -   id: check-added-large-files
@@ -21,7 +21,7 @@
         - --django
         exclude: ^tests/testapp|^tests/management/
 -   repo: git://github.com/Lucas-C/pre-commit-hooks.git
-    sha: c25201a00e6b0514370501050cf2a8538ac12270
+    sha: v1.0.1
     hooks:
     -   id: forbid-crlf
 -   repo: git://github.com/trbs/pre-commit-hooks-trbs.git
