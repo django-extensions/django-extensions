@@ -17,7 +17,7 @@ set of commands in shell accessed by::
 Getting Started
 ---------------
 
-This example assumes you have followed the tutorial for Django 1.8+, and 
+This example assumes you have followed the tutorial for Django 1.8+, and
 created a polls app containing a ``Question`` model. We will create a script
 that deletes all of the questions from the database.
 
@@ -83,9 +83,9 @@ example::
   from datetime import timedelta
 
   from django.utils import timezone
-  
+
   from polls.models import Question
-  
+
   def run(*args):
       # Get all questions
       questions = Question.objects.all()

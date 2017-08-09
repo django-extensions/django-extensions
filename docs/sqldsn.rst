@@ -49,4 +49,3 @@ Example Usage
 
   # Create .pgpass file for default database by using the quiet option
   $ ./manage.py sqldsn -q --style=pgpass > .pgpass
-

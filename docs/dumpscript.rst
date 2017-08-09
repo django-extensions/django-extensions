@@ -72,19 +72,16 @@ Naming conflicts
 
 Please take care that when naming the output files these filenames do not
 clash with other names in your import path. For instance, if the appname is
-the same as the script name, an importerror can occur because rather than importing 
+the same as the script name, an importerror can occur because rather than importing
 the application modules it tries to load the modules from the dumpscript file itself.
 
 Examples::
 
   # Wrong
   $ ./manage.py dumpscript appname > dumps/appname.py
-  
+
   # Right
   $ ./manage.py dumpscript appname > dumps/appname_all.py
-  
+
   # Right
   $ ./manage.py dumpscript appname.Somemodel > dumps/appname_somemodel.py
-
-
-

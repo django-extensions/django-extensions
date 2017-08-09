@@ -10,7 +10,7 @@ Current Admin Extensions
   to do configurable autocompletion.
 
 * *ForeignKeyAutocompleteStackedInline*, *ForeignKeyAutocompleteTabularInline* -
-  in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes 
+  in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
   enable a search input field for ForeginKey fields in AdminInline classes.
 
 

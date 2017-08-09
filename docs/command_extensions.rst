@@ -8,7 +8,7 @@ Current Command Extensions
 
 * *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
-  
+
 * *clean_pyc* - Remove all python bytecode compiled files from the project
 
 * `create_app`_ - Creates an application directory structure for the specified
@@ -44,7 +44,7 @@ Current Command Extensions
 * `export_emails`_ - export the email addresses for your
   users in one of many formats.  Currently supports Address, Google, Outlook,
   LinkedIn, and VCard formats.
-  
+
 * *find_template* - Finds the location of the given template by resolving its path
 
 * *generate_secret_key* - Creates a new secret key that you can put in your
@@ -56,7 +56,7 @@ Current Command Extensions
 
 * *mail_debug* - Starts a mail server which echos out the contents of the email
   instead of sending it.
-  
+
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
 * *passwd* - Makes it easy to reset a user's password.
@@ -115,7 +115,7 @@ Current Command Extensions
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser
   caching.
-  
+
 * *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
 
 * *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
