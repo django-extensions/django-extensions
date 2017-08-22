@@ -202,8 +202,7 @@ def import_objects(options, style):
             'django.contrib.auth': ['get_user_model'],
             'django.db': ['transaction'],
             'django.db.models': [
-                'Avg', 'Case', 'Count', 'Exists', 'F', 'Max', 'Min', 'OuterRef', 'Prefetch', 'Q',
-                'Subquery', 'Sum', 'When',
+                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q', 'Sum', 'When',
             ],
             'django.utils': ['timezone'],
         }
@@ -215,6 +214,10 @@ def import_objects(options, style):
             SHELL_PLUS_DJANGO_IMPORTS.update({
                 'django.urls': ['reverse'],
             })
+        if DJANGO_VERSION >= (1, 11):
+            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend([
+                'Exists', 'OuterRef', 'Subquery',
+            ])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v
