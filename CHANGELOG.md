@@ -11,7 +11,9 @@ unless --no-startup is set.
 Changes:
  - Fix: pipchecker, fix up-to-date check for Github sha commits
  - Fix: JSONField, fix handling to_python() for strings with tests
+ - Fix: print_settings, fix print_settings to receive positional args
  - Improvement: shell_plus, update PYTHONSTARTUP / pythonrc handling to match Django
+ - Improvement: shell_plus, added new 1.11 features from django.db.models to shell_plus import list
  - Improvement: runserver_plus, startup message now accounts for https
  - Docs: jobs, improve documentation about jobs scheduling
  - Docs: admin, add documentation for ForeignKeyAutocompleteStackedInline and ForeignKeyAutocompleteTabularInline
