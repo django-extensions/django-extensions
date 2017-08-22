@@ -202,8 +202,8 @@ def import_objects(options, style):
             'django.contrib.auth': ['get_user_model'],
             'django.db': ['transaction'],
             'django.db.models': [
-                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q',
-                'Sum', 'When',
+                'Avg', 'Case', 'Count', 'Exists', 'F', 'Max', 'Min', 'OuterRef', 'Prefetch', 'Q',
+                'Subquery', 'Sum', 'When',
             ],
             'django.utils': ['timezone'],
         }
