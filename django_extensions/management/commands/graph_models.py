@@ -148,7 +148,7 @@ class Command(BaseCommand):
         cli_options = ' '.join(sys.argv[2:])
         graph_models = ModelGraph(args, cli_options=cli_options, **options)
         graph_models.generate_graph_data()
-        graph_data = graph_models.get_graph_data()
+        graph_data = graph_models.get_graph_data(as_json=use_json)
         if use_json:
             self.render_output_json(graph_data, **options)
             return
