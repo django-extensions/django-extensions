@@ -222,12 +222,11 @@ class Command(BaseCommand):
                     continue
                 if not os.path.isfile(pythonrc):
                     continue
-                with open(pythonrc) as handle:
-                    pythonrc_code = handle.read()
                 # Match the behavior of the cpython shell where an error in
                 # PYTHONSTARTUP prints an exception and continues.
                 try:
-                    exec(compile(pythonrc_code, pythonrc, 'exec'), imported_objects)
+                    with open(pythonrc) as handle:
+                        exec(compile(handle.read(), pythonrc, 'exec'), imported_objects)
                 except Exception:
                     traceback.print_exc()
 
