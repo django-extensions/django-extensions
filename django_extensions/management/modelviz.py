@@ -96,15 +96,20 @@ class ModelGraph(object):
                         if relation['target'] in nodes:
                             relation['needs_node'] = False
 
-    def get_graph_data(self):
+    def get_graph_data(self, as_json=False):
         now = datetime.datetime.now()
         graph_data = {
             'created_at': now.strftime("%Y-%m-%d %H:%M"),
             'cli_options': self.cli_options,
             'disable_fields': self.disable_fields,
             'use_subgraph': self.use_subgraph,
-            'graphs': self.graphs,
         }
+
+        if as_json:
+            graph_data['graphs'] = [context.flatten() for context in self.graphs]
+        else:
+            graph_data['graphs'] = self.graphs
+
         return graph_data
 
     def add_attributes(self, field, abstract_fields):
