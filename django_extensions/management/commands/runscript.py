@@ -4,6 +4,7 @@ import importlib
 import traceback
 
 from django.apps import apps
+from django.core.management.base import CommandError
 
 from django_extensions.management.email_notifications import EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
@@ -77,7 +78,7 @@ class Command(EmailNotificationCommand):
                 mod.run(*script_args)
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
-            except Exception:
+            except Exception as e:
                 if silent:
                     return
                 if verbosity > 0:
@@ -85,7 +86,7 @@ class Command(EmailNotificationCommand):
                 if email_notifications:
                     self.send_email_notification(
                         notification_id=mod.__name__, include_traceback=True)
-                if show_traceback:
+                if show_traceback or not isinstance(e, CommandError):
                     raise
 
         def my_import(mod):
