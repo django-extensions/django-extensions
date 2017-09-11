@@ -53,13 +53,12 @@ class Command(EmailNotificationCommand):
         if options.get('infixtures'):
             subdirs.append('fixtures')
         verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', True)
-        if show_traceback is None:
-            # XXX: traceback is set to None from Django ?
-            show_traceback = True
+        show_traceback = options.get('traceback', False)
         no_traceback = options.get('no_traceback', False)
         if no_traceback:
             show_traceback = False
+        else:
+            show_traceback = True
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
@@ -86,16 +85,26 @@ class Command(EmailNotificationCommand):
                 if email_notifications:
                     self.send_email_notification(
                         notification_id=mod.__name__, include_traceback=True)
-                if show_traceback or not isinstance(e, CommandError):
-                    raise
+                if show_traceback:
+                    if not isinstance(e, CommandError):
+                        raise
 
-        def my_import(mod):
+        def my_import(parent_package, module):
+            mod = "%s.%s" % (parent_package, module)
             if verbosity > 1:
                 print(NOTICE("Check for %s" % mod))
-            # check if module exists before importing
+            # Try importing the parent package first
+            try:
+                importlib.import_module(parent_package)
+            except ImportError as e:
+                if str(e).startswith('No module named'):
+                    # No need to proceed if the parent package doesn't exist
+                    return False
+
             try:
                 t = importlib.import_module(mod)
             except ImportError as e:
+                # The parent package exists, but the module doesn't
                 if str(e).startswith('No module named'):
                     try:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -107,8 +116,11 @@ class Command(EmailNotificationCommand):
                     finally:
                         exc_traceback = None
 
-                if not silent:
+                if silent:
+                    return False
+                if show_traceback:
                     traceback.print_exc()
+                if verbosity > 0:
                     print(ERROR("Cannot import module '%s': %s." % (mod, e)))
 
                 return False
@@ -127,23 +139,22 @@ class Command(EmailNotificationCommand):
             # first look in apps
             for app in apps.get_app_configs():
                 for subdir in subdirs:
-                    mod = my_import("%s.%s.%s" % (app.name, subdir, script))
+                    mod = my_import("%s.%s" % (app.name, subdir), script)
                     if mod:
                         modules.append(mod)
 
-            # try app.DIR.script import
-            sa = script.split(".")
-            for subdir in subdirs:
-                nn = ".".join(sa[:-1] + [subdir, sa[-1]])
-                mod = my_import(nn)
-                if mod:
-                    modules.append(mod)
-
             # try direct import
             if script.find(".") != -1:
-                mod = my_import(script)
+                parent, mod_name = script.rsplit(".", 1)
+                mod = my_import(parent, mod_name)
                 if mod:
                     modules.append(mod)
+            else:
+                # try app.DIR.script import
+                for subdir in subdirs:
+                    mod = my_import(subdir, script)
+                    if mod:
+                        modules.append(mod)
 
             return modules
 
