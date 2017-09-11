@@ -87,7 +87,9 @@ class ActivatorModel(models.Model):
     """ ActivatorModel
     An abstract base class model that provides activate and deactivate fields.
     """
-    INACTIVE_STATUS, ACTIVE_STATUS = range(2)
+    INACTIVE_STATUS = 0
+    ACTIVE_STATUS = 1
+
     STATUS_CHOICES = (
         (INACTIVE_STATUS, _('Inactive')),
         (ACTIVE_STATUS, _('Active')),
