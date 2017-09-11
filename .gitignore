@@ -11,6 +11,7 @@ venv*
 .DS_Store
 .eggs/
 .idea/
+htmlcov/
 .coverage
 .cache/
 django-sample-app*/
