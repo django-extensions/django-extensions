@@ -264,7 +264,7 @@ class Command(BaseCommand):
         bucket, key = self.open_s3()
         for directory in self.DIRECTORIES:
             for root, dirs, files in os.walk(directory):
-                self.upload_s3((bucket, key, self.AWS_BUCKET_NAME, directory), root, files)
+                self.upload_s3((bucket, key, self.AWS_BUCKET_NAME, directory), root, files, dirs)
 
     def compress_string(self, s):
         """Gzip a given string."""
@@ -295,16 +295,16 @@ class Command(BaseCommand):
             bucket = conn.create_bucket(self.AWS_BUCKET_NAME)
         return bucket, boto.s3.key.Key(bucket)
 
-    def upload_s3(self, arg, dirname, names):
+    def upload_s3(self, arg, dirname, names, dirs):
         """
         This is the callback to os.path.walk and where much of the work happens
         """
         bucket, key, bucket_name, root_dir = arg
 
         # Skip directories we don't want to sync
-        if os.path.basename(dirname) in self.FILTER_LIST:
+        if os.path.basename(dirname) in self.FILTER_LIST and os.path.dirname(dirname) in self.DIRECTORIES:
             # prevent walk from processing subfiles/subdirs below the ignored one
-            del names[:]
+            del dirs[:]
             return
 
         # Later we assume the MEDIA_ROOT ends with a trailing slash

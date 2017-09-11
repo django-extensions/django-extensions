@@ -14,7 +14,6 @@ from __future__ import absolute_import
 
 import json
 import six
-import warnings
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
@@ -55,9 +54,6 @@ class JSONField(models.TextField):
     JSON objects seamlessly.  Main thingy must be a dict object."""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn("Django 1.9 features a native JsonField, this JSONField will "
-            "be removed somewhere after Django 1.8 becomes unsupported.",
-            DeprecationWarning)
         kwargs['default'] = kwargs.get('default', dict)
         models.TextField.__init__(self, *args, **kwargs)
 
@@ -86,7 +82,7 @@ class JSONField(models.TextField):
         elif isinstance(res, list):
             return JSONList(res)
 
-        return value
+        return res
 
     def get_prep_value(self, value):
         if not isinstance(value, six.string_types):

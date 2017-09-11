@@ -14,9 +14,14 @@ IPython::
   $ ./manage.py shell_plus --ipython
 
 
-BPython::
+bpython::
 
   $ ./manage.py shell_plus --bpython
+
+
+ptpython::
+
+  $ ./manage.py shell_plus --ptpython
 
 
 Python::
@@ -24,7 +29,7 @@ Python::
   $ ./manage.py shell_plus --plain
 
 
-The default resolution order is: bpython, ipython, python.
+The default resolution order is: ptpython, bpython, ipython, python.
 
 You can also set the configuration option SHELL_PLUS to explicitly specify which version you want.
 
@@ -67,6 +72,14 @@ Note: These settings are only used inside shell_plus and will not affect your en
 
 
 You can also combine model_aliases and dont_load.
+
+When referencing nested modules, e.g. `somepackage.someapp.models.somemodel`, omit the
+package name and the reference to `models`. For example:
+
+::
+
+    SHELL_PLUS_DONT_LOAD = ['someapp.somemodel', ]  # This works
+    SHELL_PLUS_DONT_LOAD = ['somepackage.someapp.models.somemodel', ]  # This does NOT work
 
 It is possible to ignore autoloaded modules when using manage.py, like::
 
@@ -129,12 +142,12 @@ other imports. Both have similar syntax. So in your settings.py file:
 
 ::
 
-    SHELL_PLUS_PRE_IMPORTS = (
+    SHELL_PLUS_PRE_IMPORTS = [
         ('module.submodule1', ('class1', 'function2')),
         ('module.submodule2', 'function3'),
         ('module.submodule3', '*'),
         'module.submodule4'
-    )
+    ]
 
 The above example would directly translate to the following python code which would be executed before
 the automatic imports:

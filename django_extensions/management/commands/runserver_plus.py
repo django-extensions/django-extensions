@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -7,16 +9,19 @@ import sys
 import time
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.core.servers.basehttp import get_internal_wsgi_application
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.backends import utils
 from django.db.migrations.executor import MigrationExecutor
-from django.core.exceptions import ImproperlyConfigured
-from django.core.servers.basehttp import get_internal_wsgi_application
 from django.utils.autoreload import gen_filenames
 
-from django_extensions.management.technical_response import null_technical_500_response
-from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
+from django_extensions.management.technical_response import \
+    null_technical_500_response
+from django_extensions.management.utils import (
+    RedirectHandler, has_ipdb, setup_logger, signalcommand,
+)
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -40,6 +45,7 @@ naiveip_re = re.compile(r"""^(?:
 ):)?(?P<port>\d+)$""", re.X)
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
+DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +80,8 @@ class Command(BaseCommand):
                             help='auto-reload whenever the given file changes too (can be specified multiple times)')
         parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
                             help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
+        parser.add_argument('--reloader-type', dest='reloader_type', action="store", type=str, default=DEFAULT_POLLER_RELOADER_TYPE,
+                            help='Werkzeug reloader type [options are auto, watchdog, or stat, default=%s]' % DEFAULT_POLLER_RELOADER_TYPE)
         parser.add_argument('--pdb', action='store_true', dest='pdb', default=False,
                             help='Drop into pdb shell at the start of any view.')
         parser.add_argument('--ipdb', action='store_true', dest='ipdb', default=False,
@@ -129,19 +137,38 @@ class Command(BaseCommand):
             except ImportError:
                 sqlparse = None  # noqa
 
+            try:
+                import pygments.lexers
+                import pygments.formatters
+            except ImportError:
+                pygments = None
+
+            truncate = getattr(settings, 'RUNSERVER_PLUS_PRINT_SQL_TRUNCATE', 1000)
+
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
                         return self.cursor.execute(sql, params)
                     finally:
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
                         execution_time = time.time() - starttime
-                        therest = ' -- [Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias)
+                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+
                         if sqlparse:
-                            logger.info(sqlparse.format(raw_sql, reindent=True) + therest)
-                        else:
-                            logger.info(raw_sql + therest)
+                            raw_sql = raw_sql[:truncate]
+                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
+
+                        if pygments:
+                            raw_sql = pygments.highlight(
+                                raw_sql,
+                                pygments.lexers.get_lexer_by_name("sql"),
+                                pygments.formatters.TerminalFormatter()
+                            )
+
+                        logger.info(raw_sql)
+                        logger.info("")
+                        logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
+                        logger.info("")
 
             utils.CursorDebugWrapper = PrintQueryWrapper
 
@@ -174,8 +201,7 @@ class Command(BaseCommand):
                 else:
                     import pdb
                     p = pdb
-                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
-                                                                   exc_value)
+                print("Exception occured: %s, %s" % (exc_type, exc_value), file=sys.stderr)
                 p.post_mortem(tb)
 
         # usurp django's handler
@@ -247,10 +273,9 @@ class Command(BaseCommand):
         open_browser = options.get('open_browser', False)
         cert_path = options.get("cert_path")
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-        bind_url = "http://%s:%s/" % (
-            self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
+        reloader_type = options.get('reloader_type', 'auto')
 
         self.nopin = options.get('nopin', False)
 
@@ -264,20 +289,12 @@ class Command(BaseCommand):
             self.check_migrations()
         except ImproperlyConfigured:
             pass
-        if self.show_startup_messages:
-            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-            print("Quit the server with %s." % quit_command)
         handler = get_internal_wsgi_application()
         if USE_STATICFILES:
             use_static_handler = options.get('use_static_handler', True)
             insecure_serving = options.get('insecure_serving', False)
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
-        if open_browser:
-            import webbrowser
-            webbrowser.open(bind_url)
         if cert_path:
             """
             OpenSSL is needed for SSL support.
@@ -317,6 +334,19 @@ class Command(BaseCommand):
         else:
             ssl_context = None
 
+        bind_url = "%s://%s:%s/" % (
+            "https" if ssl_context else "http", self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
+
+        if self.show_startup_messages:
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at %s" % (bind_url,))
+            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Quit the server with %s." % quit_command)
+
+        if open_browser:
+            import webbrowser
+            webbrowser.open(bind_url)
+
         if use_reloader and settings.USE_I18N:
             extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
 
@@ -341,6 +371,7 @@ class Command(BaseCommand):
             use_debugger=True,
             extra_files=extra_files,
             reloader_interval=reloader_interval,
+            reloader_type=reloader_type,
             threaded=threaded,
             request_handler=WSGIRequestHandler,
             ssl_context=ssl_context,

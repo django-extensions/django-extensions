@@ -79,7 +79,7 @@ Documentation on how to create dot files can be found here: http://www.graphviz.
 
   An example of this is
   the Django app *django-template-minifier* this automatically removed the newlines before/after
-  template tags even for none-html templates which leads to a mallformed file.
+  template tags even for non-HTML templates which leads to a malformed file.
 
 Example Usage
 -------------
@@ -103,6 +103,16 @@ image by using the *graph_models* command::
 
   # Create a dot file for only the 'foo' and 'bar' applications of your project
   $ ./manage.py graph_models foo bar > my_project.dot
+
+::
+
+  # Create a graph for only certain models
+  $ ./manage.py graph_models -a -I Foo,Bar -o my_project_subsystem.png
+
+::
+
+  # Create a excluding certain models
+  $ ./manage.py graph_models -a -X Foo,Bar -o my_project_sans_foo_bar.png
 
 
 .. _GraphViz: http://www.graphviz.org/

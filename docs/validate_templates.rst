@@ -35,4 +35,3 @@ Usage Example
 -------------
 
  ./manage.py validate_templates
-

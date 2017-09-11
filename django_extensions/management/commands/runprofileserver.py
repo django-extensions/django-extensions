@@ -95,9 +95,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
+            'addrport', nargs='?',
+            help='Optional port number, or ipaddr:port'
+        )
+        parser.add_argument(
             '--noreload', action='store_false', dest='use_reloader',
             default=True,
             help='Tells Django to NOT use the auto-reloader.')
+        parser.add_argument(
+            '--nothreading', action='store_false', dest='use_threading', default=True,
+            help='Tells Django to NOT use threading.',
+        )
         parser.add_argument(
             '--prof-path', dest='prof_path', default='/tmp',
             help='Specifies the directory which to save profile information '
@@ -252,7 +260,7 @@ class Command(BaseCommand):
                     if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
-                run(addr, int(port), handler)
+                run(addr, int(port), handler, threading=options.get('use_threading', True))
             except socket.error as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {

@@ -12,14 +12,17 @@ class Command(BaseCommand):
     help = 'Fully clear site-wide cache.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--cache', default=DEFAULT_CACHE_ALIAS,
+        parser.add_argument('--cache', action='append',
                             help='Name of cache to clear')
 
     @signalcommand
     def handle(self, cache, *args, **kwargs):
-        try:
-            caches[cache].clear()
-        except InvalidCacheBackendError:
-            self.stderr.write('Cache "%s" is invalid!\n' % cache)
-        else:
-            self.stdout.write('Cache "%s" has been cleared!\n' % cache)
+        if not cache:
+            cache = [DEFAULT_CACHE_ALIAS]
+        for key in cache:
+            try:
+                caches[key].clear()
+            except InvalidCacheBackendError:
+                self.stderr.write('Cache "%s" is invalid!\n' % key)
+            else:
+                self.stdout.write('Cache "%s" has been cleared!\n' % key)

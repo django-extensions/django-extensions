@@ -9,6 +9,8 @@ Current Command Extensions
 * *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
 
+* *clean_pyc* - Remove all python bytecode compiled files from the project
+
 * `create_app`_ - Creates an application directory structure for the specified
   app name.  This command allows you to specify the --template option where you
   can indicate a template directory structure to use as your default.
@@ -26,6 +28,8 @@ Current Command Extensions
 
 * *clear_cache* - Clear django cache, useful when testing or deploying.
 
+* *compile_pyc* - Compile python bytecode files for the project.
+
 * *describe_form* - Used to display a form definition for a model. Copy and
   paste the contents into your forms.py and you're ready to go.
 
@@ -41,6 +45,8 @@ Current Command Extensions
   users in one of many formats.  Currently supports Address, Google, Outlook,
   LinkedIn, and VCard formats.
 
+* *find_template* - Finds the location of the given template by resolving its path
+
 * *generate_secret_key* - Creates a new secret key that you can put in your
   settings.py module.
 
@@ -50,6 +56,8 @@ Current Command Extensions
 
 * *mail_debug* - Starts a mail server which echos out the contents of the email
   instead of sending it.
+
+* *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
 * *passwd* - Makes it easy to reset a user's password.
 
@@ -88,6 +96,8 @@ Current Command Extensions
 
 * *set_fake_passwords* -  Sets all user passwords to a common value (*password* by default). *DEBUG only*.
 
+* *show_template_tags* - Displays template tags and filters available in the current project.
+
 * *show_urls* - Displays the url routes that are defined in your project. Very
   crude at this point.
 
@@ -106,7 +116,13 @@ Current Command Extensions
   Content-Encoding header, and also set a far future expires header for browser
   caching.
 
+* *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
+
+* *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
+
 * *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
+
+* *validate_templates* - Validate templates on syntax and compile errors.
 
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 

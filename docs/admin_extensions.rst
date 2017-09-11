@@ -9,6 +9,10 @@ Current Admin Extensions
   field is rendered by the ForeignKeySearchInput form widget and uses jQuery
   to do configurable autocompletion.
 
+* *ForeignKeyAutocompleteStackedInline*, *ForeignKeyAutocompleteTabularInline* -
+  in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
+  enable a search input field for ForeginKey fields in AdminInline classes.
+
 
 Example Usage
 -------------

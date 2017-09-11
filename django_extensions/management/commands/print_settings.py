@@ -17,22 +17,35 @@ from django_extensions.management.utils import signalcommand
 class Command(BaseCommand):
     """print_settings command"""
 
-    args = '<SETTING>'
     help = "Print the active Django settings."
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('--format', default='simple', dest='format',
-                            help='Specifies output format.')
-        parser.add_argument('--indent', default=4, dest='indent', type=int,
-                            help='Specifies indent level for JSON and YAML')
+        parser.add_argument(
+            'setting',
+            nargs='*',
+            help='Specifies setting to be printed.'
+        )
+        parser.add_argument(
+            '--format',
+            default='simple',
+            dest='format',
+            help='Specifies output format.'
+        )
+        parser.add_argument(
+            '--indent',
+            default=4,
+            dest='indent',
+            type=int,
+            help='Specifies indent level for JSON and YAML'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
         a_dict = {}
 
         for attr in dir(settings):
-            if self.include_attr(attr, args):
+            if self.include_attr(attr, options.get('setting')):
                 value = getattr(settings, attr)
                 a_dict[attr] = value
 
@@ -61,17 +74,15 @@ class Command(BaseCommand):
             self.print_simple(a_dict)
 
     @staticmethod
-    def include_attr(attr, args):
+    def include_attr(attr, settings):
         """Whether or not to include attribute in output"""
 
-        if not attr.startswith('__'):
-            if args is not ():
-                if attr in args:
-                    return True
-            else:
-                return True
-        else:
+        if attr.startswith('__'):
             return False
+        elif settings == []:
+            return True
+        elif attr in settings:
+            return True
 
     @staticmethod
     def print_simple(a_dict):

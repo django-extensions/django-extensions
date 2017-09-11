@@ -14,7 +14,7 @@ Usage
 -------------
 
   $ python manage.py sqlcreate [--router=<routername>] | <my_database_shell_command>
-  
+
 It will spit out SQL which you can review (if you want). Ultimately you want to
 pipe it into the database shell command of your choice.
 
@@ -28,12 +28,12 @@ Example
 PostgreSQL
 ~~~~~~~~~~
   $ ./manage.py sqlcreate [--router=<routername>] | psql -U <db_administrator> -W
-  
+
 
 MySQL
 ~~~~~
   $ ./manage.py sqlcreate [--router=<routername>] | mysql -u <db_administrator> -p
-  
+
 
 Known Issues
 ------------
@@ -42,4 +42,3 @@ Known Issues
  * When using fallback user is not created and password is not set.
    But it does try to do a GRANT to the database user.
  * Missing options for tablespaces, etc.
-

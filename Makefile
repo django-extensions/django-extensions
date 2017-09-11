@@ -3,6 +3,7 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "compile-catalog - compile translation catalogs"
 	@echo "test - run tests quickly with the default Python"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "install - install the package to the active Python's site-packages"
@@ -28,8 +29,13 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 
+compile-catalog:
+	for loc in django_extensions/locale/*; do \
+		python setup.py compile_catalog --directory django_extensions/locale/ --locale $$(basename $$loc) --domain django || exit 1; \
+	done
+
 test:
-	python setup.py test --pytest-args="tests django_extensions --ds=tests.testapp.settings --cov=django_extensions"
+	python setup.py test
 
 coverage:
 	coverage run --source django_extensions setup.py test

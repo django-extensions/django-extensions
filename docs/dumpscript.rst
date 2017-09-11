@@ -37,20 +37,11 @@ Features
 * *ForeignKey* and *ManyToManyFields* (using python variables, not object IDs)
 * Self-referencing *ForeignKey* (and M2M) fields
 * Sub-classed models
-* *ContentType* fields and generic relationships (but see issue 43)
+* *ContentType* fields and generic relationships
 * Recursive references
 * *AutoFields* are excluded
 * Parent models are only included when no other child model links to it
 * Individual models can be referenced
-
-
-What it can't do (yet!)
------------------------
-
-* Ideal handling of generic relationships (ie no *AutoField* references):
-  issue 43
-* Intermediate join tables: issue 48
-* GIS fields: issue 72
 
 
 How?
@@ -81,19 +72,16 @@ Naming conflicts
 
 Please take care that when naming the output files these filenames do not
 clash with other names in your import path. For instance, if the appname is
-the same as the script name, an importerror can occur because rather than importing 
+the same as the script name, an importerror can occur because rather than importing
 the application modules it tries to load the modules from the dumpscript file itself.
 
 Examples::
 
   # Wrong
   $ ./manage.py dumpscript appname > dumps/appname.py
-  
+
   # Right
   $ ./manage.py dumpscript appname > dumps/appname_all.py
-  
+
   # Right
   $ ./manage.py dumpscript appname.Somemodel > dumps/appname_somemodel.py
-
-
-

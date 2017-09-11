@@ -1,6 +1,99 @@
 Changelog
 =========
 
+1.9.0
+-----
+
+The change to --no-startup/--use-pythonrc in `shell_plus` changes the
+default behaviour to automatically load PYTHONSTARTUP and ~/.pythonrc.py
+unless --no-startup is set.
+
+Changes:
+ - Fix: pipchecker, fix up-to-date check for Github sha commits
+ - Fix: JSONField, fix handling to_python() for strings with tests
+ - Fix: print_settings, fix print_settings to receive positional args
+ - Improvement: shell_plus, update PYTHONSTARTUP / pythonrc handling to match Django
+ - Improvement: shell_plus, added new 1.11 features from django.db.models to shell_plus import list
+ - Improvement: runserver_plus, startup message now accounts for https
+ - Docs: jobs, improve documentation about jobs scheduling
+ - Docs: admin, add documentation for ForeignKeyAutocompleteStackedInline and ForeignKeyAutocompleteTabularInline
+ - Docs: fix typos
+
+
+1.8.1
+-----
+
+Changes:
+ - Build: use tox's 'TOXENV' environment variable
+ - Fix: resetdb, fix problem that 'utf8_support' option is ignored
+ - Improvement: export_emails, moved custom csv UnicodeWriter (for py2) into compat.py
+ - Translations: pt, removed since it was causing issues with the builds
+                     if anybody wants to update and fix it that would be
+                     much appreciated !
+
+
+
+1.8.0
+-----
+
+UUIDField has been removed after being deprecated.
+
+Deprecation schedule for JSONField has been removed after requests from the
+community.
+
+Changes:
+ - Fix: runserver_plus, fixed Python 3 print syntax
+ - Fix: sqldiff, Use 'display_size', not 'precision' to identify MySQL bool field
+ - Fix: export_emails, fix and refactor the command and all its output options
+ - Improvement: tests, added Python 3.6 and PyPy3.5-5.8.0
+ - Improvement: clear_cache, add --cache option to support multiple caches
+ - Improvement: runserver_plus, limit printing SQL queries to avoid flooding the terminal
+ - Improvement: shell_plus, limit printing SQL queries to avoid flooding the terminal
+ - Docs: graph_models, document including/excluding specific models
+ - Docs: shell_plus, added PTPython
+
+
+1.7.9
+-----
+
+Changes:
+ - Fix: AutoSlugField, foreignkey relationships
+ - Fix: shell_plus, supported backends 'postgresql' for set_application_name
+ - Improvement: various commands, Add syntax highlighting when printing SQL
+ - Improvement: pipchecker, treat rc versions as unstable
+ - Improvement: shell_plus, allow to subclass and overwrite import_objects
+ - Improvement: shell_plus, fix SHELL_PLUS_PRE_IMPORTS example
+ - Improvement: setup.py, fix and unify running tests
+ - Improvement: runserver_plus, add RUNSERVERPLUS_POLLER_RELOADER_TYPE setting
+ - Improvement: generate_secret_key, use algoritme from django
+ - Docs: fix grammer and spelling mistakes
+
+
+
+1.7.8
+-----
+
+Changes:
+ - Improvement: django 1.11, add testing for Django 1.11
+ - Improvement: pipchecker, make it possible to parse https github urls
+ - Improvement: unreferenced_files, make command much faster by using set()
+ - Docs: add undocumented commands
+ - Docs: shell_plus, additional documentation for referencing nested modules
+ - Fix: sync_s3, fix exclusion of directories
+ - Fix: runprofileserver, fix ip:port specification
+ - Fix: runprofileserver, support --nothreading
+
+
+1.7.7
+-----
+
+Changes:
+ - Improvement: admin_generator, use decorator style for registring ModelAdmins.
+ - Improvement: sqldiff, quote tablename for PRAGMA in sqlite
+ - Fix: graph_models, Fix `attributes` referenced before assignment
+ - Fix: pipchecker, Fix AttributeError caused by missing method
+
+
 1.7.6
 -----
 

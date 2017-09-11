@@ -96,7 +96,7 @@ server.  You've been warned.
 SSL
 ^^^
 
-runserver_plus also supports SSL, so that you can easily debug bugs that to pop up
+runserver_plus also supports SSL, so that you can easily debug bugs that pop up
 when https is used. To use SSL simply provide a file name for certificates;
 a key and certificate file will be automatically generated::
 

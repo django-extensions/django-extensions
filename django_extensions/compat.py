@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from io import BytesIO
+
+import csv
+import six
+import codecs
 import importlib
 import django
 
@@ -43,3 +48,41 @@ def get_template_setting(template_key, default=None):
         value = getattr(settings, pre18_template_key, default)
         return value
     return default
+
+
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    We are using this custom UnicodeWriter for python versions 2.x
+    """
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        self.queue = BytesIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+
+from csv import writer  # noqa
+
+# Default csv.writer for PY3 versions
+csv_writer = writer
+if six.PY2:
+    # unicode CSVWriter for PY2
+    csv_writer = UnicodeWriter  # noqa

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import asyncore
 import sys
 from logging import getLogger
@@ -14,7 +16,7 @@ logger = getLogger(__name__)
 class ExtensionDebuggingServer(SMTPServer):
     """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
     # Do something with the gathered message
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         """Output will be sent to the module logger at INFO level."""
         inheaders = 1
         lines = data.split('\n')
@@ -77,7 +79,7 @@ class Command(BaseCommand):
             quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
             print("Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command))
 
-            ExtensionDebuggingServer((addr, port), None)
+            ExtensionDebuggingServer((addr, port), None, decode_data=True)
             asyncore.loop()
 
         try:

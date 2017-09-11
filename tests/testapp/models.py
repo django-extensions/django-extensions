@@ -5,7 +5,6 @@ from django_extensions.db.fields import (
     AutoSlugField,
     RandomCharField,
     ShortUUIDField,
-    UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
@@ -34,7 +33,7 @@ class Note(models.Model):
 
 
 class Person(models.Model):
-    name = models.ForeignKey(Name)
+    name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
     children = models.ManyToManyField('self')
     notes = models.ManyToManyField(Note)
@@ -63,38 +62,36 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
+class ModelMethodSluggedTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='get_readable_title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+    def get_readable_title(self):
+        return "The title is {}".format(self.title)
+
+
+class FKSluggedTestModel(models.Model):
+    related_field = models.ForeignKey(SluggedTestModel, on_delete=models.CASCADE)
+    slug = AutoSlugField(populate_from="related_field__title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class FKSluggedTestModelCallable(models.Model):
+    related_field = models.ForeignKey(ModelMethodSluggedTestModel, on_delete=models.CASCADE)
+    slug = AutoSlugField(populate_from="related_field__get_readable_title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class JSONFieldTestModel(models.Model):
     a = models.IntegerField()
     j_field = JSONField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_field(models.Model):
-    a = models.IntegerField()
-    uuid_field = UUIDField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_pk(models.Model):
-    uuid_field = UUIDField(primary_key=True)
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestAgregateModel(UUIDTestModel_pk):
-    a = models.IntegerField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestManyToManyModel(UUIDTestModel_pk):
-    many = models.ManyToManyField(UUIDTestModel_field)
 
     class Meta:
         app_label = 'django_extensions'

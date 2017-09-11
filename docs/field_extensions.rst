@@ -11,6 +11,15 @@ Current Database Model Field Extensions
   incrementing an appended number on the slug until it is unique. Inspired by
   SmileyChris' Unique Slugify snippet.
 
+  AutoSlugField takes a `populate_from` argument that specifies which field, list of
+  fields, or model method the slug will be populated from, for instance::
+
+    slug = AutoSlugField(populate_from=['title', 'description', 'get_author_name'])
+
+  `populate_from` can traverse a ForeignKey relationship by using Django ORM syntax::
+
+    slug = AutoSlugField(populate_from=['related_model__title', 'related_model__get_readable_name'])
+
 * *RandomCharField* - AutoRandomCharField will automatically create a
   unique random character field with the specified length. By default
   upper/lower case and digits are included as possible characters. Given
@@ -84,7 +93,4 @@ Current Database Model Field Extensions
 
 * *ShortUUIDField* - CharField which transparently generates a UUID and pass it to base57. It result in shorter 22 characters values useful e.g. for concise, unambiguous URLS. It's possible to get shorter values with length parameter: they are not Universal Unique any more but probability of collision is still low
 
-* *JSONField* - a generic TextField that neatly serializes/unserializes JSON objects seamlessly
-
-  .. deprecated:: 1.7.3
-     Django 1.9 features a native JSONField. Django-Extensions will support *JSONField* at the very least until Django 1.8 becomes unsupported.
+* *JSONField* - a generic TextField that neatly serializes/unserializes JSON objects seamlessly. Django 1.9 introduces a native JSONField for PostgreSQL, which is preferred for PostgreSQL users on Django 1.9 and above.

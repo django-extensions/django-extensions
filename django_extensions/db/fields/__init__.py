@@ -5,7 +5,6 @@ Django Extensions additional model fields
 import re
 import six
 import string
-import warnings
 
 try:
     import uuid
@@ -22,6 +21,7 @@ except ImportError:
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import DateTimeField, CharField, SlugField
+from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
@@ -80,7 +80,12 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
     Required arguments:
 
     populate_from
-        Specifies which field or list of fields the slug is populated from.
+        Specifies which field, list of fields, or model method
+        the slug will be populated from.
+
+        populate_from can traverse a ForeignKey relationship
+        by using Django ORM syntax:
+            populate_from = 'related_model__field'
 
     Optional arguments:
 
@@ -150,7 +155,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
+            slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             start = 2
         else:
@@ -174,6 +179,22 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
         return super(AutoSlugField, self).find_unique(
             model_instance, slug_field, self.slug_generator(original_slug, start))
+
+    def get_slug_fields(self, model_instance, lookup_value):
+        lookup_value_path = lookup_value.split(LOOKUP_SEP)
+        attr = model_instance
+        for elem in lookup_value_path:
+            try:
+                attr = getattr(attr, elem)
+            except AttributeError:
+                raise AttributeError(
+                    "value {} in AutoSlugField's 'populate_from' argument {} returned an error - {} has no attribute {}".format(
+                        elem, lookup_value, attr, elem))
+
+        if callable(attr):
+            return "%s" % attr()
+
+        return attr
 
     def pre_save(self, model_instance, add):
         value = force_text(self.create_slug(model_instance, add))
@@ -368,8 +389,8 @@ class UUIDVersionError(Exception):
     pass
 
 
-class UUIDField(CharField):
-    """ UUIDField
+class UUIDFieldMixin(object):
+    """ UUIDFieldMixin
 
     By default uses UUID version 4 (randomly generated UUID).
 
@@ -378,23 +399,29 @@ class UUIDField(CharField):
     """
     DEFAULT_MAX_LENGTH = 36
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=4, node=None, clock_seq=None, namespace=None, uuid_name=None, *args, **kwargs):
-        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
-
+    def __init__(
+            self, verbose_name=None, name=None, auto=True, version=4,
+            node=None, clock_seq=None, namespace=None, uuid_name=None, *args,
+            **kwargs):
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
+
         kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)
+
         if auto:
             self.empty_strings_allowed = False
             kwargs['blank'] = True
             kwargs.setdefault('editable', False)
+
         self.auto = auto
         self.version = version
         self.node = node
         self.clock_seq = clock_seq
         self.namespace = namespace
         self.uuid_name = uuid_name or name
-        super(UUIDField, self).__init__(verbose_name=verbose_name, *args, **kwargs)
+
+        super(UUIDFieldMixin, self).__init__(
+            verbose_name=verbose_name, *args, **kwargs)
 
     def create_uuid(self):
         if not self.version or self.version == 4:
@@ -411,7 +438,8 @@ class UUIDField(CharField):
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
 
     def pre_save(self, model_instance, add):
-        value = super(UUIDField, self).pre_save(model_instance, add)
+        value = super(UUIDFieldMixin, self).pre_save(model_instance, add)
+
         if self.auto and add and value is None:
             value = force_text(self.create_uuid())
             setattr(model_instance, self.attname, value)
@@ -420,15 +448,17 @@ class UUIDField(CharField):
             if self.auto and not value:
                 value = force_text(self.create_uuid())
                 setattr(model_instance, self.attname, value)
+
         return value
 
     def formfield(self, **kwargs):
         if self.auto:
             return None
-        return super(UUIDField, self).formfield(**kwargs)
+        return super(UUIDFieldMixin, self).formfield(**kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(UUIDField, self).deconstruct()
+        name, path, args, kwargs = super(UUIDFieldMixin, self).deconstruct()
+
         if kwargs.get('max_length', None) == self.DEFAULT_MAX_LENGTH:
             del kwargs['max_length']
         if self.auto is not True:
@@ -443,30 +473,11 @@ class UUIDField(CharField):
             kwargs['namespace'] = self.namespace
         if self.uuid_name is not None:
             kwargs['uuid_name'] = self.name
+
         return name, path, args, kwargs
 
 
-class PostgreSQLUUIDField(UUIDField):
-    def __init__(self, *args, **kwargs):
-        warnings.warn("Django 1.8 features a native UUIDField, this UUIDField will be removed after Django 1.7 becomes unsupported.", DeprecationWarning)
-        super(PostgreSQLUUIDField, self).__init__(*args, **kwargs)
-
-    def db_type(self, connection=None):
-        return "UUID"
-
-    def get_db_prep_value(self, value, connection, prepared=False):
-        if isinstance(value, six.integer_types):
-            value = uuid.UUID(int=value)
-        elif isinstance(value, (six.string_types, six.binary_type)):
-            if len(value) == 16:
-                value = uuid.UUID(bytes=value)
-            else:
-                value = uuid.UUID(value)
-        return super(PostgreSQLUUIDField, self).get_db_prep_value(
-            value, connection, prepared=False)
-
-
-class ShortUUIDField(UUIDField):
+class ShortUUIDField(UUIDFieldMixin, CharField):
     """ ShortUUIDFied
 
     Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
