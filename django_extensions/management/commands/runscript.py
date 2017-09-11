@@ -4,6 +4,7 @@ import importlib
 import traceback
 
 from django.apps import apps
+from django.core.management.base import CommandError
 
 from django_extensions.management.email_notifications import EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
@@ -77,7 +78,7 @@ class Command(EmailNotificationCommand):
                 mod.run(*script_args)
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
-            except Exception:
+            except Exception as e:
                 if silent:
                     return
                 if verbosity > 0:
@@ -85,7 +86,7 @@ class Command(EmailNotificationCommand):
                 if email_notifications:
                     self.send_email_notification(
                         notification_id=mod.__name__, include_traceback=True)
-                if show_traceback:
+                if show_traceback or not isinstance(e, CommandError):
                     raise
 
         def my_import(mod):
@@ -93,9 +94,8 @@ class Command(EmailNotificationCommand):
                 print(NOTICE("Check for %s" % mod))
             # check if module exists before importing
             try:
-                importlib.import_module(mod)
-                t = __import__(mod, [], [], [" "])
-            except (ImportError, AttributeError) as e:
+                t = importlib.import_module(mod)
+            except ImportError as e:
                 if str(e).startswith('No module named'):
                     try:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -107,9 +107,8 @@ class Command(EmailNotificationCommand):
                     finally:
                         exc_traceback = None
 
-                if verbosity > 1:
-                    if verbosity > 2:
-                        traceback.print_exc()
+                if not silent:
+                    traceback.print_exc()
                     print(ERROR("Cannot import module '%s': %s." % (mod, e)))
 
                 return False
@@ -120,7 +119,7 @@ class Command(EmailNotificationCommand):
                 return t
             else:
                 if verbosity > 1:
-                    print(ERROR2("Find script '%s' but no run() function found." % mod))
+                    print(ERROR2("Found script '%s' but no run() function found." % mod))
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
