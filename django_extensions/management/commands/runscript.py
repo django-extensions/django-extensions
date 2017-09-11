@@ -53,13 +53,12 @@ class Command(EmailNotificationCommand):
         if options.get('infixtures'):
             subdirs.append('fixtures')
         verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', True)
-        if show_traceback is None:
-            # XXX: traceback is set to None from Django ?
-            show_traceback = True
+        show_traceback = options.get('traceback', False)
         no_traceback = options.get('no_traceback', False)
         if no_traceback:
             show_traceback = False
+        else:
+            show_traceback = True
         silent = options.get('silent', False)
         if silent:
             verbosity = 0
@@ -86,8 +85,9 @@ class Command(EmailNotificationCommand):
                 if email_notifications:
                     self.send_email_notification(
                         notification_id=mod.__name__, include_traceback=True)
-                if show_traceback or not isinstance(e, CommandError):
-                    raise
+                if show_traceback:
+                    if not isinstance(e, CommandError):
+                        raise
 
         def my_import(mod):
             if verbosity > 1:
