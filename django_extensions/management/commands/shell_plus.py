@@ -431,10 +431,12 @@ class Command(BaseCommand):
             shell = dict(shells)[shell_name](options)
         else:
             for shell_name, func in shells:
+                if verbosity > 2:
+                    print(self.style.NOTICE("Trying shell: %s" % shell_name))
                 shell = func(options)
                 if callable(shell):
                     if verbosity > 1:
-                        print(self.style.NOTICE("Using shell %s." % shell_name))
+                        print(self.style.NOTICE("Using shell: %s" % shell_name))
                     break
 
         if not callable(shell):
