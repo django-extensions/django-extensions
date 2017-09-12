@@ -1,6 +1,19 @@
 Changelog
 =========
 
+
+1.9.1
+-----
+
+Changes:
+ - Fix: graph_models, fix json option
+ - Fix: runserver_plus, avoid duplicate messages logged to console
+ - Fix: mail_debug, python3 fix
+ - Improvement: sqldiff, basic support for array types in postgresql
+ - Improvement: runscript, handle import errors better
+ - Docs: updated documentation for model extensions
+
+
 1.9.0
 -----
 
