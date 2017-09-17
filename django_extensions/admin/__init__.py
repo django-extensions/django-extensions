@@ -120,7 +120,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
                     pass
                 else:
                     data = to_string_function(obj)
-            return HttpResponse(data)
+            return HttpResponse(data, content_type='text/plain')
         return HttpResponseNotFound()
 
     def get_related_filter(self, model, request):
