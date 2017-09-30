@@ -226,7 +226,7 @@ class Command(BaseCommand):
                 # PYTHONSTARTUP prints an exception and continues.
                 try:
                     with open(pythonrc) as handle:
-                        exec(compile(handle.read(), pythonrc, 'exec'), imported_objects)
+                        exec(compile(handle.read(), pythonrc, 'exec'), imported_objects) in globals(), locals()
                 except Exception:
                     traceback.print_exc()
 
