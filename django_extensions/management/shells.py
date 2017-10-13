@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 import traceback
 
 import six
@@ -91,6 +92,15 @@ def import_objects(options, style):
             if app.models_module:
                 yield app.models_module, app.get_models()
 
+    def get_serializers(_app_name):
+        try:
+            serializer_module = __import__("%s.serializers" % _app_name, {}, {}, "*")
+            return inspect.getmembers(
+                serializer_module, lambda x: inspect.isclass(x) and x.__module__ == serializer_module.__name__
+            )
+        except ImportError:
+            return []
+
     mongoengine = False
     try:
         from mongoengine.base import _document_registry
@@ -119,6 +129,7 @@ def import_objects(options, style):
             imported_objects[k] = v
 
     load_models = {}
+    load_serializers = {}
 
     if mongoengine:
         for name, mod in six.iteritems(_document_registry):
@@ -129,6 +140,11 @@ def import_objects(options, style):
 
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(name)
+
+            serializers = get_serializers(app_name)
+            for ser_name, serializer in serializers:
+                load_serializers.setdefault(serializer.__module__, [])
+                load_serializers[serializer.__module__].append(ser_name)
 
     for app_mod, app_models in get_apps_and_models():
         if not app_models:
@@ -146,6 +162,11 @@ def import_objects(options, style):
                 # Only add the module to the dict if `__module__` is not empty.
                 load_models.setdefault(mod.__module__, [])
                 load_models[mod.__module__].append(mod.__name__)
+
+        serializers = get_serializers(app_name)
+        for ser_name, serializer in serializers:
+            load_serializers.setdefault(serializer.__module__, [])
+            load_serializers[serializer.__module__].append(ser_name)
 
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports"))
@@ -190,6 +211,52 @@ def import_objects(options, style):
 
         if not quiet_load:
             print(style.SQL_COLTYPE("from %s import %s" % (app_mod, ", ".join(model_labels))))
+
+    if not quiet_load:
+        print(style.SQL_TABLE("# Shell Plus Serializers Imports"))
+
+    for app_ser, serializers in sorted(six.iteritems(load_serializers)):
+        try:
+            app_name = app_ser.split('.')[-2]
+        except IndexError:
+            # Some weird model naming scheme like in Sentry.
+            app_name = app_ser
+        app_aliases = model_aliases.get(app_name, {})
+        prefix = app_prefixes.get(app_name)
+        model_labels = []
+
+        for serializer_name in sorted(serializers):
+            try:
+                imported_object = getattr(__import__(app_ser, {}, {}, [serializer_name]), serializer_name)
+
+                if "%s.%s" % (app_name, serializer_name) in dont_load:
+                    continue
+
+                alias = app_aliases.get(serializer_name)
+
+                if not alias:
+                    if prefix:
+                        alias = "%s_%s" % (prefix, serializer_name)
+                    else:
+                        alias = serializer_name
+
+                imported_objects[alias] = imported_object
+                if serializer_name == alias:
+                    model_labels.append(serializer_name)
+                else:
+                    model_labels.append("%s (as %s)" % (serializer_name, alias))
+
+            except AttributeError as e:
+                if options.get("traceback"):
+                    traceback.print_exc()
+                if not quiet_load:
+                    print(style.ERROR(
+                        "Failed to import '%s' from '%s' reason: %s" % (serializer_name, app_ser, str(e))
+                    ))
+                continue
+
+        if not quiet_load:
+            print(style.SQL_COLTYPE("from %s import %s" % (app_ser, ", ".join(model_labels))))
 
     # Imports often used from Django
     if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
