@@ -1,7 +1,31 @@
 # -*- coding: utf-8 -*-
-import traceback
-
 import six
+import traceback
+from django import VERSION as DJANGO_VERSION
+
+
+SHELL_PLUS_DJANGO_IMPORTS = {
+    'django.core.cache': ['cache'],
+    'django.conf': ['settings'],
+    'django.contrib.auth': ['get_user_model'],
+    'django.db': ['transaction'],
+    'django.db.models': [
+        'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q', 'Sum', 'When',
+    ],
+    'django.utils': ['timezone'],
+}
+if DJANGO_VERSION < (1, 10):
+    SHELL_PLUS_DJANGO_IMPORTS.update({
+        'django.core.urlresolvers': ['reverse'],
+    })
+else:
+    SHELL_PLUS_DJANGO_IMPORTS.update({
+        'django.urls': ['reverse'],
+    })
+if DJANGO_VERSION >= (1, 11):
+    SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend([
+        'Exists', 'OuterRef', 'Subquery',
+    ])
 
 
 class ObjectImportError(Exception):
@@ -101,7 +125,7 @@ def import_objects(options, style):
     from django.conf import settings
     imported_objects = {}
 
-    dont_load_cli = options.get('dont_load')  # optparse will set this to [] if it doensnt exists
+    dont_load_cli = options.get('dont_load', [])
     dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
     dont_load = dont_load_cli + dont_load_conf
     quiet_load = options.get('quiet_load')
@@ -195,29 +219,6 @@ def import_objects(options, style):
     if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus Django Imports"))
-        from django import VERSION as DJANGO_VERSION
-        SHELL_PLUS_DJANGO_IMPORTS = {
-            'django.core.cache': ['cache'],
-            'django.conf': ['settings'],
-            'django.contrib.auth': ['get_user_model'],
-            'django.db': ['transaction'],
-            'django.db.models': [
-                'Avg', 'Case', 'Count', 'F', 'Max', 'Min', 'Prefetch', 'Q', 'Sum', 'When',
-            ],
-            'django.utils': ['timezone'],
-        }
-        if DJANGO_VERSION < (1, 10):
-            SHELL_PLUS_DJANGO_IMPORTS.update({
-                'django.core.urlresolvers': ['reverse'],
-            })
-        else:
-            SHELL_PLUS_DJANGO_IMPORTS.update({
-                'django.urls': ['reverse'],
-            })
-        if DJANGO_VERSION >= (1, 11):
-            SHELL_PLUS_DJANGO_IMPORTS['django.db.models'].extend([
-                'Exists', 'OuterRef', 'Subquery',
-            ])
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS.items(), style, quiet_load=quiet_load)
         for k, v in six.iteritems(imports):
             imported_objects[k] = v

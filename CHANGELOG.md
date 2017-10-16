@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+1.9.3
+-----
+
+Changes:
+ - Tests: shell_plus, simple test for get_imported_objects
+
+
 1.9.2
 -----
 
