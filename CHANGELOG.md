@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+1.9.6
+-----
+
+Fix boo-boo with release version in django_extensions/__init__.py
+
+
 1.9.4
 -----
 
