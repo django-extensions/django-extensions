@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+1.9.4
+-----
+
+Changes:
+ - Fix missing test case
+
+
 1.9.3
 -----
 
