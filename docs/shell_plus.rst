@@ -71,8 +71,12 @@ Note: These settings are only used inside shell_plus and will not affect your en
   SHELL_PLUS_DONT_LOAD = ['sites', 'blog.pictures']
 
 
-You can also combine model_aliases and dont_load.
+::
 
+  # Dont load any models
+  SHELL_PLUS_DONT_LOAD = ['*']
+
+You can also combine model_aliases and dont_load.
 When referencing nested modules, e.g. `somepackage.someapp.models.somemodel`, omit the
 package name and the reference to `models`. For example:
 
