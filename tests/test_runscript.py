@@ -129,14 +129,29 @@ class ChangingDirectoryTests(RunScriptTests):
         self.assertEqual(second_output,
                          os.path.join(project_path, 'tests', 'testapp_with_no_models_file', 'scripts') + '\n')
 
-    def test_custom_policy_run(self):
+    def test_chdir_specified(self):
         execution_path = os.path.join(project_path, 'django_extensions', 'management')
-        self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, ['tests'], ['django_extensions', 'management'],
+        self._execute_script_with_chdir(DirPolicyChoices.ROOT, ['tests'], ['django_extensions', 'management'],
                                         chdir=execution_path)
 
     @override_settings(RUNSCRIPT_CHDIR=os.path.join(project_path, 'tests'))
-    def test_custom_policy_django_settings(self):
-        self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, [], ['tests'])
+    def test_policy_from_cli_and_chdir_from_settings(self):
+        self._execute_script_with_chdir(DirPolicyChoices.ROOT, ['tests'], [])
+
+    @override_settings(
+        RUNSCRIPT_CHDIR=os.path.join(project_path, 'django_extensions', 'management'),
+        RUNSCRIPT_CHDIR_POLICY=DirPolicyChoices.ROOT,
+    )
+    def test_chdir_from_settings_and_policy_from_settings(self):
+        self._execute_script_with_chdir(None, ['tests'], ['django_extensions', 'management'])
+
+    @override_settings(RUNSCRIPT_CHDIR_POLICY=DirPolicyChoices.EACH)
+    def test_policy_from_settings(self):
+        self._execute_script_with_chdir(None, ['tests'], ['tests', 'testapp', 'scripts'])
+
+    @override_settings(RUNSCRIPT_CHDIR=os.path.join(project_path, 'tests'))
+    def test_chdir_django_settings(self):
+        self._execute_script_with_chdir(None, [], ['tests'])
 
     @override_settings(RUNSCRIPT_CHDIR='bad path')
     def test_custom_policy_django_settings_bad_path(self):
@@ -145,4 +160,4 @@ class ChangingDirectoryTests(RunScriptTests):
             'bad path is not a directory! If --dir-policy is custom than you must set '
             'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'
         ):
-            self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, [], ['tests'])
+            self._execute_script_with_chdir(None, [], ['tests'])

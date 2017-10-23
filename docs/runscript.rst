@@ -98,17 +98,14 @@ example::
 Setting execution directory
 ---------------------------
 
-You can set scripts execution directory policy using ``--dir-policy`` option.
+You can set scripts execution directory using ``--chdir`` option or ``settings.RUNSCRIPT_CHDIR``.
+You can also set scripts execution directory policy using ``--dir-policy`` option or ``settings.RUNSCRIPT_CHDIR_POLICY``.
 
 It can be one of the following:
 
 * **none** - start all scripts in current directory.
 * **each** - start all scripts in their directories.
 * **root** - start all scripts in ``BASE_DIR`` directory.
-* **custom** - start all scripts in directory from ``--chdir`` option or ``settings.RUNSCRIPT_CHDIR``.
-
-``--chdir`` option takes presence over ``settings.RUNSCRIPT_CHDIR``
-If you are using **custom** policy, ``--chdir`` option or ``settings.RUNSCRIPT_CHDIR`` must be set to correct directory.
 
 Assume this simplified directory structure::
 
@@ -124,6 +121,11 @@ Assume this simplified directory structure::
     │ └-some_file.py
 
 Assume you are in ``other_folder`` directory.
+You can set execution directory for both scripts using this command::
+
+  $ python ../manage.py runscript first_script second_script --chdir /django_project_dir/second_app
+  # scripts will be executed from second_app directory
+
 You can run both scripts with ``NONE`` policy using this command::
 
   $ python ../manage.py runscript first_script second_script --dir-policy none
@@ -138,11 +140,6 @@ You can run both scripts with ``ROOT`` policy using this command::
 
   $ python ../manage.py runscript first_script second_script --dir-policy root
     # scripts will be executed from django_project_dir directory
-
-You can run both scripts with ``CUSTOM`` policy using this command::
-
-  $ python ../manage.py runscript first_script second_script --dir-policy custom --chdir /django_project_dir/second_app
-    # scripts will be executed from second_app directory
 
 Debugging
 ---------
