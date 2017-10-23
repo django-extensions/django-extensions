@@ -60,6 +60,8 @@ matrix:
     - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-dj110
     - python: pypy3.5-5.8.0
+      env: TOXENV=pypy3-dj111
+    - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-djmaster
 
   allow_failures:
