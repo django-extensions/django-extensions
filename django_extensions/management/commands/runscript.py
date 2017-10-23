@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-import sys
 import importlib
+import inspect
+import os
+import sys
 import traceback
+
+from argparse import ArgumentTypeError
 
 from django.apps import apps
 from django.core.management.base import CommandError
@@ -10,8 +14,34 @@ from django_extensions.management.email_notifications import EmailNotificationCo
 from django_extensions.management.utils import signalcommand
 
 
+class DirPolicyChoices:
+    NONE = 'none'
+    EACH = 'each'
+    ROOT = 'root'
+    CUSTOM = 'custom'
+
+
+def check_is_directory(value):
+    if value is None or not os.path.isdir(value):
+        raise ArgumentTypeError("%s is not a directory!" % value)
+    return value
+
+
+class BadCustomDirectoryException(Exception):
+    def __init__(self, value):
+        self.message = value + ' If --dir-policy is custom than you must set correct directory in ' \
+                               '--dir option or in settings.RUNSCRIPT_CHDIR'
+
+    def __str__(self):
+        return self.message
+
+
 class Command(EmailNotificationCommand):
     help = 'Runs a script in django context.'
+
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.current_directory = os.getcwd()
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -36,6 +66,20 @@ class Command(EmailNotificationCommand):
             '--script-args', nargs='*', type=str,
             help='Space-separated argument list to be passed to the scripts. Note that the '
                  'same arguments will be passed to all named scripts.',
+        )
+        parser.add_argument(
+            '--dir-policy', type=str,
+            choices=[DirPolicyChoices.NONE, DirPolicyChoices.EACH, DirPolicyChoices.ROOT, DirPolicyChoices.CUSTOM],
+            help='Policy of selecting scripts execution directory: '
+                 'none - start all scripts in current directory '
+                 'each - start all scripts in their directories '
+                 'root - start all scripts in BASE_DIR directory '
+                 'custom - start all scripts in directory from --chdir option or settings.RUNSCRIPT_CHDIR',
+            default=DirPolicyChoices.NONE,
+        )
+        parser.add_argument(
+            '--chdir', type=check_is_directory,
+            help='If dir-policy option is set to custom, than this option determines script execution directory.',
         )
 
     @signalcommand
@@ -72,8 +116,32 @@ class Command(EmailNotificationCommand):
             print(ERROR("Script name required."))
             return
 
+        def get_custom_directory():
+            from django.conf import settings
+            directory = options.get('chdir') or getattr(settings, 'RUNSCRIPT_CHDIR', None)
+            try:
+                check_is_directory(directory)
+            except ArgumentTypeError as e:
+                raise BadCustomDirectoryException(str(e))
+            return directory
+
+        def set_directory(script_module):
+            policy = options.get('dir_policy')
+            directory = self.current_directory
+
+            if policy == DirPolicyChoices.ROOT:
+                from django.conf import settings
+                directory = settings.BASE_DIR
+            elif policy == DirPolicyChoices.EACH:
+                directory = os.path.dirname(inspect.getfile(script_module))
+            elif policy == DirPolicyChoices.CUSTOM:
+                directory = get_custom_directory()
+
+            os.chdir(os.path.abspath(directory))
+
         def run_script(mod, *script_args):
             try:
+                set_directory(mod)
                 mod.run(*script_args)
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
@@ -142,7 +210,6 @@ class Command(EmailNotificationCommand):
                     mod = my_import("%s.%s" % (app.name, subdir), script)
                     if mod:
                         modules.append(mod)
-
             # try direct import
             if script.find(".") != -1:
                 parent, mod_name = script.rsplit(".", 1)

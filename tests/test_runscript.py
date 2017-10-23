@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-from django.core.management import call_command
-from django.test import TestCase
+import os
 import six
 import sys
+
+from django.core.management import call_command
+from django.test import TestCase, override_settings
+
+from django_extensions.management.commands.runscript import BadCustomDirectoryException, DirPolicyChoices
 
 
 class RunScriptTests(TestCase):
@@ -83,3 +87,62 @@ class RunFunctionTests(RunScriptTests):
     def test_prints_nothing_for_script_without_run(self):
         call_command('runscript', 'script_no_run_function', silent=True)
         self.assertEqual("", sys.stdout.getvalue())
+
+
+project_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+
+class ChangingDirectoryTests(RunScriptTests):
+    def setUp(self):
+        super(ChangingDirectoryTests, self).setUp()
+        os.chdir(project_path)
+
+    def _execute_script_with_chdir(self, dir_policy, start_path, expected_path, chdir=None):
+        os.chdir(os.path.join(project_path, *start_path))
+        expected_path = os.path.join(project_path, *expected_path)
+        call_command('runscript', 'directory_checker_script', dir_policy=dir_policy, chdir=chdir)
+        output = sys.stdout.getvalue().split('Script called from: ')[1].split('Cannot import module ')[0]
+        # Because in Python3 we are printing all failed attempts to import this script from any script directories.
+        self.assertEqual(output, expected_path + '\n')
+
+    def test_none_policy_command_run(self):
+        self._execute_script_with_chdir(DirPolicyChoices.NONE, [], [])
+
+    def test_none_policy_command_run_with_chdir(self):
+        self._execute_script_with_chdir(DirPolicyChoices.NONE, ['tests'], ['tests'])
+
+    def test_none_policy_freezing_start_directory(self):
+        self._execute_script_with_chdir(DirPolicyChoices.NONE, ['tests'], ['tests'])
+        self._execute_script_with_chdir(DirPolicyChoices.NONE, ['tests'], ['tests'])
+
+    def test_root_policy_command_run(self):
+        self._execute_script_with_chdir(DirPolicyChoices.ROOT, ['tests'], [])
+
+    def test_each_policy_command_run(self):
+        os.chdir(os.path.join(project_path, 'tests'))
+        call_command('runscript', 'directory_checker_script', 'other_directory_checker_script',
+                     dir_policy=DirPolicyChoices.EACH)
+        output = sys.stdout.getvalue()
+        first_output = output.split('Script called from: ')[1].split('Cannot import module ')[0]
+        self.assertEqual(first_output, os.path.join(project_path, 'tests', 'testapp', 'scripts') + '\n')
+        second_output = output.split('Script called from: ')[2].split('Cannot import module ')[0]
+        self.assertEqual(second_output,
+                         os.path.join(project_path, 'tests', 'testapp_with_no_models_file', 'scripts') + '\n')
+
+    def test_custom_policy_run(self):
+        execution_path = os.path.join(project_path, 'django_extensions', 'management')
+        self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, ['tests'], ['django_extensions', 'management'],
+                                        chdir=execution_path)
+
+    @override_settings(RUNSCRIPT_CHDIR=os.path.join(project_path, 'tests'))
+    def test_custom_policy_django_settings(self):
+        self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, [], ['tests'])
+
+    @override_settings(RUNSCRIPT_CHDIR='bad path')
+    def test_custom_policy_django_settings_bad_path(self):
+        with self.assertRaisesRegexp(
+            BadCustomDirectoryException,
+            'bad path is not a directory! If --dir-policy is custom than you must set '
+            'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'
+        ):
+            self._execute_script_with_chdir(DirPolicyChoices.CUSTOM, [], ['tests'])

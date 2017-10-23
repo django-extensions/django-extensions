@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 
 SECRET_KEY = 'dummy'
 
@@ -51,3 +52,5 @@ TEMPLATES = [
         },
     },
 ]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
