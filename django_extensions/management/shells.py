@@ -128,6 +128,7 @@ def import_objects(options, style):
     dont_load_cli = options.get('dont_load', [])
     dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
     dont_load = dont_load_cli + dont_load_conf
+    dont_load_any_models = '*' in dont_load
     quiet_load = options.get('quiet_load')
 
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
@@ -144,7 +145,7 @@ def import_objects(options, style):
 
     load_models = {}
 
-    if mongoengine:
+    if mongoengine and dont_load_any_models:
         for name, mod in six.iteritems(_document_registry):
             name = name.split('.')[-1]
             app_name = mod.__module__.split('.')[-2]
@@ -154,25 +155,26 @@ def import_objects(options, style):
             load_models.setdefault(mod.__module__, [])
             load_models[mod.__module__].append(name)
 
-    for app_mod, app_models in get_apps_and_models():
-        if not app_models:
-            continue
-
-        app_name = app_mod.__name__.split('.')[-2]
-        if app_name in dont_load:
-            continue
-
-        for mod in app_models:
-            if "%s.%s" % (app_name, mod.__name__) in dont_load:
+    if not dont_load_any_models:
+        for app_mod, app_models in get_apps_and_models():
+            if not app_models:
                 continue
 
-            if mod.__module__:
-                # Only add the module to the dict if `__module__` is not empty.
-                load_models.setdefault(mod.__module__, [])
-                load_models[mod.__module__].append(mod.__name__)
+            app_name = app_mod.__name__.split('.')[-2]
+            if app_name in dont_load:
+                continue
+
+            for mod in app_models:
+                if "%s.%s" % (app_name, mod.__name__) in dont_load:
+                    continue
+
+                if mod.__module__:
+                    # Only add the module to the dict if `__module__` is not empty.
+                    load_models.setdefault(mod.__module__, [])
+                    load_models[mod.__module__].append(mod.__name__)
 
     if not quiet_load:
-        print(style.SQL_TABLE("# Shell Plus Model Imports"))
+        print(style.SQL_TABLE("# Shell Plus Model Imports%s") % (' SKIPPED' if dont_load_any_models else ''))
 
     for app_mod, models in sorted(six.iteritems(load_models)):
         try:

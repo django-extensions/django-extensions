@@ -7,7 +7,7 @@ RunScript
 Introduction
 ------------
 
-The runscript command lets you run an arbritrary set of python commands within
+The runscript command lets you run an arbitrary set of python commands within
 the django context. It offers the same usability and functionality as running a
 set of commands in shell accessed by::
 
@@ -94,6 +94,55 @@ example::
           questions = questions.filter(pub_date__lt=timezone.now() - timedelta(days=100))
       # Delete questions
       questions.delete()
+
+Setting execution directory
+---------------------------
+
+You can set scripts execution directory policy using ``--dir-policy`` option.
+
+It can be one of the following:
+
+* **none** - start all scripts in current directory.
+* **each** - start all scripts in their directories.
+* **root** - start all scripts in ``BASE_DIR`` directory.
+* **custom** - start all scripts in directory from ``--chdir`` option or ``settings.RUNSCRIPT_CHDIR``.
+
+``--chdir`` option takes presence over ``settings.RUNSCRIPT_CHDIR``
+If you are using **custom** policy, ``--chdir`` option or ``settings.RUNSCRIPT_CHDIR`` must be set to correct directory.
+
+Assume this simplified directory structure::
+
+    django_project_dir/
+    ├-first_app/
+    │ └-scripts/
+    │   ├-first_script.py
+    ├-second_app/
+    │ └-scripts/
+    │   ├-second_script.py
+    ├-manage.py
+    ├-other_folder/
+    │ └-some_file.py
+
+Assume you are in ``other_folder`` directory.
+You can run both scripts with ``NONE`` policy using this command::
+
+  $ python ../manage.py runscript first_script second_script --dir-policy none
+    # scripts will be executed from other_folder directory
+
+You can run both scripts with ``EACH`` policy using this command::
+
+  $ python ../manage.py runscript first_script second_script --dir-policy each
+    # first_script will be executed from first_app and second script will be executed from second_app
+
+You can run both scripts with ``ROOT`` policy using this command::
+
+  $ python ../manage.py runscript first_script second_script --dir-policy root
+    # scripts will be executed from django_project_dir directory
+
+You can run both scripts with ``CUSTOM`` policy using this command::
+
+  $ python ../manage.py runscript first_script second_script --dir-policy custom --chdir /django_project_dir/second_app
+    # scripts will be executed from second_app directory
 
 Debugging
 ---------
