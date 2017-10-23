@@ -134,15 +134,15 @@ class AutoSlugFieldTest(TestCase):
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
-        l = {}
+        dct = {}
         try:
-            exec(force_bytes(string), globals(), l)
+            exec(force_bytes(string), globals(), dct)
         except Exception as e:
             if value:
                 self.fail("Could not exec %r (from value %r): %s" % (string.strip(), value, e))
             else:
                 self.fail("Could not exec %r: %s" % (string.strip(), e))
-        return l
+        return dct
 
     def test_17_migration(self):
         """
@@ -164,12 +164,10 @@ class MigrationTest(TestCase):
         output = writer.as_string()
         # It should NOT be unicode.
         if django.VERSION < (1, 11):
-            self.assertIsInstance(output, six.binary_type,
-                                "Migration as_string returned unicode")
+            self.assertIsInstance(output, six.binary_type, "Migration as_string returned unicode")
         else:
             # As of Django 1.11 MigrationWriter.as_string returns unicode not bytes
-            self.assertIsInstance(output, six.text_type,
-                                "Migration as_string returned bytes")
+            self.assertIsInstance(output, six.text_type, "Migration as_string returned bytes")
         # We don't test the output formatting - that's too fragile.
         # Just make sure it runs for now, and that things look alright.
         result = self.safe_exec(output)

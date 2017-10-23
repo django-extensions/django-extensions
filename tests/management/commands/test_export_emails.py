@@ -124,7 +124,7 @@ def test_full_name():
 
     fake_user = {'first_name': 'Allan', 'last_name': 'Poe', 'username': 'allan_poe'}
     name = full_name(**fake_user)
-    assert name == "{u} {l}".format(u=fake_user['first_name'], l=fake_user['last_name'])
+    assert name == "{fn} {ln}".format(fn=fake_user['first_name'], ln=fake_user['last_name'])
 
     fake_user2 = {'first_name': '', 'last_name': '', 'username': 'niccolas'}
     name2 = full_name(**fake_user2)
