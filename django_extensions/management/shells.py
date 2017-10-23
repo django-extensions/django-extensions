@@ -119,7 +119,7 @@ def import_objects(options, style):
     try:
         from mongoengine.base import _document_registry
         mongoengine = True
-    except:
+    except ImportError:
         pass
 
     from django.conf import settings

@@ -92,7 +92,7 @@ def import_job(app_name, name, when=None):
     # todo: more friendly message for AttributeError if job_mod does not exist
     try:
         job = job_mod.Job
-    except:
+    except AttributeError:
         raise JobError("Job module %s does not contain class instance named 'Job'" % jobmodule)
     if when and not (job.when == when or job.when is None):
         raise JobError("Job %s is not a %s job." % (jobmodule, when))
@@ -111,7 +111,7 @@ def get_jobs(when=None, only_scheduled=False):
         ppath = os.path.dirname(cpath)
         if ppath not in sys.path:
             sys.path.append(ppath)
-    except:
+    except Exception:
         pass
     _jobs = {}
     if True:

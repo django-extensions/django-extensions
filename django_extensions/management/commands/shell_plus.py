@@ -143,7 +143,7 @@ class Command(BaseCommand):
                 try:
                     ks = ksm.get_kernel_spec(spec_name)
                     break
-                except:
+                except Exception:
                     continue
             if not ks:
                 raise CommandError("No notebook (Python) kernel specs found")

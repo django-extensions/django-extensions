@@ -253,7 +253,7 @@ class Command(BaseCommand):
             if settings.DEBUG:
                 try:
                     set_werkzeug_log_color()
-                except:  # We are dealing with some internals, anything could go wrong
+                except Exception:  # We are dealing with some internals, anything could go wrong
                     if self.show_startup_messages:
                         print("Wrapping internal werkzeug logger for color highlighting has failed!")
                     pass
@@ -407,7 +407,7 @@ def set_werkzeug_log_color():
                 message % args,
             )
             http_code = str(args[1])
-        except:
+        except Exception:
             return _orig_log(type, message, *args)
 
         # Utilize terminal colors, if available

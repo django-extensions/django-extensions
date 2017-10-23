@@ -116,7 +116,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
             elif object_pk:
                 try:
                     obj = queryset.get(pk=object_pk)
-                except:
+                except Exception:  # FIXME: use stricter exception checking
                     pass
                 else:
                     data = to_string_function(obj)

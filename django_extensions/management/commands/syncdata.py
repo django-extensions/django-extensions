@@ -165,7 +165,7 @@ class Command(BaseCommand):
                                     sys.stderr.write(self.style.ERROR("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc())))
                                 return
                             fixture.close()
-                    except:
+                    except Exception:
                         if verbosity > 1:
                             print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
 
