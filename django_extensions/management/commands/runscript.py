@@ -18,7 +18,6 @@ class DirPolicyChoices:
     NONE = 'none'
     EACH = 'each'
     ROOT = 'root'
-    CUSTOM = 'custom'
 
 
 def check_is_directory(value):
@@ -69,13 +68,11 @@ class Command(EmailNotificationCommand):
         )
         parser.add_argument(
             '--dir-policy', type=str,
-            choices=[DirPolicyChoices.NONE, DirPolicyChoices.EACH, DirPolicyChoices.ROOT, DirPolicyChoices.CUSTOM],
+            choices=[DirPolicyChoices.NONE, DirPolicyChoices.EACH, DirPolicyChoices.ROOT],
             help='Policy of selecting scripts execution directory: '
                  'none - start all scripts in current directory '
                  'each - start all scripts in their directories '
-                 'root - start all scripts in BASE_DIR directory '
-                 'custom - start all scripts in directory from --chdir option or settings.RUNSCRIPT_CHDIR',
-            default=DirPolicyChoices.NONE,
+                 'root - start all scripts in BASE_DIR directory ',
         )
         parser.add_argument(
             '--chdir', type=check_is_directory,
@@ -84,6 +81,8 @@ class Command(EmailNotificationCommand):
 
     @signalcommand
     def handle(self, *args, **options):
+        from django.conf import settings
+
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
@@ -116,8 +115,7 @@ class Command(EmailNotificationCommand):
             print(ERROR("Script name required."))
             return
 
-        def get_custom_directory():
-            from django.conf import settings
+        def get_directory_from_chdir():
             directory = options.get('chdir') or getattr(settings, 'RUNSCRIPT_CHDIR', None)
             try:
                 check_is_directory(directory)
@@ -125,18 +123,24 @@ class Command(EmailNotificationCommand):
                 raise BadCustomDirectoryException(str(e))
             return directory
 
-        def set_directory(script_module):
-            policy = options.get('dir_policy')
-            directory = self.current_directory
-
+        def get_directory_basing_on_policy(script_module):
+            policy = options.get('dir_policy') or getattr(settings, 'RUNSCRIPT_CHDIR_POLICY', DirPolicyChoices.NONE)
             if policy == DirPolicyChoices.ROOT:
-                from django.conf import settings
-                directory = settings.BASE_DIR
+                return settings.BASE_DIR
             elif policy == DirPolicyChoices.EACH:
-                directory = os.path.dirname(inspect.getfile(script_module))
-            elif policy == DirPolicyChoices.CUSTOM:
-                directory = get_custom_directory()
+                return os.path.dirname(inspect.getfile(script_module))
+            else:
+                return self.current_directory
 
+        def set_directory(script_module):
+            if options.get('chdir'):
+                directory = get_directory_from_chdir()
+            elif options.get('dir_policy'):
+                directory = get_directory_basing_on_policy(script_module)
+            elif getattr(settings, 'RUNSCRIPT_CHDIR', None):
+                directory = get_directory_from_chdir()
+            else:
+                directory = get_directory_basing_on_policy(script_module)
             os.chdir(os.path.abspath(directory))
 
         def run_script(mod, *script_args):
