@@ -101,8 +101,7 @@ class ChangingDirectoryTests(RunScriptTests):
         os.chdir(os.path.join(project_path, *start_path))
         expected_path = os.path.join(project_path, *expected_path)
         call_command('runscript', 'directory_checker_script', dir_policy=dir_policy, chdir=chdir)
-        output = sys.stdout.getvalue().split('Script called from: ')[1].split('Cannot import module ')[0]
-        # Because in Python3 we are printing all failed attempts to import this script from any script directories.
+        output = sys.stdout.getvalue().split('Script called from: ')[1]
         self.assertEqual(output, expected_path + '\n')
 
     def test_none_policy_command_run(self):
@@ -161,3 +160,8 @@ class ChangingDirectoryTests(RunScriptTests):
             'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'
         ):
             self._execute_script_with_chdir(None, [], ['tests'])
+
+    def test_skip_printing_modules_which_does_not_exist(self):
+        call_command('runscript', 'directory_checker_script')
+        self.assertNotIn('No module named', sys.stdout.getvalue())
+        self.assertNotIn('No module named', sys.stderr.getvalue())

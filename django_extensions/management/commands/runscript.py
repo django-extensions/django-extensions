@@ -2,7 +2,6 @@
 import importlib
 import inspect
 import os
-import sys
 import traceback
 
 from argparse import ArgumentTypeError
@@ -161,10 +160,10 @@ class Command(EmailNotificationCommand):
                     if not isinstance(e, CommandError):
                         raise
 
-        def my_import(parent_package, module):
-            mod = "%s.%s" % (parent_package, module)
+        def my_import(parent_package, module_name):
+            full_module_path = "%s.%s" % (parent_package, module_name)
             if verbosity > 1:
-                print(NOTICE("Check for %s" % mod))
+                print(NOTICE("Check for %s" % full_module_path))
             # Try importing the parent package first
             try:
                 importlib.import_module(parent_package)
@@ -174,36 +173,29 @@ class Command(EmailNotificationCommand):
                     return False
 
             try:
-                t = importlib.import_module(mod)
+                t = importlib.import_module(full_module_path)
             except ImportError as e:
                 # The parent package exists, but the module doesn't
-                if str(e).startswith('No module named'):
-                    try:
-                        exc_type, exc_value, exc_traceback = sys.exc_info()
-                        try:
-                            if exc_traceback.tb_next.tb_next is None:
-                                return False
-                        except AttributeError:
-                            pass
-                    finally:
-                        exc_traceback = None
+                module_file = os.path.join(settings.BASE_DIR, *full_module_path.split('.')) + '.py'
+                if not os.path.isfile(module_file):
+                    return False
 
                 if silent:
                     return False
                 if show_traceback:
                     traceback.print_exc()
                 if verbosity > 0:
-                    print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+                    print(ERROR("Cannot import module '%s': %s." % (full_module_path, e)))
 
                 return False
 
             if hasattr(t, "run"):
                 if verbosity > 1:
-                    print(NOTICE2("Found script '%s' ..." % mod))
+                    print(NOTICE2("Found script '%s' ..." % full_module_path))
                 return t
             else:
                 if verbosity > 1:
-                    print(ERROR2("Found script '%s' but no run() function found." % mod))
+                    print(ERROR2("Found script '%s' but no run() function found." % full_module_path))
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
