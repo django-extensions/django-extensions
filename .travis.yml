@@ -18,6 +18,8 @@ matrix:
     - python: 3.6
       env: TOXENV=safety
     - python: 3.6
+      env: TOXENV=mypy
+    - python: 3.6
       env: TOXENV=compile-catalog
     - python: 2.7
       env: TOXENV=py27-dj18
