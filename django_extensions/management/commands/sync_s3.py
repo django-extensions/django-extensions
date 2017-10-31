@@ -107,50 +107,69 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('-p', '--prefix',
-                    dest='prefix',
-                    default=getattr(settings, 'SYNC_S3_PREFIX', ''),
-                    help="The prefix to prepend to the path on S3.")
-        parser.add_argument('-d', '--dir',
-                    dest='dir',
-                    help="Custom static root directory to use")
-        parser.add_argument('--s3host',
-                    dest='s3host',
-                    default=getattr(settings, 'AWS_S3_HOST', ''),
-                    help="The s3 host (enables connecting to other "
-                    "providers/regions)")
-        parser.add_argument('--acl',
-                    dest='acl',
-                    default=getattr(settings, 'AWS_DEFAULT_ACL',
-                                    'public-read'),
-                    help="Enables to override default acl (public-read).")
-        parser.add_argument('--gzip',
-                    action='store_true', dest='gzip', default=False,
-                    help="Enables gzipping CSS and Javascript files.")
-        parser.add_argument('--renamegzip',
-                    action='store_true', dest='renamegzip', default=False,
-                    help="Enables renaming of gzipped assets to have '.gz' "
-                    "appended to the filename.")
-        parser.add_argument('--expires',
-                    action='store_true', dest='expires', default=False,
-                    help="Enables setting a far future expires header.")
-        parser.add_argument('--force',
-                    action='store_true', dest='force', default=False,
-                    help="Skip the file mtime check to force upload of "
-                    "all files.")
-        parser.add_argument('--filter-list', dest='filter_list',
-                    action='store', default='',
-                    help="Override default directory and file exclusion "
-                    "filters. (enter as comma seperated line)")
-        parser.add_argument('--invalidate', dest='invalidate', default=False,
-                    action='store_true',
-                    help='Invalidates the associated objects in CloudFront')
-        parser.add_argument('--media-only', dest='media_only', default='',
-                    action='store_true',
-                    help="Only MEDIA_ROOT files will be uploaded to S3")
-        parser.add_argument('--static-only', dest='static_only', default='',
-                    action='store_true',
-                    help="Only STATIC_ROOT files will be uploaded to S3")
+        parser.add_argument(
+            '-p', '--prefix',
+            dest='prefix',
+            default=getattr(settings, 'SYNC_S3_PREFIX', ''),
+            help="The prefix to prepend to the path on S3."
+        )
+        parser.add_argument(
+            '-d', '--dir',
+            dest='dir',
+            help="Custom static root directory to use"
+        )
+        parser.add_argument(
+            '--s3host',
+            dest='s3host',
+            default=getattr(settings, 'AWS_S3_HOST', ''),
+            help="The s3 host (enables connecting to other providers/regions)"
+        )
+        parser.add_argument(
+            '--acl',
+            dest='acl',
+            default=getattr(settings, 'AWS_DEFAULT_ACL', 'public-read'),
+            help="Enables to override default acl (public-read)."
+        )
+        parser.add_argument(
+            '--gzip',
+            action='store_true', dest='gzip', default=False,
+            help="Enables gzipping CSS and Javascript files."
+        )
+        parser.add_argument(
+            '--renamegzip',
+            action='store_true', dest='renamegzip', default=False,
+            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."
+        )
+        parser.add_argument(
+            '--expires',
+            action='store_true', dest='expires', default=False,
+            help="Enables setting a far future expires header."
+        )
+        parser.add_argument(
+            '--force',
+            action='store_true', dest='force', default=False,
+            help="Skip the file mtime check to force upload of all files."
+        )
+        parser.add_argument(
+            '--filter-list', dest='filter_list',
+            action='store', default='',
+            help="Override default directory and file exclusion filters. (enter as comma seperated line)"
+        )
+        parser.add_argument(
+            '--invalidate', dest='invalidate', default=False,
+            action='store_true',
+            help='Invalidates the associated objects in CloudFront'
+        )
+        parser.add_argument(
+            '--media-only', dest='media_only', default='',
+            action='store_true',
+            help="Only MEDIA_ROOT files will be uploaded to S3"
+        )
+        parser.add_argument(
+            '--static-only', dest='static_only', default='',
+            action='store_true',
+            help="Only STATIC_ROOT files will be uploaded to S3"
+        )
 
     @signalcommand
     def handle(self, *args, **options):
