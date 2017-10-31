@@ -8,6 +8,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.sessions',
+    'tests.collisions',
     'tests.testapp',
     'tests.testapp_with_no_models_file',
     'django_extensions',

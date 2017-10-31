@@ -89,9 +89,142 @@ It is possible to ignore autoloaded modules when using manage.py, like::
 
   $ ./manage.py shell_plus --dont-load app1 --dont-load app2.module1
 
-Commandline parameters and settings in the configuration file are merged, so you can
+Command line parameters and settings in the configuration file are merged, so you can
 safely append modules to ignore from the commandline for one-time usage.
 
+Collision resolvers
+-------------------
+You don't have to worry about inaccessibility of models with conflicting names.
+
+If you have conflicting model names, all conflicts can be resolved automatically.
+All models will be available under shell_plus, some of them with intuitive aliases.
+
+This mechanism is highly configurable and you must only set ``SHELL_PLUS_MODEL_IMPORTS_RESOLVER``.
+You should set full path to collision resolver class.
+
+All predefined collision resolvers are in ``django_extensions.collision_resolvers`` module. Example::
+
+    SHELL_PLUS_MODEL_IMPORTS_RESOLVER = 'django_extensions.collision_resolvers.FullPathCR'
+All collision resolvers searches for models with the same name.
+
+If conflict is detected they decides, which model to choose.
+Some of them are creating aliases for all conflicting models.
+
+**Example**
+
+Suppose that we have two apps:
+
+- programming(with models Language and Framework)
+
+- workers(with models Language and Worker)
+
+'workers' app is last in alphabetical order, but suppose that 'programming' app is occurs firstly in ``INSTALLED_APPS``.
+
+Collision resolvers won't change aliases for models Framework and Worker, because their names are unique.
+There are several types of collision resolvers:
+
+**LegacyCR**
+
+Default collision resolver. Model from last application in alphabetical order is selected::
+
+    from workers import Language
+**InstalledAppsOrderCR**
+
+Collision resolver which selects first model from INSTALLED_APPS.
+You can set your own app priorities list subclassing him and overwriting ``APP_PRIORITIES`` field.
+
+This collision resolver will select model from first app on this list.
+If both app's are absent on this list, resolver will choose model from first app in alphabetical order::
+
+    from programming import Language
+**FullPathCR**
+
+Collision resolver which transform full model name to alias by changing dots to underscores.
+He also removes 'models' part of alias, because all models are in models.py files.
+
+Model from last application in alphabetical order is selected::
+
+    from programming import Language (as programming_Language)
+    from workers import Language, Language (as workers_Language)
+**AppNamePrefixCR**
+
+Collision resolver which transform pair (app name, model_name) to alias ``{app_name}_{model_name}``.
+Model from last application in alphabetical order is selected.
+
+Result is different than FullPathCR, when model has app_label other than current app::
+
+    from programming import Language (as programming_Language)
+    from workers import Language, Language (as workers_Language)
+**AppNameSuffixCR**
+
+Collision resolver which transform pair (app name, model_name) to alias ``{model_name}_{app_name}``
+
+Model from last application in alphabetical order is selected::
+
+    from programming import Language (as Language_programming)
+    from workers import Language, Language (as Language_workers)
+**AppNamePrefixCustomOrderCR**
+
+Collision resolver which is mixin of AppNamePrefixCR and InstalledAppsOrderCR.
+
+In case of collisions he sets aliases like AppNamePrefixCR, but sets default model using InstalledAppsOrderCR::
+
+    from programming import Language, Language (as programming_Language)
+    from workers import Language (as workers_Language)
+**AppNameSuffixCustomOrderCR**
+
+Collision resolver which is mixin of AppNameSuffixCR and InstalledAppsOrderCR.
+
+In case of collisions he sets aliases like AppNameSuffixCR, but sets default model using InstalledAppsOrderCR::
+
+    from programming import Language, Language (as Language_programming)
+    from workers import Language (as Language_workers)
+**FullPathCustomOrderCR**
+
+Collision resolver which is mixin of FullPathCR and InstalledAppsOrderCR.
+
+In case of collisions he sets aliases like FullPathCR, but sets default model using InstalledAppsOrderCR::
+
+    from programming import Language, Language (as programming_Language)
+    from workers import Language (as workers_Language)
+
+Writing your custom collision resolver
+--------------------------------------
+
+You can customize models import behaviour by subclassing one of the abstract collision resolvers:
+
+
+**PathBasedCR**
+
+Abstract resolver which transforms full model name into alias.
+To use him you need to overwrite transform_import function
+which should have one parameter.
+
+It will be full model name. It should return valid alias as str instance.
+
+**AppNameCR**
+
+Abstract collision resolver which transform pair (app name, model_name) to alias by changing dots to underscores.
+
+You must define ``MODIFICATION_STRING`` which should be string to format with two keyword arguments:
+app_name and model_name. For example: ``{app_name}_{model_name}``.
+
+Model from last application in alphabetical order is selected.
+
+You can mix PathBasedCR or AppNameCR with InstalledAppsOrderCR, but InstalledAppsOrderCR should be second base class.
+
+**BaseCR**
+
+Abstract base collision resolver. All collision resolvers needs to inherit from this class.
+
+To write custom collision resolver you need to overwrite resolve_collisions function.
+It receives ``Dict[str, List[str]]`` where key is model name and values are full model names
+(full model name means: module + model_name).
+
+You should return ``Dict[str, str]``, where key is model name and value is full model name.
+
+IPython Notebook
+----------------
 There are two settings that you can use to pass your custom options to the IPython
 Notebook in your Django settings.
 
