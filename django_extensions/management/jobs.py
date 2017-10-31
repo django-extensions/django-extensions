@@ -5,6 +5,7 @@ django_extensions.management.jobs
 
 import os
 from imp import find_module
+from typing import Optional  # NOQA
 
 _jobs = None
 
@@ -19,7 +20,7 @@ class JobError(Exception):
 
 class BaseJob(object):
     help = "undefined job description."
-    when = None
+    when = None  # type: Optional[str]
 
     def execute(self):
         raise NotImplementedError("Job needs to implement the execute method")

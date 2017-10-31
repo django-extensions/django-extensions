@@ -2,6 +2,7 @@
 import inspect
 import sys
 from abc import abstractmethod, ABCMeta
+from typing import Optional  # NOQA
 
 from django.utils.module_loading import import_string
 from six import add_metaclass
@@ -119,7 +120,7 @@ class AppNameCR(PathBasedCR):
     app_name and model_name. For example: "{app_name}_{model_name}".
     Model from last application in alphabetical order is selected.
     """
-    MODIFICATION_STRING = None
+    MODIFICATION_STRING = None  # type: Optional[str]
 
     def transform_import(self, module_path):
         assert self.MODIFICATION_STRING is not None, "You must define MODIFICATION_STRING in your resolver class!"

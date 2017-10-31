@@ -22,9 +22,9 @@ KNOWN ISSUES:
 """
 
 import importlib
-# import re
 import sys
 import six
+from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
 from django.core.management import BaseCommand, CommandError, sql as _sql
 from django.core.management.base import OutputWrapper
@@ -68,7 +68,7 @@ def all_local_fields(meta):
 
 
 class SQLDiff(object):
-    DATA_TYPES_REVERSE_OVERRIDE = {}
+    DATA_TYPES_REVERSE_OVERRIDE = {}  # type: Dict[int, Union[str, Callable]]
 
     IGNORE_MISSING_TABLES = [
         "django_migrations",
@@ -128,7 +128,7 @@ class SQLDiff(object):
 
     can_detect_notnull_differ = False
     can_detect_unsigned_differ = False
-    unsigned_suffix = None
+    unsigned_suffix = None  # type: Optional[str]
 
     def __init__(self, app_models, options):
         self.has_differences = None
@@ -190,6 +190,7 @@ class SQLDiff(object):
         self.differences[-1][-1].append((diff_type, args))
 
     def get_data_types_reverse_override(self):
+        # type: () -> Dict[int, Union[str, Callable]]
         return self.DATA_TYPES_REVERSE_OVERRIDE
 
     def get_django_tables(self, only_existing):

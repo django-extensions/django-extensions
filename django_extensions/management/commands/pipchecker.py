@@ -18,9 +18,9 @@ try:
     from xmlrpc.client import ServerProxy
 except ImportError:
     # Python 2
-    from urlparse import urlparse
-    from urllib2 import HTTPError, Request, urlopen
-    from xmlrpclib import ServerProxy
+    from urlparse import urlparse  # type: ignore
+    from urllib2 import HTTPError, Request, urlopen  # type: ignore
+    from xmlrpclib import ServerProxy  # type: ignore
 
 try:
     import requests

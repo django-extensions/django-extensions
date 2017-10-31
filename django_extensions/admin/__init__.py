@@ -6,6 +6,7 @@ import six
 import operator
 from functools import update_wrapper
 from six.moves import reduce
+from typing import Tuple, Dict, Callable  # NOQA
 
 from django.apps import apps
 from django.http import HttpResponse, HttpResponseNotFound
@@ -45,8 +46,8 @@ class ForeignKeyAutocompleteAdminMixin(object):
     is set the results will not be limited.
     """
 
-    related_search_fields = {}
-    related_string_functions = {}
+    related_search_fields = {}  # type: Dict[str, Tuple[str]]
+    related_string_functions = {}  # type: Dict[str, Callable]
     autocomplete_limit = getattr(settings, 'FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):

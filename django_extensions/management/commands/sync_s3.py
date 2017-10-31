@@ -62,6 +62,7 @@ import gzip
 import mimetypes
 import os
 import time
+from typing import List  # NOQA
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -95,7 +96,7 @@ class Command(BaseCommand):
         'text/javascript'
     )
 
-    uploaded_files = []
+    uploaded_files = []  # type: List[str]
     upload_count = 0
     skip_count = 0
 
