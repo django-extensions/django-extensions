@@ -12,7 +12,7 @@ Changes:
   - Improvement: shell_plus, Collision resolver implemented.
   - Improvement: shell_plus, Skipping all models importing feature added.
   - Improvement: runscript, Script execution directory policy feature added.
-
+  - django-extensions now requires the [typing](https://pypi.python.org/pypi/typing) package.
 
 1.9.6
 -----
