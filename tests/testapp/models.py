@@ -206,3 +206,12 @@ class RandomCharTestModelPunctuation(models.Model):
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'
+
+
+class Permission(models.Model):
+    text = models.CharField(max_length=32)
+    person = models.ForeignKey(Person)
+
+
+class UniqueTestAppModel(models.Model):
+    global_id = models.CharField(max_length=32, unique=True)

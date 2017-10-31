@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import six
 import traceback
+from django.utils.module_loading import import_string
 from django import VERSION as DJANGO_VERSION
 
+from django_extensions.collision_resolvers import CollisionResolvingRunner
 
 SHELL_PLUS_DJANGO_IMPORTS = {
     'django.core.cache': ['cache'],
@@ -107,8 +109,80 @@ def import_items(import_directives, style, quiet_load=False):
 def import_objects(options, style):
     from django.apps import apps
     from django import setup
+
     if not apps.ready:
         setup()
+
+    from django.conf import settings
+
+    dont_load_cli = options.get('dont_load', [])
+    dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
+    dont_load = dont_load_cli + dont_load_conf
+    dont_load_any_models = '*' in dont_load
+    quiet_load = options.get('quiet_load')
+    model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
+    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
+    SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
+
+    imported_objects = {}
+
+    def get_dict_from_names_to_possible_models():
+        """
+        Collects dictionary from names to possible models. Model is represented as his full path.
+        Name of model can be alias if SHELL_PLUS_MODEL_ALIASES or SHELL_PLUS_APP_PREFIXES is specified for this model.
+        This dictionary is used by collision resolver.
+        At this phase we can't import any models, because collision resolver can change results.
+        :return: Dict[str, List[str]]. Key is name, value is list of full model's path's.
+        """
+        models_to_import = {}
+        for app_mod, models in sorted(six.iteritems(load_models)):
+            try:
+                app_name = app_mod.split('.')[-2]
+            except IndexError:
+                # Some weird model naming scheme like in Sentry.
+                app_name = app_mod
+            app_aliases = model_aliases.get(app_name, {})
+            prefix = app_prefixes.get(app_name)
+
+            for model_name in sorted(models):
+                if "%s.%s" % (app_name, model_name) in dont_load:
+                    continue
+
+                alias = app_aliases.get(model_name)
+
+                if not alias:
+                    if prefix:
+                        alias = "%s_%s" % (prefix, model_name)
+                    else:
+                        alias = model_name
+
+                models_to_import.setdefault(alias, [])
+                models_to_import[alias].append("%s.%s" % (app_mod, model_name))
+        return models_to_import
+
+    def import_models():
+        """Performs collision resolving and imports all models.
+        When collisions are resolved we can perform imports and print information's, because it is last phase.
+        This function updates imported_objects dictionary.
+        """
+        modules_to_models = CollisionResolvingRunner().run_collision_resolver(get_dict_from_names_to_possible_models())
+        for full_module_path, models in modules_to_models.items():
+            model_labels = []
+            for (model_name, alias) in sorted(models):
+                try:
+                    imported_objects[alias] = import_string("%s.%s" % (full_module_path, model_name))
+                    if model_name == alias:
+                        model_labels.append(model_name)
+                    else:
+                        model_labels.append("%s (as %s)" % (model_name, alias))
+                except ImportError as e:
+                    if options.get("traceback"):
+                        traceback.print_exc()
+                    if not options.get('quiet_load'):
+                        print(style.ERROR(
+                            "Failed to import '%s' from '%s' reason: %s" % (model_name, full_module_path, str(e))))
+            if not options.get('quiet_load'):
+                print(style.SQL_COLTYPE("from %s import %s" % (full_module_path, ", ".join(model_labels))))
 
     def get_apps_and_models():
         for app in apps.get_app_configs():
@@ -122,20 +196,7 @@ def import_objects(options, style):
     except ImportError:
         pass
 
-    from django.conf import settings
-    imported_objects = {}
-
-    dont_load_cli = options.get('dont_load', [])
-    dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
-    dont_load = dont_load_cli + dont_load_conf
-    dont_load_any_models = '*' in dont_load
-    quiet_load = options.get('quiet_load')
-
-    model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
-    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
-
     # Perform pre-imports before any other imports
-    SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
     if SHELL_PLUS_PRE_IMPORTS:
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus User Imports"))
@@ -176,46 +237,7 @@ def import_objects(options, style):
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports%s") % (' SKIPPED' if dont_load_any_models else ''))
 
-    for app_mod, models in sorted(six.iteritems(load_models)):
-        try:
-            app_name = app_mod.split('.')[-2]
-        except IndexError:
-            # Some weird model naming scheme like in Sentry.
-            app_name = app_mod
-        app_aliases = model_aliases.get(app_name, {})
-        prefix = app_prefixes.get(app_name)
-        model_labels = []
-
-        for model_name in sorted(models):
-            try:
-                imported_object = getattr(__import__(app_mod, {}, {}, [model_name]), model_name)
-
-                if "%s.%s" % (app_name, model_name) in dont_load:
-                    continue
-
-                alias = app_aliases.get(model_name)
-
-                if not alias:
-                    if prefix:
-                        alias = "%s_%s" % (prefix, model_name)
-                    else:
-                        alias = model_name
-
-                imported_objects[alias] = imported_object
-                if model_name == alias:
-                    model_labels.append(model_name)
-                else:
-                    model_labels.append("%s (as %s)" % (model_name, alias))
-
-            except AttributeError as e:
-                if options.get("traceback"):
-                    traceback.print_exc()
-                if not quiet_load:
-                    print(style.ERROR("Failed to import '%s' from '%s' reason: %s" % (model_name, app_mod, str(e))))
-                continue
-
-        if not quiet_load:
-            print(style.SQL_COLTYPE("from %s import %s" % (app_mod, ", ".join(model_labels))))
+    import_models()
 
     # Imports often used from Django
     if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
