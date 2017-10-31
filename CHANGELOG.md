@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+1.9.7
+-----
+
+This release add checking types with MyPy to the test suite. At this point
+only a few lines of code are explicitly typed.
+
+Changes:
+  - Improvement: shell_plus, Collision resolver implemented.
+  - Improvement: shell_plus, Skipping all models importing feature added.
+  - Improvement: runscript, Script execution directory policy feature added.
+
+
 1.9.6
 -----
 
