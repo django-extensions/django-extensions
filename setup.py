@@ -127,7 +127,7 @@ additions for Django projects. See the project page for more information:
     packages=packages,
     cmdclass=cmdclasses,
     package_data=package_data,
-    install_requires=['six>=1.2'],
+    install_requires=['six>=1.2', 'typing'],
     tests_require=[
         'Django',
         'shortuuid',
