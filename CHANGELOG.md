@@ -7,6 +7,7 @@ Changelog
 
 Changes:
   - Improvement: validate_templates, allow relative paths
+  - Improvement: validate_templates, automatically include app templates
 
 1.9.7
 -----
