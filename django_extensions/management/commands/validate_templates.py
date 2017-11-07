@@ -6,7 +6,8 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
-from django.template.loader import get_template
+import django.template
+import django.template.loader
 
 from django_extensions.compat import get_template_setting
 from django_extensions.management.utils import signalcommand
@@ -15,6 +16,16 @@ from django_extensions.management.utils import signalcommand
 #
 # TODO: Render the template with fake request object ?
 #
+
+
+def get_template(filepath):
+    try:
+        django.template.loader.get_template(filepath)
+    except django.template.TemplateDoesNotExist:
+        if 'templates/' in filepath:
+            get_template(filepath[filepath.find('templates/') + len('templates/'):])
+        else:
+            raise
 
 
 class Command(BaseCommand):
