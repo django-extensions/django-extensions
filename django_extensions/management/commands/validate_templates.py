@@ -52,7 +52,7 @@ class Command(BaseCommand):
                         continue
                     if filename.endswith("~"):
                         continue
-                    filepath = os.path.join(root, filename)
+                    filepath = os.path.realpath(os.path.join(root, filename))
                     if verbosity > 1:
                         print(filepath)
                     try:

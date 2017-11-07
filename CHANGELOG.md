@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+1.9.8
+-----
+
+Changes:
+  - Improvement: validate_templates, allow relative paths
+
 1.9.7
 -----
 
