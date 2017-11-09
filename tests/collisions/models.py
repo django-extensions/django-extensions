@@ -38,6 +38,6 @@ class Name(models.Model):
 
 class SystemUser(models.Model):
     # no conflicts but FK to conflicting models.
-    name = models.ForeignKey(Name)
-    group = models.ForeignKey(Group)
+    name = models.ForeignKey(Name, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     global_id = models.CharField(unique=True, max_length=32)

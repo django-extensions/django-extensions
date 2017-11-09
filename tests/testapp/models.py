@@ -210,7 +210,7 @@ class TimestampedTestModel(TimeStampedModel):
 
 class Permission(models.Model):
     text = models.CharField(max_length=32)
-    person = models.ForeignKey(Person)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
 
 class UniqueTestAppModel(models.Model):
