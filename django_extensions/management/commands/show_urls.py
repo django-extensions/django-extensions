@@ -8,9 +8,28 @@ from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 try:
-    from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+    from django.urls import URLPattern, URLResolver
+
+    class RegexURLPattern:
+        pass
+
+    class RegexURLResolver:
+        pass
+
+    class LocaleRegexURLResolver:
+        pass
 except ImportError:
-    from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+    try:
+        from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+    except ImportError:
+        from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
+
+    class URLPattern:
+        pass
+
+    class URLResolver:
+        pass
+
 from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
@@ -180,7 +199,7 @@ class Command(BaseCommand):
         """
         views = []
         for p in urlpatterns:
-            if isinstance(p, RegexURLPattern):
+            if isinstance(p, (URLPattern, RegexURLPattern)):
                 try:
                     if not p.name:
                         name = p.name
@@ -188,10 +207,11 @@ class Command(BaseCommand):
                         name = '{0}:{1}'.format(namespace, p.name)
                     else:
                         name = p.name
-                    views.append((p.callback, base + p.regex.pattern, name))
+                    pattern = p.pattern.describe() if isinstance(p, URLPattern) else p.regex.pattern
+                    views.append((p.callback, base + pattern, name))
                 except ViewDoesNotExist:
                     continue
-            elif isinstance(p, RegexURLResolver):
+            elif isinstance(p, (URLResolver, RegexURLResolver)):
                 try:
                     patterns = p.url_patterns
                 except ImportError:
@@ -200,12 +220,13 @@ class Command(BaseCommand):
                     _namespace = '{0}:{1}'.format(namespace, p.namespace)
                 else:
                     _namespace = (p.namespace or namespace)
+                pattern = p.pattern.describe() if isinstance(p, URLResolver) else p.regex.pattern
                 if isinstance(p, LocaleRegexURLResolver):
                     for langauge in self.LANGUAGES:
                         with translation.override(langauge[0]):
-                            views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+                            views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
                 else:
-                    views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=_namespace))
+                    views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
             elif hasattr(p, '_get_callback'):
                 try:
                     views.append((p._get_callback(), base + p.regex.pattern, p.name))
