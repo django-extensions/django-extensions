@@ -3,37 +3,38 @@ import functools
 import json
 import re
 
+import django
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-try:
-    from django.urls import URLPattern, URLResolver
-
-    class RegexURLPattern:
-        pass
-
-    class RegexURLResolver:
-        pass
-
-    class LocaleRegexURLResolver:
-        pass
-except ImportError:
-    try:
-        from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
-    except ImportError:
-        from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver
-
-    class URLPattern:
-        pass
-
-    class URLResolver:
-        pass
-
 from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
+
+if django.VERSION >= (2, 0):
+    from django.urls import URLPattern, URLResolver  # type: ignore
+
+    class RegexURLPattern:  # type: ignore
+        pass
+
+    class RegexURLResolver:  # type: ignore
+        pass
+
+    class LocaleRegexURLResolver:  # type: ignore
+        pass
+else:
+    try:
+        from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
+    except ImportError:
+        from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
+
+    class URLPattern:  # type: ignore
+        pass
+
+    class URLResolver:  # type: ignore
+        pass
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
