@@ -136,7 +136,7 @@ class Command(BaseCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].name, True)
+                available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-','_'), True)
                 available_version = self._available_version(dist_version, available)
 
                 if not available_version:
