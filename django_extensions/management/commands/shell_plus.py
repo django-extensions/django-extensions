@@ -160,7 +160,8 @@ class Command(BaseCommand):
 
                 ks.env['PYTHONPATH'] = ':'.join(filter(None, pythonpath))
 
-            kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
+            # Install the kernel to the virtual environment
+            kernel_dir = ksm._get_destination_dir('django_extensions', prefix=sys.prefix)
             if not os.path.exists(kernel_dir):
                 os.makedirs(kernel_dir)
             with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
