@@ -239,6 +239,7 @@ class Command(BaseCommand):
                                        % self.addr)
         if not self.addr:
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
+            self._raw_ipv6 = True
 
         self.inner_run(options)
 
