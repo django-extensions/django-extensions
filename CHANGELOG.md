@@ -6,8 +6,13 @@ Changelog
 -----
 
 Changes:
+  - Fix: show_urls, fix for Django 2.0 (Locale URL Resolvers are still broken)
+  - Fix: runserver_plus, fix rendering of ipv6 link
   - Improvement: validate_templates, allow relative paths
   - Improvement: validate_templates, automatically include app templates
+  - Improvement: pip_checker, could not find some packages
+  - Docs: shell_plus, `--print-sql` usage clearification
+
 
 1.9.7
 -----
@@ -20,6 +25,7 @@ Changes:
   - Improvement: shell_plus, Skipping all models importing feature added.
   - Improvement: runscript, Script execution directory policy feature added.
   - django-extensions now requires the [typing](https://pypi.python.org/pypi/typing) package.
+
 
 1.9.6
 -----
