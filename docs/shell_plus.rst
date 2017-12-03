@@ -309,10 +309,9 @@ If using PostgreSQL the ``application_name`` is set by default to
 SQL queries
 -------------------------
 
-It is possible to print SQL queries as they're executed in shell_plus like::
+If the configuration option DEBUG is set to True, it is possible to print SQL queries as they're executed in shell_plus like::
 
   $ ./manage.py shell_plus --print-sql
-
 
 You can also set the configuration option SHELL_PLUS_PRINT_SQL to omit the above command line option.
 
