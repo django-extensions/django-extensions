@@ -8,6 +8,7 @@ import socket
 import sys
 import time
 
+import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
@@ -183,9 +184,21 @@ class Command(BaseCommand):
             pm = False
         else:
             # Add pdb middleware if --pdb is specified or if in DEBUG mode
-            middleware = 'django_pdb.middleware.PdbMiddleware'
-            if (pdb_option or ipdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES:
-                settings.MIDDLEWARE_CLASSES += (middleware,)
+            if (pdb_option or ipdb_option or settings.DEBUG):
+                middleware = 'django_pdb.middleware.PdbMiddleware'
+                try:
+                    settings_middleware = settings.MIDDLEWARE
+                except AttributeError:
+                    if django.VERSION >= (2, 0):
+                        raise
+
+                    settings_middleware = settings.MIDDLEWARE_CLASSES
+
+                if middleware not in settings_middleware:
+                    if isinstance(settings_middleware, tuple):
+                        settings_middleware += (middleware,)
+                    else:
+                        settings_middleware += [middleware]
 
             # If --pdb is specified then always break at the start of views.
             # Otherwise break only if a 'pdb' query parameter is set in the url
@@ -244,8 +257,6 @@ class Command(BaseCommand):
         self.inner_run(options)
 
     def inner_run(self, options):
-        import django
-
         try:
             from werkzeug import run_simple, DebuggedApplication
             from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
@@ -378,16 +389,17 @@ class Command(BaseCommand):
             ssl_context=ssl_context,
         )
 
-    def check_migrations(self):
-        """
-        Checks to see if the set of migrations on disk matches the
-        migrations in the database. Prints a warning if they don't match.
-        """
-        executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
-        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-        if plan and self.show_startup_messages:
-            self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
-            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
+    if django.VERSION[:2] <= (1, 9):
+        def check_migrations(self):
+            """
+            Checks to see if the set of migrations on disk matches the
+            migrations in the database. Prints a warning if they don't match.
+            """
+            executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+            plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+            if plan and self.show_startup_messages:
+                self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
+                self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
 
 def set_werkzeug_log_color():
