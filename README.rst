@@ -36,7 +36,7 @@ minutes Eric walks you through a half a dozen command extensions. There is also 
 Requirements
 ============
 
-Django Extensions requires Django 1.8 or later.
+Django Extensions requires Django 1.8, 1.11 or later.
 
 
 Getting It

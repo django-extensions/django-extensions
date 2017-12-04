@@ -24,43 +24,39 @@ matrix:
     - python: 2.7
       env: TOXENV=py27-dj18
     - python: 2.7
-      env: TOXENV=py27-dj110
-    - python: 2.7
       env: TOXENV=py27-dj111
     - python: 3.4
       env: TOXENV=py34-dj18
     - python: 3.4
-      env: TOXENV=py34-dj110
-    - python: 3.4
       env: TOXENV=py34-dj111
+    - python: 3.4
+      env: TOXENV=py34-dj20
     - python: 3.5
       env: TOXENV=py35-dj18
     - python: 3.5
-      env: TOXENV=py35-dj110
-    - python: 3.5
       env: TOXENV=py35-dj111
+    - python: 3.5
+      env: TOXENV=py35-dj20
     - python: 3.5
       env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-dj18
     - python: 3.6
-      env: TOXENV=py36-dj110
-    - python: 3.6
       env: TOXENV=py36-dj111
+    - python: 3.6
+      env: TOXENV=py36-dj20
     - python: 3.6
       env: TOXENV=py36-djmaster
     - python: pypy2.7-5.8.0
       env: TOXENV=pypy-dj18
     - python: pypy2.7-5.8.0
-      env: TOXENV=pypy-dj110
-    - python: pypy2.7-5.8.0
       env: TOXENV=pypy-dj111
     - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-dj18
     - python: pypy3.5-5.8.0
-      env: TOXENV=pypy3-dj110
-    - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-dj111
+    - python: pypy3.5-5.8.0
+      env: TOXENV=pypy3-dj20
     - python: pypy3.5-5.8.0
       env: TOXENV=pypy3-djmaster
 
