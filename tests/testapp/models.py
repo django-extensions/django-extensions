@@ -32,14 +32,33 @@ class Note(models.Model):
         app_label = 'django_extensions'
 
 
+class Personality(models.Model):
+    description = models.CharField(max_length=50)
+
+
+class Club(models.Model):
+    name = models.CharField(max_length=50)
+
+
 class Person(models.Model):
     name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
     children = models.ManyToManyField('self')
     notes = models.ManyToManyField(Note)
+    personality = models.OneToOneField(
+        Personality,
+        null=True,
+        on_delete=models.CASCADE)
+    clubs = models.ManyToManyField(Club, through='testapp.Membership')
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class Membership(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now=True)
 
 
 class Post(ActivatorModel):

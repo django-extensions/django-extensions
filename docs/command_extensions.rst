@@ -57,6 +57,9 @@ Current Command Extensions
 * *mail_debug* - Starts a mail server which echos out the contents of the email
   instead of sending it.
 
+* :doc:`merge_model_instances` - Merges duplicate model instances by
+  reassigning related model references to a chosen primary model instance.
+
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
 * *passwd* - Makes it easy to reset a user's password.
