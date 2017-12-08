@@ -100,7 +100,7 @@ runserver_plus also supports SSL, so that you can easily debug bugs that pop up
 when https is used. To use SSL simply provide a file name for certificates;
 a key and certificate file will be automatically generated::
 
-  $ python manage.py runserver_plus --cert cert
+  $ python manage.py runserver_plus --cert-file cert.crt
   Validating models...
   0 errors found
 
@@ -127,7 +127,7 @@ certificate files will be reused so that you do not have to keep accepting the
 self-generated certificates from your browser every time. You can also provide
 a specific file for the certificate to be used if you already have one::
 
-  $ python manage.py runserver_plus --cert /tmp/cert
+  $ python manage.py runserver_plus --cert-file /tmp/cert.crt
 
 Note that you need the OpenSSL library to use SSL, and Werkzeug 0.9 or later
 if you want to reuse existing certificates.
@@ -135,6 +135,27 @@ if you want to reuse existing certificates.
 To install OpenSSL::
 
   $ pip install pyOpenSSL
+
+Certificates paths
+^^^^^^^^^^^^^^^^^^
+You can configure different paths to .crt and .key files.
+At least one of ``--cert-file`` or ``--key-file`` must be defined to use SSL.
+
+You can set path to .crt file using ``--cert-file`` option or deprecated ``--cert`` option
+which is currently an alias for ``--cert-file``.
+If this option is not set than runserver_plus assumes that,
+this file is in the same directory as file from ``--key-file`` option.
+
+You can set path to .key file using ``--key-file`` option.
+If this option is not set than runserver_plus assumes that,
+this file is in the same directory as file from ``--cert-file`` option.
+
+Certificate file must have .crt extension and key file must have .key extension.
+Otherwise new files will be created.
+
+If you want to create new files,
+than you can pass file name without extension.
+Proper files with this name and .crt and .key extensions will be created.
 
 Configuration
 ^^^^^^^^^^^^^
