@@ -75,8 +75,15 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
-        parser.add_argument('--cert', dest='cert_path', action="store", type=str,
-                            help='To use SSL, specify certificate path.')
+        cert_group = parser.add_mutually_exclusive_group()
+        cert_group.add_argument('--cert', dest='cert_path', action="store", type=str,
+                                help='Deprecated alias for --cert-file option.')
+        cert_group.add_argument('--cert-file', dest='cert_path', action="store", type=str,
+                                help='SSL .cert file path. If not provided path from --key-file will be selected. '
+                                     'Either --cert-file or --key-file must be provided to use SSL.')
+        parser.add_argument('--key-file', dest='key_file_path', action="store", type=str,
+                            help='SSL .key file path. If not provided path from --cert-file will be selected. '
+                                 'Either --cert-file or --key-file must be provided to use SSL.')
         parser.add_argument('--extra-file', dest='extra_files', action="append", type=str,
                             help='auto-reload whenever the given file changes too (can be specified multiple times)')
         parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
@@ -283,7 +290,6 @@ class Command(BaseCommand):
         threaded = options.get('threaded', True)
         use_reloader = options.get('use_reloader', True)
         open_browser = options.get('open_browser', False)
-        cert_path = options.get("cert_path")
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
         extra_files = options.get('extra_files', None) or []
         reloader_interval = options.get('reloader_interval', 1)
@@ -307,7 +313,7 @@ class Command(BaseCommand):
             insecure_serving = options.get('insecure_serving', False)
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
-        if cert_path:
+        if options.get("cert_path") or options.get("key_file_path"):
             """
             OpenSSL is needed for SSL support.
 
@@ -324,20 +330,15 @@ class Command(BaseCommand):
                                    "required to use runserver_plus with ssl support. "
                                    "Install via pip (pip install pyOpenSSL).")
 
-            dir_path, cert_file = os.path.split(cert_path)
-            if not dir_path:
-                dir_path = os.getcwd()
-            root, ext = os.path.splitext(cert_file)
-            certfile = os.path.join(dir_path, root + ".crt")
-            keyfile = os.path.join(dir_path, root + ".key")
+            certfile, keyfile = self.determine_ssl_files_paths(options)
+            dir_path, root = os.path.split(certfile)
+            root, _ = os.path.splitext(root)
             try:
                 from werkzeug.serving import make_ssl_devcert
-                if os.path.exists(certfile) and \
-                        os.path.exists(keyfile):
-                            ssl_context = (certfile, keyfile)
+                if os.path.exists(certfile) and os.path.exists(keyfile):
+                    ssl_context = (certfile, keyfile)
                 else:  # Create cert, key files ourselves.
-                    ssl_context = make_ssl_devcert(
-                        os.path.join(dir_path, root), host='localhost')
+                    ssl_context = make_ssl_devcert(os.path.join(dir_path, root), host='localhost')
             except ImportError:
                 if self.show_startup_messages:
                     print("Werkzeug version is less than 0.9, trying adhoc certificate.")
@@ -388,6 +389,38 @@ class Command(BaseCommand):
             request_handler=WSGIRequestHandler,
             ssl_context=ssl_context,
         )
+
+    @classmethod
+    def _create_path_with_extension_from(cls, file_path, extension):
+        dir_path, cert_file = os.path.split(file_path)
+        if not dir_path:
+            dir_path = os.getcwd()
+        file_name, _ = os.path.splitext(cert_file)
+        return os.path.join(dir_path, file_name + "." + extension)
+
+    @classmethod
+    def _determine_path_for_file(cls, current_file, other_file, extension):
+        """ Determine path with proper extension. If path is absent then use path from alternative file.
+        If path is relative than use current working directory.
+        :param current_file: path for current file
+        :param other_file: path for alternative file
+        :param extension: expected extension
+        :return: path of this file.
+        """
+        if current_file is None:
+            return cls._create_path_with_extension_from(other_file, extension)
+        directory, file = os.path.split(current_file)
+        file_name, _ = os.path.splitext(file)
+        if not directory:
+            return cls._create_path_with_extension_from(current_file, extension)
+        else:
+            return os.path.join(directory, file_name + "." + extension)
+
+    @classmethod
+    def determine_ssl_files_paths(cls, options):
+        cert_file = cls._determine_path_for_file(options.get('cert_path'), options.get('key_file_path'), "crt")
+        key_file = cls._determine_path_for_file(options.get('key_file_path'), options.get('cert_path'), "key")
+        return cert_file, key_file
 
     if django.VERSION[:2] <= (1, 9):
         def check_migrations(self):
