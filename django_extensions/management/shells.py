@@ -108,6 +108,7 @@ def import_items(import_directives, style, quiet_load=False):
 
 def import_objects(options, style):
     from django.apps import apps
+    from django.apps.config import MODELS_MODULE_NAME
     from django import setup
 
     if not apps.ready:
@@ -126,6 +127,18 @@ def import_objects(options, style):
 
     imported_objects = {}
 
+    def get_app_name(mod_name):
+        parts = mod_name.split('.')
+        try:
+            try:
+                return parts[parts.index(MODELS_MODULE_NAME) - 1]
+            except ValueError:
+                # MODELS_MODULE_NAME ('models' string) is not found
+                return parts[-2]
+        except IndexError:
+                # Some weird model naming scheme like in Sentry.
+                return mod_name
+
     def get_dict_from_names_to_possible_models():
         """
         Collects dictionary from names to possible models. Model is represented as his full path.
@@ -136,11 +149,7 @@ def import_objects(options, style):
         """
         models_to_import = {}
         for app_mod, models in sorted(six.iteritems(load_models)):
-            try:
-                app_name = app_mod.split('.')[-2]
-            except IndexError:
-                # Some weird model naming scheme like in Sentry.
-                app_name = app_mod
+            app_name = get_app_name(app_mod)
             app_aliases = model_aliases.get(app_name, {})
             prefix = app_prefixes.get(app_name)
 
@@ -209,7 +218,7 @@ def import_objects(options, style):
     if mongoengine and dont_load_any_models:
         for name, mod in six.iteritems(_document_registry):
             name = name.split('.')[-1]
-            app_name = mod.__module__.split('.')[-2]
+            app_name = get_app_name(mod.__module__)
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
                 continue
 
@@ -221,7 +230,7 @@ def import_objects(options, style):
             if not app_models:
                 continue
 
-            app_name = app_mod.__name__.split('.')[-2]
+            app_name = get_app_name(app_mod.__name__)
             if app_name in dont_load:
                 continue
 
