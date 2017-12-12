@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import six
 import traceback
+
+from django.apps.config import MODELS_MODULE_NAME
 from django.utils.module_loading import import_string
 from django import VERSION as DJANGO_VERSION
 
@@ -32,6 +34,29 @@ if DJANGO_VERSION >= (1, 11):
 
 class ObjectImportError(Exception):
     pass
+
+
+def get_app_name(mod_name):
+    """
+    Retrieves application name from models.py module path
+
+    >>> get_app_name('testapp.models.foo')
+    'testapp'
+
+    'testapp' instead of 'some.testapp' for compatibility:
+    >>> get_app_name('some.testapp.models.foo')
+    'testapp'
+    """
+    parts = mod_name.split('.')
+    try:
+        try:
+            return parts[parts.index(MODELS_MODULE_NAME) - 1]
+        except ValueError:
+            # MODELS_MODULE_NAME ('models' string) is not found
+            return parts[-2]
+    except IndexError:
+            # Some weird model naming scheme like in Sentry.
+            return mod_name
 
 
 def import_items(import_directives, style, quiet_load=False):
@@ -108,7 +133,6 @@ def import_items(import_directives, style, quiet_load=False):
 
 def import_objects(options, style):
     from django.apps import apps
-    from django.apps.config import MODELS_MODULE_NAME
     from django import setup
 
     if not apps.ready:
@@ -126,18 +150,6 @@ def import_objects(options, style):
     SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
 
     imported_objects = {}
-
-    def get_app_name(mod_name):
-        parts = mod_name.split('.')
-        try:
-            try:
-                return parts[parts.index(MODELS_MODULE_NAME) - 1]
-            except ValueError:
-                # MODELS_MODULE_NAME ('models' string) is not found
-                return parts[-2]
-        except IndexError:
-                # Some weird model naming scheme like in Sentry.
-                return mod_name
 
     def get_dict_from_names_to_possible_models():
         """
