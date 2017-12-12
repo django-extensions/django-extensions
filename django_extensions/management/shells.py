@@ -46,14 +46,20 @@ def get_app_name(mod_name):
     'testapp' instead of 'some.testapp' for compatibility:
     >>> get_app_name('some.testapp.models.foo')
     'testapp'
+    >>> get_app_name('some.models.testapp.models.foo')
+    'testapp'
+    >>> get_app_name('testapp.foo')
+    'testapp'
+    >>> get_app_name('some.testapp.foo')
+    'testapp'
     """
-    parts = mod_name.split('.')
+    rparts = list(reversed(mod_name.split('.')))
     try:
         try:
-            return parts[parts.index(MODELS_MODULE_NAME) - 1]
+            return rparts[rparts.index(MODELS_MODULE_NAME) + 1]
         except ValueError:
             # MODELS_MODULE_NAME ('models' string) is not found
-            return parts[-2]
+            return rparts[1]
     except IndexError:
             # Some weird model naming scheme like in Sentry.
             return mod_name
