@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import six
 import traceback
+
+from django.apps.config import MODELS_MODULE_NAME
 from django.utils.module_loading import import_string
 from django import VERSION as DJANGO_VERSION
 
@@ -32,6 +34,35 @@ if DJANGO_VERSION >= (1, 11):
 
 class ObjectImportError(Exception):
     pass
+
+
+def get_app_name(mod_name):
+    """
+    Retrieves application name from models.py module path
+
+    >>> get_app_name('testapp.models.foo')
+    'testapp'
+
+    'testapp' instead of 'some.testapp' for compatibility:
+    >>> get_app_name('some.testapp.models.foo')
+    'testapp'
+    >>> get_app_name('some.models.testapp.models.foo')
+    'testapp'
+    >>> get_app_name('testapp.foo')
+    'testapp'
+    >>> get_app_name('some.testapp.foo')
+    'testapp'
+    """
+    rparts = list(reversed(mod_name.split('.')))
+    try:
+        try:
+            return rparts[rparts.index(MODELS_MODULE_NAME) + 1]
+        except ValueError:
+            # MODELS_MODULE_NAME ('models' string) is not found
+            return rparts[1]
+    except IndexError:
+            # Some weird model naming scheme like in Sentry.
+            return mod_name
 
 
 def import_items(import_directives, style, quiet_load=False):
@@ -136,11 +167,7 @@ def import_objects(options, style):
         """
         models_to_import = {}
         for app_mod, models in sorted(six.iteritems(load_models)):
-            try:
-                app_name = app_mod.split('.')[-2]
-            except IndexError:
-                # Some weird model naming scheme like in Sentry.
-                app_name = app_mod
+            app_name = get_app_name(app_mod)
             app_aliases = model_aliases.get(app_name, {})
             prefix = app_prefixes.get(app_name)
 
@@ -209,7 +236,7 @@ def import_objects(options, style):
     if mongoengine and dont_load_any_models:
         for name, mod in six.iteritems(_document_registry):
             name = name.split('.')[-1]
-            app_name = mod.__module__.split('.')[-2]
+            app_name = get_app_name(mod.__module__)
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
                 continue
 
@@ -221,7 +248,7 @@ def import_objects(options, style):
             if not app_models:
                 continue
 
-            app_name = app_mod.__name__.split('.')[-2]
+            app_name = get_app_name(app_mod.__name__)
             if app_name in dont_load:
                 continue
 
