@@ -210,7 +210,7 @@ class Command(BaseCommand):
             req_url = str(req_url)
             if req_url.startswith("git") and "github.com/" not in req_url:
                 continue
-            if req_url.endswith(".tar.gz") or req_url.endswith(".tar.bz2") or req_url.endswith(".zip"):
+            if req_url.endswith((".tar.gz", ".tar.bz2", ".zip")):
                 continue
 
             headers = {

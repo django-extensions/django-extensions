@@ -61,7 +61,7 @@ def copy_template(template_name, copy_to, **options):
             if subdir.startswith('.'):
                 del subdirs[i]
         for f in files:
-            if f.endswith('.pyc') or f.endswith('.pyo') or f.startswith('.DS_Store') or f.startswith('__pycache__'):
+            if f.endswith(('.pyc', '.pyo')) or f.startswith(('.DS_Store', '__pycache__')):
                 continue
             path_old = os.path.join(d, f)
             path_new = os.path.join(copy_to, relative_dir, f.replace('sample', command_name)).rstrip(".tmpl")
