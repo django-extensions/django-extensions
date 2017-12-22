@@ -172,3 +172,10 @@ class MigrationTest(TestCase):
         # Just make sure it runs for now, and that things look alright.
         result = self.safe_exec(output)
         self.assertIn("Migration", result)
+
+    def test_stable_deconstruct(self):
+        slug_field = SluggedTestModel._meta.get_field('slug')
+        construction_values = slug_field.deconstruct()
+        m = SluggedTestModel(title='foo')
+        m.save()
+        self.assertEqual(slug_field.deconstruct(), construction_values)
