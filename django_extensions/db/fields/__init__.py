@@ -149,14 +149,15 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
-        if not isinstance(self._populate_from, (list, tuple)):
-            self._populate_from = (self._populate_from, )
+        populate_from = self._populate_from
+        if not isinstance(populate_from, (list, tuple)):
+            populate_from = (populate_from, )
         slug_field = model_instance._meta.get_field(self.attname)
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
             slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
-            slug = self.separator.join(map(slug_for_field, self._populate_from))
+            slug = self.separator.join(map(slug_for_field, populate_from))
             start = 2
         else:
             # get slug from the current model instance
