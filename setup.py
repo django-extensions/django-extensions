@@ -16,7 +16,11 @@ try:
     from setuptools.command.test import test as TestCommand
 
     class PyTest(TestCommand):
-        user_options = [('pytest-args=', 'a', "Arguments to pass into py.test")]
+        user_options = TestCommand.user_options[:] + [
+            ('pytest-args=', 'a', "Arguments to pass into py.test"),
+            ('exitfirst', 'x', "exit instantly on first error or failed test."),
+        ]
+        exitfirst = False
 
         def initialize_options(self):
             TestCommand.initialize_options(self)
@@ -26,6 +30,8 @@ try:
             TestCommand.finalize_options(self)
             self.test_args = []
             self.test_suite = True
+            if self.exitfirst:
+                self.pytest_args += " -x"
 
         def run_tests(self):
             import shlex
