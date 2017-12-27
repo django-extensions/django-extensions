@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django_extensions.management.jobs import BaseJob
 
 class Job(BaseJob):
