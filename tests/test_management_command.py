@@ -19,6 +19,11 @@ from django_extensions.management.commands.merge_model_instances import \
 from . import force_color_support
 from .testapp.models import Person, Name, Note, Personality, Club, Membership, \
     Permission
+from .testapp.jobs.hourly.test_hourly_job import HOURLY_JOB_MOCK
+from .testapp.jobs.daily.test_daily_job import DAILY_JOB_MOCK
+from .testapp.jobs.weekly.test_weekly_job import WEEKLY_JOB_MOCK
+from .testapp.jobs.monthly.test_monthly_job import MONTHLY_JOB_MOCK
+from .testapp.jobs.yearly.test_yearly_job import YEARLY_JOB_MOCK
 
 
 class MockLoggingHandler(logging.Handler):
@@ -439,3 +444,78 @@ class MergeModelInstancesTests(TestCase):
         self.assertRaises(
             Personality.DoesNotExist,
             lambda: Personality.objects.get(description="Second personality"))
+
+
+class RunJobsTests(TestCase):
+    """
+    Tests for the `runjobs` management command.
+    """
+
+    @mock.patch('django_extensions.management.commands.runjobs.Command'
+           '.runjobs_by_signals')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.usage_msg')
+    def test_runjobs_management_command(
+            self, usage_msg, runjobs, runjobs_by_signals):
+        when = 'daily'
+        call_command('runjobs', when)
+        usage_msg.assert_not_called()
+        runjobs.assert_called_once()
+        runjobs_by_signals.assert_called_once()
+        self.assertEqual(runjobs.call_args[0][0], when)
+
+    @mock.patch('django_extensions.management.commands.runjobs.Command'
+           '.runjobs_by_signals')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.usage_msg')
+    def test_runjobs_management_command_invalid_when(
+            self, usage_msg, runjobs, runjobs_by_signals):
+        when = 'invalid'
+        call_command('runjobs', when)
+        usage_msg.assert_called_once_with()
+        runjobs.assert_not_called()
+        runjobs_by_signals.assert_not_called()
+
+    def test_runjobs_integration_test(self):
+        jobs = [
+            ("hourly", HOURLY_JOB_MOCK),
+            ("daily", DAILY_JOB_MOCK),
+            ("monthly", MONTHLY_JOB_MOCK),
+            ("weekly", WEEKLY_JOB_MOCK),
+            ("yearly", YEARLY_JOB_MOCK),
+        ]
+
+        # Reset all mocks in case they have been called elsewhere.
+        for job in jobs:
+            job[1].reset_mock()
+
+        counter = 1
+        for job in jobs:
+            call_command('runjobs', job[0], verbosity=2)
+            for already_called in jobs[:counter]:
+                already_called[1].assert_called_once_with()
+            for not_yet_called in jobs[counter:]:
+                not_yet_called[1].assert_not_called()
+            counter += 1
+
+    def test_runjob_integration_test(self):
+        jobs = [
+            ("test_hourly_job", HOURLY_JOB_MOCK),
+            ("test_daily_job", DAILY_JOB_MOCK),
+            ("test_monthly_job", MONTHLY_JOB_MOCK),
+            ("test_weekly_job", WEEKLY_JOB_MOCK),
+            ("test_yearly_job", YEARLY_JOB_MOCK),
+        ]
+
+        # Reset all mocks in case they have been called elsewhere.
+        for job in jobs:
+            job[1].reset_mock()
+
+        counter = 1
+        for job in jobs:
+            call_command('runjob', job[0], verbosity=2)
+            for already_called in jobs[:counter]:
+                already_called[1].assert_called_once_with()
+            for not_yet_called in jobs[counter:]:
+                not_yet_called[1].assert_not_called()
+            counter += 1
