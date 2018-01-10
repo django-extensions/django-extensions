@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+1.9.9
+-----
+
+Changes:
+  - Fix: runserver_plus, fix for Django 2.0 middleware handling
+  - Fix: shell_plus, fixed app_name resolving
+  - Fix: AutoSlugfield, deconstruct did not match construction values
+  - Fix: runjob, not compatible with apps that use AppConfig in INSTALLED_APPS
+  - Improvement: runserver_plus, added configuring paths to certificates
+  - Improvement: sample.py template, add newline to avoid linter warnings
+  - Improvement: jobs, add integration tests for runjob and runjobs management commands
+  - New: merge_model_instances, new management command for de-duplicating model instances
+
+
 1.9.8
 -----
 
