@@ -193,13 +193,7 @@ class Command(BaseCommand):
             # Add pdb middleware if --pdb is specified or if in DEBUG mode
             if (pdb_option or ipdb_option or settings.DEBUG):
                 middleware = 'django_pdb.middleware.PdbMiddleware'
-                try:
-                    settings_middleware = settings.MIDDLEWARE
-                except AttributeError:
-                    if django.VERSION >= (2, 0):
-                        raise
-
-                    settings_middleware = settings.MIDDLEWARE_CLASSES
+                settings_middleware = getattr(settings, 'MIDDLEWARE', None) or settings.MIDDLEWARE_CLASSES
 
                 if middleware not in settings_middleware:
                     if isinstance(settings_middleware, tuple):
