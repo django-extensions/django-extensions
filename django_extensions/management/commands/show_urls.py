@@ -24,6 +24,9 @@ if django.VERSION >= (2, 0):
 
     class LocaleRegexURLResolver:  # type: ignore
         pass
+
+    def describe_pattern(p):
+        return str(p.pattern)
 else:
     try:
         from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
@@ -35,6 +38,9 @@ else:
 
     class URLResolver:  # type: ignore
         pass
+
+    def describe_pattern(p):
+        return p.regex.pattern
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",
@@ -208,7 +214,7 @@ class Command(BaseCommand):
                         name = '{0}:{1}'.format(namespace, p.name)
                     else:
                         name = p.name
-                    pattern = p.pattern.describe() if isinstance(p, URLPattern) else p.regex.pattern
+                    pattern = describe_pattern(p)
                     views.append((p.callback, base + pattern, name))
                 except ViewDoesNotExist:
                     continue
@@ -221,7 +227,7 @@ class Command(BaseCommand):
                     _namespace = '{0}:{1}'.format(namespace, p.namespace)
                 else:
                     _namespace = (p.namespace or namespace)
-                pattern = p.pattern.describe() if isinstance(p, URLResolver) else p.regex.pattern
+                pattern = describe_pattern(p)
                 if isinstance(p, LocaleRegexURLResolver):
                     for langauge in self.LANGUAGES:
                         with translation.override(langauge[0]):
@@ -230,7 +236,7 @@ class Command(BaseCommand):
                     views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
             elif hasattr(p, '_get_callback'):
                 try:
-                    views.append((p._get_callback(), base + p.regex.pattern, p.name))
+                    views.append((p._get_callback(), base + describe_pattern(p), p.name))
                 except ViewDoesNotExist:
                     continue
             elif hasattr(p, 'url_patterns') or hasattr(p, '_get_url_patterns'):
@@ -238,7 +244,7 @@ class Command(BaseCommand):
                     patterns = p.url_patterns
                 except ImportError:
                     continue
-                views.extend(self.extract_views_from_urlpatterns(patterns, base + p.regex.pattern, namespace=namespace))
+                views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
             else:
                 raise TypeError("%s does not appear to be a urlpattern object" % p)
         return views
