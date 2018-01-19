@@ -451,8 +451,7 @@ class RunJobsTests(TestCase):
     Tests for the `runjobs` management command.
     """
 
-    @mock.patch('django_extensions.management.commands.runjobs.Command'
-           '.runjobs_by_signals')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs_by_signals')
     @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs')
     @mock.patch('django_extensions.management.commands.runjobs.Command.usage_msg')
     def test_runjobs_management_command(
@@ -464,8 +463,7 @@ class RunJobsTests(TestCase):
         runjobs_by_signals.assert_called_once()
         self.assertEqual(runjobs.call_args[0][0], when)
 
-    @mock.patch('django_extensions.management.commands.runjobs.Command'
-           '.runjobs_by_signals')
+    @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs_by_signals')
     @mock.patch('django_extensions.management.commands.runjobs.Command.runjobs')
     @mock.patch('django_extensions.management.commands.runjobs.Command.usage_msg')
     def test_runjobs_management_command_invalid_when(
