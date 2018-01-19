@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import django
 from django.core.management import call_command
 from django.utils.six import StringIO
 
@@ -17,6 +18,12 @@ def test_show_urls_format_verbose():
     call_command('show_urls', format="verbose", stdout=out)
 
     output = out.getvalue()
-    assert """/login/
-\tController: django.contrib.auth.views.LoginView
+    print(output)
+    if django.VERSION[:2] <= (1, 9):
+        assert """/login/
+\tController: django.contrib.auth.views.login
 \tURL Name: login""" in output
+    else:
+        assert """/login/
+    \tController: django.contrib.auth.views.LoginView
+    \tURL Name: login""" in output
