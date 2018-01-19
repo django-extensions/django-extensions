@@ -158,7 +158,7 @@ class Command(BaseCommand):
                         url_name=style.URL_NAME(url_name),
                         url=style.URL(url),
                         decorator=decorator,
-                    ))
+                    ).strip())
 
         if not options.get('unsorted', False) and format_style != 'json':
             views = sorted(views)
