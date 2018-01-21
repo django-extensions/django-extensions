@@ -87,15 +87,15 @@ class Command(BaseCommand):
 
                     filepath = os.path.realpath(os.path.join(root, filename))
                     if verbosity > 1:
-                        print(filepath)
+                        self.stdout.write(filepath)
                     try:
                         get_template(filepath)
                     except Exception as e:
                         errors += 1
-                        print("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))
+                        self.stdout.write("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))
                     if errors and options.get('break', False):
                         raise CommandError("Errors found")
 
         if errors:
             raise CommandError("%s errors found" % errors)
-        print("%s errors found" % errors)
+        self.stdout.write("%s errors found" % errors)
