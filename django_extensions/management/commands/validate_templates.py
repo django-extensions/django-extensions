@@ -85,7 +85,7 @@ class Command(BaseCommand):
                     if self.ignore_filename(filename):
                         continue
 
-                    filepath = os.path.realpath(os.path.join(root, filename))
+                    filepath = os.path.join(root, filename)
                     if verbosity > 1:
                         print(filepath)
                     try:
