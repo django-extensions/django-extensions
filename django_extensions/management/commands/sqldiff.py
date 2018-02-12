@@ -472,7 +472,7 @@ class SQLDiff(object):
             table_name = meta.db_table
             app_label = meta.app_label
 
-            if self.options.get('include_proxy_models', False) and meta.proxy:
+            if not self.options.get('include_proxy_models', False) and meta.proxy:
                 continue
 
             if cur_app_label != app_label:
