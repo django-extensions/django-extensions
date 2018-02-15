@@ -68,6 +68,12 @@ class Post(ActivatorModel):
         app_label = 'django_extensions'
 
 
+class PostWithTitleOrdering(Post):
+    class Meta:
+        proxy = True
+        ordering = ['title']
+
+
 class SluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
     slug = AutoSlugField(populate_from='title')
