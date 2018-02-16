@@ -145,6 +145,7 @@ You should set full path to collision resolver class.
 All predefined collision resolvers are in ``django_extensions.collision_resolvers`` module. Example::
 
     SHELL_PLUS_MODEL_IMPORTS_RESOLVER = 'django_extensions.collision_resolvers.FullPathCR'
+
 All collision resolvers searches for models with the same name.
 
 If conflict is detected they decides, which model to choose.
@@ -168,6 +169,7 @@ There are several types of collision resolvers:
 Default collision resolver. Model from last application in alphabetical order is selected::
 
     from workers import Language
+
 **InstalledAppsOrderCR**
 
 Collision resolver which selects first model from INSTALLED_APPS.
@@ -177,6 +179,7 @@ This collision resolver will select model from first app on this list.
 If both app's are absent on this list, resolver will choose model from first app in alphabetical order::
 
     from programming import Language
+
 **FullPathCR**
 
 Collision resolver which transform full model name to alias by changing dots to underscores.
@@ -186,6 +189,7 @@ Model from last application in alphabetical order is selected::
 
     from programming import Language (as programming_Language)
     from workers import Language, Language (as workers_Language)
+
 **AppNamePrefixCR**
 
 Collision resolver which transform pair (app name, model_name) to alias ``{app_name}_{model_name}``.
@@ -195,6 +199,7 @@ Result is different than FullPathCR, when model has app_label other than current
 
     from programming import Language (as programming_Language)
     from workers import Language, Language (as workers_Language)
+
 **AppNameSuffixCR**
 
 Collision resolver which transform pair (app name, model_name) to alias ``{model_name}_{app_name}``
@@ -203,6 +208,7 @@ Model from last application in alphabetical order is selected::
 
     from programming import Language (as Language_programming)
     from workers import Language, Language (as Language_workers)
+
 **AppNamePrefixCustomOrderCR**
 
 Collision resolver which is mixin of AppNamePrefixCR and InstalledAppsOrderCR.
@@ -211,6 +217,7 @@ In case of collisions he sets aliases like AppNamePrefixCR, but sets default mod
 
     from programming import Language, Language (as programming_Language)
     from workers import Language (as workers_Language)
+
 **AppNameSuffixCustomOrderCR**
 
 Collision resolver which is mixin of AppNameSuffixCR and InstalledAppsOrderCR.
@@ -219,6 +226,7 @@ In case of collisions he sets aliases like AppNameSuffixCR, but sets default mod
 
     from programming import Language, Language (as Language_programming)
     from workers import Language (as Language_workers)
+
 **FullPathCustomOrderCR**
 
 Collision resolver which is mixin of FullPathCR and InstalledAppsOrderCR.

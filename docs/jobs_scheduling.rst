@@ -40,8 +40,7 @@ The directories ``hourly``, ``daily``, ``monthly``, ``weekly`` and ``yearly``
 are used only to for organisation purpose.
 
 To create your first job you can start copying ``sample.py``.
-**Remember to replace ``BaseJob`` with
-``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
+Remember to replace ``BaseJob`` with ``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
 Some simple examples are provided by the `django_extensions.jobs package <https://github.com/django-extensions/django-extensions/tree/master/django_extensions/jobs>`_.
 
 Run a job
