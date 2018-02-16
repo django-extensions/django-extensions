@@ -357,12 +357,21 @@ class Command(BaseCommand):
             # Code from http://gist.github.com/118990
             try:
                 import sqlparse
+
+                sqlparse_format_kwargs_defaults = dict(
+                    reindent_aligned=True,
+                    truncate_strings=500,
+                )
+                sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
             except ImportError:
                 sqlparse = None
 
             try:
                 import pygments.lexers
                 import pygments.formatters
+
+                pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
+                pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
             except ImportError:
                 pygments = None
 
@@ -377,13 +386,13 @@ class Command(BaseCommand):
 
                         if sqlparse:
                             raw_sql = raw_sql[:truncate]
-                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
+                            raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
 
                         if pygments:
                             raw_sql = pygments.highlight(
                                 raw_sql,
                                 pygments.lexers.get_lexer_by_name("sql"),
-                                pygments.formatters.TerminalFormatter()
+                                pygments_formatter(**pygments_formatter_kwargs),
                             )
 
                         print(raw_sql)

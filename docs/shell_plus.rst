@@ -92,6 +92,46 @@ It is possible to ignore autoloaded modules when using manage.py, like::
 Command line parameters and settings in the configuration file are merged, so you can
 safely append modules to ignore from the commandline for one-time usage.
 
+Other configuration options include:
+
+::
+
+  # Always use IPython for shell_plus
+  SHELL_PLUS = "ipython"
+
+
+::
+
+  SHELL_PLUS_PRINT_SQL = True
+
+  # Truncate sql queries to this number of characters
+  SHELL_PLUS_PRINT_SQL_TRUNCATE = 1000
+
+  # Specify sqlparse configuration options when printing sql queries to the console
+  SHELL_PLUS_SQLPARSE_FORMAT_KWARGS = dict(
+    reindent_aligned=True,
+    truncate_strings=500,
+  )
+
+  # Specify Pygments formatter and configuration options when printing sql queries to the console
+  import pygments.formatters
+  SHELL_PLUS_PYGMENTS_FORMATTER = pygments.formatters.TerminalFormatter
+  SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS = {}
+
+
+::
+
+  # Additional IPython arguments to use
+  IPYTHON_ARGUMENTS = []
+
+  IPYTHON_KERNEL_DISPLAY_NAME = "Django Shell-Plus"
+
+  # Additional Notebook arguments to use
+  NOTEBOOK_ARGUMENTS = []
+  NOTEBOOK_KERNEL_SPEC_NAMES = ["python3", "python"]
+
+
+
 Collision resolvers
 -------------------
 You don't have to worry about inaccessibility of models with conflicting names.
