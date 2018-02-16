@@ -405,12 +405,10 @@ class Script(Code):
             This isn't essential, but makes the script look nicer because
             more instances can be defined on their first try.
         """
-
-        # Max number of cycles allowed before we call it an infinite loop.
-        MAX_CYCLES = 5
-
         model_queue = []
         number_remaining_models = len(models)
+        # Max number of cycles allowed before we call it an infinite loop.
+        MAX_CYCLES = number_remaining_models
         allowed_cycles = MAX_CYCLES
 
         while number_remaining_models > 0:
