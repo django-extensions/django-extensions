@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
-
-import six
 from django.contrib.auth.models import Group, Permission
-from django.test import TestCase, override_settings
+from django.test import override_settings
 
 from django_extensions.collision_resolvers import AppNameCR, AppsOrderCR, BaseCR, PathBasedCR
-from django_extensions.management.commands import shell_plus
 from tests.collisions.models import (
     Group as Group_Col,
     Name as Name_Col,
@@ -14,6 +10,7 @@ from tests.collisions.models import (
     SystemUser,
     UniqueModel,
 )
+from tests.management.commands.shell_plus_tests.test_utils import AutomaticShellPlusImportsTestCase
 from tests.testapp.models import (
     Name,
     Note,
@@ -69,49 +66,21 @@ class CRBadTransformPath(PathBasedCR):
         return 1
 
 
-class CRTestCase(TestCase):
-    def setUp(self):
-        super(CRTestCase, self).setUp()
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
-
-    def get_all_names_for_model(self, model_to_find_occurences):
-        result = set()
-        for name, model_class in self.imported_objects.items():
-            if model_class == model_to_find_occurences:
-                result.add(name)
-        return result
-
-    def _assert_imported_under_names(self, model_class, names_under_model_is_available):
-        self.assertSetEqual(self.get_all_names_for_model(model_class), names_under_model_is_available)
-        imports_output = self.output.split("from ")
-        for line in imports_output:
-            if line.startswith(model_class.__module__):
-                for name in names_under_model_is_available:
-                    # assert that in print imports this model occurs only under names from parameter
-                    if name == model_class.__name__:
-                        expected_output = name
-                    else:
-                        expected_output = "%s (as %s)" % (model_class.__name__, name)
-                    line = line.replace(expected_output, '', 1)
-                self.assertNotIn(line, model_class.__name__)
-
+class CRTestCase(AutomaticShellPlusImportsTestCase):
     def _assert_models_present_under_names(self, group, group_col, name, name_col, note, note_col, system_user,
                                            unique_model, permission, test_app_permission, unique_test_app_model):
-        command = shell_plus.Command()
-        self.imported_objects = command.get_imported_objects({})
-        self.output = sys.stdout.getvalue()
-        self._assert_imported_under_names(Group, group)
-        self._assert_imported_under_names(Group_Col, group_col)
-        self._assert_imported_under_names(Name, name)
-        self._assert_imported_under_names(Name_Col, name_col)
-        self._assert_imported_under_names(Note, note)
-        self._assert_imported_under_names(Note_Col, note_col)
-        self._assert_imported_under_names(SystemUser, system_user)
-        self._assert_imported_under_names(UniqueModel, unique_model)
-        self._assert_imported_under_names(Permission, permission)
-        self._assert_imported_under_names(TAPermission, test_app_permission)
-        self._assert_imported_under_names(UniqueTestAppModel, unique_test_app_model)
+        self.run_shell_plus()
+        self.assert_imported_under_names(Group, group)
+        self.assert_imported_under_names(Group_Col, group_col)
+        self.assert_imported_under_names(Name, name)
+        self.assert_imported_under_names(Name_Col, name_col)
+        self.assert_imported_under_names(Note, note)
+        self.assert_imported_under_names(Note_Col, note_col)
+        self.assert_imported_under_names(SystemUser, system_user)
+        self.assert_imported_under_names(UniqueModel, unique_model)
+        self.assert_imported_under_names(Permission, permission)
+        self.assert_imported_under_names(TAPermission, test_app_permission)
+        self.assert_imported_under_names(UniqueTestAppModel, unique_test_app_model)
 
     def test_legacy_collision_resolver(self):
         self._assert_models_present_under_names(
@@ -185,7 +154,7 @@ class CRTestCase(TestCase):
         )
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.TestAppsOrderCR',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.TestAppsOrderCR',
     )
     def test_installed_bad_order_collision_resolver(self):
         with self.assertRaisesRegexp(AssertionError, "You must define APP_PRIORITIES in your resolver class!"):
@@ -194,7 +163,7 @@ class CRTestCase(TestCase):
             )
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.TestAppNameCR',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.TestAppNameCR',
     )
     def test_installed_apps_bad_name_collision_resolver(self):
         with self.assertRaisesRegexp(AssertionError, "You must define MODIFICATION_STRING in your resolver class!"):
@@ -209,19 +178,19 @@ class CRTestCase(TestCase):
             )
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.collision_resolver_which_is_not_class',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.collision_resolver_which_is_not_class',
     )
     def test_installed_apps_not_class_collision_resolver(self):
         self._assert_bad_resolver("SHELL_PLUS_MODEL_IMPORTS_RESOLVER must be subclass of BaseCR!")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRNotExtendingFromBase',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRNotExtendingFromBase',
     )
     def test_installed_apps_not_subclass_of_base(self):
         self._assert_bad_resolver("SHELL_PLUS_MODEL_IMPORTS_RESOLVER must be subclass of BaseCR!")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRNoFunction',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRNoFunction',
     )
     def test_installed_apps_no_resolve_conflicts_function(self):
         with self.assertRaisesRegexp(
@@ -232,31 +201,31 @@ class CRTestCase(TestCase):
             )
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRNoArguments',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRNoArguments',
     )
     def test_installed_apps_no_arguments_resolve_conflicts(self):
         self._assert_bad_resolver("resolve_collisions function must take one argument!")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRBadResult',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRBadResult',
     )
     def test_installed_apps_bad_result(self):
         self._assert_bad_resolver("Result of resolve_collisions function must be a dict!")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRBadKey',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRBadKey',
     )
     def test_installed_apps_bad_key(self):
         self._assert_bad_resolver("key in collision resolver result should be str not 1")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRBadValue',
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRBadValue',
     )
     def test_installed_apps_bad_value(self):
         self._assert_bad_resolver("value in collision resolver result should be str not 1")
 
     @override_settings(
-        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.test_collision_resolver.CRBadTransformPath'
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRBadTransformPath'
     )
     def test_bad_transform_path(self):
         self._assert_bad_resolver("result of transform_import must be str!")
