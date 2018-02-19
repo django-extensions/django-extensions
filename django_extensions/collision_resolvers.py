@@ -170,6 +170,41 @@ class FullPathCustomOrderCR(FullPathCR, InstalledAppsOrderCR):
     pass
 
 
+@add_metaclass(ABCMeta)
+class AppLabelCR(PathBasedCR):
+    """
+    Abstract collision resolver which transform pair (app_label, model_name) to alias.
+    You must define MODIFICATION_STRING which should be string to format with two keyword arguments:
+    app_label and model_name. For example: "{app_label}_{model_name}".
+    This is different from AppNameCR when the app is nested with several level of namespace:
+    Gives sites_Site instead of django_contrib_sites_Site
+    Model from last application in alphabetical order is selected.
+    """
+    MODIFICATION_STRING = None  # type: Optional[str]
+
+    def transform_import(self, module_path):
+        assert self.MODIFICATION_STRING is not None, "You must define MODIFICATION_STRING in your resolver class!"
+        model_class = import_string(module_path)
+        app_label, model_name = model_class._meta.app_label, model_class.__name__
+        return self.MODIFICATION_STRING.format(app_label=app_label, model_name=model_name)
+
+
+class AppLabelPrefixCR(AppLabelCR):
+    """
+    Collision resolver which transform pair (app_label, model_name) to alias "{app_label}_{model_name}".
+    Model from last application in alphabetical order is selected.
+    """
+    MODIFICATION_STRING = "{app_label}_{model_name}"
+
+
+class AppLabelSuffixCR(AppLabelCR):
+    """
+    Collision resolver which transform pair (app_label, model_name) to alias "{model_name}_{app_label}".
+    Model from last application in alphabetical order is selected.
+    """
+    MODIFICATION_STRING = "{model_name}_{app_label}"
+
+
 class CollisionResolvingRunner:
     def __init__(self):
         pass
