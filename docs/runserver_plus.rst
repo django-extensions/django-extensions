@@ -208,7 +208,7 @@ causes the CPU and IO load.
 If possible try to install the Watchdog_ package, this should automatically cause Werkzeug_ to use
 `file system events` whenever possible.
 
-You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/0.10/serving/#reloader>`_
+You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/serving/#reloader>`_
 
 You can also increase the poll interval when using `stat polling` from the default of 1 second. This
 will decrease the CPU load at the expense of file edits taking longer to pick up.
@@ -226,9 +226,7 @@ Debugger PIN
 ------------
 
 .. epigraph::
-   The following text about the debugger PIN is taken verbatim from the Werkzeug documentation.
-
-   -- http://werkzeug.pocoo.org/docs/0.11/debug/#debugger-pin
+   The following text about the debugger PIN is taken verbatim from the Werkzeug `documentation about its debugger PIN <http://werkzeug.pocoo.org/docs/debug/#debugger-pin>`_.
 
 Starting with Werkzeug 0.11 the debugger is additionally protected by a PIN. This is a security helper to
 make it less likely for the debugger to be exploited in production as it has happened to people to keep the
@@ -242,8 +240,8 @@ to the value off to disable the PIN check entirely.
 
 If the PIN is entered too many times incorrectly the server needs to be restarted.
 
-This feature is not supposed to entirely secure the debugger. It’s intended to make it harder for an attacker to
-exploit the debugger. Never enable the debugger in production.
+**This feature is not supposed to entirely secure the debugger. It’s intended to make it harder for an attacker to
+exploit the debugger. Never enable the debugger in production.**
 
 
 .. _gh625: https://github.com/django-extensions/django-extensions/issues/625
