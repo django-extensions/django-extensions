@@ -2,11 +2,19 @@
 import six
 import traceback
 
+from typing import (  # NOQA
+    Dict,
+    List,
+    Tuple,
+    Type,
+    Union,
+)
+
 from django.apps.config import MODELS_MODULE_NAME
 from django.utils.module_loading import import_string
 from django import VERSION as DJANGO_VERSION
-
 from django_extensions.collision_resolvers import CollisionResolvingRunner
+from django_extensions.import_subclasses import SubclassesFinder
 
 SHELL_PLUS_DJANGO_IMPORTS = {
     'django.core.cache': ['cache'],
@@ -157,7 +165,7 @@ def import_objects(options, style):
 
     imported_objects = {}
 
-    def get_dict_from_names_to_possible_models():
+    def get_dict_from_names_to_possible_models():  # type: () -> Dict[str, List[str]]
         """
         Collects dictionary from names to possible models. Model is represented as his full path.
         Name of model can be alias if SHELL_PLUS_MODEL_ALIASES or SHELL_PLUS_APP_PREFIXES is specified for this model.
@@ -165,7 +173,7 @@ def import_objects(options, style):
         At this phase we can't import any models, because collision resolver can change results.
         :return: Dict[str, List[str]]. Key is name, value is list of full model's path's.
         """
-        models_to_import = {}
+        models_to_import = {}  # type: Dict[str, List[str]]
         for app_mod, models in sorted(six.iteritems(load_models)):
             app_name = get_app_name(app_mod)
             app_aliases = model_aliases.get(app_name, {})
@@ -187,13 +195,30 @@ def import_objects(options, style):
                 models_to_import[alias].append("%s.%s" % (app_mod, model_name))
         return models_to_import
 
+    def import_subclasses():
+        base_classes_to_import = getattr(settings, 'SHELL_PLUS_SUBCLASSES_IMPORT', [])  # type: List[Union[str, Type]]
+        if base_classes_to_import:
+            if not quiet_load:
+                print(style.SQL_TABLE("# Shell Plus Subclasses Imports"))
+            perform_automatic_imports(SubclassesFinder(base_classes_to_import).collect_subclasses())
+
     def import_models():
-        """Performs collision resolving and imports all models.
+        """
+        Performs collision resolving and imports all models.
         When collisions are resolved we can perform imports and print information's, because it is last phase.
         This function updates imported_objects dictionary.
         """
         modules_to_models = CollisionResolvingRunner().run_collision_resolver(get_dict_from_names_to_possible_models())
-        for full_module_path, models in modules_to_models.items():
+        perform_automatic_imports(modules_to_models)
+
+    def perform_automatic_imports(modules_to_classes):  # type: (Dict[str, List[Tuple[str, str]]]) -> ()
+        """
+        Imports elements from given dictionary.
+        :param modules_to_classes: dictionary from module name to tuple.
+        First element of tuple is model name, second is model alias.
+        If both elements are equal than element is imported without alias.
+        """
+        for full_module_path, models in modules_to_classes.items():
             model_labels = []
             for (model_name, alias) in sorted(models):
                 try:
@@ -261,6 +286,7 @@ def import_objects(options, style):
                     load_models.setdefault(mod.__module__, [])
                     load_models[mod.__module__].append(mod.__name__)
 
+    import_subclasses()
     if not quiet_load:
         print(style.SQL_TABLE("# Shell Plus Model Imports%s") % (' SKIPPED' if dont_load_any_models else ''))
 

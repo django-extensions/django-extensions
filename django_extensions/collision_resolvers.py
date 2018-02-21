@@ -2,7 +2,12 @@
 import inspect
 import sys
 from abc import abstractmethod, ABCMeta
-from typing import Optional  # NOQA
+from typing import (  # NOQA
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 from django.utils.module_loading import import_string
 from six import add_metaclass
@@ -18,12 +23,12 @@ class BaseCR:
     You should return Dict[str, str], where key is model name and value is full model name.
     """
     @classmethod
-    def get_app_name_and_model(cls, full_model_path):
+    def get_app_name_and_model(cls, full_model_path):  # type: (str) -> Tuple[str, str]
         model_class = import_string(full_model_path)
         return model_class._meta.app_config.name, model_class.__name__
 
     @abstractmethod
-    def resolve_collisions(self, namespace):
+    def resolve_collisions(self, namespace):  # type: (Dict[str, List[str]]) -> Dict[str, str]
         pass
 
 
@@ -40,7 +45,7 @@ class LegacyCR(BaseCR):
 
 @add_metaclass(ABCMeta)
 class AppsOrderCR(LegacyCR):
-    APP_PRIORITIES = None
+    APP_PRIORITIES = None  # type: Optional[List]
 
     def resolve_collisions(self, namespace):
         assert self.APP_PRIORITIES is not None, "You must define APP_PRIORITIES in your resolver class!"
@@ -51,7 +56,7 @@ class AppsOrderCR(LegacyCR):
                 result[name] = sorted_models[0][1]
         return result
 
-    def _sort_models_depending_on_priorities(self, models):
+    def _sort_models_depending_on_priorities(self, models):  # type: (List[str]) -> List[Tuple[int, str]]
         models_with_priorities = []
         for model in models:
             try:
@@ -85,7 +90,7 @@ class PathBasedCR(LegacyCR):
     It should return valid alias as str instance.
     """
     @abstractmethod
-    def transform_import(self, module_path):
+    def transform_import(self, module_path):  # type: (str) -> str
         pass
 
     def resolve_collisions(self, namespace):
@@ -210,11 +215,12 @@ class CollisionResolvingRunner:
         pass
 
     def run_collision_resolver(self, models_to_import):
-        dictionary_of_names = self._get_dictionary_of_names(models_to_import)
+        # type: (Dict[str, List[str]]) -> Dict[str, List[Tuple[str, str]]]
+        dictionary_of_names = self._get_dictionary_of_names(models_to_import)  # type: Dict[str, str]
         return self._get_dictionary_of_modules(dictionary_of_names)
 
     @classmethod
-    def _get_dictionary_of_names(cls, models_to_import):
+    def _get_dictionary_of_names(cls, models_to_import):  # type: (Dict[str, List[str]]) -> (Dict[str, str])
         from django.conf import settings
         collision_resolver_class = import_string(getattr(
             settings, 'SHELL_PLUS_MODEL_IMPORTS_RESOLVER',
@@ -244,7 +250,8 @@ class CollisionResolvingRunner:
 
     @classmethod
     def _get_dictionary_of_modules(cls, dictionary_of_names):
-        dictionary_of_modules = {}
+        # type: (Dict[str, str]) -> Dict[str, List[Tuple[str, str]]]
+        dictionary_of_modules = {}  # type: Dict[str, List[Tuple[str, str]]]
         for alias, model in dictionary_of_names.items():
             module_path, model_name = model.rsplit('.', 1)
             dictionary_of_modules.setdefault(module_path, [])

@@ -1,7 +1,7 @@
 shell_plus
 ==========
 
-:synopsis: Django shell with autoloading of the apps database models
+:synopsis: Django shell with autoloading of the apps database models and subclasses of user-defined classes.
 
 
 Interactive Python Shells
@@ -296,6 +296,39 @@ It receives ``Dict[str, List[str]]`` where key is model name and values are full
 (full model name means: module + model_name).
 
 You should return ``Dict[str, str]``, where key is model name and value is full model name.
+
+Import Subclasses
+-------------------
+If you want to load automatically all project subclasses of some base class,
+you can achieve this by setting ``SHELL_PLUS_SUBCLASSES_IMPORT`` option.
+
+It must be list of either classes or strings containing paths to this classes.
+
+For example if you want to load all your custom managers than you should provide::
+
+    from django.db.models import Manager
+    SHELL_PLUS_SUBCLASSES_IMPORT = [Manager]
+Than shell_plus will load all your custom managers::
+
+    # Shell Plus Subclasses Imports
+    from utils.managers import AbstractManager
+    from myapp.managers import MyCustomManager
+    from somewhere.else import MyOtherManager
+    # django.db.models.Manager is not loaded because only project classes are.
+By default all subclasses of your base class from all projects module will be loaded.
+
+You can exclude some modules and all their submodules by passing ``SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST`` option::
+
+    SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = ['utils', 'somewhere.else']
+Elements of this list must be strings containing full modules paths.
+If these modules are excluded only ``MyCustomManager`` from ``myapp.managers`` will be loaded.
+
+If you are using ``SHELL_PLUS_SUBCLASSES_IMPORT`` shell_plus loads all project modules for finding subclasses.
+
+Sometimes it can lead to some errors(for example when we have old unused module which contains syntax errors).
+
+Excluding these modules can help avoid shell_plus crashes in some situations.
+It is recommended to exclude all ``setup.py`` files.
 
 IPython Notebook
 ----------------
