@@ -142,6 +142,28 @@ class CRTestCase(TestCase):
         )
 
     @override_settings(
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='django_extensions.collision_resolvers.AppLabelPrefixCR',
+    )
+    def test_app_label_prefix_collision_resolver(self):
+        self._assert_models_present_under_names(
+            {'auth_Group'}, {'collisions_Group', 'Group'}, {'django_extensions_Name', 'Name'},
+            {'collisions_Name'}, {'django_extensions_Note', 'Note'}, {'collisions_Note'}, {'SystemUser'},
+            {'UniqueModel'}, {'auth_Permission'}, {'testapp_Permission', 'Permission'},
+            {'UniqueTestAppModel'},
+        )
+
+    @override_settings(
+        SHELL_PLUS_MODEL_IMPORTS_RESOLVER='django_extensions.collision_resolvers.AppLabelSuffixCR',
+    )
+    def test_app_label_suffix_collision_resolver(self):
+        self._assert_models_present_under_names(
+            {'Group_auth'}, {'Group_collisions', 'Group'}, {'Name_django_extensions', 'Name'},
+            {'Name_collisions'}, {'Note_django_extensions', 'Note'}, {'Note_collisions'},
+            {'SystemUser'}, {'UniqueModel'}, {'Permission_auth'},
+            {'Permission_testapp', 'Permission'}, {'UniqueTestAppModel'},
+        )
+
+    @override_settings(
         SHELL_PLUS_MODEL_IMPORTS_RESOLVER='django_extensions.collision_resolvers.FullPathCR',
     )
     def test_full_path_collision_resolver(self):

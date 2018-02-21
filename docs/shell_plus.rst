@@ -236,6 +236,32 @@ In case of collisions he sets aliases like FullPathCR, but sets default model us
     from programming import Language, Language (as programming_Language)
     from workers import Language (as workers_Language)
 
+**AppLabelPrefixCR**
+
+Collision resolver which transform pair (app_label, model_name) to alias ``{app_label}_{model_name}``
+
+This is very similar to ``AppNamePrefixCR`` but this may generate shorter names in case of apps nested
+into several namespace (like Django's auth app)::
+
+    # with AppNamePrefixCR
+    from django.contrib.auth.models import Group (as django_contrib_auth_Group)
+
+    # with AppLabelPrefixCR
+    from django.contrib.auth.models import Group (as auth_Group)
+
+**AppLabelSuffixCR**
+
+Collision resolver which transform pair (app_label, model_name) to alias ``{model_name}_{app_label}``
+
+Similar idea as the above, but based on ``AppNameSuffixCR``::
+
+    # with AppNamePrefixCR
+    from django.contrib.auth.models import Group (as Group_django_contrib_auth)
+
+    # with AppLabelSuffixCR
+    from django.contrib.auth.models import Group (as Group_auth)
+
+
 Writing your custom collision resolver
 --------------------------------------
 
