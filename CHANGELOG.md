@@ -1,6 +1,20 @@
 Changelog
 =========
 
+2.0.0
+-----
+
+Changes:
+  - Fix: runserver_plus, for 1.11 still using MIDDLEWARE_CLASSES
+  - Fix: show_urls, Fix display in Django 2.0
+  - Fix: validate_templates, remove realpath in validate_templates
+  - Fix: sqldiff, bug with including proxy models in sqldiff output
+  - Improvement: shell_plus, allow configurating of sqlparse formatting and pygments formatting
+  - Improvement: shell_plus, add collision resolvers based on app label
+  - Improvement: shell_plus, automatic importing of subclasses defined in SHELL_PLUS_SUBCLASSES_IMPORT
+  - New: reset_schema, simple command to recreate public schema in PostgreSQL
+  - Docs: fix links to Werkzeug documentation
+
 
 1.9.9
 -----
