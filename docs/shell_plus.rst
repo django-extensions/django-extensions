@@ -28,6 +28,10 @@ Python::
 
   $ ./manage.py shell_plus --plain
 
+It is possible to directly add command line arguments to the underlying Python shell using `--`::
+
+  $ ./manage.py shell_plus --ipython -- --profile=foo
+
 
 The default resolution order is: ptpython, bpython, ipython, python.
 
@@ -308,6 +312,7 @@ For example if you want to load all your custom managers than you should provide
 
     from django.db.models import Manager
     SHELL_PLUS_SUBCLASSES_IMPORT = [Manager]
+
 Than shell_plus will load all your custom managers::
 
     # Shell Plus Subclasses Imports
@@ -315,11 +320,13 @@ Than shell_plus will load all your custom managers::
     from myapp.managers import MyCustomManager
     from somewhere.else import MyOtherManager
     # django.db.models.Manager is not loaded because only project classes are.
+
 By default all subclasses of your base class from all projects module will be loaded.
 
 You can exclude some modules and all their submodules by passing ``SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST`` option::
 
     SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = ['utils', 'somewhere.else']
+
 Elements of this list must be strings containing full modules paths.
 If these modules are excluded only ``MyCustomManager`` from ``myapp.managers`` will be loaded.
 

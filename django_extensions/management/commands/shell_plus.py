@@ -25,6 +25,7 @@ def use_vi_mode():
 
 class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
+    extra_args = None
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -76,10 +77,25 @@ class Command(BaseCommand):
             dest='no_browser',
             help='Don\'t open the notebook in a browser after startup.')
 
+    def run_from_argv(self, argv):
+        if '--' in argv[2:]:
+            idx = argv.index('--')
+            self.extra_args = argv[idx + 1:]
+            argv = argv[:idx]
+        return super().run_from_argv(argv)
+
     def get_ipython_arguments(self, options):
-        return getattr(settings, 'IPYTHON_ARGUMENTS', [])
+        if self.extra_args:
+            return self.extra_args
+        ipython_args = 'IPYTHON_ARGUMENTS'
+        arguments = getattr(settings, ipython_args, [])
+        if not arguments:
+            arguments = os.environ.get(ipython_args, '').split()
+        return arguments
 
     def get_notebook_arguments(self, options):
+        if self.extra_args:
+            return self.extra_args
         notebook_args = 'NOTEBOOK_ARGUMENTS'
         arguments = getattr(settings, notebook_args, [])
         if not arguments:
@@ -242,7 +258,10 @@ class Command(BaseCommand):
 
         def run_bpython():
             imported_objects = self.get_imported_objects(options)
-            embed(imported_objects)
+            kwargs = {}
+            if self.extra_args:
+                kwargs['args'] = self.extra_args
+            embed(imported_objects, **kwargs)
         return run_bpython
 
     def get_ipython(self, options):
