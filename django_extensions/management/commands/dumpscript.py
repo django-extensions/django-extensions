@@ -249,6 +249,11 @@ class InstanceCode(Code):
 
         self.many_to_many_waiting_list = {}
         for field in self.model._meta.many_to_many:
+            try:
+                if not field.remote_field.through._meta.auto_created:
+                    continue
+            except AttributeError:
+                pass
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
     def get_lines(self, force=False):
