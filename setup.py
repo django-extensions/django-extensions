@@ -120,6 +120,10 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 
 version = __import__('django_extensions').__version__
 
+install_requires = ['six>=1.2']
+if sys.version_info < (3, 5):
+    install_requires.append('typing')
+
 setup(
     name='django-extensions',
     version=version,
@@ -137,7 +141,7 @@ additions for Django projects. See the project page for more information:
     packages=packages,
     cmdclass=cmdclasses,
     package_data=package_data,
-    install_requires=['six>=1.2', 'typing'],
+    install_requires=install_requires,
     tests_require=[
         'Django',
         'shortuuid',
