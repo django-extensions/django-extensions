@@ -12,7 +12,7 @@ from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
     FKSluggedTestModel, FKSluggedTestModelCallable, \
-    ModelMethodSluggedTestModel
+    FunctionSluggedTestModel, ModelMethodSluggedTestModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -93,12 +93,24 @@ class AutoSlugFieldTest(TestCase):
         n.save()
         self.assertEqual(n.slug, '-3')
 
-    def test_callable_slug_source(self):
+    def test_callable_method_slug_source(self):
         m = ModelMethodSluggedTestModel(title='-foo')
         m.save()
         self.assertEqual(m.slug, 'the-title-is-foo')
 
         n = ModelMethodSluggedTestModel(title='-foo')
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+    def test_callable_function_slug_source(self):
+        m = FunctionSluggedTestModel(title='-foo')
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
+
+        n = FunctionSluggedTestModel(title='-foo')
         n.save()
         self.assertEqual(n.slug, 'the-title-is-foo-2')
 

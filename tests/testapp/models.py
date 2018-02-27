@@ -87,6 +87,10 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
+def get_readable_title(instance):
+    return "The title is {}".format(instance.title)
+
+
 class ModelMethodSluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
     slug = AutoSlugField(populate_from='get_readable_title')
@@ -95,7 +99,15 @@ class ModelMethodSluggedTestModel(models.Model):
         app_label = 'django_extensions'
 
     def get_readable_title(self):
-        return "The title is {}".format(self.title)
+        return get_readable_title(self)
+
+
+class FunctionSluggedTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from=get_readable_title)
+
+    class Meta:
+        app_label = 'django_extensions'
 
 
 class FKSluggedTestModel(models.Model):

@@ -148,23 +148,22 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         raise RuntimeError('max slug attempts for %s exceeded (%s)' % (original_slug, self.max_unique_query_attempts))
 
     def create_slug(self, model_instance, add):
+        slug = getattr(model_instance, self.attname)
+        if slug and not self.overwrite:
+            # Existing slug and not configured to overwrite - Short-circuit
+            # here to prevent slug generation when not required.
+            return slug
+
         # get fields to populate from and slug field to set
         populate_from = self._populate_from
         if not isinstance(populate_from, (list, tuple)):
             populate_from = (populate_from, )
         slug_field = model_instance._meta.get_field(self.attname)
 
-        if add or self.overwrite:
-            # slugify the original field content and set next step to 2
-            slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
-            slug = self.separator.join(map(slug_for_field, populate_from))
-            start = 2
-        else:
-            # get slug from the current model instance
-            slug = getattr(model_instance, self.attname)
-            # model_instance is being modified, and overwrite is False,
-            # so instead of doing anything, just return the current slug
-            return slug
+        # slugify the original field content and set next step to 2
+        slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
+        slug = self.separator.join(map(slug_for_field, populate_from))
+        start = 2
 
         # strip slug depending on max_length attribute of the slug field
         # and clean-up
@@ -182,6 +181,10 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def get_slug_fields(self, model_instance, lookup_value):
+        if callable(lookup_value):
+            # A function has been provided
+            return "%s" % lookup_value(model_instance)
+
         lookup_value_path = lookup_value.split(LOOKUP_SEP)
         attr = model_instance
         for elem in lookup_value_path:
