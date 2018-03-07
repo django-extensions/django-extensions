@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.base_user import BaseUserManager
+try:
+    from django.contrib.auth.base_user import BaseUserManager
+except ImportError:
+    from django.contrib.auth.models import BaseUserManager
 from django.core.management.base import BaseCommand
 from django_extensions.management.utils import signalcommand
 
