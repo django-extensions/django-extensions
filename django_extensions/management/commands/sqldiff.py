@@ -394,7 +394,7 @@ class SQLDiff(object):
                 else:
                     op = 'field-missing-in-db'
                 field_output.append(field.db_type(connection=connection))
-                if field.has_default():
+                if self.options.get('include_defaults') and field.has_default():
                     field_output.append('DEFAULT %s' % field.get_prep_value(field.get_default()))
                 if not field.null:
                     field_output.append('NOT NULL')
@@ -1022,6 +1022,10 @@ to check/debug ur models compared to the real database tables and columns."""
             '--include-proxy-models', action='store_true', dest='include_proxy_models',
             default=False,
             help="Include proxy models in the graph")
+        parser.add_argument(
+            '--include-defaults', action='store_true', dest='include_defaults',
+            default=False,
+            help="Include default values in SQL output (beta feature)")
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)

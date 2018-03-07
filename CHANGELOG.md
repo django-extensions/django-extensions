@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.2
+-----
+
+Changes:
+  -Improvement: sqldiff, add --include-defaults to include default value in missing field for sqldiff #1064
+
+
 2.0.1
 -----
 
