@@ -60,6 +60,7 @@ Contents
    runscript
    export_emails
    field_extensions
+   generate_password
    graph_models
    jobs_scheduling
    merge_model_instances
