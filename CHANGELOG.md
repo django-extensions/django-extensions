@@ -1,6 +1,15 @@
 Changelog
 =========
 
+2.0.1
+-----
+
+Changes:
+  - Fix: setup.py, do not include `typing` requirement in recent versions of Python
+  - Improvement: shell_plus, add support for using -- to pass cli argument directly to underlying python shell implementation
+  - New: generate_password, Generates a new password based on `BaseUserManager.make_random_password`
+
+
 2.0.0
 -----
 
