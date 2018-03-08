@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.3
+-----
+
+Changes:
+  - Fix: shell_plus, python 2.7 support broken due to use of Python3 super()
+
+
 2.0.2
 -----
 
