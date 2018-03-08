@@ -82,7 +82,7 @@ class Command(BaseCommand):
             idx = argv.index('--')
             self.extra_args = argv[idx + 1:]
             argv = argv[:idx]
-        return super().run_from_argv(argv)
+        return super(Command, self).run_from_argv(argv)
 
     def get_ipython_arguments(self, options):
         if self.extra_args:
