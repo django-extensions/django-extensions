@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.4
+-----
+
+Changes:
+  - Fix: setup.py, fix installation of typing in python < 3.5
+
+
 2.0.3
 -----
 
