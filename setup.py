@@ -4,13 +4,10 @@ Based entirely on Django's own ``setup.py``.
 """
 import os
 import sys
+import setuptools
 from distutils.command.install import INSTALL_SCHEMES
 from distutils.command.install_data import install_data
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup  # NOQA
+from setuptools import setup
 
 try:
     from setuptools.command.test import test as TestCommand
@@ -121,8 +118,14 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 version = __import__('django_extensions').__version__
 
 install_requires = ['six>=1.2']
-if sys.version_info < (3, 5):
-    install_requires.append('typing')
+extras_require = {}
+
+if int(setuptools.__version__.split(".", 1)[0]) < 18:
+    assert "bdist_wheel" not in sys.argv, "setuptools 18 or later is required for wheels."
+    if sys.version_info[:2] < (3, 5):
+        install_requires.append('typing')
+else:
+    extras_require[":python_version<'3.5'"] = ["typing"]
 
 setup(
     name='django-extensions',
@@ -142,6 +145,7 @@ additions for Django projects. See the project page for more information:
     cmdclass=cmdclasses,
     package_data=package_data,
     install_requires=install_requires,
+    extras_require=extras_require,
     tests_require=[
         'Django',
         'shortuuid',
