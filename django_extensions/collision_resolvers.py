@@ -9,6 +9,7 @@ from typing import (  # NOQA
     Tuple,
 )
 
+import six
 from django.utils.module_loading import import_string
 from six import add_metaclass
 
@@ -245,7 +246,8 @@ class CollisionResolvingRunner:
         assert inspect.isclass(collision_resolver_class) and issubclass(
             collision_resolver_class, BaseCR), "SHELL_PLUS_MODEL_IMPORTS_RESOLVER " \
                                                "must be subclass of BaseCR!"
-        assert len(inspect.getargspec(collision_resolver_class.resolve_collisions).args) == 2, \
+        getargspec = inspect.getfullargspec if six.PY3 else inspect.getargspec
+        assert len(getargspec(collision_resolver_class.resolve_collisions).args) == 2, \
             "resolve_collisions function must take one argument!"
 
     @classmethod
