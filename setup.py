@@ -124,6 +124,8 @@ if int(setuptools.__version__.split(".", 1)[0]) < 18:
     assert "bdist_wheel" not in sys.argv, "setuptools 18 or later is required for wheels."
     if sys.version_info[:2] < (3, 5):
         install_requires.append('typing')
+elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
+    install_requires.append('typing;python_version<"3.5"')
 else:
     extras_require[":python_version<'3.5'"] = ["typing"]
 
