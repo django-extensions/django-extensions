@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.0.5
+-----
+
+Changes:
+  - Improvement: setup.py, Use PEP 508 when setuptools is version 36 or higher should fix issues with pipenv
+  - Fix: docs, Docs should show that django 2.0 is supported
+
+
 2.0.4
 -----
 
