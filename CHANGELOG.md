@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.6
+-----
+
+Changes:
+  - Fix: shell_plus, Fix of deprecation warning in collision resolvers
+
+
 2.0.5
 -----
 
