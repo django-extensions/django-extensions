@@ -157,7 +157,7 @@ class Command(BaseCommand):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
-                        return self.cursor.execute(sql, params)
+                        return utils.CursorWrapper.execute(self, sql, params)
                     finally:
                         execution_time = time.time() - starttime
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
