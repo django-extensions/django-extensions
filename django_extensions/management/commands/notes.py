@@ -24,10 +24,13 @@ class Command(BaseCommand):
         # don't add django internal code
         apps = [app for app in filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)]
         template_dirs = get_template_setting('DIRS', [])
+        base_dir = getattr(settings, 'BASE_DIR')
         if template_dirs:
             apps += template_dirs
         for app_dir in apps:
             app_dir = app_dir.replace(".", "/")
+            if base_dir:
+                app_dir = os.path.join(base_dir, app_dir)
             for top, dirs, files in os.walk(app_dir):
                 for fn in files:
                     if os.path.splitext(fn)[1] in ('.py', '.html'):
@@ -49,7 +52,7 @@ class Command(BaseCommand):
 
                                     annotation_lines.append("[%3s] %-5s %s" % (i, tag, msg.strip()))
                             if annotation_lines:
-                                print("%s:" % fpath)
+                                self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    print("  * %s" % annotation)
-                                print("")
+                                    self.stdout.write("  * %s" % annotation)
+                                self.stdout.write("")
