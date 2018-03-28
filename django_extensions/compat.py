@@ -41,8 +41,10 @@ def load_tag_library(libname):
 def get_template_setting(template_key, default=None):
     """ Read template settings pre and post django 1.8 """
     templates_var = getattr(settings, 'TEMPLATES', None)
-    if templates_var is not None and template_key in templates_var[0]:
-        return templates_var[0][template_key]
+    if templates_var:
+        for tdict in templates_var:
+            if template_key in tdict:
+                return tdict[template_key]
     if template_key == 'DIRS':
         pre18_template_key = 'TEMPLATES_%s' % template_key
         value = getattr(settings, pre18_template_key, default)
