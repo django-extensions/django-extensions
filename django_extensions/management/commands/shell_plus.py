@@ -170,11 +170,11 @@ class Command(BaseCommand):
 
             if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
                 pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
-                pythonpath = pythonpath.split(':')
+                pythonpath = pythonpath.split(os.pathsep)
                 if manage_py_dir not in pythonpath:
                     pythonpath.append(manage_py_dir)
 
-                ks.env['PYTHONPATH'] = ':'.join(filter(None, pythonpath))
+                ks.env['PYTHONPATH'] = os.pathsep.join(filter(None, pythonpath))
 
             kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
             if not os.path.exists(kernel_dir):
