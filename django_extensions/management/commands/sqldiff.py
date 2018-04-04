@@ -220,7 +220,7 @@ class SQLDiff(object):
             reverse_type = DATA_TYPES_REVERSE_OVERRIDE[type_code]
         else:
             try:
-                reverse_type = self.introspection.data_types_reverse[type_code]
+                reverse_type = self.introspection.get_field_type(type_code, description)
             except KeyError:
                 reverse_type = self.get_field_db_type_lookup(type_code)
                 if not reverse_type:
@@ -261,6 +261,15 @@ class SQLDiff(object):
 
         if field and getattr(field, 'geography', False):
             kwargs['geography'] = True
+
+        if reverse_type == 'GeometryField':
+            geo_col = description[0]
+            # Getting a more specific field type and any additional parameters
+            # from the `get_geometry_type` routine for the spatial backend.
+            reverse_type, geo_params = self.introspection.get_geometry_type(table_name, geo_col)
+            if geo_params:
+                kwargs.update(geo_params)
+            reverse_type = 'django.contrib.gis.db.models.fields.%s' % reverse_type
 
         extra_kwargs = self.get_field_db_type_kwargs(kwargs, description, field, table_name, reverse_type)
         kwargs.update(extra_kwargs)
@@ -775,11 +784,6 @@ class PostgresqlSQLDiff(SQLDiff):
             1231: lambda: self.get_data_type_arrayfield(base_field='DecimalField'),
             # {'name': 'django.contrib.postgres.fields.ArrayField', 'kwargs': {'base_field': 'IntegerField'}},
             3802: 'django.contrib.postgres.fields.JSONField',
-            # postgis types (TODO: support is very incomplete)
-            17506: 'django.contrib.gis.db.models.fields.PointField',
-            16392: 'django.contrib.gis.db.models.fields.PointField',
-            55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
-            16946: 'django.contrib.gis.db.models.fields.MultiPolygonField'
         }
 
     def get_constraints(self, cursor, table_name, introspection):
