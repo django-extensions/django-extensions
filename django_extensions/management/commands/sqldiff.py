@@ -26,7 +26,7 @@ import sys
 import six
 from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
-from django.core.management import BaseCommand, CommandError, sql as _sql
+from django.core.management import BaseCommand, CommandError
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction, models
@@ -136,14 +136,10 @@ class SQLDiff(object):
         self.options = options
         self.dense = options.get('dense_output', False)
 
-        try:
-            self.introspection = connection.introspection
-        except AttributeError:
-            from django.db import get_introspection_module
-            self.introspection = get_introspection_module()
+        self.introspection = connection.introspection
 
         self.cursor = connection.cursor()
-        self.django_tables = self.get_django_tables(options.get('only_existing', True))
+        self.django_tables = self.introspection.django_table_names(only_existing=options.get('only_existing', True))
         # TODO: We are losing information about tables which are views here
         self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
@@ -193,18 +189,6 @@ class SQLDiff(object):
         # type: () -> Dict[int, Union[str, Callable]]
         return self.DATA_TYPES_REVERSE_OVERRIDE
 
-    def get_django_tables(self, only_existing):
-        try:
-            django_tables = self.introspection.django_table_names(only_existing=only_existing)
-        except AttributeError:
-            # backwards compatibility for before introspection refactoring (r8296)
-            try:
-                django_tables = _sql.django_table_names(only_existing=only_existing)
-            except AttributeError:
-                # backwards compatibility for before svn r7568
-                django_tables = _sql.django_table_list(only_existing=only_existing)
-        return django_tables
-
     def sql_to_dict(self, query, param):
         """ sql_to_dict(query, param) -> list of dicts
 
@@ -236,11 +220,7 @@ class SQLDiff(object):
             reverse_type = DATA_TYPES_REVERSE_OVERRIDE[type_code]
         else:
             try:
-                try:
-                    reverse_type = self.introspection.data_types_reverse[type_code]
-                except AttributeError:
-                    # backwards compatibility for before introspection refactoring (r8296)
-                    reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
+                reverse_type = self.introspection.get_field_type(type_code, description)
             except KeyError:
                 reverse_type = self.get_field_db_type_lookup(type_code)
                 if not reverse_type:
@@ -281,6 +261,15 @@ class SQLDiff(object):
 
         if field and getattr(field, 'geography', False):
             kwargs['geography'] = True
+
+        if reverse_type == 'GeometryField':
+            geo_col = description[0]
+            # Getting a more specific field type and any additional parameters
+            # from the `get_geometry_type` routine for the spatial backend.
+            reverse_type, geo_params = self.introspection.get_geometry_type(table_name, geo_col)
+            if geo_params:
+                kwargs.update(geo_params)
+            reverse_type = 'django.contrib.gis.db.models.fields.%s' % reverse_type
 
         extra_kwargs = self.get_field_db_type_kwargs(kwargs, description, field, table_name, reverse_type)
         kwargs.update(extra_kwargs)
@@ -795,11 +784,6 @@ class PostgresqlSQLDiff(SQLDiff):
             1231: lambda: self.get_data_type_arrayfield(base_field='DecimalField'),
             # {'name': 'django.contrib.postgres.fields.ArrayField', 'kwargs': {'base_field': 'IntegerField'}},
             3802: 'django.contrib.postgres.fields.JSONField',
-            # postgis types (TODO: support is very incomplete)
-            17506: 'django.contrib.gis.db.models.fields.PointField',
-            16392: 'django.contrib.gis.db.models.fields.PointField',
-            55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
-            16946: 'django.contrib.gis.db.models.fields.MultiPolygonField'
         }
 
     def get_constraints(self, cursor, table_name, introspection):
