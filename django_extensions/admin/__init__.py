@@ -146,7 +146,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
         specified in the related_search_fields class attribute.
         """
         if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:
-            model_name = db_field.remote_field.to._meta.object_name
+            model_name = db_field.remote_field.related_model._meta.object_name
             help_text = self.get_help_text(db_field.name, model_name)
             if kwargs.get('help_text'):
                 help_text = six.u('%s %s' % (kwargs['help_text'], help_text))
