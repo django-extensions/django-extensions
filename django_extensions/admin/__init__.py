@@ -146,11 +146,14 @@ class ForeignKeyAutocompleteAdminMixin(object):
         specified in the related_search_fields class attribute.
         """
         if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:
-            model_name = db_field.remote_field.related_model._meta.object_name
-            help_text = self.get_help_text(db_field.name, model_name)
+            # TODO: Remove me after Django 1.8 is unsupported
+            remote_field = db_field.remote_field if hasattr(db_field, 'remote_field') else db_field.rel
+            remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to
+
+            help_text = self.get_help_text(db_field.name, remote_field_model._meta.object_name)
             if kwargs.get('help_text'):
                 help_text = six.u('%s %s' % (kwargs['help_text'], help_text))
-            kwargs['widget'] = ForeignKeySearchInput(db_field.remote_field, self.related_search_fields[db_field.name])
+            kwargs['widget'] = ForeignKeySearchInput(remote_field, self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
         return super(ForeignKeyAutocompleteAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
 

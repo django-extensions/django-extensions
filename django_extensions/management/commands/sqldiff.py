@@ -377,8 +377,12 @@ class SQLDiff(object):
         for field_name, field in six.iteritems(fieldmap):
             if field_name not in db_fields:
                 field_output = []
-                if field.rel:
-                    field_output.extend([field.rel.to._meta.db_table, field.rel.to._meta.get_field(field.rel.field_name).column])
+
+                # TODO: Remove 'field.rel' after dropping Django 1.8 support
+                remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel
+                if remote_field:
+                    remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to
+                    field_output.extend([remote_field_model._meta.db_table, remote_field_model._meta.get_field(remote_field.field_name).column])
                     op = 'fkey-missing-in-db'
                 else:
                     op = 'field-missing-in-db'
