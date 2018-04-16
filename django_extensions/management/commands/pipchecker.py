@@ -6,8 +6,20 @@ from distutils.version import LooseVersion
 
 import pip
 from django.core.management.base import BaseCommand, CommandError
-from pip.req import parse_requirements
 
+try:
+    from pip._internal.download import PipSession
+    from pip._internal.req.req_file import parse_requirements
+    from pip._internal.utils.misc import get_installed_distributions
+except ImportError:
+    # pip < 10
+    try:
+        from pip import get_installed_distributions
+        from pip.download import PipSession
+        from pip.req import parse_requirements
+    except ImportError:
+        raise CommandError("Pip version 6 or higher is required")
+        
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
@@ -69,11 +81,6 @@ class Command(BaseCommand):
         else:
             raise CommandError("Requirements file(s) not found")
 
-        try:
-            from pip.download import PipSession
-        except ImportError:
-            raise CommandError("Pip version 6 or higher is required")
-
         self.reqs = {}
         with PipSession() as session:
             for filename in req_files:
@@ -124,7 +131,7 @@ class Command(BaseCommand):
         """
         If the requirement is frozen to pypi, check for a new version.
         """
-        for dist in pip.get_installed_distributions():
+        for dist in get_installed_distributions():
             name = dist.project_name
             if name in self.reqs.keys():
                 self.reqs[name]["dist"] = dist
