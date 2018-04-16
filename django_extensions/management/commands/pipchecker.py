@@ -19,7 +19,7 @@ except ImportError:
         from pip.req import parse_requirements
     except ImportError:
         raise CommandError("Pip version 6 or higher is required")
-        
+
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
