@@ -31,6 +31,7 @@ def copy_template(template_name, copy_to, **options):
     SUCCESS = getattr(style, 'SUCCESS', lambda x: x)
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
+    verbosity = options["verbosity"]
 
     # walks the template structure and copies it
     for d, subdirs, files in os.walk(template_dir):
@@ -46,10 +47,10 @@ def copy_template(template_name, copy_to, **options):
             path_old = os.path.join(d, f)
             path_new = os.path.join(copy_to, relative_dir, f).rstrip(".tmpl")
             if os.path.exists(path_new):
-                if options.get('verbosity', 1) > 1:
+                if verbosity > 1:
                     print(ERROR("%s already exists" % path_new))
                 continue
-            if options.get('verbosity', 1) > 1:
+            if verbosity > 1:
                 print(SUCCESS("%s" % path_new))
 
             with open(path_old, 'r') as fp_orig:

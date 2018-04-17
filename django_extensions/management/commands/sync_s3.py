@@ -201,25 +201,25 @@ class Command(BaseCommand):
         self.SYNC_S3_RENAME_GZIP_EXT = \
             getattr(settings, 'SYNC_S3_RENAME_GZIP_EXT', '.gz')
 
-        self.verbosity = int(options.get('verbosity'))
-        self.prefix = options.get('prefix')
-        self.do_gzip = options.get('gzip')
-        self.rename_gzip = options.get('renamegzip')
-        self.do_expires = options.get('expires')
-        self.do_force = options.get('force')
-        self.invalidate = options.get('invalidate')
-        self.DIRECTORIES = options.get('dir')
-        self.s3host = options.get('s3host')
-        self.default_acl = options.get('acl')
+        self.verbosity = options["verbosity"]
+        self.prefix = options['prefix']
+        self.do_gzip = options['gzip']
+        self.rename_gzip = options['renamegzip']
+        self.do_expires = options['expires']
+        self.do_force = options['force']
+        self.invalidate = options['invalidate']
+        self.DIRECTORIES = options['dir']
+        self.s3host = options['s3host']
+        self.default_acl = options['acl']
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        filter_list = options.get('filter_list')
+        filter_list = options['filter_list']
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
             self.FILTER_LIST = filter_list.split(',')
 
-        self.media_only = options.get('media_only')
-        self.static_only = options.get('static_only')
+        self.media_only = options['media_only']
+        self.static_only = options['static_only']
         # Get directories
         if self.media_only and self.static_only:
             raise CommandError("Can't use --media-only and --static-only together. Better not use anything...")

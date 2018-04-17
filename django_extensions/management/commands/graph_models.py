@@ -41,78 +41,103 @@ class Command(BaseCommand):
         """
         self.arguments = {
             '--pygraphviz': {
-                'action': 'store_true', 'dest': 'pygraphviz',
-                'help': 'Use PyGraphViz to generate the image.'},
-
-            '--pydot': {'action': 'store_true', 'dest': 'pydot',
-                        'help': 'Use PyDot(Plus) to generate the image.'},
-
+                'action': 'store_true',
+                'default': False,
+                'dest': 'pygraphviz',
+                'help': 'Use PyGraphViz to generate the image.',
+            },
+            '--pydot': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'pydot',
+                'help': 'Use PyDot(Plus) to generate the image.',
+            },
             '--disable-fields -d': {
-                'action': 'store_true', 'dest': 'disable_fields',
-                'help': 'Do not show the class member fields'},
-
+                'action': 'store_true',
+                'default': False,
+                'dest': 'disable_fields',
+                'help': 'Do not show the class member fields',
+            },
             '--group-models -g': {
-                'action': 'store_true', 'dest': 'group_models',
-                'help': 'Group models together respective to their '
-                'application'},
-
+                'action': 'store_true',
+                'default': False,
+                'dest': 'group_models',
+                'help': 'Group models together respective to their application',
+            },
             '--all-applications -a': {
-                'action': 'store_true', 'dest': 'all_applications',
-                'help': 'Automatically include all applications from '
-                'INSTALLED_APPS'},
-
+                'action': 'store_true',
+                'default': False,
+                'dest': 'all_applications',
+                'help': 'Automatically include all applications from INSTALLED_APPS',
+            },
             '--output -o': {
-                'action': 'store', 'dest': 'outputfile',
-                'help': 'Render output file. Type of output dependend on file '
-                'extensions. Use png or jpg to render graph to image.'},
-
+                'action': 'store',
+                'dest': 'outputfile',
+                'help': 'Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.',
+            },
             '--layout -l': {
-                'action': 'store', 'dest': 'layout', 'default': 'dot',
-                'help': 'Layout to be used by GraphViz for visualization. '
-                'Layouts: circo dot fdp neato nop nop1 nop2 twopi'},
-
+                'action': 'store',
+                'dest': 'layout',
+                'default': 'dot',
+                'help': 'Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi',
+            },
             '--verbose-names -n': {
-                'action': 'store_true', 'dest': 'verbose_names',
-                'help': 'Use verbose_name of models and fields'},
-
+                'action': 'store_true',
+                'default': False,
+                'dest': 'verbose_names',
+                'help': 'Use verbose_name of models and fields',
+            },
             '--language -L': {
-                'action': 'store', 'dest': 'language',
-                'help': 'Specify language used for verbose_name localization'},
-
+                'action': 'store',
+                'dest': 'language',
+                'help': 'Specify language used for verbose_name localization',
+            },
             '--exclude-columns -x': {
-                'action': 'store', 'dest': 'exclude_columns',
+                'action': 'store',
+                'dest': 'exclude_columns',
                 'help': 'Exclude specific column(s) from the graph. '
-                'Can also load exclude list from file.'},
-
+                'Can also load exclude list from file.',
+            },
             '--exclude-models -X': {
-                'action': 'store', 'dest': 'exclude_models',
-                'help': 'Exclude specific model(s) from the graph. Can also '
-                'load exclude list from file. Wildcards (*) are allowed.'},
-
+                'action': 'store',
+                'dest': 'exclude_models',
+                'help': 'Exclude specific model(s) from the graph. Can also load exclude list from file. Wildcards (*) are allowed.',
+            },
             '--include-models -I': {
-                'action': 'store', 'dest': 'include_models',
-                'help': 'Restrict the graph to specified models. Wildcards '
-                '(*) are allowed.'},
-
+                'action': 'store',
+                'dest': 'include_models',
+                'help': 'Restrict the graph to specified models. Wildcards (*) are allowed.',
+            },
             '--inheritance -e': {
-                'action': 'store_true', 'dest': 'inheritance', 'default': True,
-                'help': 'Include inheritance arrows (default)'},
-
-            '--no-inheritance -E': {
-                'action': 'store_false', 'dest': 'inheritance',
-                'help': 'Do not include inheritance arrows'},
-
-            '--hide-relations-from-fields -R': {
-                'action': 'store_false', 'dest': 'relations_as_fields',
+                'action': 'store_true',
                 'default': True,
-                'help': 'Do not show relations as fields in the graph.'},
-
+                'dest': 'inheritance',
+                'help': 'Include inheritance arrows (default)',
+            },
+            '--no-inheritance -E': {
+                'action': 'store_false',
+                'default': False,
+                'dest': 'inheritance',
+                'help': 'Do not include inheritance arrows',
+            },
+            '--hide-relations-from-fields -R': {
+                'action': 'store_false',
+                'default': True,
+                'dest': 'relations_as_fields',
+                'help': 'Do not show relations as fields in the graph.',
+            },
             '--disable-sort-fields -S': {
-                'action': 'store_false', 'dest': 'sort_fields',
-                'default': True, 'help': 'Do not sort fields'},
-
-            '--json': {'action': 'store_true', 'dest': 'json',
-                       'help': 'Output graph data as JSON'}
+                'action': 'store_false',
+                'default': True,
+                'dest': 'sort_fields',
+                'help': 'Do not sort fields',
+            },
+            '--json': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'json',
+                'help': 'Output graph data as JSON',
+            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -139,9 +164,9 @@ class Command(BaseCommand):
         if len(args) < 1 and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        use_pygraphviz = options.get('pygraphviz', False)
-        use_pydot = options.get('pydot', False)
-        use_json = options.get('json', False)
+        use_pygraphviz = options['pygraphviz']
+        use_pydot = options['pydot']
+        use_json = options['json']
         if use_json and (use_pydot or use_pygraphviz):
             raise CommandError("Cannot specify --json with --pydot or --pygraphviz")
 

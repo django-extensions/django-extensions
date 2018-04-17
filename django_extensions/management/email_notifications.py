@@ -50,10 +50,12 @@ class EmailNotificationCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--email-notifications',
                             action='store_true',
+                            default=False,
                             dest='email_notifications',
                             help='Send email notifications for command.')
         parser.add_argument('--email-exception',
                             action='store_true',
+                            default=False,
                             dest='email_exception',
                             help='Send email for command exceptions.')
 
@@ -74,7 +76,7 @@ class EmailNotificationCommand(BaseCommand):
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
         except Exception:
-            if options.get('email_exception', False) or getattr(self, 'email_exception', False):
+            if options['email_exception'] or getattr(self, 'email_exception', False):
                 self.send_email_notification(include_traceback=True)
             raise
 

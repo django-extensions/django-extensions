@@ -33,7 +33,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        router = options.get('router')
+        router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         schema = options['schema']
 
-        if options.get('interactive'):
+        if options['interactive']:
             confirm = input("""
 You have requested a database schema reset.
 This will IRREVERSIBLY DESTROY ALL data

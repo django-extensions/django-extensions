@@ -20,27 +20,35 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('-R', '--router', action='store',
-                    dest='router', default='default',
-                    help='Use this router-database other then default')
-        parser.add_argument('-s', '--style', action='store',
-                    dest='style', default=None,
-                    help='DSN format style: keyvalue, uri, pgpass, all')
-        parser.add_argument('-a', '--all', action='store_true',
-                    dest='all', default=False,
-                    help='Show DSN for all database routes')
-        parser.add_argument('-q', '--quiet', action='store_true',
-                    dest='quiet', default=False,
-                    help='Quiet mode only show DSN')
+        parser.add_argument(
+            '-R', '--router', action='store',
+            dest='router', default='default',
+            help='Use this router-database other then default'
+        )
+        parser.add_argument(
+            '-s', '--style', action='store',
+            dest='style', default=None,
+            help='DSN format style: keyvalue, uri, pgpass, all'
+        )
+        parser.add_argument(
+            '-a', '--all', action='store_true',
+            dest='all', default=False,
+            help='Show DSN for all database routes'
+        )
+        parser.add_argument(
+            '-q', '--quiet', action='store_true',
+            dest='quiet', default=False,
+            help='Quiet mode only show DSN'
+        )
 
     def handle(self, *args, **options):
         self.style = color_style()
-        all_routers = options.get('all')
+        all_routers = options['all']
 
         if all_routers:
             routers = settings.DATABASES.keys()
         else:
-            routers = [options.get('router')]
+            routers = [options['router']]
 
         for i, router in enumerate(routers):
             if i != 0:
@@ -49,8 +57,8 @@ class Command(BaseCommand):
 
     def show_dsn(self, router, options):
         dbinfo = settings.DATABASES.get(router)
-        quiet = options.get('quiet')
-        dsn_style = options.get('style')
+        quiet = options['quiet']
+        dsn_style = options['style']
 
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)

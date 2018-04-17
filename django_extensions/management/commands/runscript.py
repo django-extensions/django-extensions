@@ -90,21 +90,21 @@ class Command(EmailNotificationCommand):
         subdirs = []
         scripts = options['script']
 
-        if not options.get('noscripts'):
+        if not options['noscripts']:
             subdirs.append('scripts')
-        if options.get('infixtures'):
+        if options['infixtures']:
             subdirs.append('fixtures')
-        verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', False)
-        no_traceback = options.get('no_traceback', False)
+        verbosity = options["verbosity"]
+        show_traceback = options['traceback']
+        no_traceback = options['no_traceback']
         if no_traceback:
             show_traceback = False
         else:
             show_traceback = True
-        silent = options.get('silent', False)
+        silent = options['silent']
         if silent:
             verbosity = 0
-        email_notifications = options.get('email_notifications', False)
+        email_notifications = options['email_notifications']
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -115,7 +115,7 @@ class Command(EmailNotificationCommand):
             return
 
         def get_directory_from_chdir():
-            directory = options.get('chdir') or getattr(settings, 'RUNSCRIPT_CHDIR', None)
+            directory = options['chdir'] or getattr(settings, 'RUNSCRIPT_CHDIR', None)
             try:
                 check_is_directory(directory)
             except ArgumentTypeError as e:
@@ -123,7 +123,7 @@ class Command(EmailNotificationCommand):
             return directory
 
         def get_directory_basing_on_policy(script_module):
-            policy = options.get('dir_policy') or getattr(settings, 'RUNSCRIPT_CHDIR_POLICY', DirPolicyChoices.NONE)
+            policy = options['dir_policy'] or getattr(settings, 'RUNSCRIPT_CHDIR_POLICY', DirPolicyChoices.NONE)
             if policy == DirPolicyChoices.ROOT:
                 return settings.BASE_DIR
             elif policy == DirPolicyChoices.EACH:
@@ -132,9 +132,9 @@ class Command(EmailNotificationCommand):
                 return self.current_directory
 
         def set_directory(script_module):
-            if options.get('chdir'):
+            if options['chdir']:
                 directory = get_directory_from_chdir()
-            elif options.get('dir_policy'):
+            elif options['dir_policy']:
                 directory = get_directory_basing_on_policy(script_module)
             elif getattr(settings, 'RUNSCRIPT_CHDIR', None):
                 directory = get_directory_from_chdir()
@@ -221,7 +221,7 @@ class Command(EmailNotificationCommand):
 
             return modules
 
-        if options.get('script_args'):
+        if options['script_args']:
             script_args = options['script_args']
         else:
             script_args = []

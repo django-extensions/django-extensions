@@ -20,11 +20,11 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        project_root = options.get("path", None)
+        project_root = options["path"]
         if not project_root:
             project_root = getattr(settings, 'BASE_DIR', None)
 
-        verbosity = int(options.get("verbosity"))
+        verbosity = options["verbosity"]
         if not project_root:
             raise CommandError("No --path specified and settings.py does not contain BASE_DIR")
 

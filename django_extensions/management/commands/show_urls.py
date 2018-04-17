@@ -59,26 +59,31 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             "--unsorted", "-u", action="store_true", dest="unsorted",
-            help="Show urls unsorted but same order as found in url patterns")
+            help="Show urls unsorted but same order as found in url patterns"
+        )
         parser.add_argument(
             "--language", "-l", dest="language",
-            help="Only show this language code (useful for i18n_patterns)")
+            help="Only show this language code (useful for i18n_patterns)"
+        )
         parser.add_argument(
             "--decorator", "-d", action="append", dest="decorator", default=[],
-            help="Show the presence of given decorator on views")
+            help="Show the presence of given decorator on views"
+        )
         parser.add_argument(
             "--format", "-f", dest="format_style", default="dense",
-            help="Style of the output. Choices: %s" % FMTR.keys())
+            help="Style of the output. Choices: %s" % FMTR.keys()
+        )
         parser.add_argument(
             "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
-            help="Set the settings URL conf variable to use")
+            help="Set the settings URL conf variable to use"
+        )
 
     @signalcommand
     def handle(self, *args, **options):
         if args:
             appname, = args
 
-        if options.get('no_color', False):
+        if options['no_color']:
             style = no_style()
         else:
             style = color_style()
@@ -90,16 +95,16 @@ class Command(BaseCommand):
 
         self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
 
-        language = options.get('language', None)
+        language = options['language']
         if language is not None:
             translation.activate(language)
             self.LANGUAGES = [(code, name) for code, name in self.LANGUAGES if code == language]
 
-        decorator = options.get('decorator')
+        decorator = options['decorator']
         if not decorator:
             decorator = ['login_required']
 
-        format_style = options.get('format_style')
+        format_style = options['format_style']
         if format_style not in FMTR:
             raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
         pretty_json = format_style == 'pretty-json'
@@ -107,7 +112,7 @@ class Command(BaseCommand):
             format_style = 'json'
         fmtr = FMTR[format_style]
 
-        urlconf = options.get('urlconf')
+        urlconf = options['urlconf']
 
         views = []
         for settings_mod in settings_modules:
@@ -117,7 +122,7 @@ class Command(BaseCommand):
             try:
                 urlconf = __import__(getattr(settings_mod, urlconf), {}, {}, [''])
             except Exception as e:
-                if options.get('traceback', None):
+                if options['traceback']:
                     import traceback
                     traceback.print_exc()
                 print(style.ERROR("Error occurred while trying to load %s: %s" % (getattr(settings_mod, urlconf), str(e))))
@@ -160,7 +165,7 @@ class Command(BaseCommand):
                         decorator=decorator,
                     ).strip())
 
-        if not options.get('unsorted', False) and format_style != 'json':
+        if not options['unsorted'] and format_style != 'json':
             views = sorted(views)
 
         if format_style == 'aligned':

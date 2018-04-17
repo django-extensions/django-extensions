@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
         style = color_style()
         template_dirs = set(get_template_setting('DIRS'))
-        template_dirs |= set(options.get('includes', []))
+        template_dirs |= set(options['includes'])
         template_dirs |= set(getattr(settings, 'VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS', []))
 
         if not options['no_apps']:
@@ -76,7 +76,7 @@ class Command(BaseCommand):
         else:
             settings.TEMPLATE_DIRS = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
-        verbosity = int(options.get('verbosity', 1))
+        verbosity = options["verbosity"]
         errors = 0
 
         for template_dir in template_dirs:
@@ -93,7 +93,7 @@ class Command(BaseCommand):
                     except Exception as e:
                         errors += 1
                         self.stdout.write("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))
-                    if errors and options.get('break', False):
+                    if errors and options['break']:
                         raise CommandError("Errors found")
 
         if errors:

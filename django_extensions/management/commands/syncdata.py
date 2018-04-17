@@ -70,8 +70,8 @@ class Command(BaseCommand):
 
         self.style = no_style()
 
-        verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', False)
+        verbosity = options['verbosity']
+        show_traceback = options['traceback']
 
         # Keep a count of the installed objects and fixtures
         fixture_count = 0
@@ -149,7 +149,7 @@ class Command(BaseCommand):
                                     models.add(class_)
                                     obj.save()
 
-                                if options.get('remove'):
+                                if options['remove']:
                                     self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True

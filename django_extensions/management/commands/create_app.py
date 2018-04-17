@@ -26,16 +26,20 @@ class Command(BaseCommand):
         parser.add_argument('app_name')
         parser.add_argument(
             '--template', '-t', action='store', dest='app_template',
-            help='The path to the app template')
+            help='The path to the app template'
+        )
         parser.add_argument(
             '--parent_path', '-p', action='store', dest='parent_path',
-            help='The parent path of the application to be created')
+            help='The parent path of the application to be created'
+        )
         parser.add_argument(
-            '-d', action='store_true', dest='dia_parse',
-            help='Generate model.py and admin.py from [APP_NAME].dia file')
+            '-d', action='store_true', dest='dia_parse', default=False,
+            help='Generate model.py and admin.py from [APP_NAME].dia file'
+        )
         parser.add_argument(
             '--diagram', action='store', dest='dia_path',
-            help='The diagram path of the app to be created. -d is implied')
+            help='The diagram path of the app to be created. -d is implied'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -52,9 +56,9 @@ class Command(BaseCommand):
         project_dir = os.getcwd()
         project_name = os.path.split(project_dir)[-1]
         app_name = options['app_name']
-        app_template = options.get('app_template') or os.path.join(django_extensions.__path__[0], 'conf', 'app_template')
-        app_dir = os.path.join(options.get('parent_path') or project_dir, app_name)
-        dia_path = options.get('dia_path') or os.path.join(project_dir, '%s.dia' % app_name)
+        app_template = options['app_template'] or os.path.join(django_extensions.__path__[0], 'conf', 'app_template')
+        app_dir = os.path.join(options['parent_path'] or project_dir, app_name)
+        dia_path = options['dia_path'] or os.path.join(project_dir, '%s.dia' % app_name)
 
         if not os.path.exists(app_template):
             raise CommandError("The template path, %r, does not exist." % app_template)
@@ -62,7 +66,7 @@ class Command(BaseCommand):
         if not re.search(r'^\w+$', app_name):
             raise CommandError("%r is not a valid application name. Please use only numbers, letters and underscores." % app_name)
 
-        dia_parse = options.get('dia_path') or options.get('dia_parse')
+        dia_parse = options['dia_path'] or options['dia_parse']
         if dia_parse:
             if not os.path.exists(dia_path):
                 raise CommandError("The diagram path, %r, does not exist." % dia_path)

@@ -25,23 +25,25 @@ class Command(BaseCommand):
         parser.add_argument(
             '--prompt', dest='prompt_passwd', default=False,
             action='store_true',
-            help='Prompts for the new password to apply to all users')
+            help='Prompts for the new password to apply to all users'
+        )
         parser.add_argument(
             '--password', dest='default_passwd', default=DEFAULT_FAKE_PASSWORD,
-            help='Use this as default password.')
+            help='Use this as default password.'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
         if not settings.DEBUG:
             raise CommandError('Only available in debug mode')
 
-        if options.get('prompt_passwd', False):
+        if options['prompt_passwd']:
             from getpass import getpass
             passwd = getpass('Password: ')
             if not passwd:
                 raise CommandError('You must enter a valid password')
         else:
-            passwd = options.get('default_passwd', DEFAULT_FAKE_PASSWORD)
+            passwd = options['default_passwd']
 
         User = get_user_model()
         user = User()

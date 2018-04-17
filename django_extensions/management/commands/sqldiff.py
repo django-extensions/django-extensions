@@ -134,12 +134,12 @@ class SQLDiff(object):
         self.has_differences = None
         self.app_models = app_models
         self.options = options
-        self.dense = options.get('dense_output', False)
+        self.dense = options['dense_output']
 
         self.introspection = connection.introspection
 
         self.cursor = connection.cursor()
-        self.django_tables = self.introspection.django_table_names(only_existing=options.get('only_existing', True))
+        self.django_tables = self.introspection.django_table_names(only_existing=options['only_existing'])
         # TODO: We are losing information about tables which are views here
         self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
@@ -387,7 +387,7 @@ class SQLDiff(object):
                 else:
                     op = 'field-missing-in-db'
                 field_output.append(field.db_type(connection=connection))
-                if self.options.get('include_defaults') and field.has_default():
+                if self.options['include_defaults'] and field.has_default():
                     field_output.append('DEFAULT %s' % field.get_prep_value(field.get_default()))
                 if not field.null:
                     field_output.append('NOT NULL')
@@ -467,7 +467,7 @@ class SQLDiff(object):
             table_name = meta.db_table
             app_label = meta.app_label
 
-            if not self.options.get('include_proxy_models', False) and meta.proxy:
+            if not self.options['include_proxy_models'] and meta.proxy:
                 continue
 
             if cur_app_label != app_label:
@@ -525,7 +525,7 @@ class SQLDiff(object):
 
     def print_diff(self, style=no_style()):
         """ print differences to stdout """
-        if self.options.get('sql', True):
+        if self.options['sql']:
             self.print_diff_sql(style)
         else:
             self.print_diff_text(style)
@@ -991,29 +991,36 @@ to check/debug ur models compared to the real database tables and columns."""
         parser.add_argument('app_label', nargs='*')
         parser.add_argument(
             '--all-applications', '-a', action='store_true',
+            default=False,
             dest='all_applications',
-            help="Automaticly include all application from INSTALLED_APPS.")
+            help="Automaticly include all application from INSTALLED_APPS."
+        )
         parser.add_argument(
             '--not-only-existing', '-e', action='store_false',
+            default=True,
             dest='only_existing',
-            help="Check all tables that exist in the database, not only "
-            "tables that should exist based on models.")
+            help="Check all tables that exist in the database, not only tables that should exist based on models."
+        )
         parser.add_argument(
             '--dense-output', '-d', action='store_true', dest='dense_output',
-            help="Shows the output in dense format, normally output is "
-            "spreaded over multiple lines.")
+            default=False,
+            help="Shows the output in dense format, normally output is spreaded over multiple lines."
+        )
         parser.add_argument(
             '--output_text', '-t', action='store_false', dest='sql',
             default=True,
-            help="Outputs the differences as descriptive text instead of SQL")
+            help="Outputs the differences as descriptive text instead of SQL"
+        )
         parser.add_argument(
             '--include-proxy-models', action='store_true', dest='include_proxy_models',
             default=False,
-            help="Include proxy models in the graph")
+            help="Include proxy models in the graph"
+        )
         parser.add_argument(
             '--include-defaults', action='store_true', dest='include_defaults',
             default=False,
-            help="Include default values in SQL output (beta feature)")
+            help="Include default values in SQL output (beta feature)"
+        )
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -1023,7 +1030,7 @@ to check/debug ur models compared to the real database tables and columns."""
     def handle(self, *args, **options):
         from django.conf import settings
 
-        app_labels = options.get('app_label')
+        app_labels = options['app_label']
         engine = None
         if hasattr(settings, 'DATABASES'):
             engine = settings.DATABASES['default']['ENGINE']
@@ -1037,7 +1044,7 @@ to check/debug ur models compared to the real database tables and columns."""
 because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
-        if options.get('all_applications', False):
+        if options['all_applications']:
             app_models = apps.get_models(include_auto_created=True)
         else:
             if not app_labels:
@@ -1071,7 +1078,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
         try:
             super(Command, self).execute(*args, **options)
         except CommandError as e:
-            if options.get('traceback', False):
+            if options['traceback']:
                 raise
 
             # self.stderr is not guaranteed to be set here

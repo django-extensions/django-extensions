@@ -45,7 +45,7 @@ class Command(BaseCommand):
         a_dict = {}
 
         for attr in dir(settings):
-            if self.include_attr(attr, options.get('setting')):
+            if self.include_attr(attr, options['setting']):
                 value = getattr(settings, attr)
                 a_dict[attr] = value
 
@@ -53,8 +53,8 @@ class Command(BaseCommand):
             if setting not in a_dict:
                 raise CommandError('%s not found in settings.' % setting)
 
-        output_format = options.get('format', 'json')
-        indent = options.get('indent', 4)
+        output_format = options['format']
+        indent = options['indent']
 
         if output_format == 'json':
             print(json.dumps(a_dict, indent=indent))

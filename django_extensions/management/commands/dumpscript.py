@@ -88,7 +88,8 @@ class Command(BaseCommand):
         parser.add_argument('appname', nargs='+')
         parser.add_argument(
             '--autofield', action='store_false', dest='skip_autofield',
-            default=True, help='Include Autofields (like pk fields)')
+            default=True, help='Include Autofields (like pk fields)'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -338,7 +339,7 @@ class InstanceCode(Code):
         """ Add lines for any waiting fields that can be completed now. """
 
         code_lines = []
-        skip_autofield = self.options.get('skip_autofield', True)
+        skip_autofield = self.options['skip_autofield']
 
         # Process normal fields
         for field in list(self.waiting_list):

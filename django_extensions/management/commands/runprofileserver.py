@@ -109,25 +109,30 @@ class Command(BaseCommand):
         parser.add_argument(
             '--prof-path', dest='prof_path', default='/tmp',
             help='Specifies the directory which to save profile information '
-            'in.')
+            'in.'
+        )
         parser.add_argument(
             '--prof-file', dest='prof_file',
             default='{path}.{duration:06d}ms.{time}',
             help='Set filename format, default if '
-            '"{path}.{duration:06d}ms.{time}".')
+            '"{path}.{duration:06d}ms.{time}".'
+        )
         parser.add_argument(
             '--nomedia', action='store_true', dest='no_media', default=False,
-            help='Do not profile MEDIA_URL')
+            help='Do not profile MEDIA_URL'
+        )
         parser.add_argument(
             '--use-cprofile', action='store_true', dest='use_cprofile',
             default=False,
             help='Use cProfile if available, this is disabled per default '
-            'because of incompatibilities.')
+            'because of incompatibilities.'
+        )
         parser.add_argument(
             '--kcachegrind', action='store_true', dest='use_lsprof',
             default=False,
             help='Create kcachegrind compatible lsprof files, this requires '
-            'and automatically enables cProfile.')
+            'and automatically enables cProfile.'
+        )
 
         if USE_STATICFILES:
             parser.add_argument(
@@ -163,9 +168,9 @@ class Command(BaseCommand):
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % port)
 
-        use_reloader = options.get('use_reloader', True)
+        use_reloader = options['use_reloader']
         shutdown_message = options.get('shutdown_message', '')
-        no_media = options.get('no_media', False)
+        no_media = options['no_media']
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
 
         def inner_run():
@@ -176,8 +181,8 @@ class Command(BaseCommand):
                 HAS_HOTSHOT = True
             except ImportError:
                 HAS_HOTSHOT = False  # python 3.x
-            USE_CPROFILE = options.get('use_cprofile', False)
-            USE_LSPROF = options.get('use_lsprof', False)
+            USE_CPROFILE = options['use_cprofile']
+            USE_LSPROF = options['use_lsprof']
             if USE_LSPROF:
                 USE_CPROFILE = True
             if USE_CPROFILE:
@@ -193,9 +198,9 @@ class Command(BaseCommand):
             if not HAS_HOTSHOT and not USE_CPROFILE:
                 raise CommandError("Hotshot profile library not found. (and not using cProfile)")
 
-            prof_path = options.get('prof_path', '/tmp')
+            prof_path = options['prof_path']
 
-            prof_file = options.get('prof_file', '{path}.{duration:06d}ms.{time}')
+            prof_file = options['prof_file']
             if not prof_file.format(path='1', duration=2, time=3):
                 prof_file = '{path}.{duration:06d}ms.{time}'
                 print("Filename format is wrong. Default format used: '{path}.{duration:06d}ms.{time}'.")
@@ -255,12 +260,12 @@ class Command(BaseCommand):
             try:
                 handler = get_internal_wsgi_application()
                 if USE_STATICFILES:
-                    use_static_handler = options.get('use_static_handler', True)
-                    insecure_serving = options.get('insecure_serving', False)
+                    use_static_handler = options['use_static_handler']
+                    insecure_serving = options['insecure_serving']
                     if use_static_handler and (settings.DEBUG or insecure_serving):
                         handler = StaticFilesHandler(handler)
                 handler = make_profiler_handler(handler)
-                run(addr, int(port), handler, threading=options.get('use_threading', True))
+                run(addr, int(port), handler, threading=options['use_threading'])
             except socket.error as e:
                 # Use helpful error messages instead of ugly tracebacks.
                 ERRORS = {

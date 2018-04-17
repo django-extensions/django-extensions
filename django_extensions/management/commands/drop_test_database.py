@@ -17,22 +17,24 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--noinput', action='store_false', dest='interactive',
-            default=True, help='Tells Django to NOT prompt the user for '
-            'input of any kind.')
+            default=True, help='Tells Django to NOT prompt the user for input of any kind.'
+        )
         parser.add_argument(
             '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in '
-            'settings.py')
+            help='Use another user for the database then defined in settings.py'
+        )
         parser.add_argument(
             '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in '
-            'settings.py')
+            help='Use another password for the database then defined in settings.py'
+        )
         parser.add_argument(
             '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py')
+            help='Use another database name then defined in settings.py'
+        )
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py')
+            help='Use this router-database other then defined in settings.py'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -43,7 +45,7 @@ class Command(BaseCommand):
         if args:
             raise CommandError("reset_db takes no arguments")
 
-        router = options.get('router')
+        router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
@@ -54,8 +56,8 @@ class Command(BaseCommand):
         if engine == 'mysql':
             (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
-        user = options.get('user') or dbinfo.get('USER') or user
-        password = options.get('password') or dbinfo.get('PASSWORD') or password
+        user = options['user'] or dbinfo.get('USER') or user
+        password = options['password'] or dbinfo.get('PASSWORD') or password
 
         try:
             database_name = dbinfo['TEST']['NAME']
@@ -63,7 +65,7 @@ class Command(BaseCommand):
             database_name = None
 
         if database_name is None:
-            database_name = TEST_DATABASE_PREFIX + (options.get('dbname') or dbinfo.get('NAME'))
+            database_name = TEST_DATABASE_PREFIX + (options['dbname'] or dbinfo.get('NAME'))
 
         if database_name is None or database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
@@ -71,8 +73,8 @@ class Command(BaseCommand):
         database_host = dbinfo.get('HOST') or database_host
         database_port = dbinfo.get('PORT') or database_port
 
-        verbosity = int(options.get('verbosity', 1))
-        if options.get('interactive'):
+        verbosity = options["verbosity"]
+        if options['interactive']:
             confirm = input("""
 You have requested to drop the test database.
 This will IRREVERSIBLY DESTROY
@@ -139,5 +141,5 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         else:
             raise CommandError("Unknown database engine %s" % engine)
 
-        if verbosity >= 2 or options.get('interactive'):
+        if verbosity >= 2 or options['interactive']:
             print("Reset successful.")

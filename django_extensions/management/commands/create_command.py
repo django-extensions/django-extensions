@@ -23,14 +23,17 @@ class Command(AppCommand):
         parser.add_argument(
             '--name', '-n', action='store', dest='command_name',
             default='sample',
-            help='The name to use for the management command')
+            help='The name to use for the management command'
+        )
         parser.add_argument(
             '--base', '-b', action='store', dest='base_command',
             default='Base', help='The base class used for implementation of '
-            'this command. Should be one of Base, App, Label, or NoArgs')
+            'this command. Should be one of Base, App, Label, or NoArgs'
+        )
         parser.add_argument(
             '--dry-run', action='store_true', default=False,
-            help='Do not actually create any files')
+            help='Do not actually create any files'
+        )
 
     @signalcommand
     def handle_app_config(self, args, **options):
@@ -46,8 +49,9 @@ def copy_template(template_name, copy_to, **options):
     ERROR = getattr(style, 'ERROR', lambda x: x)
     SUCCESS = getattr(style, 'SUCCESS', lambda x: x)
 
-    command_name, base_command = options.get('command_name'), '%sCommand' % options.get('base_command')
-    dry_run = options.get('dry_run', False)
+    command_name, base_command = options['command_name'], '%sCommand' % options['base_command']
+    dry_run = options['dry_run']
+    verbosity = options["verbosity"]
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
 
@@ -68,10 +72,10 @@ def copy_template(template_name, copy_to, **options):
             if os.path.exists(path_new):
                 path_new = os.path.join(copy_to, relative_dir, f).rstrip(".tmpl")
                 if os.path.exists(path_new):
-                    if options.get('verbosity', 1) > 1:
+                    if verbosity > 1:
                         print(ERROR("%s already exists" % path_new))
                     continue
-            if options.get('verbosity', 1) > 1:
+            if verbosity > 1:
                 print(SUCCESS("%s" % path_new))
             with open(path_old, 'r') as fp_orig:
                 data = fp_orig.read()

@@ -14,15 +14,20 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('--name', dest='site_name', default=None,
-                            help='Use this as site name.')
-        parser.add_argument('--domain', dest='site_domain', default=None,
-                            help='Use this as site domain.')
+        parser.add_argument(
+            '--name', dest='site_name', default=None,
+            help='Use this as site name.'
+        )
+        parser.add_argument(
+            '--domain', dest='site_domain', default=None,
+            help='Use this as site domain.'
+        )
         parser.add_argument(
             '--system-fqdn', dest='set_as_system_fqdn', default=False,
             action="store_true",
             help='Use the systems FQDN (Fully Qualified Domain Name) as name '
-            'and domain. Can be used in combination with --name')
+            'and domain. Can be used in combination with --name'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -33,9 +38,9 @@ class Command(BaseCommand):
         except Site.DoesNotExist:
             raise CommandError("Default site with pk=1 does not exist")
         else:
-            name = options.get("site_name", None)
-            domain = options.get("site_domain", None)
-            if options.get('set_as_system_fqdn', False):
+            name = options["site_name"]
+            domain = options["site_domain"]
+            if options['set_as_system_fqdn']:
                 domain = socket.getfqdn()
                 if not domain:
                     raise CommandError("Cannot find systems FQDN")

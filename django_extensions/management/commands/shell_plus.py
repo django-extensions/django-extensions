@@ -31,51 +31,77 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--plain', action='store_true', dest='plain',
-            help='Tells Django to use plain Python, not BPython nor IPython.')
+            default=False,
+            help='Tells Django to use plain Python, not BPython nor IPython.'
+        )
         parser.add_argument(
             '--bpython', action='store_true', dest='bpython',
-            help='Tells Django to use BPython, not IPython.')
+            default=False,
+            help='Tells Django to use BPython, not IPython.'
+        )
         parser.add_argument(
             '--ptpython', action='store_true', dest='ptpython',
-            help='Tells Django to use PTPython, not IPython.')
+            default=False,
+            help='Tells Django to use PTPython, not IPython.'
+        )
         parser.add_argument(
             '--ptipython', action='store_true', dest='ptipython',
-            help='Tells Django to use PT-IPython, not IPython.')
+            default=False,
+            help='Tells Django to use PT-IPython, not IPython.'
+        )
         parser.add_argument(
             '--ipython', action='store_true', dest='ipython',
-            help='Tells Django to use IPython, not BPython.')
+            default=False,
+            help='Tells Django to use IPython, not BPython.'
+        )
         parser.add_argument(
             '--notebook', action='store_true', dest='notebook',
-            help='Tells Django to use IPython Notebook.')
+            default=False,
+            help='Tells Django to use IPython Notebook.'
+        )
         parser.add_argument(
             '--kernel', action='store_true', dest='kernel',
-            help='Tells Django to start an IPython Kernel.')
+            default=False,
+            help='Tells Django to start an IPython Kernel.'
+        )
         parser.add_argument(
             '--connection-file', action='store', dest='connection_file',
-            help='Specifies the connection file to use if using the --kernel option'),
+            help='Specifies the connection file to use if using the --kernel option'
+        )
         parser.add_argument(
             '--no-startup', action='store_true', dest='no_startup',
-            help='When using plain Python, ignore the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.')
+            default=False,
+            help='When using plain Python, ignore the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.'
+        )
         parser.add_argument(
             '--use-pythonrc', action='store_true', dest='use_pythonrc',
-            help='When using plain Python, load the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.')
+            default=False,
+            help='When using plain Python, load the PYTHONSTARTUP environment variable and ~/.pythonrc.py script.'
+        )
         parser.add_argument(
-            '--print-sql', action='store_true', default=False,
-            help="Print SQL queries as they're executed")
+            '--print-sql', action='store_true',
+            default=False,
+            help="Print SQL queries as they're executed"
+        )
         parser.add_argument(
             '--dont-load', action='append', dest='dont_load', default=[],
-            help='Ignore autoloading of some apps/models. Can be used '
-            'several times.')
+            help='Ignore autoloading of some apps/models. Can be used several times.'
+        )
         parser.add_argument(
-            '--quiet-load', action='store_true', default=False,
-            dest='quiet_load', help='Do not display loaded models messages')
+            '--quiet-load', action='store_true',
+            default=False,
+            dest='quiet_load', help='Do not display loaded models messages'
+        )
         parser.add_argument(
             '--vi', action='store_true', default=use_vi_mode(), dest='vi_mode',
-            help='Load Vi key bindings (for --ptpython and --ptipython)')
+            help='Load Vi key bindings (for --ptpython and --ptipython)'
+        )
         parser.add_argument(
-            '--no-browser', action='store_true', default=False,
+            '--no-browser', action='store_true',
+            default=False,
             dest='no_browser',
-            help='Don\'t open the notebook in a browser after startup.')
+            help='Don\'t open the notebook in a browser after startup.'
+        )
 
     def run_from_argv(self, argv):
         if '--' in argv[2:]:
@@ -121,7 +147,7 @@ class Command(BaseCommand):
                 argv=[],
                 user_ns=imported_objects,
             )
-            connection_file = options.get('connection_file')
+            connection_file = options['connection_file']
             if connection_file:
                 kwargs['connection_file'] = connection_file
             start_kernel(**kwargs)
@@ -143,7 +169,7 @@ class Command(BaseCommand):
                 except ImportError:
                     return traceback.format_exc()
 
-        no_browser = options.get('no_browser', False)
+        no_browser = options['no_browser']
 
         def install_kernel_spec(app, display_name, ipython_arguments):
             """install an IPython >= 3.0 kernelspec that loads django extensions"""
@@ -227,8 +253,8 @@ class Command(BaseCommand):
             readline.set_completer(rlcompleter.Completer(imported_objects).complete)
             readline.parse_and_bind("tab:complete")
 
-        use_pythonrc = options.get('use_pythonrc', False)
-        no_startup = options.get('no_startup', False)
+        use_pythonrc = options['use_pythonrc']
+        no_startup = options['no_startup']
 
         # We want to honor both $PYTHONSTARTUP and .pythonrc.py, so follow system
         # conventions and get $PYTHONSTARTUP first then .pythonrc.py.
@@ -304,7 +330,7 @@ class Command(BaseCommand):
             imported_objects = self.get_imported_objects(options)
             history_filename = os.path.expanduser('~/.ptpython_history')
             embed(globals=imported_objects, history_filename=history_filename,
-                  vi_mode=options.get('vi_mode', False), configure=run_config)
+                  vi_mode=options['vi_mode'], configure=run_config)
         return run_ptpython
 
     def get_ptipython(self, options):
@@ -323,7 +349,7 @@ class Command(BaseCommand):
             imported_objects = self.get_imported_objects(options)
             history_filename = os.path.expanduser('~/.ptpython_history')
             embed(user_ns=imported_objects, history_filename=history_filename,
-                  vi_mode=options.get('vi_mode', False), configure=run_config)
+                  vi_mode=options['vi_mode'], configure=run_config)
         return run_ptipython
 
     def set_application_name(self, options):
@@ -360,18 +386,18 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        use_kernel = options.get('kernel', False)
-        use_notebook = options.get('notebook', False)
-        use_ipython = options.get('ipython', False)
-        use_bpython = options.get('bpython', False)
-        use_plain = options.get('plain', False)
-        use_ptpython = options.get('ptpython', False)
-        use_ptipython = options.get('ptipython', False)
-        verbosity = int(options.get('verbosity', 1))
+        use_kernel = options['kernel']
+        use_notebook = options['notebook']
+        use_ipython = options['ipython']
+        use_bpython = options['bpython']
+        use_plain = options['plain']
+        use_ptpython = options['ptpython']
+        use_ptipython = options['ptipython']
+        verbosity = options["verbosity"]
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
         truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
-        if options.get("print_sql", False) or print_sql:
+        if options["print_sql"] or print_sql:
 
             # Code from http://gist.github.com/118990
             try:

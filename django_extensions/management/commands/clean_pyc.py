@@ -15,11 +15,15 @@ class Command(BaseCommand):
     requires_system_checks = False
 
     def add_arguments(self, parser):
-        parser.add_argument('--optimize', '-o', '-O', action='store_true',
-                            dest='optimize',
-                            help='Remove optimized python bytecode files')
-        parser.add_argument('--path', '-p', action='store', dest='path',
-                            help='Specify path to recurse into')
+        parser.add_argument(
+            '--optimize', '-o', '-O', action='store_true',
+            dest='optimize', default=False,
+            help='Remove optimized python bytecode files'
+        )
+        parser.add_argument(
+            '--path', '-p', action='store', dest='path',
+            help='Specify path to recurse into'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -27,11 +31,11 @@ class Command(BaseCommand):
         if not project_root:
             project_root = getattr(settings, 'BASE_DIR', None)
 
-        verbosity = int(options.get("verbosity"))
+        verbosity = options["verbosity"]
         if not project_root:
             raise CommandError("No --path specified and settings.py does not contain BASE_DIR")
 
-        exts = options.get("optimize", False) and "*.py[co]" or "*.pyc"
+        exts = options["optimize"] and "*.py[co]" or "*.pyc"
 
         for root, dirs, filenames in os.walk(project_root):
             for filename in fnmatch.filter(filenames, exts):
