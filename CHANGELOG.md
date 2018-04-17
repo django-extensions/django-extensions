@@ -1,6 +1,19 @@
 Changelog
 =========
 
+2.0.7
+-----
+
+Changes:
+  - Fix: pipchecker, pip 10.0.0 compatibility
+  - Fix: sqldiff, improve support of GIS fields by using Django introspection
+  - Fix: shell_plus, fix bug in windows when PYTHONPATH is defined
+  - Fix: shell_plus, Call execute on CursorWrapper instead of directly on cursor to ensure wrappers are run
+  - Fix: runserver_plus, Call execute on CursorWrapper instead of directly on cursor to ensure wrappers are run
+  - Improvement: sqldiff, drop old compatibility code
+  - Improvement: ForeignKeyAutocompleteAdminMixin, improvements for Django >1.9
+
+
 2.0.6
 -----
 
