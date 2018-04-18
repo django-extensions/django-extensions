@@ -213,11 +213,11 @@ You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.o
 You can also increase the poll interval when using `stat polling` from the default of 1 second. This
 will decrease the CPU load at the expense of file edits taking longer to pick up.
 
-This can be set two ways, in the django settings file:
+This can be set two ways, in the django settings file::
 
     RUNSERVERPLUS_POLLER_RELOADER_INTERVAL = 5
 
-or as a commad line argument:
+or as a commad line argument::
 
   $ python manage.py runserver_plus --reloader-interval 5
 
