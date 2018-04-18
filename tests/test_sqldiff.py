@@ -2,6 +2,7 @@
 from django.apps import apps
 from django.test import TestCase
 
+# from django.core.management import call_command
 from django_extensions.management.commands.sqldiff import SqliteSQLDiff, Command
 
 
@@ -26,3 +27,7 @@ class SqlDiffTests(TestCase):
 
     def test_sql_diff_with_proxy_models(self):
         self._include_proxy_models_testing(True)
+
+    # def test_sql_diff_run(self):
+    #     retcode = call_command("sqldiff", all_applications=True, migrate_for_tests=True)
+    #     self.assertEqual(retcode, 0)

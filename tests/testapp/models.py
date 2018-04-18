@@ -252,3 +252,8 @@ class Permission(models.Model):
 
 class UniqueTestAppModel(models.Model):
     global_id = models.CharField(max_length=32, unique=True)
+
+
+class SqlDiff(models.Model):
+    number = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
+    creator = models.CharField(max_length=20, null=True, blank=True)

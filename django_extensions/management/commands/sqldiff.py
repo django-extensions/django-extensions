@@ -24,6 +24,7 @@ KNOWN ISSUES:
 import importlib
 import sys
 import six
+import argparse
 from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
 from django.core.management import BaseCommand, CommandError
@@ -1021,6 +1022,11 @@ to check/debug ur models compared to the real database tables and columns."""
             default=False,
             help="Include default values in SQL output (beta feature)"
         )
+        parser.add_argument(
+            '--migrate-for-tests', action='store_true', dest='migrate_for_tests',
+            default=False,
+            help=argparse.SUPPRESS
+        )
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -1029,6 +1035,7 @@ to check/debug ur models compared to the real database tables and columns."""
     @signalcommand
     def handle(self, *args, **options):
         from django.conf import settings
+        from django.core.management import call_command
 
         app_labels = options['app_label']
         engine = None
@@ -1060,6 +1067,10 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')
+
+        migrate_for_tests = options['migrate_for_tests']
+        if migrate_for_tests:
+            call_command("migrate", *app_labels, no_input=True, run_syncdb=True)
 
         if not engine:
             engine = connection.__module__.split('.')[-2]
