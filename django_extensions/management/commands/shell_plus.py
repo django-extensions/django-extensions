@@ -26,6 +26,7 @@ def use_vi_mode():
 class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
     extra_args = None
+    tests_exit_before_shell_loop = False
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -499,5 +500,8 @@ class Command(BaseCommand):
                 print(shell)
             print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
             return
+
+        if self.tests_exit_before_shell_loop:
+            return 130
 
         shell()

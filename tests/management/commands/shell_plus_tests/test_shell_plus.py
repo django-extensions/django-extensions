@@ -8,6 +8,18 @@ from django_extensions.management.commands import shell_plus
 from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
 
 
+def test_shell_plus_plain_startup():
+    parser = shell_plus.Command().create_parser("test", "shell_plus")
+    args = ["--plain"]
+    options = parser.parse_args(args=args)
+
+    command = shell_plus.Command()
+    command.tests_exit_before_shell_loop = True
+    retcode = command.handle(**vars(options))
+
+    assert retcode == 130
+
+
 def test_shell_plus_get_imported_objects():
     command = shell_plus.Command()
     objs = command.get_imported_objects({})
