@@ -277,6 +277,8 @@ class Command(BaseCommand):
                     exec(compile(pythonrc_code, pythonrc, 'exec'), imported_objects) in globals(), locals()
                 except Exception:
                     traceback.print_exc()
+                    if self.tests_mode:
+                        raise
 
         def run_plain():
             code.interact(local=imported_objects)
