@@ -788,6 +788,9 @@ class PostgresqlSQLDiff(SQLDiff):
             1185: lambda: self.get_data_type_arrayfield(base_field='DateTimeField'),
             1231: lambda: self.get_data_type_arrayfield(base_field='DecimalField'),
             # {'name': 'django.contrib.postgres.fields.ArrayField', 'kwargs': {'base_field': 'IntegerField'}},
+            1186: lambda: self.get_data_type_arrayfield(base_field='DurationField'),
+            # 1186: 'django.db.models.fields.DurationField',
+            3614: 'django.contrib.postgres.search.SearchVectorField',
             3802: 'django.contrib.postgres.fields.JSONField',
         }
 
