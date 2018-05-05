@@ -66,3 +66,12 @@ SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
     'tests.testapp.scripts.invalid_import_script',
     'setup',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'tests.test_clear_caches.DefaultCacheMock',
+    },
+    'other': {
+        'BACKEND': 'tests.test_clear_caches.OtherCacheMock',
+    },
+}
