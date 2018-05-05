@@ -47,17 +47,17 @@ matrix:
       env: TOXENV=py36-dj20
     - python: 3.6
       env: TOXENV=py36-djmaster
-    - python: pypy2.7-5.8.0
+    - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj18
-    - python: pypy2.7-5.8.0
+    - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
-    - python: pypy3.5-5.8.0
+    - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-dj18
-    - python: pypy3.5-5.8.0
+    - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-dj111
-    - python: pypy3.5-5.8.0
+    - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-dj20
-    - python: pypy3.5-5.8.0
+    - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-djmaster
 
   allow_failures:
@@ -65,7 +65,7 @@ matrix:
       env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-djmaster
-    - python: pypy3.5-5.8.0
+    - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-djmaster
 
 install:
