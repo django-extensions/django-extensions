@@ -46,7 +46,7 @@ class LegacyCR(BaseCR):
 
 @add_metaclass(ABCMeta)
 class AppsOrderCR(LegacyCR):
-    APP_PRIORITIES = None  # type: Optional[List]
+    APP_PRIORITIES = None  # type: List[str]
 
     def resolve_collisions(self, namespace):
         assert self.APP_PRIORITIES is not None, "You must define APP_PRIORITIES in your resolver class!"
