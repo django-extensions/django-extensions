@@ -6,7 +6,6 @@ from typing import (  # NOQA
     Dict,
     List,
     Tuple,
-    Type,
     Union,
 )
 
@@ -196,7 +195,7 @@ def import_objects(options, style):
         return models_to_import
 
     def import_subclasses():
-        base_classes_to_import = getattr(settings, 'SHELL_PLUS_SUBCLASSES_IMPORT', [])  # type: List[Union[str, Type]]
+        base_classes_to_import = getattr(settings, 'SHELL_PLUS_SUBCLASSES_IMPORT', [])  # type: List[Union[str, type]]
         if base_classes_to_import:
             if not quiet_load:
                 print(style.SQL_TABLE("# Shell Plus Subclasses Imports"))

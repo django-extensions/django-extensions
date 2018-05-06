@@ -9,7 +9,6 @@ from typing import (  # NOQA
     Dict,
     List,
     Tuple,
-    Type,
     Union,
 )
 
@@ -25,7 +24,7 @@ class SubclassesFinder:
                 element = import_string(element)
             self.base_classes.append(element)
 
-    def _should_be_imported(self, candidate_to_import):  # type: (Tuple[str, Type]) -> bool
+    def _should_be_imported(self, candidate_to_import):  # type: (Tuple[str, type]) -> bool
         for base_class in self.base_classes:
             if issubclass(candidate_to_import[1], base_class):
                 return True
