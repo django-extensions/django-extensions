@@ -35,7 +35,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
 
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
-        obj = self.rel.to._default_manager.get(**{key: value})
+        obj = self.rel.related_model._default_manager.get(**{key: value})
 
         return Truncator(obj).words(14, truncate='...')
 
@@ -46,7 +46,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def render(self, name, value, attrs=None):
         if attrs is None:
             attrs = {}
-        opts = self.rel.to._meta
+        opts = self.rel.related_model._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
         related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))
