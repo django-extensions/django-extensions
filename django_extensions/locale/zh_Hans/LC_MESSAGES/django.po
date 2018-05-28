@@ -77,7 +77,7 @@ msgstr "立即生效请保持为空"
 
 #: db/models.py:99 mongodb/models.py:65
 msgid "keep empty for indefinite activation"
-msgstr "永久生活请保持为空"
+msgstr "永久生效请保持为空"
 
 #: mongodb/fields/__init__.py:22
 #, python-format
