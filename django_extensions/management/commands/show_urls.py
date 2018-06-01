@@ -207,7 +207,7 @@ class Command(BaseCommand):
         """
         Return a list of views from a list of urlpatterns.
 
-        Each object in the returned list is a two-tuple: (view_func, regex)
+        Each object in the returned list is a three-tuple: (view_func, regex, name)
         """
         views = []
         for p in urlpatterns:
