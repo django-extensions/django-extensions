@@ -14,6 +14,14 @@ Current Admin Extensions
   enable a search input field for ForeginKey fields in AdminInline classes.
 
 
+Known Issues
+------------
+
+* SECURITY ISSUE: Autocompletion does not check permissions nor the requested models on the autocompletion view. This can be used by users with access to the admin to expose data from other models. Please be aware and careful when using *ForeignKeyAutocompleteAdmin*.
+
+* The current version of the *ForeignKeyAutocompleteAdmin* has issues with recent Django versions.
+
+
 Example Usage
 -------------
 
