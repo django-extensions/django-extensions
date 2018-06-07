@@ -13,6 +13,15 @@ Current Admin Extensions
   in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
   enable a search input field for ForeginKey fields in AdminInline classes.
 
+Depreciation
+------------
+
+Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefor we are deprecated this extension and high encourage everybody to update to it.
+
+This code will be removed in the near feature when support for Django older then 2.0 is dropped.
+
+For more information see: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
+
 
 Known Issues
 ------------
@@ -20,6 +29,8 @@ Known Issues
 * SECURITY ISSUE: Autocompletion does not check permissions nor the requested models on the autocompletion view. This can be used by users with access to the admin to expose data from other models. Please be aware and careful when using *ForeignKeyAutocompleteAdmin*.
 
 * The current version of the *ForeignKeyAutocompleteAdmin* has issues with recent Django versions.
+
+* We strongly suggest project using this extension to update to Django 2.0 and use the native *autocomplete_fields*.
 
 
 Example Usage
