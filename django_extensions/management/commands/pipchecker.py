@@ -117,7 +117,7 @@ class Command(BaseCommand):
         return json.loads(urlopen(req).read())
 
     def _is_stable(self, version):
-        return not re.search(r'([ab]|rc)\d+$', str(version))
+        return not re.search(r'([ab]|rc|dev)\d+$', str(version))
 
     def _available_version(self, dist_version, available):
         if self._is_stable(dist_version):
