@@ -54,5 +54,5 @@ class Command(BaseCommand):
                             if annotation_lines:
                                 self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    self.stdout.write("  * %s" % annotation)
+                                    self.stdout.write(u"  * %s" % annotation.decode('utf-8'))
                                 self.stdout.write("")
