@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-#TODO: Russian text followed: Это техт на кириллице
+# TODO: Russian text followed: Это техт на кириллице
