@@ -3,6 +3,7 @@ from __future__ import with_statement
 
 import os
 import re
+import six
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -54,5 +55,5 @@ class Command(BaseCommand):
                             if annotation_lines:
                                 self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    self.stdout.write(u"  * %s" % annotation.decode('utf-8'))
+                                    self.stdout.write("  * %s" % annotation.decode('utf-8') if six.PY2 else annotation)
                                 self.stdout.write("")
