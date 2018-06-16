@@ -26,4 +26,5 @@ def test_with_utf8(capsys, settings):
     print_settings.run_from_argv(['manage.py', 'notes'])
 
     out, err = capsys.readouterr()
+    print(out)
     assert 'tests/testapp/file_with_utf8_notes.py:\n  * [  3] TODO  Russian text followed: Это техт на кириллице\n\n' in out
