@@ -55,8 +55,8 @@ class Command(BaseCommand):
                             if annotation_lines:
                                 self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    if six.PY3:
-                                        self.stdout.write("  * %s" % annotation)
-                                    else:
+                                    if six.PY2:
                                         self.stdout.write("  * %s" % annotation.decode('utf-8'))
+                                    else:
+                                        self.stdout.write("  * %s" % annotation)
                                 self.stdout.write("")
