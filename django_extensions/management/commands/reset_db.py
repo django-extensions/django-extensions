@@ -127,7 +127,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             connection = Database.connect(**kwargs)
             drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
-            utf8_support = 'CHARACTER SET utf8' if options['no_utf8_support'] else ''
+            utf8_support = '' if options['no_utf8_support'] else 'CHARACTER SET utf8'
             create_query = 'CREATE DATABASE `%s` %s' % (database_name, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
