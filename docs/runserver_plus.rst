@@ -238,6 +238,8 @@ to generate a stable PIN between restarts in which case an explicit PIN can be p
 variable WERKZEUG_DEBUG_PIN. This can be set to a number and will become the PIN. This variable can also be set
 to the value off to disable the PIN check entirely.
 
+The PIN can also be disabled by passing the argument ``--nopin`` when calling the runserver_plus command.
+
 If the PIN is entered too many times incorrectly the server needs to be restarted.
 
 **This feature is not supposed to entirely secure the debugger. It’s intended to make it harder for an attacker to
