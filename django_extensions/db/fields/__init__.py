@@ -149,7 +149,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def create_slug(self, model_instance, add):
         slug = getattr(model_instance, self.attname)
-        if slug and not self.overwrite:
+        if slug and not self.overwrite and not add:
             # Existing slug and not configured to overwrite - Short-circuit
             # here to prevent slug generation when not required.
             return slug

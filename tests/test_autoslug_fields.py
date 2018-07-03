@@ -143,6 +143,15 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         self.assertEqual(m.slug, 'the-title-is-foo')
 
+    def test_copy_model_generates_new_slug(self):
+        m = SluggedTestModel(title='foo')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m.pk = None
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
