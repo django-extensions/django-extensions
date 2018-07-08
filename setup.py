@@ -157,7 +157,8 @@ additions for Django projects. See the project page for more information:
         'pytest-cov',
         'tox',
         'mock',
-        'vobject'
+        'vobject',
+        'Werkzeug'
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
