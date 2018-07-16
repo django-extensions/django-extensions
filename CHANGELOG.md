@@ -1,6 +1,28 @@
 Changelog
 =========
 
+2.0.8
+-----
+
+Please stop using ForeignKeyAutocompleteAdmin edition :-)
+
+Changes:
+  - Fix: special markers in runserver_plus.rst
+  - Fix: shell_plus, refactor reading pythonrc file outside of exec(compile(...))
+  - Fix: reset_db, fix default utf8 support
+  - Fix: autoslugfield, Fix autoslug generation when existing model is copied
+  - Improvement: Cleanup management commands options after argparse migration #916
+  - Improvement: sqldiff, add more tests
+  - Improvement: sqldiff, add DurationField and SearchVectorField
+  - Improvement: shell_plus, add more tests
+  - Improvement: shell_plus, backport macos fix for tab completion
+  - Improvement: clear_cache, add --all option
+  - Improvement: pipchecker, treat dev versions as unstable
+  - Deprecation: ForeignKeyAutocompleteAdmin, Django 2.0 has similar capabilities, which are much better supported.
+
+
+
+
 2.0.7
 -----
 
