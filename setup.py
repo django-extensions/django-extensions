@@ -129,13 +129,18 @@ elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
 else:
     extras_require[":python_version<'3.5'"] = ["typing"]
 
+long_description = """django-extensions bundles several useful
+additions for Django projects. See the project page for more information:
+  http://github.com/django-extensions/django-extensions"""
+if os.path.isfile("README.rst"):
+    with open("README.rst") as f:
+        long_description = f.read()
+
 setup(
     name='django-extensions',
     version=version,
     description="Extensions for Django",
-    long_description="""django-extensions bundles several useful
-additions for Django projects. See the project page for more information:
-  http://github.com/django-extensions/django-extensions""",
+    long_description=long_description,
     author='Michael Trier',
     author_email='mtrier@gmail.com',
     maintainer='Bas van Oostveen',
