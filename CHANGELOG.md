@@ -1,11 +1,18 @@
 Changelog
 =========
 
+2.1.0
+
+Changes:
+  - Fix: travis
+
+
 2.0.9
 -----
 
 Changes:
   - Improvement: use README as project description on PyPI
+
 
 2.0.8
 -----
