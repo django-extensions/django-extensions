@@ -66,7 +66,7 @@ from typing import List  # NOQA
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.six import StringIO
+from django.utils.six import BytesIO
 
 from django_extensions.management.utils import signalcommand
 
@@ -288,7 +288,7 @@ class Command(BaseCommand):
 
     def compress_string(self, s):
         """Gzip a given string."""
-        zbuf = StringIO()
+        zbuf = BytesIO()
         zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
         zfile.write(s)
         zfile.close()
