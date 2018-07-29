@@ -26,7 +26,7 @@ active status.
 
 * *TitleDescriptionModel* - This Abstract Base Class model provides ``title`` and ``description`` fields.
 
-The ``title`` field is ``CharField`` with a maximun length of 255 characters,
+The ``title`` field is ``CharField`` with a maximum length of 255 characters,
 non-nullable. ``description``. On the other hand, ``description`` is a
 nullable ``TextField``.
 
