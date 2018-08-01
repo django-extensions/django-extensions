@@ -257,3 +257,11 @@ class UniqueTestAppModel(models.Model):
 class SqlDiff(models.Model):
     number = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
     creator = models.CharField(max_length=20, null=True, blank=True)
+
+
+class SqlDiffUniqueTogether(models.Model):
+    aaa = models.CharField(max_length=20)
+    bbb = models.CharField(max_length=20)
+
+    class Meta:
+        unique_together = ['aaa', 'bbb']

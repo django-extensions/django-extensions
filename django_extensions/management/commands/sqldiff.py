@@ -480,7 +480,6 @@ class SQLDiff(object):
                 self.add_difference('table-missing-in-db', table_name)
                 continue
 
-            table_indexes = self.introspection.get_indexes(self.cursor, table_name)
             if hasattr(self.introspection, 'get_constraints'):
                 table_constraints = self.introspection.get_constraints(self.cursor, table_name)
             else:
@@ -498,6 +497,16 @@ class SQLDiff(object):
                 self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
+
+            # map table_contraints into table_indexes
+            table_indexes = {}
+            for _, dct in table_constraints.items():
+                columns = dct['columns']
+                if len(columns) == 1:
+                    table_indexes[columns[0]] = {
+                        'primary_key': dct['primary_key'],
+                        'unique': dct['unique'],
+                    }
 
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
