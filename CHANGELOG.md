@@ -2,6 +2,7 @@ Changelog
 =========
 
 2.1.0
+-----
 
 Changes:
   - Fix: travis
