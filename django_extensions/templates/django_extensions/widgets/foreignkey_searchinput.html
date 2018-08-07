@@ -1,8 +1,6 @@
 {% load i18n staticfiles %}
 <input type="text" id="lookup_{{ name }}" value="{{ label }}" style="display:none;" />
-<a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);">
-    <img src="{% static "admin/img/selector-search.gif" %}" width="16" height="16" alt="{% trans "Lookup" %}" />
-</a>
+<a href="{{ related_url }}{{ url }}" class="related-lookup" id="lookup_id_{{ name }}" onclick="return showRelatedObjectLookupPopup(this);"></a>
 <script type="text/javascript">
 (function($) {
     var current_value = $('#id_{{ name }}').val();
