@@ -250,6 +250,11 @@ class InstanceCode(Code):
 
         self.many_to_many_waiting_list = {}
         for field in self.model._meta.many_to_many:
+            try:
+                if not field.remote_field.through._meta.auto_created:
+                    continue
+            except AttributeError:
+                pass
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
     def get_lines(self, force=False):
@@ -406,12 +411,10 @@ class Script(Code):
             This isn't essential, but makes the script look nicer because
             more instances can be defined on their first try.
         """
-
-        # Max number of cycles allowed before we call it an infinite loop.
-        MAX_CYCLES = 5
-
         model_queue = []
         number_remaining_models = len(models)
+        # Max number of cycles allowed before we call it an infinite loop.
+        MAX_CYCLES = number_remaining_models
         allowed_cycles = MAX_CYCLES
 
         while number_remaining_models > 0:
