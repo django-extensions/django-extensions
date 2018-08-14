@@ -108,6 +108,13 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         else:
             self._populate_from = populate_from
 
+        if not callable(populate_from):
+            if not isinstance(populate_from, six.string_types):
+                populate_from = (populate_from, )
+
+            if not all(isinstance(e, six.string_types) for e in populate_from):
+                raise TypeError("'populate_from' must be str or list[str] found `%s`" % populate_from)
+
         self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
