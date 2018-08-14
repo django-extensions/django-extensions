@@ -185,12 +185,10 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             # A function has been provided
             return "%s" % lookup_value(model_instance)
 
-        # hotfix. case: django LOOKUP_SEP is of type str but the lookup_value is of type bytes
-        if isinstance(LOOKUP_SEP, str) and isinstance(lookup_value, (bytes, bytearray)):
-            lookup_value_path = lookup_value.split(LOOKUP_SEP.encode())
-            lookup_value_path = [lvp.decode() for lvp in lookup_value_path]
-        else:
-            lookup_value_path = lookup_value.split(LOOKUP_SEP)
+        if isinstance(lookup_value, (bytes, bytearray)):
+            lookup_value = lookup_value.decode()
+
+        lookup_value_path = lookup_value.split(LOOKUP_SEP)
 
         attr = model_instance
         for elem in lookup_value_path:

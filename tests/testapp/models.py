@@ -82,6 +82,14 @@ class SluggedTestModel(models.Model):
         app_label = 'django_extensions'
 
 
+class SluggedTestBytesLookupValueModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from=b'title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class ChildSluggedTestModel(SluggedTestModel):
     class Meta:
         app_label = 'django_extensions'

@@ -12,7 +12,7 @@ from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
     FKSluggedTestModel, FKSluggedTestModelCallable, \
-    FunctionSluggedTestModel, ModelMethodSluggedTestModel
+    FunctionSluggedTestModel, ModelMethodSluggedTestModel, SluggedTestBytesLookupValueModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -24,6 +24,11 @@ class AutoSlugFieldTest(TestCase):
 
     def test_auto_create_slug(self):
         m = SluggedTestModel(title='foo')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+    def test_lookup_value_as_being_bytes(self):
+        m = SluggedTestBytesLookupValueModel(title='foo')
         m.save()
         self.assertEqual(m.slug, 'foo')
 
