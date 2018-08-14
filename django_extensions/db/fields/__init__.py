@@ -192,7 +192,11 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             # A function has been provided
             return "%s" % lookup_value(model_instance)
 
+        if isinstance(lookup_value, (bytes, bytearray)):
+            lookup_value = lookup_value.decode()
+
         lookup_value_path = lookup_value.split(LOOKUP_SEP)
+
         attr = model_instance
         for elem in lookup_value_path:
             try:
