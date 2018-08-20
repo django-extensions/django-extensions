@@ -234,8 +234,8 @@ class Command(BaseCommand):
                     _namespace = (p.namespace or namespace)
                 pattern = describe_pattern(p)
                 if isinstance(p, LocaleRegexURLResolver):
-                    for langauge in self.LANGUAGES:
-                        with translation.override(langauge[0]):
+                    for language in self.LANGUAGES:
+                        with translation.override(language[0]):
                             views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
                 else:
                     views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
