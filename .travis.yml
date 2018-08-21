@@ -13,6 +13,10 @@ matrix:
       env: TOXENV=py35-flake8
     - python: 3.6
       env: TOXENV=py36-flake8
+    - python: 3.7
+      env: TOXENV=py37-flake8
+      dist: xenial
+      sudo: required
     - python: 3.6
       env: TOXENV=precommit
     - python: 3.6
@@ -43,6 +47,18 @@ matrix:
       env: TOXENV=py36-dj21
     - python: 3.6
       env: TOXENV=py36-djmaster
+    - python: 3.7
+      env: TOXENV=py37-dj20
+      dist: xenial
+      sudo: required
+    - python: 3.7
+      env: TOXENV=py37-dj21
+      dist: xenial
+      sudo: required
+    - python: 3.7
+      env: TOXENV=py37-djmaster
+      dist: xenial
+      sudo: required
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
     - python: pypy3.5-5.10.0
@@ -59,6 +75,8 @@ matrix:
       env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-djmaster
+    - python: 3.7
+      env: TOXENV=py37-djmaster
     - python: pypy3.5-5.10.0
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0
