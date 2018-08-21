@@ -668,9 +668,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
         # content types in this script, as they can be generated again
         # automatically.
         # NB: Not sure if "is" will always work
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model is ContentType:
+        if field.remote_field.model is ContentType:
             return 'ContentType.objects.get(app_label="%s", model="%s")' % (value.app_label, value.model)
 
         # Generate an identifier (key) for this foreign object
@@ -717,21 +715,17 @@ def check_dependencies(model, model_queue, avaliable_models):
     # For each ForeignKey or ManyToMany field, check that a link is possible
 
     for field in model._meta.fields:
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        if not remote_field:
+        if not field.remote_field:
             continue
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model.__name__ not in allowed_links:
-            if remote_field_model not in avaliable_models:
+        if field.remote_field.model.__name__ not in allowed_links:
+            if field.remote_field.model not in avaliable_models:
                 continue
             return False
 
     for field in model._meta.many_to_many:
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        if not remote_field:
+        if not field.remote_field:
             continue
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model.__name__ not in allowed_links:
+        if field.remote_field.model.__name__ not in allowed_links:
             return False
 
     return True

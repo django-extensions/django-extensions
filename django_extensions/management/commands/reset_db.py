@@ -4,7 +4,6 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import logging
 
-import django
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
@@ -135,10 +134,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection.query(create_query)
 
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-            if engine == 'postgresql' and django.VERSION < (1, 9):
-                import psycopg as Database  # NOQA
-            elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-                import psycopg2 as Database  # NOQA
+            import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
             if user:
@@ -177,13 +173,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             if owner:
                 create_query += " WITH OWNER = \"%s\" " % owner
             create_query += " ENCODING = 'UTF8'"
-
-            if engine == 'postgis' and django.VERSION < (1, 9):
-                # For PostGIS 1.5, fetch template name if it exists
-                from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper
-                postgis_template = DatabaseWrapper(dbinfo).template_postgis
-                if postgis_template is not None:
-                    create_query += ' TEMPLATE = %s' % postgis_template
 
             if settings.DEFAULT_TABLESPACE:
                 create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
