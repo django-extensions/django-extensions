@@ -122,8 +122,7 @@ class ModelGraph(object):
 
         t = type(field).__name__
         if isinstance(field, (OneToOneField, ForeignKey)):
-            remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-            t += " ({0})".format(remote_field.field_name)
+            t += " ({0})".format(field.remote_field.field_name)
         # TODO: ManyToManyField, GenericRelation
 
         return {
@@ -152,20 +151,18 @@ class ModelGraph(object):
             label = '{} ({})'.format(label, force_str(related_query_name))
 
         # handle self-relationships and lazy-relationships
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if isinstance(remote_field_model, six.string_types):
-            if remote_field_model == 'self':
+        if isinstance(field.remote_field.model, six.string_types):
+            if field.remote_field.model == 'self':
                 target_model = field.model
             else:
-                if '.' in remote_field_model:
-                    app_label, model_name = remote_field_model.split('.', 1)
+                if '.' in field.remote_field.model:
+                    app_label, model_name = field.remote_field.model.split('.', 1)
                 else:
                     app_label = field.model._meta.app_label
-                    model_name = remote_field_model
+                    model_name = field.remote_field.model
                 target_model = apps.get_model(app_label, model_name)
         else:
-            target_model = remote_field_model
+            target_model = field.remote_field.model
 
         _rel = self.get_relation_context(target_model, field, label, extras)
 
@@ -329,8 +326,7 @@ class ModelGraph(object):
         if self.skip_field(field):
             return newmodel
         if isinstance(field, ManyToManyField):
-            remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-            if hasattr(remote_field.through, '_meta') and remote_field.through._meta.auto_created:
+            if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
                 newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]'))
         elif isinstance(field, GenericRelation):
             newmodel['relations'].append(self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]')))

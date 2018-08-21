@@ -2,11 +2,9 @@
 import mock
 import os
 import sys
-import shutil
 import logging
 import importlib
 
-import django
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
 from django.utils.six import StringIO, PY3
@@ -69,28 +67,6 @@ class ShowTemplateTagsTests(TestCase):
         self.assertIn('django_extensions', output)
         # let's check at least one
         self.assertIn('truncate_letters', output)
-
-
-class CreateAppTests(TestCase):
-    def test_command(self):
-        if django.VERSION[:2] >= (1, 10):
-            return
-
-        tmpname = "testapptest"
-        # TODO better temp dir handling
-        tmpdir = "/tmp"
-        tmppath = os.path.join(tmpdir, tmpname)
-        self.assertFalse(os.path.isdir(tmppath))
-
-        out = StringIO()
-        try:
-            call_command('create_app', tmpname, parent_path=tmpdir, stdout=out)
-        finally:
-            if os.path.isdir(tmppath):
-                shutil.rmtree(tmppath)
-
-        output = out.getvalue()
-        self.assertIn("Application '%s' created." % tmpname, output)
 
 
 class AdminGeneratorTests(TestCase):

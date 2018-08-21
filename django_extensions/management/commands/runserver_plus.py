@@ -13,9 +13,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
-from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.backends import utils
-from django.db.migrations.executor import MigrationExecutor
 from django.utils.autoreload import gen_filenames
 
 from django_extensions.management.technical_response import \
@@ -415,18 +413,6 @@ class Command(BaseCommand):
         cert_file = cls._determine_path_for_file(options['cert_path'], options['key_file_path'], "crt")
         key_file = cls._determine_path_for_file(options['key_file_path'], options['cert_path'], "key")
         return cert_file, key_file
-
-    if django.VERSION[:2] <= (1, 9):
-        def check_migrations(self):
-            """
-            Checks to see if the set of migrations on disk matches the
-            migrations in the database. Prints a warning if they don't match.
-            """
-            executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
-            plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-            if plan and self.show_startup_messages:
-                self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
-                self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
 
 
 def set_werkzeug_log_color():
