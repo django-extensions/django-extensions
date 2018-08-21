@@ -54,7 +54,6 @@ Contents
    command_signals
    admin_extensions
    shell_plus
-   create_app
    delete_squashed_migrations
    dumpscript
    runscript

@@ -11,10 +11,6 @@ Current Command Extensions
 
 * *clean_pyc* - Remove all python bytecode compiled files from the project
 
-* `create_app`_ - Creates an application directory structure for the specified
-  app name.  This command allows you to specify the --template option where you
-  can indicate a template directory structure to use as your default.
-
 * *create_command* - Creates a command extension directory structure within the
   specified application.  This makes it easy to get started with adding a
   command extension to your application.
@@ -130,7 +126,6 @@ Current Command Extensions
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
 
-.. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
 .. _`print_settings`: print_settings.html
