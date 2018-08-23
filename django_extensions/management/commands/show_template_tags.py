@@ -2,7 +2,7 @@
 import inspect
 import os
 
-from django.conf import settings
+from django.apps import apps
 from django.core.management import color
 from django.core.management import BaseCommand
 from django.utils import termcolors
@@ -72,38 +72,33 @@ class Command(BaseCommand):
 
         style = color_style()
 
-        if getattr(settings, 'ADMIN_FOR', None):
-            settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
-        else:
-            settings_modules = [settings]
-
-        for settings_mod in settings_modules:
-            for app in settings_mod.INSTALLED_APPS:
-                try:
-                    templatetag_mod = __import__(app + '.templatetags', {}, {}, [''])
-                except ImportError:
+        for app_config in apps.get_app_configs():
+            app = app_config.name
+            try:
+                templatetag_mod = __import__(app + '.templatetags', {}, {}, [''])
+            except ImportError:
+                continue
+            mod_path = inspect.getabsfile(templatetag_mod)
+            mod_files = os.listdir(os.path.dirname(mod_path))
+            tag_files = [i.rstrip('.py') for i in mod_files if i.endswith('.py') and i[0] != '_']
+            app_labeled = False
+            for taglib in tag_files:
+                lib = load_tag_library(taglib)
+                if lib is None:
                     continue
-                mod_path = inspect.getabsfile(templatetag_mod)
-                mod_files = os.listdir(os.path.dirname(mod_path))
-                tag_files = [i.rstrip('.py') for i in mod_files if i.endswith('.py') and i[0] != '_']
-                app_labeled = False
-                for taglib in tag_files:
-                    lib = load_tag_library(taglib)
-                    if lib is None:
-                        continue
 
-                    if not app_labeled:
-                        self.add_result('App: %s' % style.MODULE_NAME(app))
-                        app_labeled = True
-                    self.add_result('load: %s' % style.TAGLIB(taglib), 1)
-                    libstuff = [
-                        (lib.tags, 'Tag:', style.TAG),
-                        (lib.filters, 'Filter:', style.FILTER)
-                    ]
-                    for items, label, style_func in libstuff:
-                        for item in items:
-                            self.add_result('%s %s' % (label, style_func(item)), 2)
-                            doc = inspect.getdoc(items[item])
-                            if doc:
-                                self.add_result(format_block(doc, 12))
+                if not app_labeled:
+                    self.add_result('App: %s' % style.MODULE_NAME(app))
+                    app_labeled = True
+                self.add_result('load: %s' % style.TAGLIB(taglib), 1)
+                libstuff = [
+                    (lib.tags, 'Tag:', style.TAG),
+                    (lib.filters, 'Filter:', style.FILTER)
+                ]
+                for items, label, style_func in libstuff:
+                    for item in items:
+                        self.add_result('%s %s' % (label, style_func(item)), 2)
+                        doc = inspect.getdoc(items[item])
+                        if doc:
+                            self.add_result(format_block(doc, 12))
         return self.results
