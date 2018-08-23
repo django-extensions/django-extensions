@@ -9,7 +9,15 @@ from django.utils import termcolors
 from django.utils.encoding import smart_text
 
 from django_extensions.compat import load_tag_library
+from django_extensions.management.color import _dummy_style_func
 from django_extensions.management.utils import signalcommand
+
+
+def no_style():
+    style = color.no_style()
+    for role in ('FILTER', 'MODULE_NAME', 'TAG', 'TAGLIB'):
+        setattr(style, role, _dummy_style_func)
+    return style
 
 
 def color_style():
@@ -70,7 +78,10 @@ class Command(BaseCommand):
         if args:
             appname, = args
 
-        style = color_style()
+        if options['no_color']:
+            style = no_style()
+        else:
+            style = color_style()
 
         if getattr(settings, 'ADMIN_FOR', None):
             settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
