@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     'tests.collisions',
     'tests.testapp',
     'tests.testapp_with_no_models_file',
+    'tests.testapp_with_appconfig.apps.TestappWithAppConfigConfig',
     'django_extensions',
 ]
 
