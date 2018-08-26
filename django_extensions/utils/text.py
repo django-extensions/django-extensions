@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import six
 from django.utils.encoding import force_text
-from django.utils.functional import allow_lazy
+try:
+    from django.utils.functional import keep_lazy
+    KEEP_LAZY = True
+except ImportError:
+    from django.utils.functional import allow_lazy
+    KEEP_LAZY = False
 
 
 def truncate_letters(s, num):
@@ -17,4 +22,7 @@ def truncate_letters(s, num):
     return s
 
 
-truncate_letters = allow_lazy(truncate_letters, six.text_type)
+if KEEP_LAZY:
+    truncate_letters = keep_lazy(six.text_type)(truncate_letters)
+else:
+    truncate_letters = allow_lazy(truncate_letters, six.text_type)

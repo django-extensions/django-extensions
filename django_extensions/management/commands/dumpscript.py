@@ -88,7 +88,8 @@ class Command(BaseCommand):
         parser.add_argument('appname', nargs='+')
         parser.add_argument(
             '--autofield', action='store_false', dest='skip_autofield',
-            default=True, help='Include Autofields (like pk fields)')
+            default=True, help='Include Autofields (like pk fields)'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -249,6 +250,11 @@ class InstanceCode(Code):
 
         self.many_to_many_waiting_list = {}
         for field in self.model._meta.many_to_many:
+            try:
+                if not field.remote_field.through._meta.auto_created:
+                    continue
+            except AttributeError:
+                pass
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
     def get_lines(self, force=False):
@@ -338,7 +344,7 @@ class InstanceCode(Code):
         """ Add lines for any waiting fields that can be completed now. """
 
         code_lines = []
-        skip_autofield = self.options.get('skip_autofield', True)
+        skip_autofield = self.options['skip_autofield']
 
         # Process normal fields
         for field in list(self.waiting_list):
@@ -405,12 +411,10 @@ class Script(Code):
             This isn't essential, but makes the script look nicer because
             more instances can be defined on their first try.
         """
-
-        # Max number of cycles allowed before we call it an infinite loop.
-        MAX_CYCLES = 5
-
         model_queue = []
         number_remaining_models = len(models)
+        # Max number of cycles allowed before we call it an infinite loop.
+        MAX_CYCLES = number_remaining_models
         allowed_cycles = MAX_CYCLES
 
         while number_remaining_models > 0:
@@ -664,7 +668,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
         # content types in this script, as they can be generated again
         # automatically.
         # NB: Not sure if "is" will always work
-        if field.rel.to is ContentType:
+        if field.remote_field.model is ContentType:
             return 'ContentType.objects.get(app_label="%s", model="%s")' % (value.app_label, value.model)
 
         # Generate an identifier (key) for this foreign object
@@ -711,13 +715,17 @@ def check_dependencies(model, model_queue, avaliable_models):
     # For each ForeignKey or ManyToMany field, check that a link is possible
 
     for field in model._meta.fields:
-        if field.rel and field.rel.to.__name__ not in allowed_links:
-            if field.rel.to not in avaliable_models:
+        if not field.remote_field:
+            continue
+        if field.remote_field.model.__name__ not in allowed_links:
+            if field.remote_field.model not in avaliable_models:
                 continue
             return False
 
     for field in model._meta.many_to_many:
-        if field.rel and field.rel.to.__name__ not in allowed_links:
+        if not field.remote_field:
+            continue
+        if field.remote_field.model.__name__ not in allowed_links:
             return False
 
     return True

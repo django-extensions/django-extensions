@@ -25,25 +25,32 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--email', dest='default_email', default=DEFAULT_FAKE_EMAIL,
-            help='Use this as the new email format.')
+            help='Use this as the new email format.'
+        )
         parser.add_argument(
             '-a', '--no-admin', action="store_true", dest='no_admin',
-            default=False, help='Do not change administrator accounts')
+            default=False, help='Do not change administrator accounts'
+        )
         parser.add_argument(
             '-s', '--no-staff', action="store_true", dest='no_staff',
-            default=False, help='Do not change staff accounts')
-        parser.add_argument('--include', dest='include_regexp', default=None,
-                    help='Include usernames matching this regexp.')
-        parser.add_argument('--exclude', dest='exclude_regexp', default=None,
-                    help='Exclude usernames matching this regexp.')
+            default=False, help='Do not change staff accounts'
+        )
+        parser.add_argument(
+            '--include', dest='include_regexp', default=None,
+            help='Include usernames matching this regexp.'
+        )
+        parser.add_argument(
+            '--exclude', dest='exclude_regexp', default=None,
+            help='Exclude usernames matching this regexp.'
+        )
         parser.add_argument(
             '--include-groups', dest='include_groups', default=None,
-            help='Include users matching this group. (use comma seperation '
-            'for multiple groups)')
+            help='Include users matching this group. (use comma seperation for multiple groups)'
+        )
         parser.add_argument(
             '--exclude-groups', dest='exclude_groups', default=None,
-            help='Exclude users matching this group. (use comma seperation '
-            'for multiple groups)')
+            help='Exclude users matching this group. (use comma seperation for multiple groups)'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -51,13 +58,13 @@ class Command(BaseCommand):
             raise CommandError('Only available in debug mode')
 
         from django.contrib.auth.models import Group
-        email = options.get('default_email', DEFAULT_FAKE_EMAIL)
-        include_regexp = options.get('include_regexp', None)
-        exclude_regexp = options.get('exclude_regexp', None)
-        include_groups = options.get('include_groups', None)
-        exclude_groups = options.get('exclude_groups', None)
-        no_admin = options.get('no_admin', False)
-        no_staff = options.get('no_staff', False)
+        email = options['default_email']
+        include_regexp = options['include_regexp']
+        exclude_regexp = options['exclude_regexp']
+        include_groups = options['include_groups']
+        exclude_groups = options['exclude_groups']
+        no_admin = options['no_admin']
+        no_staff = options['no_staff']
 
         User = get_user_model()
         users = User.objects.all()

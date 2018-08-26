@@ -62,6 +62,7 @@ import gzip
 import mimetypes
 import os
 import time
+from typing import List  # NOQA
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -95,7 +96,7 @@ class Command(BaseCommand):
         'text/javascript'
     )
 
-    uploaded_files = []
+    uploaded_files = []  # type: List[str]
     upload_count = 0
     skip_count = 0
 
@@ -106,50 +107,69 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('-p', '--prefix',
-                    dest='prefix',
-                    default=getattr(settings, 'SYNC_S3_PREFIX', ''),
-                    help="The prefix to prepend to the path on S3.")
-        parser.add_argument('-d', '--dir',
-                    dest='dir',
-                    help="Custom static root directory to use")
-        parser.add_argument('--s3host',
-                    dest='s3host',
-                    default=getattr(settings, 'AWS_S3_HOST', ''),
-                    help="The s3 host (enables connecting to other "
-                    "providers/regions)")
-        parser.add_argument('--acl',
-                    dest='acl',
-                    default=getattr(settings, 'AWS_DEFAULT_ACL',
-                                    'public-read'),
-                    help="Enables to override default acl (public-read).")
-        parser.add_argument('--gzip',
-                    action='store_true', dest='gzip', default=False,
-                    help="Enables gzipping CSS and Javascript files.")
-        parser.add_argument('--renamegzip',
-                    action='store_true', dest='renamegzip', default=False,
-                    help="Enables renaming of gzipped assets to have '.gz' "
-                    "appended to the filename.")
-        parser.add_argument('--expires',
-                    action='store_true', dest='expires', default=False,
-                    help="Enables setting a far future expires header.")
-        parser.add_argument('--force',
-                    action='store_true', dest='force', default=False,
-                    help="Skip the file mtime check to force upload of "
-                    "all files.")
-        parser.add_argument('--filter-list', dest='filter_list',
-                    action='store', default='',
-                    help="Override default directory and file exclusion "
-                    "filters. (enter as comma seperated line)")
-        parser.add_argument('--invalidate', dest='invalidate', default=False,
-                    action='store_true',
-                    help='Invalidates the associated objects in CloudFront')
-        parser.add_argument('--media-only', dest='media_only', default='',
-                    action='store_true',
-                    help="Only MEDIA_ROOT files will be uploaded to S3")
-        parser.add_argument('--static-only', dest='static_only', default='',
-                    action='store_true',
-                    help="Only STATIC_ROOT files will be uploaded to S3")
+        parser.add_argument(
+            '-p', '--prefix',
+            dest='prefix',
+            default=getattr(settings, 'SYNC_S3_PREFIX', ''),
+            help="The prefix to prepend to the path on S3."
+        )
+        parser.add_argument(
+            '-d', '--dir',
+            dest='dir',
+            help="Custom static root directory to use"
+        )
+        parser.add_argument(
+            '--s3host',
+            dest='s3host',
+            default=getattr(settings, 'AWS_S3_HOST', ''),
+            help="The s3 host (enables connecting to other providers/regions)"
+        )
+        parser.add_argument(
+            '--acl',
+            dest='acl',
+            default=getattr(settings, 'AWS_DEFAULT_ACL', 'public-read'),
+            help="Enables to override default acl (public-read)."
+        )
+        parser.add_argument(
+            '--gzip',
+            action='store_true', dest='gzip', default=False,
+            help="Enables gzipping CSS and Javascript files."
+        )
+        parser.add_argument(
+            '--renamegzip',
+            action='store_true', dest='renamegzip', default=False,
+            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."
+        )
+        parser.add_argument(
+            '--expires',
+            action='store_true', dest='expires', default=False,
+            help="Enables setting a far future expires header."
+        )
+        parser.add_argument(
+            '--force',
+            action='store_true', dest='force', default=False,
+            help="Skip the file mtime check to force upload of all files."
+        )
+        parser.add_argument(
+            '--filter-list', dest='filter_list',
+            action='store', default='',
+            help="Override default directory and file exclusion filters. (enter as comma seperated line)"
+        )
+        parser.add_argument(
+            '--invalidate', dest='invalidate', default=False,
+            action='store_true',
+            help='Invalidates the associated objects in CloudFront'
+        )
+        parser.add_argument(
+            '--media-only', dest='media_only', default='',
+            action='store_true',
+            help="Only MEDIA_ROOT files will be uploaded to S3"
+        )
+        parser.add_argument(
+            '--static-only', dest='static_only', default='',
+            action='store_true',
+            help="Only STATIC_ROOT files will be uploaded to S3"
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -181,25 +201,25 @@ class Command(BaseCommand):
         self.SYNC_S3_RENAME_GZIP_EXT = \
             getattr(settings, 'SYNC_S3_RENAME_GZIP_EXT', '.gz')
 
-        self.verbosity = int(options.get('verbosity'))
-        self.prefix = options.get('prefix')
-        self.do_gzip = options.get('gzip')
-        self.rename_gzip = options.get('renamegzip')
-        self.do_expires = options.get('expires')
-        self.do_force = options.get('force')
-        self.invalidate = options.get('invalidate')
-        self.DIRECTORIES = options.get('dir')
-        self.s3host = options.get('s3host')
-        self.default_acl = options.get('acl')
+        self.verbosity = options["verbosity"]
+        self.prefix = options['prefix']
+        self.do_gzip = options['gzip']
+        self.rename_gzip = options['renamegzip']
+        self.do_expires = options['expires']
+        self.do_force = options['force']
+        self.invalidate = options['invalidate']
+        self.DIRECTORIES = options['dir']
+        self.s3host = options['s3host']
+        self.default_acl = options['acl']
         self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        filter_list = options.get('filter_list')
+        filter_list = options['filter_list']
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
             self.FILTER_LIST = filter_list.split(',')
 
-        self.media_only = options.get('media_only')
-        self.static_only = options.get('static_only')
+        self.media_only = options['media_only']
+        self.static_only = options['static_only']
         # Get directories
         if self.media_only and self.static_only:
             raise CommandError("Can't use --media-only and --static-only together. Better not use anything...")

@@ -20,4 +20,4 @@ class Command(BaseCommand):
                 apps.add(django_apps.get_app_config(arg))
 
         for app in apps:
-            create_permissions(app, int(options.get('verbosity', 3)))
+            create_permissions(app, options['verbosity'])

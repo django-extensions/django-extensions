@@ -15,16 +15,18 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             'when', nargs='?',
-            help="options: %s" % ', '.join(self.when_options))
+            help="options: %s" % ', '.join(self.when_options)
+        )
         parser.add_argument(
             '--list', '-l', action="store_true", dest="list_jobs",
-            help="List all jobs with their description")
+            default=False, help="List all jobs with their description"
+        )
 
     def usage_msg(self):
         print("%s Please specify: %s" % (self.help, ', '.join(self.when_options)))
 
     def runjobs(self, when, options):
-        verbosity = int(options.get('verbosity', 1))
+        verbosity = options["verbosity"]
         jobs = get_jobs(when, only_scheduled=True)
         for app_name, job_name in sorted(jobs.keys()):
             job = jobs[(app_name, job_name)]
@@ -45,7 +47,7 @@ class Command(BaseCommand):
         from django_extensions.management import signals
         from django.conf import settings
 
-        verbosity = int(options.get('verbosity', 1))
+        verbosity = options["verbosity"]
         for app_name in settings.INSTALLED_APPS:
             try:
                 __import__(app_name + '.management', '', '', [''])
@@ -73,9 +75,9 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        when = options.get('when')
+        when = options['when']
 
-        if options.get('list_jobs'):
+        if options['list_jobs']:
             print_jobs(when, only_scheduled=True, show_when=True, show_appname=True)
         elif when in self.when_options:
             self.runjobs(when, options)

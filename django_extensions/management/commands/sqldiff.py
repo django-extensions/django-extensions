@@ -23,13 +23,14 @@ KNOWN ISSUES:
 
 import importlib
 import sys
-
 import six
+import argparse
+from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
-from django.core.management import BaseCommand, CommandError, sql as _sql
+from django.core.management import BaseCommand, CommandError
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
-from django.db import connection, transaction
+from django.db import connection, transaction, models
 from django.db.models.fields import AutoField, IntegerField
 
 from django_extensions.management.utils import signalcommand
@@ -37,20 +38,20 @@ from django_extensions.management.utils import signalcommand
 ORDERING_FIELD = IntegerField('_order', null=True)
 
 
-def flatten(l, ltypes=(list, tuple)):
-    ltype = type(l)
-    l = list(l)
+def flatten(lst, ltypes=(list, tuple)):
+    ltype = type(lst)
+    lst = list(lst)
     i = 0
-    while i < len(l):
-        while isinstance(l[i], ltypes):
-            if not l[i]:
-                l.pop(i)
+    while i < len(lst):
+        while isinstance(lst[i], ltypes):
+            if not lst[i]:
+                lst.pop(i)
                 i -= 1
                 break
             else:
-                l[i:i + 1] = l[i]
+                lst[i:i + 1] = lst[i]
         i += 1
-    return ltype(l)
+    return ltype(lst)
 
 
 def all_local_fields(meta):
@@ -68,7 +69,7 @@ def all_local_fields(meta):
 
 
 class SQLDiff(object):
-    DATA_TYPES_REVERSE_OVERRIDE = {}
+    DATA_TYPES_REVERSE_OVERRIDE = {}  # type: Dict[int, Union[str, Callable]]
 
     IGNORE_MISSING_TABLES = [
         "django_migrations",
@@ -128,22 +129,18 @@ class SQLDiff(object):
 
     can_detect_notnull_differ = False
     can_detect_unsigned_differ = False
-    unsigned_suffix = None
+    unsigned_suffix = None  # type: Optional[str]
 
     def __init__(self, app_models, options):
         self.has_differences = None
         self.app_models = app_models
         self.options = options
-        self.dense = options.get('dense_output', False)
+        self.dense = options['dense_output']
 
-        try:
-            self.introspection = connection.introspection
-        except AttributeError:
-            from django.db import get_introspection_module
-            self.introspection = get_introspection_module()
+        self.introspection = connection.introspection
 
         self.cursor = connection.cursor()
-        self.django_tables = self.get_django_tables(options.get('only_existing', True))
+        self.django_tables = self.introspection.django_table_names(only_existing=options['only_existing'])
         # TODO: We are losing information about tables which are views here
         self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
@@ -189,17 +186,9 @@ class SQLDiff(object):
         assert diff_type in self.DIFF_TYPES, 'Unknown difference type'
         self.differences[-1][-1].append((diff_type, args))
 
-    def get_django_tables(self, only_existing):
-        try:
-            django_tables = self.introspection.django_table_names(only_existing=only_existing)
-        except AttributeError:
-            # backwards compatibility for before introspection refactoring (r8296)
-            try:
-                django_tables = _sql.django_table_names(only_existing=only_existing)
-            except AttributeError:
-                # backwards compatibility for before svn r7568
-                django_tables = _sql.django_table_list(only_existing=only_existing)
-        return django_tables
+    def get_data_types_reverse_override(self):
+        # type: () -> Dict[int, Union[str, Callable]]
+        return self.DATA_TYPES_REVERSE_OVERRIDE
 
     def sql_to_dict(self, query, param):
         """ sql_to_dict(query, param) -> list of dicts
@@ -220,20 +209,19 @@ class SQLDiff(object):
     def get_field_model_type(self, field):
         return field.db_type(connection=connection)
 
+    def get_field_db_type_kwargs(self, current_kwargs, description, field=None, table_name=None, reverse_type=None):
+        return {}
+
     def get_field_db_type(self, description, field=None, table_name=None):
-        from django.db import models
         # DB-API cursor.description
         # (name, type_code, display_size, internal_size, precision, scale, null_ok) = description
         type_code = description[1]
-        if type_code in self.DATA_TYPES_REVERSE_OVERRIDE:
-            reverse_type = self.DATA_TYPES_REVERSE_OVERRIDE[type_code]
+        DATA_TYPES_REVERSE_OVERRIDE = self.get_data_types_reverse_override()
+        if type_code in DATA_TYPES_REVERSE_OVERRIDE:
+            reverse_type = DATA_TYPES_REVERSE_OVERRIDE[type_code]
         else:
             try:
-                try:
-                    reverse_type = self.introspection.data_types_reverse[type_code]
-                except AttributeError:
-                    # backwards compatibility for before introspection refactoring (r8296)
-                    reverse_type = self.introspection.DATA_TYPES_REVERSE.get(type_code)
+                reverse_type = self.introspection.get_field_type(type_code, description)
             except KeyError:
                 reverse_type = self.get_field_db_type_lookup(type_code)
                 if not reverse_type:
@@ -244,7 +232,15 @@ class SQLDiff(object):
                         self.add_difference('comment', "Unknown database type for field '%s' (%s)" % (description[0], type_code))
                     return None
 
+        if callable(reverse_type):
+            reverse_type = reverse_type()
+
         kwargs = {}
+
+        if isinstance(reverse_type, dict):
+            kwargs.update(reverse_type['kwargs'])
+            reverse_type = reverse_type['name']
+
         if type_code == 16946 and field and getattr(field, 'geom_type', None) == 'POINT':
             reverse_type = 'django.contrib.gis.db.models.fields.PointField'
 
@@ -267,12 +263,20 @@ class SQLDiff(object):
         if field and getattr(field, 'geography', False):
             kwargs['geography'] = True
 
-        if '.' in reverse_type:
-            module_path, package_name = reverse_type.rsplit('.', 1)
-            module = importlib.import_module(module_path)
-            field_db_type = getattr(module, package_name)(**kwargs).db_type(connection=connection)
-        else:
-            field_db_type = getattr(models, reverse_type)(**kwargs).db_type(connection=connection)
+        if reverse_type == 'GeometryField':
+            geo_col = description[0]
+            # Getting a more specific field type and any additional parameters
+            # from the `get_geometry_type` routine for the spatial backend.
+            reverse_type, geo_params = self.introspection.get_geometry_type(table_name, geo_col)
+            if geo_params:
+                kwargs.update(geo_params)
+            reverse_type = 'django.contrib.gis.db.models.fields.%s' % reverse_type
+
+        extra_kwargs = self.get_field_db_type_kwargs(kwargs, description, field, table_name, reverse_type)
+        kwargs.update(extra_kwargs)
+
+        field_class = self.get_field_class(reverse_type)
+        field_db_type = field_class(**kwargs).db_type(connection=connection)
 
         tablespace = field.db_tablespace
         if not tablespace:
@@ -284,6 +288,14 @@ class SQLDiff(object):
 
     def get_field_db_type_lookup(self, type_code):
         return None
+
+    def get_field_class(self, class_path):
+        if '.' in class_path:
+            module_path, package_name = class_path.rsplit('.', 1)
+            module = importlib.import_module(module_path)
+            return getattr(module, package_name)
+        else:
+            return getattr(models, class_path)
 
     def get_field_db_nullable(self, field, table_name):
         tablespace = field.db_tablespace
@@ -366,12 +378,15 @@ class SQLDiff(object):
         for field_name, field in six.iteritems(fieldmap):
             if field_name not in db_fields:
                 field_output = []
-                if field.rel:
-                    field_output.extend([field.rel.to._meta.db_table, field.rel.to._meta.get_field(field.rel.field_name).column])
+
+                if field.remote_field:
+                    field_output.extend([field.remote_field.model._meta.db_table, field.remote_field.model._meta.get_field(field.remote_field.field_name).column])
                     op = 'fkey-missing-in-db'
                 else:
                     op = 'field-missing-in-db'
                 field_output.append(field.db_type(connection=connection))
+                if self.options['include_defaults'] and field.has_default():
+                    field_output.append('DEFAULT %s' % field.get_prep_value(field.get_default()))
                 if not field.null:
                     field_output.append('NOT NULL')
                 self.add_difference(op, table_name, field_name, *field_output)
@@ -417,7 +432,8 @@ class SQLDiff(object):
                 db_check = db_check.strip().lstrip("(").rstrip(")")
             else:
                 db_check = None
-            if not model_type == db_type and not model_check == db_check:
+
+            if not model_type == db_type or not model_check == db_check:
                 self.add_difference('field-parameter-differ', table_name, field.name, model_type, db_type)
 
     def find_field_notnull_differ(self, meta, table_description, table_name):
@@ -449,7 +465,7 @@ class SQLDiff(object):
             table_name = meta.db_table
             app_label = meta.app_label
 
-            if self.options.get('include_proxy_models', False) and meta.proxy:
+            if not self.options['include_proxy_models'] and meta.proxy:
                 continue
 
             if cur_app_label != app_label:
@@ -461,7 +477,6 @@ class SQLDiff(object):
                 self.add_difference('table-missing-in-db', table_name)
                 continue
 
-            table_indexes = self.introspection.get_indexes(self.cursor, table_name)
             if hasattr(self.introspection, 'get_constraints'):
                 table_constraints = self.introspection.get_constraints(self.cursor, table_name)
             else:
@@ -479,6 +494,16 @@ class SQLDiff(object):
                 self.add_difference('error', 'unable to introspect table: %s' % str(e).strip())
                 transaction.rollback()  # reset transaction
                 continue
+
+            # map table_contraints into table_indexes
+            table_indexes = {}
+            for _, dct in table_constraints.items():
+                columns = dct['columns']
+                if len(columns) == 1:
+                    table_indexes[columns[0]] = {
+                        'primary_key': dct['primary_key'],
+                        'unique': dct['unique'],
+                    }
 
             # Fields which are defined in database but not in model
             # 1) find: 'unique-missing-in-model'
@@ -507,7 +532,7 @@ class SQLDiff(object):
 
     def print_diff(self, style=no_style()):
         """ print differences to stdout """
-        if self.options.get('sql', True):
+        if self.options['sql']:
             self.print_diff_sql(style)
         else:
             self.print_diff_text(style)
@@ -638,7 +663,7 @@ class MySQLDiff(SQLDiff):
                 db_type = db_type.lstrip("var")
             # They like to call 'bool's 'tinyint(1)' and introspection makes that a integer
             # just convert it back to it's proper type, a bool is a bool and nothing else.
-            if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[4] == 1:
+            if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[2] == 1:
                 db_type = 'bool'
             if (table_name, field.column) in self.auto_increment:
                 db_type += ' AUTO_INCREMENT'
@@ -695,15 +720,6 @@ class PostgresqlSQLDiff(SQLDiff):
     can_detect_notnull_differ = True
     can_detect_unsigned_differ = True
 
-    DATA_TYPES_REVERSE_OVERRIDE = {
-        1042: 'CharField',
-        # postgis types (TODO: support is very incomplete)
-        17506: 'django.contrib.gis.db.models.fields.PointField',
-        16392: 'django.contrib.gis.db.models.fields.PointField',
-        55902: 'django.contrib.gis.db.models.fields.MultiPolygonField',
-        16946: 'django.contrib.gis.db.models.fields.MultiPolygonField'
-    }
-
     DATA_TYPES_REVERSE_NAME = {
         'hstore': 'django_hstore.hstore.DictionaryField',
     }
@@ -749,6 +765,40 @@ class PostgresqlSQLDiff(SQLDiff):
             key = (dct['nspname'], dct['relname'], dct['attname'])
             if 'CHECK' in dct['pg_get_constraintdef']:
                 self.check_constraints[key] = dct
+
+    def get_data_type_arrayfield(self, base_field):
+        return {
+            'name': 'django.contrib.postgres.fields.ArrayField',
+            'kwargs': {
+                'base_field': self.get_field_class(base_field)(),
+            },
+        }
+
+    def get_data_types_reverse_override(self):
+        return {
+            1042: 'CharField',
+            1000: lambda: self.get_data_type_arrayfield(base_field='BooleanField'),
+            1001: lambda: self.get_data_type_arrayfield(base_field='BinaryField'),
+            1002: lambda: self.get_data_type_arrayfield(base_field='CharField'),
+            1005: lambda: self.get_data_type_arrayfield(base_field='IntegerField'),
+            1006: lambda: self.get_data_type_arrayfield(base_field='IntegerField'),
+            1007: lambda: self.get_data_type_arrayfield(base_field='IntegerField'),
+            1009: lambda: self.get_data_type_arrayfield(base_field='CharField'),
+            1014: lambda: self.get_data_type_arrayfield(base_field='CharField'),
+            1015: lambda: self.get_data_type_arrayfield(base_field='CharField'),
+            1016: lambda: self.get_data_type_arrayfield(base_field='BigIntegerField'),
+            1017: lambda: self.get_data_type_arrayfield(base_field='FloatField'),
+            1021: lambda: self.get_data_type_arrayfield(base_field='FloatField'),
+            1022: lambda: self.get_data_type_arrayfield(base_field='FloatField'),
+            1115: lambda: self.get_data_type_arrayfield(base_field='DateTimeField'),
+            1185: lambda: self.get_data_type_arrayfield(base_field='DateTimeField'),
+            1231: lambda: self.get_data_type_arrayfield(base_field='DecimalField'),
+            # {'name': 'django.contrib.postgres.fields.ArrayField', 'kwargs': {'base_field': 'IntegerField'}},
+            1186: lambda: self.get_data_type_arrayfield(base_field='DurationField'),
+            # 1186: 'django.db.models.fields.DurationField',
+            3614: 'django.contrib.postgres.search.SearchVectorField',
+            3802: 'django.contrib.postgres.fields.JSONField',
+        }
 
     def get_constraints(self, cursor, table_name, introspection):
         """ backport of django's introspection.get_constraints(...) """
@@ -837,11 +887,59 @@ class PostgresqlSQLDiff(SQLDiff):
                 }
         return constraints
 
+    # def get_field_db_type_kwargs(self, current_kwargs, description, field=None, table_name=None, reverse_type=None):
+    #     kwargs = {}
+    #     if field and 'base_field' in current_kwargs:
+    #         # find
+    #         attname = field.db_column or field.attname
+    #         introspect_db_type = self.sql_to_dict(
+    #             """SELECT attname, format_type(atttypid, atttypmod) AS type
+    #                 FROM   pg_attribute
+    #                 WHERE  attrelid = %s::regclass
+    #                 AND    attname = %s
+    #                 AND    attnum > 0
+    #                 AND    NOT attisdropped
+    #                 ORDER  BY attnum;
+    #             """,
+    #             (table_name, attname)
+    #         )[0]['type']
+    #         # TODO: this gives the concrete type that the database uses, why not use this
+    #         #       much earlier in the process to compare to whatever django spits out as
+    #         #       the database type ?
+    #         max_length = re.search("character varying\((\d+)\)\[\]", introspect_db_type)
+    #         if max_length:
+    #             kwargs['max_length'] = max_length[1]
+    #     return kwargs
+
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
+            if db_type.endswith("[]"):
+                # TODO: This is a hack for array types. Ideally we either pass the correct
+                #       constraints for the type in `get_data_type_arrayfield` which instantiates
+                #       the array base_field or maybe even better restructure sqldiff entirely
+                #       to be based around the concrete type yielded by the code below. That gives
+                #       the complete type the database uses, why not use thie much earlier in the
+                #       process to compare to whatever django spits out as the desired database type ?
+                attname = field.db_column or field.attname
+                introspect_db_type = self.sql_to_dict(
+                    """SELECT attname, format_type(atttypid, atttypmod) AS type
+                        FROM   pg_attribute
+                        WHERE  attrelid = %s::regclass
+                        AND    attname = %s
+                        AND    attnum > 0
+                        AND    NOT attisdropped
+                        ORDER  BY attnum;
+                    """,
+                    (table_name, attname)
+                )[0]['type']
+                if introspect_db_type.startswith("character varying"):
+                    introspect_db_type = introspect_db_type.replace("character varying", "varchar")
+
+                return introspect_db_type
+
             if field.primary_key and isinstance(field, AutoField):
                 if db_type == 'integer':
                     db_type = 'serial'
@@ -903,25 +1001,41 @@ to check/debug ur models compared to the real database tables and columns."""
         parser.add_argument('app_label', nargs='*')
         parser.add_argument(
             '--all-applications', '-a', action='store_true',
+            default=False,
             dest='all_applications',
-            help="Automaticly include all application from INSTALLED_APPS.")
+            help="Automaticly include all application from INSTALLED_APPS."
+        )
         parser.add_argument(
             '--not-only-existing', '-e', action='store_false',
+            default=True,
             dest='only_existing',
-            help="Check all tables that exist in the database, not only "
-            "tables that should exist based on models.")
+            help="Check all tables that exist in the database, not only tables that should exist based on models."
+        )
         parser.add_argument(
             '--dense-output', '-d', action='store_true', dest='dense_output',
-            help="Shows the output in dense format, normally output is "
-            "spreaded over multiple lines.")
+            default=False,
+            help="Shows the output in dense format, normally output is spreaded over multiple lines."
+        )
         parser.add_argument(
             '--output_text', '-t', action='store_false', dest='sql',
             default=True,
-            help="Outputs the differences as descriptive text instead of SQL")
+            help="Outputs the differences as descriptive text instead of SQL"
+        )
         parser.add_argument(
             '--include-proxy-models', action='store_true', dest='include_proxy_models',
             default=False,
-            help="Include proxy models in the graph")
+            help="Include proxy models in the graph"
+        )
+        parser.add_argument(
+            '--include-defaults', action='store_true', dest='include_defaults',
+            default=False,
+            help="Include default values in SQL output (beta feature)"
+        )
+        parser.add_argument(
+            '--migrate-for-tests', action='store_true', dest='migrate_for_tests',
+            default=False,
+            help=argparse.SUPPRESS
+        )
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -930,8 +1044,9 @@ to check/debug ur models compared to the real database tables and columns."""
     @signalcommand
     def handle(self, *args, **options):
         from django.conf import settings
+        from django.core.management import call_command
 
-        app_labels = options.get('app_label')
+        app_labels = options['app_label']
         engine = None
         if hasattr(settings, 'DATABASES'):
             engine = settings.DATABASES['default']['ENGINE']
@@ -945,7 +1060,7 @@ to check/debug ur models compared to the real database tables and columns."""
 because you haven't specified the DATABASE_ENGINE setting.
 Edit your settings file and change DATABASE_ENGINE to something like 'postgresql' or 'mysql'.""")
 
-        if options.get('all_applications', False):
+        if options['all_applications']:
             app_models = apps.get_models(include_auto_created=True)
         else:
             if not app_labels:
@@ -961,6 +1076,10 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
 
         if not app_models:
             raise CommandError('Unable to execute sqldiff no models founds.')
+
+        migrate_for_tests = options['migrate_for_tests']
+        if migrate_for_tests:
+            call_command("migrate", *app_labels, no_input=True, run_syncdb=True)
 
         if not engine:
             engine = connection.__module__.split('.')[-2]
@@ -979,7 +1098,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
         try:
             super(Command, self).execute(*args, **options)
         except CommandError as e:
-            if options.get('traceback', False):
+            if options['traceback']:
                 raise
 
             # self.stderr is not guaranteed to be set here

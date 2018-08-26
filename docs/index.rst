@@ -21,11 +21,9 @@ The easiest way to figure out what Django Extensions are all about is to watch t
 Getting it
 ==========
 
-You can get Django Extensions by using pip or easy_install::
+You can get Django Extensions by using pip::
 
  $ pip install django-extensions
- or
- $ easy_install django-extensions
 
 If you want to install it from source, grab the git repository and run setup.py::
 
@@ -42,7 +40,7 @@ We follow the Django guidelines for supported Python and Django versions. See mo
 
 This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
 
-At this time we test on and thrive to support valid combinations of Python 2.7, 3.4, 3.5, pypy and pypy3 with Django versions 1.8 and 1.9.
+At this time we test on and thrive to support valid combinations of Python 2.7, 3.4, 3.5, 3.6, 3.7, pypy and pypy3 with Django versions 1.11 to 2.1.
 
 Contents
 ========
@@ -56,14 +54,15 @@ Contents
    command_signals
    admin_extensions
    shell_plus
-   create_app
    delete_squashed_migrations
    dumpscript
    runscript
    export_emails
    field_extensions
+   generate_password
    graph_models
    jobs_scheduling
+   merge_model_instances
    model_extensions
    namespace_proposal
    print_settings

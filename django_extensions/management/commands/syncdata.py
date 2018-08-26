@@ -13,11 +13,18 @@ import os
 import sys
 
 import six
+from django.apps import apps
+from django.core import serializers
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
+from django.conf import settings
 from django.db import connection, transaction
 
 from django_extensions.management.utils import signalcommand
+
+
+class SyncDataError(Exception):
+    pass
 
 
 class Command(BaseCommand):
@@ -61,17 +68,26 @@ class Command(BaseCommand):
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
     @signalcommand
-    @transaction.atomic
     def handle(self, *fixture_labels, **options):
-        """ Main method of a Django command """
-        from django.core import serializers
-        from django.conf import settings
-        from django.apps import apps
-
         self.style = no_style()
 
-        verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', False)
+        try:
+            with transaction.atomic():
+                self.syncdata(fixture_labels, options)
+        except SyncDataError as exc:
+            sys.stderr.write(self.style.ERROR(exc))
+
+        # Close the DB connection. This is required as a workaround for an
+        # edge case in MySQL: if the same connection is used to
+        # create tables, load data, and query, the query can return
+        # incorrect results. See Django #7572, MySQL #37735.
+        connection.close()
+
+    def syncdata(self, fixture_labels, options):
+        """ Main method of a Django command """
+
+        verbosity = options['verbosity']
+        show_traceback = options['traceback']
 
         # Keep a count of the installed objects and fixtures
         fixture_count = 0
@@ -104,9 +120,7 @@ class Command(BaseCommand):
                 if verbosity > 1:
                     print("Loading '%s' fixtures..." % fixture_name)
             else:
-                sys.stderr.write(self.style.ERROR("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format)))
-                transaction.rollback()
-                return
+                raise SyncDataError("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format))
 
             if os.path.isabs(fixture_name):
                 fixture_dirs = [fixture_name]
@@ -126,9 +140,7 @@ class Command(BaseCommand):
                         fixture = open(full_path, 'r')
                         if label_found:
                             fixture.close()
-                            print(self.style.ERROR("Multiple fixtures named '%s' in %s. Aborting." % (fixture_name, humanize(fixture_dir))))
-                            transaction.rollback()
-                            return
+                            raise SyncDataError("Multiple fixtures named '%s' in %s. Aborting." % (fixture_name, humanize(fixture_dir)))
                         else:
                             fixture_count += 1
                             objects_per_fixture.append(0)
@@ -149,7 +161,7 @@ class Command(BaseCommand):
                                     models.add(class_)
                                     obj.save()
 
-                                if options.get('remove'):
+                                if options['remove']:
                                     self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True
@@ -161,21 +173,17 @@ class Command(BaseCommand):
                                 transaction.rollback()
                                 if show_traceback:
                                     traceback.print_exc()
-                                else:
-                                    sys.stderr.write(self.style.ERROR("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc())))
-                                return
+                                raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
+
                             fixture.close()
-                    except:
+                    except Exception:
                         if verbosity > 1:
                             print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
 
         # If any of the fixtures we loaded contain 0 objects, assume that an
         # error was encountered during fixture loading.
         if 0 in objects_per_fixture:
-            sys.stderr.write(
-                self.style.ERROR("No fixture data found for '%s'. (File format may be invalid.)" % fixture_name))
-            transaction.rollback()
-            return
+            raise SyncDataError("No fixture data found for '%s'. (File format may be invalid.)" % fixture_name)
 
         # If we found even one object in a fixture, we need to reset the
         # database sequences.
@@ -187,17 +195,9 @@ class Command(BaseCommand):
                 for line in sequence_sql:
                     cursor.execute(line)
 
-        transaction.commit()
-
         if object_count == 0:
             if verbosity > 1:
                 print("No fixtures found.")
         else:
             if verbosity > 0:
                 print("Installed %d object(s) from %d fixture(s)" % (object_count, fixture_count))
-
-        # Close the DB connection. This is required as a workaround for an
-        # edge case in MySQL: if the same connection is used to
-        # create tables, load data, and query, the query can return
-        # incorrect results. See Django #7572, MySQL #37735.
-        connection.close()

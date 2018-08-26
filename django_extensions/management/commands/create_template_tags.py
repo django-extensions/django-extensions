@@ -27,7 +27,7 @@ class Command(AppCommand):
     @signalcommand
     def handle_app_config(self, app_config, **options):
         app_dir = app_config.path
-        tag_library_name = options.get('tag_library_name')
+        tag_library_name = options['tag_library_name']
         if tag_library_name == 'appname_tags':
             tag_library_name = '%s_tags' % os.path.basename(app_dir)
         copy_template('template_tags_template', app_dir, tag_library_name)

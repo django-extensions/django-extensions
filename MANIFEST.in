@@ -4,4 +4,5 @@ recursive-include django_extensions/static *
 recursive-include django_extensions/locale *
 recursive-include docs *
 include LICENSE
+include README.rst
 include tox.ini

@@ -76,10 +76,8 @@ def keys(purpose, mode=None):
         else:
             settings.ENCRYPTED_FIELD_KEYS_DIR = KEY_LOCS['ENCRYPT']
             yield keyczar.Encrypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
-
-    except:
+    except Exception:
         raise  # Reraise any exceptions.
-
     finally:
         # Restore settings.
         settings.ENCRYPTED_FIELD_KEYS_DIR = orig_setting_dir
@@ -106,21 +104,17 @@ def secret_model():
         #differences-between-proxy-inheritance-and-unmanaged-models
     """
 
-    try:
-        # Create a new class that shadows tests.models.Secret.
-        attrs = {
-            'name': EncryptedCharField("Name", max_length=Secret._meta.get_field('name').max_length),
-            'text': EncryptedTextField("Text"),
-            '__module__': 'tests.testapp.models',
-            'Meta': type('Meta', (object, ), {
-                'managed': False,
-                'db_table': Secret._meta.db_table
-            })
-        }
-        yield type('Secret', (models.Model, ), attrs)
-
-    except:
-        raise  # Reraise any exceptions.
+    # Create a new class that shadows tests.models.Secret.
+    attrs = {
+        'name': EncryptedCharField("Name", max_length=Secret._meta.get_field('name').max_length),
+        'text': EncryptedTextField("Text"),
+        '__module__': 'tests.testapp.models',
+        'Meta': type('Meta', (object, ), {
+            'managed': False,
+            'db_table': Secret._meta.db_table
+        })
+    }
+    yield type('Secret', (models.Model, ), attrs)
 
 
 @pytest.mark.skipif(keyczar_active is False,

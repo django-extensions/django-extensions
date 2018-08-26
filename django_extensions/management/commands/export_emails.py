@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from csv import writer
-from sys import stdout
+from __future__ import unicode_literals, print_function
+import sys
 
-import six
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 
+from django_extensions.compat import csv_writer as writer
 from django_extensions.management.utils import signalcommand
+
 
 FORMATS = [
     'address',
@@ -20,7 +21,8 @@ FORMATS = [
 
 
 def full_name(first_name, last_name, username, **extra):
-    name = six.u(" ").join(n for n in [first_name, last_name] if n)
+    """Returns full name or username."""
+    name = " ".join(n for n in [first_name, last_name] if n)
     if not name:
         return username
     return name
@@ -33,6 +35,10 @@ class Command(BaseCommand):
 
     can_import_settings = True
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
+
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.UserModel = get_user_model()
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -50,50 +56,52 @@ class Command(BaseCommand):
             raise CommandError("extra arguments supplied")
         group = options['group']
         if group and not Group.objects.filter(name=group).count() == 1:
-            names = six.u("', '").join(g['name'] for g in Group.objects.values('name')).encode('utf-8')
+            names = "', '".join(g['name'] for g in Group.objects.values('name'))
             if names:
                 names = "'" + names + "'."
             raise CommandError("Unknown group '" + group + "'. Valid group names are: " + names)
-        if len(args) and args[0] != '-':
-            outfile = open(args[0], 'w')
-        else:
-            outfile = stdout
 
-        User = get_user_model()
-        qs = User.objects.all().order_by('last_name', 'first_name', 'username', 'email')
+        UserModel = get_user_model()
+        qs = UserModel.objects.all().order_by('last_name', 'first_name', 'username', 'email')
         if group:
             qs = qs.filter(groups__name=group).distinct()
         qs = qs.values('last_name', 'first_name', 'username', 'email')
-        getattr(self, options['format'])(qs, outfile)
+        getattr(self, options['format'])(qs)
 
-    def address(self, qs, out):
-        """simple single entry per line in the format of:
+    def address(self, qs):
+        """Simple single entry per line in the format of:
             "full name" <my@address.com>;
         """
-        out.write(six.u("\n").join('"%s" <%s>;' % (full_name(**ent), ent['email'])
-                                   for ent in qs).encode(self.encoding))
-        out.write("\n")
+        self.stdout.write("\n".join('"%s" <%s>;' % (full_name(**ent), ent['email']) for ent in qs))
+        self.stdout.write("\n")
 
-    def emails(self, qs, out):
-        """simpler single entry with email only in the format of:
+    def emails(self, qs):
+        """Simpler single entry with email only in the format of:
             my@address.com,
         """
-        out.write(six.u(",\n").join(ent['email'] for ent in qs).encode(self.encoding))
-        out.write("\n")
+        self.stdout.write(",\n".join(ent['email'] for ent in qs))
+        self.stdout.write("\n")
 
-    def google(self, qs, out):
+    def google(self, qs):
         """CSV format suitable for importing into google GMail
         """
-        csvf = writer(out)
+        csvf = writer(sys.stdout)
         csvf.writerow(['Name', 'Email'])
         for ent in qs:
-            csvf.writerow([full_name(**ent).encode(self.encoding),
-                           ent['email'].encode(self.encoding)])
+            csvf.writerow([full_name(**ent), ent['email']])
 
-    def outlook(self, qs, out):
-        """CSV format suitable for importing into outlook
+    def linkedin(self, qs):
+        """CSV format suitable for importing into linkedin Groups.
+        perfect for pre-approving members of a linkedin group.
         """
-        csvf = writer(out)
+        csvf = writer(sys.stdout)
+        csvf.writerow(['First Name', 'Last Name', 'Email'])
+        for ent in qs:
+            csvf.writerow([ent['first_name'], ent['last_name'], ent['email']])
+
+    def outlook(self, qs):
+        """CSV format suitable for importing into outlook"""
+        csvf = writer(sys.stdout)
         columns = ['Name', 'E-mail Address', 'Notes', 'E-mail 2 Address', 'E-mail 3 Address',
                    'Mobile Phone', 'Pager', 'Company', 'Job Title', 'Home Phone', 'Home Phone 2',
                    'Home Fax', 'Home Address', 'Business Phone', 'Business Phone 2',
@@ -101,27 +109,18 @@ class Command(BaseCommand):
         csvf.writerow(columns)
         empty = [''] * (len(columns) - 2)
         for ent in qs:
-            csvf.writerow([full_name(**ent).encode(self.encoding),
-                           ent['email'].encode(self.encoding)] + empty)
+            csvf.writerow([full_name(**ent), ent['email']] + empty)
 
-    def linkedin(self, qs, out):
-        """CSV format suitable for importing into linkedin Groups.
-        perfect for pre-approving members of a linkedin group.
-        """
-        csvf = writer(out)
-        csvf.writerow(['First Name', 'Last Name', 'Email'])
-        for ent in qs:
-            csvf.writerow([ent['first_name'].encode(self.encoding),
-                           ent['last_name'].encode(self.encoding),
-                           ent['email'].encode(self.encoding)])
-
-    def vcard(self, qs, out):
+    def vcard(self, qs):
+        """VCARD format."""
         try:
             import vobject
         except ImportError:
             print(self.style.ERROR("Please install python-vobject to use the vcard export format."))
             import sys
             sys.exit(1)
+        import sys
+        out = sys.stdout
         for ent in qs:
             card = vobject.vCard()
             card.add('fn').value = full_name(**ent)
@@ -133,4 +132,5 @@ class Command(BaseCommand):
             emailpart = card.add('email')
             emailpart.value = ent['email']
             emailpart.type_param = 'INTERNET'
-            out.write(card.serialize().encode(self.encoding))
+
+            out.write(card.serialize())

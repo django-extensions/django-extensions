@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import asyncore
 import sys
 from logging import getLogger
@@ -14,7 +16,7 @@ logger = getLogger(__name__)
 class ExtensionDebuggingServer(SMTPServer):
     """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
     # Do something with the gathered message
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         """Output will be sent to the module logger at INFO level."""
         inheaders = 1
         lines = data.split('\n')
@@ -38,19 +40,20 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--output', dest='output_file', default=None,
-            help='Specifies an output file to send a copy of all messages '
-            '(not flushed immediately).')
+            help='Specifies an output file to send a copy of all messages (not flushed immediately).'
+        )
         parser.add_argument(
             '--use-settings', dest='use_settings',
             action='store_true', default=False,
-            help='Uses EMAIL_HOST and HOST_PORT from Django settings.')
+            help='Uses EMAIL_HOST and HOST_PORT from Django settings.'
+        )
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
         if args:
             raise CommandError('Usage is mail_debug %s' % self.args)
         if not addrport:
-            if options.get('use_settings', False):
+            if options['use_settings']:
                 from django.conf import settings
                 addr = getattr(settings, 'EMAIL_HOST', '')
                 port = str(getattr(settings, 'EMAIL_PORT', '1025'))
@@ -71,13 +74,15 @@ class Command(BaseCommand):
             port = int(port)
 
         # Add console handler
-        setup_logger(logger, stream=self.stdout, filename=options.get('output_file', None))
+        setup_logger(logger, stream=self.stdout, filename=options['output_file'])
 
         def inner_run():
             quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
             print("Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command))
-
-            ExtensionDebuggingServer((addr, port), None)
+            if sys.version_info < (3, 5):
+                ExtensionDebuggingServer((addr, port), None)
+            else:
+                ExtensionDebuggingServer((addr, port), None, decode_data=True)
             asyncore.loop()
 
         try:

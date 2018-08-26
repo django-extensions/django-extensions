@@ -6,7 +6,19 @@ from distutils.version import LooseVersion
 
 import pip
 from django.core.management.base import BaseCommand, CommandError
-from pip.req import parse_requirements
+
+try:
+    from pip._internal.download import PipSession
+    from pip._internal.req.req_file import parse_requirements
+    from pip._internal.utils.misc import get_installed_distributions
+except ImportError:
+    # pip < 10
+    try:
+        from pip import get_installed_distributions
+        from pip.download import PipSession
+        from pip.req import parse_requirements
+    except ImportError:
+        raise CommandError("Pip version 6 or higher is required")
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -18,9 +30,9 @@ try:
     from xmlrpc.client import ServerProxy
 except ImportError:
     # Python 2
-    from urlparse import urlparse
-    from urllib2 import HTTPError, Request, urlopen
-    from xmlrpclib import ServerProxy
+    from urlparse import urlparse  # type: ignore
+    from urllib2 import HTTPError, Request, urlopen  # type: ignore
+    from xmlrpclib import ServerProxy  # type: ignore
 
 try:
     import requests
@@ -69,11 +81,6 @@ class Command(BaseCommand):
         else:
             raise CommandError("Requirements file(s) not found")
 
-        try:
-            from pip.download import PipSession
-        except ImportError:
-            raise CommandError("Pip version 6 or higher is required")
-
         self.reqs = {}
         with PipSession() as session:
             for filename in req_files:
@@ -110,7 +117,7 @@ class Command(BaseCommand):
         return json.loads(urlopen(req).read())
 
     def _is_stable(self, version):
-        return not re.search(r'[ab]\d+$', str(version))
+        return not re.search(r'([ab]|rc|dev)\d+$', str(version))
 
     def _available_version(self, dist_version, available):
         if self._is_stable(dist_version):
@@ -124,7 +131,7 @@ class Command(BaseCommand):
         """
         If the requirement is frozen to pypi, check for a new version.
         """
-        for dist in pip.get_installed_distributions():
+        for dist in get_installed_distributions():
             name = dist.project_name
             if name in self.reqs.keys():
                 self.reqs[name]["dist"] = dist
@@ -136,7 +143,7 @@ class Command(BaseCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].name, True)
+                available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
                 available_version = self._available_version(dist_version, available)
 
                 if not available_version:
@@ -210,7 +217,7 @@ class Command(BaseCommand):
             req_url = str(req_url)
             if req_url.startswith("git") and "github.com/" not in req_url:
                 continue
-            if req_url.endswith(".tar.gz") or req_url.endswith(".tar.bz2") or req_url.endswith(".zip"):
+            if req_url.endswith((".tar.gz", ".tar.bz2", ".zip")):
                 continue
 
             headers = {
@@ -273,7 +280,7 @@ class Command(BaseCommand):
 
                 if "message" in frozen_commit_data and frozen_commit_data["message"] == "Not Found":
                     msg = self.style.ERROR("{0} not found in {1}. Repo may be private.".format(frozen_commit_sha[:10], name))
-                elif frozen_commit_sha in [branch["commit"]["sha"] for branch in branch_data]:
+                elif frozen_commit_data["sha"] in [branch["commit"]["sha"] for branch in branch_data]:
                     msg = self.style.BOLD("up to date")
                 else:
                     msg = self.style.INFO("{0} is not the head of any branch".format(frozen_commit_data["sha"][:10]))

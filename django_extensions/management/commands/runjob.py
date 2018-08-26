@@ -15,10 +15,11 @@ class Command(BaseCommand):
         parser.add_argument('job_name', nargs='?')
         parser.add_argument(
             '--list', '-l', action="store_true", dest="list_jobs",
-            help="List all jobs with their description")
+            default=False, help="List all jobs with their description"
+        )
 
     def runjob(self, app_name, job_name, options):
-        verbosity = int(options.get('verbosity', 1))
+        verbosity = options["verbosity"]
         if verbosity > 1:
             print("Executing job: %s (app: %s)" % (job_name, app_name))
         try:
@@ -41,15 +42,15 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        app_name = options.get('app_name')
-        job_name = options.get('job_name')
+        app_name = options['app_name']
+        job_name = options['job_name']
 
         # hack since we are using job_name nargs='?' for -l to work
         if app_name and not job_name:
             job_name = app_name
             app_name = None
 
-        if options.get('list_jobs'):
+        if options['list_jobs']:
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)
         else:
             if not job_name:

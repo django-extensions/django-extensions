@@ -96,11 +96,11 @@ server.  You've been warned.
 SSL
 ^^^
 
-runserver_plus also supports SSL, so that you can easily debug bugs that to pop up
+runserver_plus also supports SSL, so that you can easily debug bugs that pop up
 when https is used. To use SSL simply provide a file name for certificates;
 a key and certificate file will be automatically generated::
 
-  $ python manage.py runserver_plus --cert cert
+  $ python manage.py runserver_plus --cert-file cert.crt
   Validating models...
   0 errors found
 
@@ -127,7 +127,7 @@ certificate files will be reused so that you do not have to keep accepting the
 self-generated certificates from your browser every time. You can also provide
 a specific file for the certificate to be used if you already have one::
 
-  $ python manage.py runserver_plus --cert /tmp/cert
+  $ python manage.py runserver_plus --cert-file /tmp/cert.crt
 
 Note that you need the OpenSSL library to use SSL, and Werkzeug 0.9 or later
 if you want to reuse existing certificates.
@@ -135,6 +135,27 @@ if you want to reuse existing certificates.
 To install OpenSSL::
 
   $ pip install pyOpenSSL
+
+Certificates paths
+^^^^^^^^^^^^^^^^^^
+You can configure different paths to .crt and .key files.
+At least one of ``--cert-file`` or ``--key-file`` must be defined to use SSL.
+
+You can set path to .crt file using ``--cert-file`` option or deprecated ``--cert`` option
+which is currently an alias for ``--cert-file``.
+If this option is not set than runserver_plus assumes that,
+this file is in the same directory as file from ``--key-file`` option.
+
+You can set path to .key file using ``--key-file`` option.
+If this option is not set than runserver_plus assumes that,
+this file is in the same directory as file from ``--cert-file`` option.
+
+Certificate file must have .crt extension and key file must have .key extension.
+Otherwise new files will be created.
+
+If you want to create new files,
+than you can pass file name without extension.
+Proper files with this name and .crt and .key extensions will be created.
 
 Configuration
 ^^^^^^^^^^^^^
@@ -187,16 +208,16 @@ causes the CPU and IO load.
 If possible try to install the Watchdog_ package, this should automatically cause Werkzeug_ to use
 `file system events` whenever possible.
 
-You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/0.10/serving/#reloader>`_
+You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/serving/#reloader>`_
 
 You can also increase the poll interval when using `stat polling` from the default of 1 second. This
 will decrease the CPU load at the expense of file edits taking longer to pick up.
 
-This can be set two ways, in the django settings file:
+This can be set two ways, in the django settings file::
 
     RUNSERVERPLUS_POLLER_RELOADER_INTERVAL = 5
 
-or as a commad line argument:
+or as a commad line argument::
 
   $ python manage.py runserver_plus --reloader-interval 5
 
@@ -205,9 +226,7 @@ Debugger PIN
 ------------
 
 .. epigraph::
-   The following text about the debugger PIN is taken verbatim from the Werkzeug documentation.
-
-   -- http://werkzeug.pocoo.org/docs/0.11/debug/#debugger-pin
+   The following text about the debugger PIN is taken verbatim from the Werkzeug `documentation about its debugger PIN <http://werkzeug.pocoo.org/docs/debug/#debugger-pin>`_.
 
 Starting with Werkzeug 0.11 the debugger is additionally protected by a PIN. This is a security helper to
 make it less likely for the debugger to be exploited in production as it has happened to people to keep the
@@ -219,10 +238,12 @@ to generate a stable PIN between restarts in which case an explicit PIN can be p
 variable WERKZEUG_DEBUG_PIN. This can be set to a number and will become the PIN. This variable can also be set
 to the value off to disable the PIN check entirely.
 
+The PIN can also be disabled by passing the argument ``--nopin`` when calling the runserver_plus command.
+
 If the PIN is entered too many times incorrectly the server needs to be restarted.
 
-This feature is not supposed to entirely secure the debugger. It’s intended to make it harder for an attacker to
-exploit the debugger. Never enable the debugger in production.
+**This feature is not supposed to entirely secure the debugger. It’s intended to make it harder for an attacker to
+exploit the debugger. Never enable the debugger in production.**
 
 
 .. _gh625: https://github.com/django-extensions/django-extensions/issues/625

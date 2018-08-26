@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 
 SECRET_KEY = 'dummy'
 
@@ -7,8 +8,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.sessions',
+    'django.contrib.staticfiles',
+    'tests.collisions',
     'tests.testapp',
     'tests.testapp_with_no_models_file',
+    'tests.testapp_with_appconfig.apps.TestappWithAppConfigConfig',
     'django_extensions',
 ]
 
@@ -51,3 +55,24 @@ TEMPLATES = [
         },
     },
 ]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+STATIC_URL = "/static/"
+
+SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
+    'django_extensions.db.fields.encrypted',
+    'django_extensions.mongodb.fields',
+    'django_extensions.mongodb.models',
+    'tests.test_encrypted_fields',
+    'tests.testapp.scripts.invalid_import_script',
+    'setup',
+]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'tests.test_clear_caches.DefaultCacheMock',
+    },
+    'other': {
+        'BACKEND': 'tests.test_clear_caches.OtherCacheMock',
+    },
+}

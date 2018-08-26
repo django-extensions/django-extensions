@@ -13,9 +13,13 @@ class SyncS3Tests(TestCase):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         media_root = os.path.join(current_dir, "media")
         os.mkdir(media_root)
-        test_dirs = [os.path.join(media_root, "testdir1"), os.path.join(media_root, "testdir2"),
-                     os.path.join(media_root, "testdir3"), os.path.join(media_root, "testdir4"),
-                     os.path.join(media_root, "testsamenamedir"), ]
+        test_dirs = [
+            os.path.join(media_root, "testdir1"),
+            os.path.join(media_root, "testdir2"),
+            os.path.join(media_root, "testdir3"),
+            os.path.join(media_root, "testdir4"),
+            os.path.join(media_root, "testsamenamedir"),
+        ]
         for dir in test_dirs:
             os.mkdir(dir)
 
@@ -23,16 +27,24 @@ class SyncS3Tests(TestCase):
         os.mkdir(test_sub_dir)
 
         test_sub_dir_base = os.path.join(media_root, "testdir1")
-        test_sub_dirs = [os.path.join(test_sub_dir_base, "testsubdir1"), os.path.join(test_sub_dir_base, "testsubdir2"),
-                         os.path.join(test_sub_dir_base, "testsubdir3"), os.path.join(test_sub_dir_base, "testsubdir4"), ]
+        test_sub_dirs = [
+            os.path.join(test_sub_dir_base, "testsubdir1"),
+            os.path.join(test_sub_dir_base, "testsubdir2"),
+            os.path.join(test_sub_dir_base, "testsubdir3"),
+            os.path.join(test_sub_dir_base, "testsubdir4"),
+        ]
 
         for dir in test_sub_dirs:
             os.mkdir(dir)
 
         test_sub_dir_base2 = os.path.join(media_root, "testdir3")
-        test_sub_dirs_2 = [os.path.join(test_sub_dir_base2, "testsubdir1"), os.path.join(test_sub_dir_base2, "testsubdir2"),
-                         os.path.join(test_sub_dir_base2, "testsubdir3"), os.path.join(test_sub_dir_base2, "testsubdir4"),
-                         os.path.join(test_sub_dir_base2, "testsamenamedir"), ]
+        test_sub_dirs_2 = [
+            os.path.join(test_sub_dir_base2, "testsubdir1"),
+            os.path.join(test_sub_dir_base2, "testsubdir2"),
+            os.path.join(test_sub_dir_base2, "testsubdir3"),
+            os.path.join(test_sub_dir_base2, "testsubdir4"),
+            os.path.join(test_sub_dir_base2, "testsamenamedir"),
+        ]
 
         for dir in test_sub_dirs_2:
             os.mkdir(dir)
@@ -52,8 +64,9 @@ class SyncS3Tests(TestCase):
         django_extensions.management.commands.sync_s3.HAS_BOTO = True
         try:
             sync_s3_command.run_from_argv(
-                ["manage.py", "sync_s3", "--acl=authenticated-read", "--filter-list=testsamenamedir,testdir1"])
-        except:
+                ["manage.py", "sync_s3", "--acl=authenticated-read", "--filter-list=testsamenamedir,testdir1"]
+            )
+        except Exception:
             # Exception is expected, we're not actually attempting to connect to S3
             self.assertEqual(0, 0)
 

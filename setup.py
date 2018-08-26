@@ -4,28 +4,35 @@ Based entirely on Django's own ``setup.py``.
 """
 import os
 import sys
+import setuptools
 from distutils.command.install import INSTALL_SCHEMES
 from distutils.command.install_data import install_data
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup  # NOQA
+from setuptools import setup
 
 try:
     from setuptools.command.test import test as TestCommand
 
     class PyTest(TestCommand):
-        user_options = [('pytest-args=', 'a', "Arguments to pass into py.test")]
+        user_options = TestCommand.user_options[:] + [
+            ('pytest-args=', 'a', "Arguments to pass into py.test"),
+            ('exitfirst', 'x', "exit instantly on first error or failed test."),
+            ('no-cov', 'C', "Disable coverage report completely"),
+        ]
+        exitfirst = False
+        no_cov = False
 
         def initialize_options(self):
             TestCommand.initialize_options(self)
-            self.pytest_args = []
+            self.pytest_args = 'tests django_extensions --ds=tests.testapp.settings --cov=django_extensions --cov-report html --cov-report term'
 
         def finalize_options(self):
             TestCommand.finalize_options(self)
             self.test_args = []
             self.test_suite = True
+            if self.exitfirst:
+                self.pytest_args += " -x"
+            if self.no_cov:
+                self.pytest_args += " --no-cov"
 
         def run_tests(self):
             import shlex
@@ -110,13 +117,30 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 
 version = __import__('django_extensions').__version__
 
+install_requires = ['six>=1.2']
+extras_require = {}
+
+if int(setuptools.__version__.split(".", 1)[0]) < 18:
+    assert "bdist_wheel" not in sys.argv, "setuptools 18 or later is required for wheels."
+    if sys.version_info[:2] < (3, 5):
+        install_requires.append('typing')
+elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
+    install_requires.append('typing;python_version<"3.5"')
+else:
+    extras_require[":python_version<'3.5'"] = ["typing"]
+
+long_description = """django-extensions bundles several useful
+additions for Django projects. See the project page for more information:
+  http://github.com/django-extensions/django-extensions"""
+if os.path.isfile("README.rst"):
+    with open("README.rst") as f:
+        long_description = f.read()
+
 setup(
     name='django-extensions',
     version=version,
     description="Extensions for Django",
-    long_description="""django-extensions bundles several useful
-additions for Django projects. See the project page for more information:
-  http://github.com/django-extensions/django-extensions""",
+    long_description=long_description,
     author='Michael Trier',
     author_email='mtrier@gmail.com',
     maintainer='Bas van Oostveen',
@@ -127,7 +151,8 @@ additions for Django projects. See the project page for more information:
     packages=packages,
     cmdclass=cmdclasses,
     package_data=package_data,
-    install_requires=['six>=1.2'],
+    install_requires=install_requires,
+    extras_require=extras_require,
     tests_require=[
         'Django',
         'shortuuid',
@@ -137,20 +162,28 @@ additions for Django projects. See the project page for more information:
         'pytest-cov',
         'tox',
         'mock',
+        'vobject',
+        'Werkzeug'
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
-        'Framework :: Django :: 1.9',
-        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
     ],

@@ -15,12 +15,34 @@ break
 ~~~~~
 Do not continue scanning other templates after the first failure.
 
+ignore_app
+~~~~~~~~~~
+Ignore this app (can be used multiple times).
+
 includes
 ~~~~~~~~
 Use -i (can be used multiple times) to add directories to the TEMPLATE DIRS.
 
+no_apps
+~~~~~~~
+Do not automatically include app template directories.
+
+
 Settings
 --------
+
+VALIDATE_TEMPLATES_IGNORE_APPS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ignore the following apps
+
+
+VALIDATE_TEMPLATES_IGNORES
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ignore file names which matches these patterns.
+Matching is done via `fnmatch`.
+
 
 VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,4 +57,3 @@ Usage Example
 -------------
 
  ./manage.py validate_templates
-

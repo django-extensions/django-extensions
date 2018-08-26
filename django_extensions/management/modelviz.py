@@ -99,15 +99,20 @@ class ModelGraph(object):
                         if relation['target'] in nodes:
                             relation['needs_node'] = False
 
-    def get_graph_data(self):
+    def get_graph_data(self, as_json=False):
         now = datetime.datetime.now()
         graph_data = {
             'created_at': now.strftime("%Y-%m-%d %H:%M"),
             'cli_options': self.cli_options,
             'disable_fields': self.disable_fields,
             'use_subgraph': self.use_subgraph,
-            'graphs': self.graphs,
         }
+
+        if as_json:
+            graph_data['graphs'] = [context.flatten() for context in self.graphs]
+        else:
+            graph_data['graphs'] = self.graphs
+
         return graph_data
 
     def add_attributes(self, field, abstract_fields):
@@ -120,7 +125,7 @@ class ModelGraph(object):
 
         t = type(field).__name__
         if isinstance(field, (OneToOneField, ForeignKey)):
-            t += " ({0})".format(field.rel.field_name)
+            t += " ({0})".format(field.remote_field.field_name)
         # TODO: ManyToManyField, GenericRelation
 
         return {
@@ -149,18 +154,18 @@ class ModelGraph(object):
             label = '{} ({})'.format(label, force_text(related_query_name))
 
         # handle self-relationships and lazy-relationships
-        if isinstance(field.rel.to, six.string_types):
-            if field.rel.to == 'self':
+        if isinstance(field.remote_field.model, six.string_types):
+            if field.remote_field.model == 'self':
                 target_model = field.model
             else:
-                if '.' in field.rel.to:
-                    app_label, model_name = field.rel.to.split('.', 1)
+                if '.' in field.remote_field.model:
+                    app_label, model_name = field.remote_field.model.split('.', 1)
                 else:
                     app_label = field.model._meta.app_label
-                    model_name = field.rel.to
+                    model_name = field.remote_field.model
                 target_model = apps.get_model(app_label, model_name)
         else:
-            target_model = field.rel.to
+            target_model = field.remote_field.model
 
         _rel = self.get_relation_context(target_model, field, label, extras)
 
@@ -324,7 +329,7 @@ class ModelGraph(object):
         if self.skip_field(field):
             return newmodel
         if isinstance(field, ManyToManyField):
-            if hasattr(field.rel.through, '_meta') and field.rel.through._meta.auto_created:
+            if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
                 newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]'))
         elif isinstance(field, GenericRelation):
             newmodel['relations'].append(self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]')))

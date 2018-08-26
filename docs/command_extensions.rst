@@ -8,12 +8,8 @@ Current Command Extensions
 
 * *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
-  
-* *clean_pyc* - Remove all python bytecode compiled files from the project
 
-* `create_app`_ - Creates an application directory structure for the specified
-  app name.  This command allows you to specify the --template option where you
-  can indicate a template directory structure to use as your default.
+* *clean_pyc* - Remove all python bytecode compiled files from the project
 
 * *create_command* - Creates a command extension directory structure within the
   specified application.  This makes it easy to get started with adding a
@@ -44,7 +40,7 @@ Current Command Extensions
 * `export_emails`_ - export the email addresses for your
   users in one of many formats.  Currently supports Address, Google, Outlook,
   LinkedIn, and VCard formats.
-  
+
 * *find_template* - Finds the location of the given template by resolving its path
 
 * *generate_secret_key* - Creates a new secret key that you can put in your
@@ -56,7 +52,10 @@ Current Command Extensions
 
 * *mail_debug* - Starts a mail server which echos out the contents of the email
   instead of sending it.
-  
+
+* :doc:`merge_model_instances` - Merges duplicate model instances by
+  reassigning related model references to a chosen primary model instance.
+
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
 * *passwd* - Makes it easy to reset a user's password.
@@ -115,8 +114,8 @@ Current Command Extensions
   Optionally can also gzip CSS and Javascript files and set the
   Content-Encoding header, and also set a far future expires header for browser
   caching.
-  
-* *sync_data* - Makes the current database have the same data as the fixture(s), no more, no less.
+
+* *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
 
 * *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
 
@@ -127,7 +126,6 @@ Current Command Extensions
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
 
-.. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
 .. _`print_settings`: print_settings.html

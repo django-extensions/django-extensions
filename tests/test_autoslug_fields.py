@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 import pytest
+import django
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
 from django.utils import six
+from django.utils.encoding import force_bytes
 
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
-from .testapp.models import ChildSluggedTestModel, SluggedTestModel
+from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
+    FKSluggedTestModel, FKSluggedTestModelCallable, \
+    FunctionSluggedTestModel, ModelMethodSluggedTestModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -89,6 +93,30 @@ class AutoSlugFieldTest(TestCase):
         n.save()
         self.assertEqual(n.slug, '-3')
 
+    def test_callable_method_slug_source(self):
+        m = ModelMethodSluggedTestModel(title='-foo')
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
+
+        n = ModelMethodSluggedTestModel(title='-foo')
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+    def test_callable_function_slug_source(self):
+        m = FunctionSluggedTestModel(title='-foo')
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
+
+        n = FunctionSluggedTestModel(title='-foo')
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
+        n.save()
+        self.assertEqual(n.slug, 'the-title-is-foo-2')
+
     def test_inheritance_creates_next_slug(self):
         m = SluggedTestModel(title='foo')
         m.save()
@@ -101,18 +129,41 @@ class AutoSlugFieldTest(TestCase):
         o.save()
         self.assertEqual(o.slug, 'foo-3')
 
+    def test_foreign_key_populate_from_field(self):
+        m_fk = SluggedTestModel(title='foo')
+        m_fk.save()
+        m = FKSluggedTestModel(related_field=m_fk)
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+    def test_foreign_key_populate_from_callable(self):
+        m_fk = ModelMethodSluggedTestModel(title='foo')
+        m_fk.save()
+        m = FKSluggedTestModelCallable(related_field=m_fk)
+        m.save()
+        self.assertEqual(m.slug, 'the-title-is-foo')
+
+    def test_copy_model_generates_new_slug(self):
+        m = SluggedTestModel(title='foo')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m.pk = None
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
-        l = {}
+        dct = {}
         try:
-            exec(string, globals(), l)
+            exec(force_bytes(string), globals(), dct)
         except Exception as e:
             if value:
                 self.fail("Could not exec %r (from value %r): %s" % (string.strip(), value, e))
             else:
                 self.fail("Could not exec %r: %s" % (string.strip(), e))
-        return l
+        return dct
 
     def test_17_migration(self):
         """
@@ -133,9 +184,19 @@ class MigrationTest(TestCase):
         writer = MigrationWriter(migration)
         output = writer.as_string()
         # It should NOT be unicode.
-        self.assertIsInstance(output, six.binary_type,
-                              "Migration as_string returned unicode")
+        if django.VERSION < (1, 11):
+            self.assertIsInstance(output, six.binary_type, "Migration as_string returned unicode")
+        else:
+            # As of Django 1.11 MigrationWriter.as_string returns unicode not bytes
+            self.assertIsInstance(output, six.text_type, "Migration as_string returned bytes")
         # We don't test the output formatting - that's too fragile.
         # Just make sure it runs for now, and that things look alright.
         result = self.safe_exec(output)
         self.assertIn("Migration", result)
+
+    def test_stable_deconstruct(self):
+        slug_field = SluggedTestModel._meta.get_field('slug')
+        construction_values = slug_field.deconstruct()
+        m = SluggedTestModel(title='foo')
+        m.save()
+        self.assertEqual(slug_field.deconstruct(), construction_values)

@@ -5,6 +5,7 @@ from django.test import TestCase
 from .testapp.models import JSONFieldTestModel
 from django_extensions.db.fields.json import (
     dumps,
+    loads,
     JSONField,
     JSONDict,
     JSONList
@@ -119,4 +120,27 @@ class JsonFieldTest(TestCase):
         self.assertEqual(
             six.u('[{"a": "a"}]'),
             j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None)
+        )
+
+    def test_to_python(self):
+        j_field = JSONField()
+
+        self.assertEqual(
+            loads('1'),
+            j_field.to_python('1')
+        )
+
+        self.assertEqual(
+            loads('"1"'),
+            j_field.to_python('"1"')
+        )
+
+        self.assertEqual(
+            loads('[{"a": 1}]'),
+            j_field.to_python('[{"a": 1}]')
+        )
+
+        self.assertEqual(
+            loads('[{"a": "1"}]'),
+            j_field.to_python('[{"a": "1"}]')
         )

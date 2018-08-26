@@ -31,6 +31,7 @@ def setup_logger(logger, stream, filename=None, fmt=None):
         console.setFormatter(logging.Formatter(fmt))
         logger.addHandler(console)
         logger.setLevel(logging.DEBUG)
+        logger.propagate = False
 
         if filename:
             outfile = logging.FileHandler(filename)

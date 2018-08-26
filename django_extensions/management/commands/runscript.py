@@ -1,16 +1,45 @@
 # -*- coding: utf-8 -*-
-import sys
 import importlib
+import inspect
+import os
 import traceback
 
+from argparse import ArgumentTypeError
+
 from django.apps import apps
+from django.core.management.base import CommandError
 
 from django_extensions.management.email_notifications import EmailNotificationCommand
 from django_extensions.management.utils import signalcommand
 
 
+class DirPolicyChoices:
+    NONE = 'none'
+    EACH = 'each'
+    ROOT = 'root'
+
+
+def check_is_directory(value):
+    if value is None or not os.path.isdir(value):
+        raise ArgumentTypeError("%s is not a directory!" % value)
+    return value
+
+
+class BadCustomDirectoryException(Exception):
+    def __init__(self, value):
+        self.message = value + ' If --dir-policy is custom than you must set correct directory in ' \
+                               '--dir option or in settings.RUNSCRIPT_CHDIR'
+
+    def __str__(self):
+        return self.message
+
+
 class Command(EmailNotificationCommand):
     help = 'Runs a script in django context.'
+
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.current_directory = os.getcwd()
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -36,9 +65,23 @@ class Command(EmailNotificationCommand):
             help='Space-separated argument list to be passed to the scripts. Note that the '
                  'same arguments will be passed to all named scripts.',
         )
+        parser.add_argument(
+            '--dir-policy', type=str,
+            choices=[DirPolicyChoices.NONE, DirPolicyChoices.EACH, DirPolicyChoices.ROOT],
+            help='Policy of selecting scripts execution directory: '
+                 'none - start all scripts in current directory '
+                 'each - start all scripts in their directories '
+                 'root - start all scripts in BASE_DIR directory ',
+        )
+        parser.add_argument(
+            '--chdir', type=check_is_directory,
+            help='If dir-policy option is set to custom, than this option determines script execution directory.',
+        )
 
     @signalcommand
     def handle(self, *args, **options):
+        from django.conf import settings
+
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
@@ -47,22 +90,21 @@ class Command(EmailNotificationCommand):
         subdirs = []
         scripts = options['script']
 
-        if not options.get('noscripts'):
+        if not options['noscripts']:
             subdirs.append('scripts')
-        if options.get('infixtures'):
+        if options['infixtures']:
             subdirs.append('fixtures')
-        verbosity = int(options.get('verbosity', 1))
-        show_traceback = options.get('traceback', True)
-        if show_traceback is None:
-            # XXX: traceback is set to None from Django ?
-            show_traceback = True
-        no_traceback = options.get('no_traceback', False)
+        verbosity = options["verbosity"]
+        show_traceback = options['traceback']
+        no_traceback = options['no_traceback']
         if no_traceback:
             show_traceback = False
-        silent = options.get('silent', False)
+        else:
+            show_traceback = True
+        silent = options['silent']
         if silent:
             verbosity = 0
-        email_notifications = options.get('email_notifications', False)
+        email_notifications = options['email_notifications']
 
         if len(subdirs) < 1:
             print(NOTICE("No subdirs to run left."))
@@ -72,12 +114,41 @@ class Command(EmailNotificationCommand):
             print(ERROR("Script name required."))
             return
 
+        def get_directory_from_chdir():
+            directory = options['chdir'] or getattr(settings, 'RUNSCRIPT_CHDIR', None)
+            try:
+                check_is_directory(directory)
+            except ArgumentTypeError as e:
+                raise BadCustomDirectoryException(str(e))
+            return directory
+
+        def get_directory_basing_on_policy(script_module):
+            policy = options['dir_policy'] or getattr(settings, 'RUNSCRIPT_CHDIR_POLICY', DirPolicyChoices.NONE)
+            if policy == DirPolicyChoices.ROOT:
+                return settings.BASE_DIR
+            elif policy == DirPolicyChoices.EACH:
+                return os.path.dirname(inspect.getfile(script_module))
+            else:
+                return self.current_directory
+
+        def set_directory(script_module):
+            if options['chdir']:
+                directory = get_directory_from_chdir()
+            elif options['dir_policy']:
+                directory = get_directory_basing_on_policy(script_module)
+            elif getattr(settings, 'RUNSCRIPT_CHDIR', None):
+                directory = get_directory_from_chdir()
+            else:
+                directory = get_directory_basing_on_policy(script_module)
+            os.chdir(os.path.abspath(directory))
+
         def run_script(mod, *script_args):
             try:
+                set_directory(mod)
                 mod.run(*script_args)
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
-            except Exception:
+            except Exception as e:
                 if silent:
                     return
                 if verbosity > 0:
@@ -86,41 +157,45 @@ class Command(EmailNotificationCommand):
                     self.send_email_notification(
                         notification_id=mod.__name__, include_traceback=True)
                 if show_traceback:
-                    raise
+                    if not isinstance(e, CommandError):
+                        raise
 
-        def my_import(mod):
+        def my_import(parent_package, module_name):
+            full_module_path = "%s.%s" % (parent_package, module_name)
             if verbosity > 1:
-                print(NOTICE("Check for %s" % mod))
-            # check if module exists before importing
+                print(NOTICE("Check for %s" % full_module_path))
+            # Try importing the parent package first
             try:
-                importlib.import_module(mod)
-                t = __import__(mod, [], [], [" "])
-            except (ImportError, AttributeError) as e:
+                importlib.import_module(parent_package)
+            except ImportError as e:
                 if str(e).startswith('No module named'):
-                    try:
-                        exc_type, exc_value, exc_traceback = sys.exc_info()
-                        try:
-                            if exc_traceback.tb_next.tb_next is None:
-                                return False
-                        except AttributeError:
-                            pass
-                    finally:
-                        exc_traceback = None
+                    # No need to proceed if the parent package doesn't exist
+                    return False
 
-                if verbosity > 1:
-                    if verbosity > 2:
-                        traceback.print_exc()
-                    print(ERROR("Cannot import module '%s': %s." % (mod, e)))
+            try:
+                t = importlib.import_module(full_module_path)
+            except ImportError as e:
+                # The parent package exists, but the module doesn't
+                module_file = os.path.join(settings.BASE_DIR, *full_module_path.split('.')) + '.py'
+                if not os.path.isfile(module_file):
+                    return False
+
+                if silent:
+                    return False
+                if show_traceback:
+                    traceback.print_exc()
+                if verbosity > 0:
+                    print(ERROR("Cannot import module '%s': %s." % (full_module_path, e)))
 
                 return False
 
             if hasattr(t, "run"):
                 if verbosity > 1:
-                    print(NOTICE2("Found script '%s' ..." % mod))
+                    print(NOTICE2("Found script '%s' ..." % full_module_path))
                 return t
             else:
                 if verbosity > 1:
-                    print(ERROR2("Find script '%s' but no run() function found." % mod))
+                    print(ERROR2("Found script '%s' but no run() function found." % full_module_path))
 
         def find_modules_for_script(script):
             """ find script module which contains 'run' attribute """
@@ -128,27 +203,25 @@ class Command(EmailNotificationCommand):
             # first look in apps
             for app in apps.get_app_configs():
                 for subdir in subdirs:
-                    mod = my_import("%s.%s.%s" % (app.name, subdir, script))
+                    mod = my_import("%s.%s" % (app.name, subdir), script)
+                    if mod:
+                        modules.append(mod)
+            # try direct import
+            if script.find(".") != -1:
+                parent, mod_name = script.rsplit(".", 1)
+                mod = my_import(parent, mod_name)
+                if mod:
+                    modules.append(mod)
+            else:
+                # try app.DIR.script import
+                for subdir in subdirs:
+                    mod = my_import(subdir, script)
                     if mod:
                         modules.append(mod)
 
-            # try app.DIR.script import
-            sa = script.split(".")
-            for subdir in subdirs:
-                nn = ".".join(sa[:-1] + [subdir, sa[-1]])
-                mod = my_import(nn)
-                if mod:
-                    modules.append(mod)
-
-            # try direct import
-            if script.find(".") != -1:
-                mod = my_import(script)
-                if mod:
-                    modules.append(mod)
-
             return modules
 
-        if options.get('script_args'):
+        if options['script_args']:
             script_args = options['script_args']
         else:
             script_args = []

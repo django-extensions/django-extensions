@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -6,17 +8,19 @@ import socket
 import sys
 import time
 
+import django
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from django.db import connections, DEFAULT_DB_ALIAS
-from django.db.backends import utils
-from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
+from django.db.backends import utils
 from django.utils.autoreload import gen_filenames
 
-from django_extensions.management.technical_response import null_technical_500_response
-from django_extensions.management.utils import RedirectHandler, setup_logger, signalcommand, has_ipdb
+from django_extensions.management.technical_response import \
+    null_technical_500_response
+from django_extensions.management.utils import (
+    RedirectHandler, has_ipdb, setup_logger, signalcommand,
+)
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -40,6 +44,7 @@ naiveip_re = re.compile(r"""^(?:
 ):)?(?P<port>\d+)$""", re.X)
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
+DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
 
@@ -68,12 +73,21 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
-        parser.add_argument('--cert', dest='cert_path', action="store", type=str,
-                            help='To use SSL, specify certificate path.')
-        parser.add_argument('--extra-file', dest='extra_files', action="append", type=str,
+        cert_group = parser.add_mutually_exclusive_group()
+        cert_group.add_argument('--cert', dest='cert_path', action="store", type=str,
+                                help='Deprecated alias for --cert-file option.')
+        cert_group.add_argument('--cert-file', dest='cert_path', action="store", type=str,
+                                help='SSL .cert file path. If not provided path from --key-file will be selected. '
+                                     'Either --cert-file or --key-file must be provided to use SSL.')
+        parser.add_argument('--key-file', dest='key_file_path', action="store", type=str,
+                            help='SSL .key file path. If not provided path from --cert-file will be selected. '
+                                 'Either --cert-file or --key-file must be provided to use SSL.')
+        parser.add_argument('--extra-file', dest='extra_files', action="append", type=str, default=[],
                             help='auto-reload whenever the given file changes too (can be specified multiple times)')
         parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
                             help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
+        parser.add_argument('--reloader-type', dest='reloader_type', action="store", type=str, default=DEFAULT_POLLER_RELOADER_TYPE,
+                            help='Werkzeug reloader type [options are auto, watchdog, or stat, default=%s]' % DEFAULT_POLLER_RELOADER_TYPE)
         parser.add_argument('--pdb', action='store_true', dest='pdb', default=False,
                             help='Drop into pdb shell at the start of any view.')
         parser.add_argument('--ipdb', action='store_true', dest='ipdb', default=False,
@@ -97,8 +111,8 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        addrport = options.get('addrport')
-        startup_messages = options.get('startup_messages', 'reload')
+        addrport = options['addrport']
+        startup_messages = options['startup_messages']
         if startup_messages == "reload":
             self.show_startup_messages = os.environ.get('RUNSERVER_PLUS_SHOW_MESSAGES')
         elif startup_messages == "once":
@@ -114,7 +128,7 @@ class Command(BaseCommand):
         if hasattr(self.stderr, 'ending'):
             self.stderr.ending = None
 
-        setup_logger(logger, self.stderr, filename=options.get('output_file', None))  # , fmt="[%(name)s] %(message)s")
+        setup_logger(logger, self.stderr, filename=options['output_file'])  # , fmt="[%(name)s] %(message)s")
         logredirect = RedirectHandler(__name__)
 
         # Redirect werkzeug log items
@@ -123,31 +137,50 @@ class Command(BaseCommand):
         werklogger.addHandler(logredirect)
         werklogger.propagate = False
 
-        if options.get("print_sql", False):
+        if options["print_sql"]:
             try:
                 import sqlparse
             except ImportError:
                 sqlparse = None  # noqa
 
+            try:
+                import pygments.lexers
+                import pygments.formatters
+            except ImportError:
+                pygments = None
+
+            truncate = getattr(settings, 'RUNSERVER_PLUS_PRINT_SQL_TRUNCATE', 1000)
+
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
                     starttime = time.time()
                     try:
-                        return self.cursor.execute(sql, params)
+                        return utils.CursorWrapper.execute(self, sql, params)
                     finally:
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
                         execution_time = time.time() - starttime
-                        therest = ' -- [Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias)
+                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+
                         if sqlparse:
-                            logger.info(sqlparse.format(raw_sql, reindent=True) + therest)
-                        else:
-                            logger.info(raw_sql + therest)
+                            raw_sql = raw_sql[:truncate]
+                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
+
+                        if pygments:
+                            raw_sql = pygments.highlight(
+                                raw_sql,
+                                pygments.lexers.get_lexer_by_name("sql"),
+                                pygments.formatters.TerminalFormatter()
+                            )
+
+                        logger.info(raw_sql)
+                        logger.info("")
+                        logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
+                        logger.info("")
 
             utils.CursorDebugWrapper = PrintQueryWrapper
 
-        pdb_option = options.get('pdb', False)
-        ipdb_option = options.get('ipdb', False)
-        pm = options.get('pm', False)
+        pdb_option = options['pdb']
+        ipdb_option = options['ipdb']
+        pm = options['pm']
         try:
             from django_pdb.middleware import PdbMiddleware
         except ImportError:
@@ -156,9 +189,15 @@ class Command(BaseCommand):
             pm = False
         else:
             # Add pdb middleware if --pdb is specified or if in DEBUG mode
-            middleware = 'django_pdb.middleware.PdbMiddleware'
-            if (pdb_option or ipdb_option or settings.DEBUG) and middleware not in settings.MIDDLEWARE_CLASSES:
-                settings.MIDDLEWARE_CLASSES += (middleware,)
+            if (pdb_option or ipdb_option or settings.DEBUG):
+                middleware = 'django_pdb.middleware.PdbMiddleware'
+                settings_middleware = getattr(settings, 'MIDDLEWARE', None) or settings.MIDDLEWARE_CLASSES
+
+                if middleware not in settings_middleware:
+                    if isinstance(settings_middleware, tuple):
+                        settings_middleware += (middleware,)
+                    else:
+                        settings_middleware += [middleware]
 
             # If --pdb is specified then always break at the start of views.
             # Otherwise break only if a 'pdb' query parameter is set in the url
@@ -174,15 +213,14 @@ class Command(BaseCommand):
                 else:
                     import pdb
                     p = pdb
-                print >>sys.stderr, "Exception occured: %s, %s" % (exc_type,
-                                                                   exc_value)
+                print("Exception occured: %s, %s" % (exc_type, exc_value), file=sys.stderr)
                 p.post_mortem(tb)
 
         # usurp django's handler
         from django.views import debug
         debug.technical_500_response = postmortem if pm else null_technical_500_response
 
-        self.use_ipv6 = options.get('use_ipv6')
+        self.use_ipv6 = options['use_ipv6']
         if self.use_ipv6 and not socket.has_ipv6:
             raise CommandError('Your Python does not support IPv6.')
         self._raw_ipv6 = False
@@ -213,12 +251,11 @@ class Command(BaseCommand):
                                        % self.addr)
         if not self.addr:
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
+            self._raw_ipv6 = True
 
         self.inner_run(options)
 
     def inner_run(self, options):
-        import django
-
         try:
             from werkzeug import run_simple, DebuggedApplication
             from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
@@ -227,7 +264,7 @@ class Command(BaseCommand):
             if settings.DEBUG:
                 try:
                     set_werkzeug_log_color()
-                except:  # We are dealing with some internals, anything could go wrong
+                except Exception:  # We are dealing with some internals, anything could go wrong
                     if self.show_startup_messages:
                         print("Wrapping internal werkzeug logger for color highlighting has failed!")
                     pass
@@ -238,21 +275,19 @@ class Command(BaseCommand):
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
                 environ = super(WSGIRequestHandler, self).make_environ()
-                if not options.get('keep_meta_shutdown_func'):
+                if not options['keep_meta_shutdown_func']:
                     del environ['werkzeug.server.shutdown']
                 return environ
 
-        threaded = options.get('threaded', True)
-        use_reloader = options.get('use_reloader', True)
-        open_browser = options.get('open_browser', False)
-        cert_path = options.get("cert_path")
+        threaded = options['threaded']
+        use_reloader = options['use_reloader']
+        open_browser = options['open_browser']
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-        bind_url = "http://%s:%s/" % (
-            self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
-        extra_files = options.get('extra_files', None) or []
-        reloader_interval = options.get('reloader_interval', 1)
+        extra_files = options['extra_files']
+        reloader_interval = options['reloader_interval']
+        reloader_type = options['reloader_type']
 
-        self.nopin = options.get('nopin', False)
+        self.nopin = options['nopin']
 
         if self.show_startup_messages:
             print("Performing system checks...\n")
@@ -264,21 +299,13 @@ class Command(BaseCommand):
             self.check_migrations()
         except ImproperlyConfigured:
             pass
-        if self.show_startup_messages:
-            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
-            print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
-            print("Quit the server with %s." % quit_command)
         handler = get_internal_wsgi_application()
         if USE_STATICFILES:
-            use_static_handler = options.get('use_static_handler', True)
-            insecure_serving = options.get('insecure_serving', False)
+            use_static_handler = options['use_static_handler']
+            insecure_serving = options['insecure_serving']
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
-        if open_browser:
-            import webbrowser
-            webbrowser.open(bind_url)
-        if cert_path:
+        if options["cert_path"] or options["key_file_path"]:
             """
             OpenSSL is needed for SSL support.
 
@@ -295,20 +322,15 @@ class Command(BaseCommand):
                                    "required to use runserver_plus with ssl support. "
                                    "Install via pip (pip install pyOpenSSL).")
 
-            dir_path, cert_file = os.path.split(cert_path)
-            if not dir_path:
-                dir_path = os.getcwd()
-            root, ext = os.path.splitext(cert_file)
-            certfile = os.path.join(dir_path, root + ".crt")
-            keyfile = os.path.join(dir_path, root + ".key")
+            certfile, keyfile = self.determine_ssl_files_paths(options)
+            dir_path, root = os.path.split(certfile)
+            root, _ = os.path.splitext(root)
             try:
                 from werkzeug.serving import make_ssl_devcert
-                if os.path.exists(certfile) and \
-                        os.path.exists(keyfile):
-                            ssl_context = (certfile, keyfile)
+                if os.path.exists(certfile) and os.path.exists(keyfile):
+                    ssl_context = (certfile, keyfile)
                 else:  # Create cert, key files ourselves.
-                    ssl_context = make_ssl_devcert(
-                        os.path.join(dir_path, root), host='localhost')
+                    ssl_context = make_ssl_devcert(os.path.join(dir_path, root), host='localhost')
             except ImportError:
                 if self.show_startup_messages:
                     print("Werkzeug version is less than 0.9, trying adhoc certificate.")
@@ -316,6 +338,19 @@ class Command(BaseCommand):
 
         else:
             ssl_context = None
+
+        bind_url = "%s://%s:%s/" % (
+            "https" if ssl_context else "http", self.addr if not self._raw_ipv6 else '[%s]' % self.addr, self.port)
+
+        if self.show_startup_messages:
+            print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
+            print("Development server is running at %s" % (bind_url,))
+            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Quit the server with %s." % quit_command)
+
+        if open_browser:
+            import webbrowser
+            webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
             extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
@@ -341,21 +376,43 @@ class Command(BaseCommand):
             use_debugger=True,
             extra_files=extra_files,
             reloader_interval=reloader_interval,
+            reloader_type=reloader_type,
             threaded=threaded,
             request_handler=WSGIRequestHandler,
             ssl_context=ssl_context,
         )
 
-    def check_migrations(self):
+    @classmethod
+    def _create_path_with_extension_from(cls, file_path, extension):
+        dir_path, cert_file = os.path.split(file_path)
+        if not dir_path:
+            dir_path = os.getcwd()
+        file_name, _ = os.path.splitext(cert_file)
+        return os.path.join(dir_path, file_name + "." + extension)
+
+    @classmethod
+    def _determine_path_for_file(cls, current_file, other_file, extension):
+        """ Determine path with proper extension. If path is absent then use path from alternative file.
+        If path is relative than use current working directory.
+        :param current_file: path for current file
+        :param other_file: path for alternative file
+        :param extension: expected extension
+        :return: path of this file.
         """
-        Checks to see if the set of migrations on disk matches the
-        migrations in the database. Prints a warning if they don't match.
-        """
-        executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
-        plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-        if plan and self.show_startup_messages:
-            self.stdout.write(self.style.NOTICE("\nYou have unapplied migrations; your app may not work properly until they are applied."))
-            self.stdout.write(self.style.NOTICE("Run 'python manage.py migrate' to apply them.\n"))
+        if current_file is None:
+            return cls._create_path_with_extension_from(other_file, extension)
+        directory, file = os.path.split(current_file)
+        file_name, _ = os.path.splitext(file)
+        if not directory:
+            return cls._create_path_with_extension_from(current_file, extension)
+        else:
+            return os.path.join(directory, file_name + "." + extension)
+
+    @classmethod
+    def determine_ssl_files_paths(cls, options):
+        cert_file = cls._determine_path_for_file(options['cert_path'], options['key_file_path'], "crt")
+        key_file = cls._determine_path_for_file(options['key_file_path'], options['cert_path'], "key")
+        return cert_file, key_file
 
 
 def set_werkzeug_log_color():
@@ -376,7 +433,7 @@ def set_werkzeug_log_color():
                 message % args,
             )
             http_code = str(args[1])
-        except:
+        except Exception:
             return _orig_log(type, message, *args)
 
         # Utilize terminal colors, if available

@@ -36,17 +36,15 @@ minutes Eric walks you through a half a dozen command extensions. There is also 
 Requirements
 ============
 
-Django Extensions requires Django 1.8 or later.
+Django Extensions requires Django 1.11 or later.
 
 
 Getting It
 ==========
 
-You can get Django Extensions by using pip or easy_install::
+You can get Django Extensions by using pip::
 
     $ pip install django-extensions
-    or
-    $ easy_install django-extensions
 
 If you want to install it from source, grab the git repository from GitHub and run setup.py::
 
@@ -119,7 +117,7 @@ Support
 Django Extensions is free and always will be. It is development and maintained by developers in an Open Source manner.
 Any support is welcome. You could help by writing documentation, pull-requests, report issues and/or translations.
 
-Please remember that nobody is payed directly to develop or maintain Django Extensions so we do have to divide our time
+Please remember that nobody is paid directly to develop or maintain Django Extensions so we do have to divide our time
 between putting food on the table, family, this project and the rest of life :-)
 
 

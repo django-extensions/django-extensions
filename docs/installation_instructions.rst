@@ -27,7 +27,7 @@ Tracking the development version of *django command extensions* should be
 pretty stable and will keep you up-to-date with the latests fixes.
 
   $ pip install -e git+https://github.com/django-extensions/django-extensions.git#egg=django-extensions
-  
+
 You find the sources in src/django-extensions now.
 
 You can verify that the application is available on your PYTHONPATH by opening a python interpreter and entering the following commands:
@@ -70,4 +70,3 @@ for example:
 If the given application or python library is not installed on your system (or
 not in the python path) the executed command will raise an exception and inform
 you of the missing dependency.
-

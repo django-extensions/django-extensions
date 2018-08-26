@@ -4,7 +4,10 @@ django_extensions.management.jobs
 """
 
 import os
+import sys
 from imp import find_module
+from typing import Optional  # NOQA
+from django.apps import apps
 
 _jobs = None
 
@@ -19,7 +22,7 @@ class JobError(Exception):
 
 class BaseJob(object):
     help = "undefined job description."
-    when = None
+    when = None  # type: Optional[str]
 
     def execute(self):
         raise NotImplementedError("Job needs to implement the execute method")
@@ -92,7 +95,7 @@ def import_job(app_name, name, when=None):
     # todo: more friendly message for AttributeError if job_mod does not exist
     try:
         job = job_mod.Job
-    except:
+    except AttributeError:
         raise JobError("Job module %s does not contain class instance named 'Job'" % jobmodule)
     if when and not (job.when == when or job.when is None):
         raise JobError("Job %s is not a %s job." % (jobmodule, when))
@@ -105,38 +108,37 @@ def get_jobs(when=None, only_scheduled=False):
     application class.
     """
     # FIXME: HACK: make sure the project dir is on the path when executed as ./manage.py
-    import sys
     try:
         cpath = os.path.dirname(os.path.realpath(sys.argv[0]))
         ppath = os.path.dirname(cpath)
         if ppath not in sys.path:
             sys.path.append(ppath)
-    except:
+    except Exception:
         pass
     _jobs = {}
-    if True:
-        from django.conf import settings
-        for app_name in settings.INSTALLED_APPS:
-            scandirs = (None, 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
-            if when:
-                scandirs = None, when
-            for subdir in scandirs:
-                try:
-                    path = find_job_module(app_name, subdir)
-                    for name in find_jobs(path):
-                        if (app_name, name) in _jobs:
-                            raise JobError("Duplicate job %s" % name)
-                        job = import_job(app_name, name, subdir)
-                        if only_scheduled and job.when is None:
-                            # only include jobs which are scheduled
-                            continue
-                        if when and job.when != when:
-                            # generic job not in same schedule
-                            continue
-                        _jobs[(app_name, name)] = job
-                except ImportError:
-                    # No job module -- continue scanning
-                    pass
+
+    for app_name in [app.name for app in apps.get_app_configs()]:
+        scandirs = (None, 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
+        if when:
+            scandirs = None, when
+        for subdir in scandirs:
+            try:
+                path = find_job_module(app_name, subdir)
+                for name in find_jobs(path):
+                    if (app_name, name) in _jobs:
+                        raise JobError("Duplicate job %s" % name)
+                    job = import_job(app_name, name, subdir)
+                    if only_scheduled and job.when is None:
+                        # only include jobs which are scheduled
+                        continue
+                    if when and job.when != when:
+                        # generic job not in same schedule
+                        continue
+                    _jobs[(app_name, name)] = job
+            except ImportError:
+                # No job module -- continue scanning
+                pass
+
     return _jobs
 
 

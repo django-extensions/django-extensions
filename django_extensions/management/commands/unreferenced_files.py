@@ -20,10 +20,10 @@ class Command(BaseCommand):
             return
 
         # Get a list of all files under MEDIA_ROOT
-        media = []
+        media = set()
         for root, dirs, files in os.walk(settings.MEDIA_ROOT):
             for f in files:
-                media.append(os.path.abspath(os.path.join(root, f)))
+                media.add(os.path.abspath(os.path.join(root, f)))
 
         # Get list of all fields (value) for each model (key)
         # that is a FileField or subclass of a FileField
@@ -34,16 +34,16 @@ class Command(BaseCommand):
                     model_dict[model].append(field)
 
         # Get a list of all files referenced in the database
-        referenced = []
+        referenced = set()
         for model in model_dict:
             all = model.objects.all().iterator()
             for object in all:
                 for field in model_dict[model]:
                     target_file = getattr(object, field.name)
                     if target_file:
-                        referenced.append(os.path.abspath(target_file.path))
+                        referenced.add(os.path.abspath(target_file.path))
 
         # Print each file in MEDIA_ROOT that is not referenced in the database
-        for m in media:
-            if m not in referenced:
-                print(m)
+        not_referenced = media - referenced
+        for f in not_referenced:
+            print(f)

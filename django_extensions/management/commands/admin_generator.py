@@ -165,10 +165,8 @@ class AdminModel(UnicodeMixin):
     def _process_many_to_many(self, meta):
         raw_id_threshold = self.raw_id_threshold
         for field in meta.local_many_to_many:
-            if hasattr(field, 'remote_field'):  # Django>=1.9
+            if hasattr(field, 'remote_field'):
                 related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
-            elif hasattr(field, 'related'):  # Django<1.9
-                related_model = getattr(field.related, 'related_model', field.related.model)
             else:
                 raise CommandError("Unable to process ManyToMany relation")
             related_objects = related_model.objects.all()
@@ -186,10 +184,8 @@ class AdminModel(UnicodeMixin):
         raw_id_threshold = self.raw_id_threshold
         list_filter_threshold = self.list_filter_threshold
         max_count = max(list_filter_threshold, raw_id_threshold)
-        if hasattr(field, 'remote_field'):  # Django>=1.9
+        if hasattr(field, 'remote_field'):
             related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
-        elif hasattr(field, 'related'):  # Django<1.9
-            related_model = getattr(field.related, 'related_model', field.related.model)
         else:
             raise CommandError("Unable to process ForeignKey relation")
         related_count = related_model.objects.all()

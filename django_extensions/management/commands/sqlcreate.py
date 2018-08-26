@@ -22,15 +22,16 @@ The envisioned use case is something like this:
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py')
+            help='Use this router-database other then defined in settings.py'
+        )
         parser.add_argument(
             '-D', '--drop', action='store_true', dest='drop', default=False,
-            help='If given, includes commands to drop any existing user '
-            'and database.')
+            help='If given, includes commands to drop any existing user and database.'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
-        router = options.get('router')
+        router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
@@ -57,7 +58,7 @@ The envisioned use case is something like this:
             ))
 
         elif engine in ('postgresql', 'postgresql_psycopg2'):
-            if options.get('drop'):
+            if options['drop']:
                 print("DROP DATABASE IF EXISTS %s;" % (dbname,))
                 print("DROP USER IF EXISTS %s;" % (dbuser,))
 

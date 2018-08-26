@@ -4,7 +4,6 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import logging
 
-import django
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
@@ -21,32 +20,37 @@ class Command(BaseCommand):
         parser.add_argument(
             '--noinput', action='store_false',
             dest='interactive', default=True,
-            help='Tells Django to NOT prompt the user for input of any kind.')
+            help='Tells Django to NOT prompt the user for input of any kind.'
+        )
         parser.add_argument(
             '--no-utf8', action='store_true', dest='no_utf8_support',
             default=False,
-            help='Tells Django to not create a UTF-8 charset database')
+            help='Tells Django to not create a UTF-8 charset database'
+        )
         parser.add_argument(
             '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in '
-            'settings.py')
+            help='Use another user for the database then defined in settings.py'
+        )
         parser.add_argument(
             '-O', '--owner', action='store', dest='owner', default=None,
-            help='Use another owner for creating the database then the '
-            'user defined in settings or via --user')
+            help='Use another owner for creating the database then the user defined in settings or via --user'
+        )
         parser.add_argument(
             '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in '
-            'settings.py')
+            help='Use another password for the database then defined in settings.py'
+        )
         parser.add_argument(
             '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py')
+            help='Use another database name then defined in settings.py'
+        )
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py')
+            help='Use this router-database other then defined in settings.py'
+        )
         parser.add_argument(
             '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
-            help='Close database connections before dropping database (PostgreSQL only)')
+            help='Close database connections before dropping database (PostgreSQL only)'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -60,7 +64,7 @@ class Command(BaseCommand):
         if args:
             raise CommandError("reset_db takes no arguments")
 
-        router = options.get('router')
+        router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
@@ -71,19 +75,19 @@ class Command(BaseCommand):
         if engine == 'mysql':
             (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
 
-        user = options.get('user') or dbinfo.get('USER') or user
-        password = options.get('password') or dbinfo.get('PASSWORD') or password
-        owner = options.get('owner') or user
+        user = options['user'] or dbinfo.get('USER') or user
+        password = options['password'] or dbinfo.get('PASSWORD') or password
+        owner = options['owner'] or user
 
-        database_name = options.get('dbname') or dbinfo.get('NAME') or database_name
+        database_name = options['dbname'] or dbinfo.get('NAME') or database_name
         if database_name == '':
             raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
 
         database_host = dbinfo.get('HOST') or database_host
         database_port = dbinfo.get('PORT') or database_port
 
-        verbosity = int(options.get('verbosity', 1))
-        if options.get('interactive'):
+        verbosity = options["verbosity"]
+        if options['interactive']:
             confirm = input("""
 You have requested a database reset.
 This will IRREVERSIBLY DESTROY
@@ -122,7 +126,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             connection = Database.connect(**kwargs)
             drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
-            utf8_support = options.get('no_utf8_support', False) and '' or 'CHARACTER SET utf8'
+            utf8_support = '' if options['no_utf8_support'] else 'CHARACTER SET utf8'
             create_query = 'CREATE DATABASE `%s` %s' % (database_name, utf8_support)
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
@@ -130,10 +134,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection.query(create_query)
 
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-            if engine == 'postgresql' and django.VERSION < (1, 9):
-                import psycopg as Database  # NOQA
-            elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
-                import psycopg2 as Database  # NOQA
+            import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
             if user:
@@ -149,7 +150,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
 
-            if options.get('close_sessions'):
+            if options['close_sessions']:
                 close_sessions_query = """
                     SELECT pg_terminate_backend(pg_stat_activity.pid)
                     FROM pg_stat_activity
@@ -173,13 +174,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 create_query += " WITH OWNER = \"%s\" " % owner
             create_query += " ENCODING = 'UTF8'"
 
-            if engine == 'postgis' and django.VERSION < (1, 9):
-                # For PostGIS 1.5, fetch template name if it exists
-                from django.contrib.gis.db.backends.postgis.base import DatabaseWrapper
-                postgis_template = DatabaseWrapper(dbinfo).template_postgis
-                if postgis_template is not None:
-                    create_query += ' TEMPLATE = %s' % postgis_template
-
             if settings.DEFAULT_TABLESPACE:
                 create_query += ' TABLESPACE = %s;' % settings.DEFAULT_TABLESPACE
             else:
@@ -191,5 +185,5 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         else:
             raise CommandError("Unknown database engine %s" % engine)
 
-        if verbosity >= 2 or options.get('interactive'):
+        if verbosity >= 2 or options['interactive']:
             print("Reset successful.")

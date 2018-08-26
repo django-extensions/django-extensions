@@ -1,6 +1,294 @@
 Changelog
 =========
 
+2.1.1
+-----
+
+Removed support for Django versions before 1.11
+
+Changes:
+  - Fix: foreignkey_searchinput, remove unnecessary img tag
+  - Fix: sqldiff, fix deprecated get_indexes call
+  - Fix: AutoSlugField, check that any non-callable value passed to populate_from is a string type
+  - Fix: tests, fix ChangingDirectoryTests: cd back in tearDown
+  - Fix: show_template_tags, should handle AppConfig class in INSTALLED applications
+  - Improvement: runserver_plus, reduce reraise pollution in traceback page
+  - Improvement: dumpscript, prevent many2many field with custom intermediate models to be added directly on the parent model
+  - Docs: fix typos
+
+
+2.1.0
+-----
+
+Changes:
+  - Fix: travis
+
+
+2.0.9
+-----
+
+Changes:
+  - Improvement: use README as project description on PyPI
+
+
+2.0.8
+-----
+
+Please stop using ForeignKeyAutocompleteAdmin edition :-)
+
+Changes:
+  - Fix: special markers in runserver_plus.rst
+  - Fix: shell_plus, refactor reading pythonrc file outside of exec(compile(...))
+  - Fix: reset_db, fix default utf8 support
+  - Fix: autoslugfield, Fix autoslug generation when existing model is copied
+  - Improvement: Cleanup management commands options after argparse migration #916
+  - Improvement: sqldiff, add more tests
+  - Improvement: sqldiff, add DurationField and SearchVectorField
+  - Improvement: shell_plus, add more tests
+  - Improvement: shell_plus, backport macos fix for tab completion
+  - Improvement: clear_cache, add --all option
+  - Improvement: pipchecker, treat dev versions as unstable
+  - Deprecation: ForeignKeyAutocompleteAdmin, Django 2.0 has similar capabilities, which are much better supported.
+
+
+
+
+2.0.7
+-----
+
+Changes:
+  - Fix: pipchecker, pip 10.0.0 compatibility
+  - Fix: sqldiff, improve support of GIS fields by using Django introspection
+  - Fix: shell_plus, fix bug in windows when PYTHONPATH is defined
+  - Fix: shell_plus, Call execute on CursorWrapper instead of directly on cursor to ensure wrappers are run
+  - Fix: runserver_plus, Call execute on CursorWrapper instead of directly on cursor to ensure wrappers are run
+  - Improvement: sqldiff, drop old compatibility code
+  - Improvement: ForeignKeyAutocompleteAdminMixin, improvements for Django >1.9
+
+
+2.0.6
+-----
+
+Changes:
+  - Fix: shell_plus, Fix of deprecation warning in collision resolvers
+
+
+2.0.5
+-----
+
+Changes:
+  - Improvement: setup.py, Use PEP 508 when setuptools is version 36 or higher should fix issues with pipenv
+  - Fix: docs, Docs should show that django 2.0 is supported
+
+
+2.0.4
+-----
+
+Changes:
+  - Fix: setup.py, fix installation of typing in python < 3.5
+
+
+2.0.3
+-----
+
+Changes:
+  - Fix: shell_plus, python 2.7 support broken due to use of Python3 super()
+
+
+2.0.2
+-----
+
+Changes:
+  - Improvement: sqldiff, add --include-defaults to include default value in missing field for sqldiff #1064
+
+
+2.0.1
+-----
+
+Changes:
+  - Fix: setup.py, do not include `typing` requirement in recent versions of Python
+  - Improvement: shell_plus, add support for using -- to pass cli argument directly to underlying python shell implementation
+  - New: generate_password, Generates a new password based on `BaseUserManager.make_random_password`
+
+
+2.0.0
+-----
+
+Changes:
+  - Fix: runserver_plus, for 1.11 still using MIDDLEWARE_CLASSES
+  - Fix: show_urls, Fix display in Django 2.0
+  - Fix: validate_templates, remove realpath in validate_templates
+  - Fix: sqldiff, bug with including proxy models in sqldiff output
+  - Improvement: shell_plus, allow configurating of sqlparse formatting and pygments formatting
+  - Improvement: shell_plus, add collision resolvers based on app label
+  - Improvement: shell_plus, automatic importing of subclasses defined in SHELL_PLUS_SUBCLASSES_IMPORT
+  - New: reset_schema, simple command to recreate public schema in PostgreSQL
+  - Docs: fix links to Werkzeug documentation
+
+
+1.9.9
+-----
+
+Changes:
+  - Fix: runserver_plus, fix for Django 2.0 middleware handling
+  - Fix: shell_plus, fixed app_name resolving
+  - Fix: AutoSlugfield, deconstruct did not match construction values
+  - Fix: runjob, not compatible with apps that use AppConfig in INSTALLED_APPS
+  - Improvement: runserver_plus, added configuring paths to certificates
+  - Improvement: sample.py template, add newline to avoid linter warnings
+  - Improvement: jobs, add integration tests for runjob and runjobs management commands
+  - New: merge_model_instances, new management command for de-duplicating model instances
+
+
+1.9.8
+-----
+
+Changes:
+  - Fix: show_urls, fix for Django 2.0 (Locale URL Resolvers are still broken)
+  - Fix: runserver_plus, fix rendering of ipv6 link
+  - Improvement: validate_templates, allow relative paths
+  - Improvement: validate_templates, automatically include app templates
+  - Improvement: pip_checker, could not find some packages
+  - Docs: shell_plus, `--print-sql` usage clearification
+
+
+1.9.7
+-----
+
+This release add checking types with MyPy to the test suite. At this point
+only a few lines of code are explicitly typed.
+
+Changes:
+  - Improvement: shell_plus, Collision resolver implemented.
+  - Improvement: shell_plus, Skipping all models importing feature added.
+  - Improvement: runscript, Script execution directory policy feature added.
+  - django-extensions now requires the [typing](https://pypi.python.org/pypi/typing) package.
+
+
+1.9.6
+-----
+
+Fix boo-boo with release version in django_extensions/__init__.py
+
+
+1.9.4
+-----
+
+Changes:
+ - Fix missing test case
+
+
+1.9.3
+-----
+
+Changes:
+ - Tests: shell_plus, simple test for get_imported_objects
+
+
+1.9.2
+-----
+
+Changes:
+ - Fix: mail_debug, regression in mail_debug for older Pythons
+ - Fix: shell_plus, SyntaxError on exec(), python compatibility
+ - Fix: ForeignKeyAutocompleteAdminMixin, use text/plain
+
+
+1.9.1
+-----
+
+Changes:
+ - Fix: graph_models, fix json option
+ - Fix: runserver_plus, avoid duplicate messages logged to console
+ - Fix: mail_debug, python3 fix
+ - Improvement: sqldiff, basic support for array types in postgresql
+ - Improvement: runscript, handle import errors better
+ - Docs: updated documentation for model extensions
+
+
+1.9.0
+-----
+
+The change to --no-startup/--use-pythonrc in `shell_plus` changes the
+default behaviour to automatically load PYTHONSTARTUP and ~/.pythonrc.py
+unless --no-startup is set.
+
+Changes:
+ - Fix: pipchecker, fix up-to-date check for Github sha commits
+ - Fix: JSONField, fix handling to_python() for strings with tests
+ - Fix: print_settings, fix print_settings to receive positional args
+ - Improvement: shell_plus, update PYTHONSTARTUP / pythonrc handling to match Django
+ - Improvement: shell_plus, added new 1.11 features from django.db.models to shell_plus import list
+ - Improvement: runserver_plus, startup message now accounts for https
+ - Docs: jobs, improve documentation about jobs scheduling
+ - Docs: admin, add documentation for ForeignKeyAutocompleteStackedInline and ForeignKeyAutocompleteTabularInline
+ - Docs: fix typos
+
+
+1.8.1
+-----
+
+Changes:
+ - Build: use tox's 'TOXENV' environment variable
+ - Fix: resetdb, fix problem that 'utf8_support' option is ignored
+ - Improvement: export_emails, moved custom csv UnicodeWriter (for py2) into compat.py
+ - Translations: pt, removed since it was causing issues with the builds
+                     if anybody wants to update and fix it that would be
+                     much appreciated !
+
+
+
+1.8.0
+-----
+
+UUIDField has been removed after being deprecated.
+
+Deprecation schedule for JSONField has been removed after requests from the
+community.
+
+Changes:
+ - Fix: runserver_plus, fixed Python 3 print syntax
+ - Fix: sqldiff, Use 'display_size', not 'precision' to identify MySQL bool field
+ - Fix: export_emails, fix and refactor the command and all its output options
+ - Improvement: tests, added Python 3.6 and PyPy3.5-5.8.0
+ - Improvement: clear_cache, add --cache option to support multiple caches
+ - Improvement: runserver_plus, limit printing SQL queries to avoid flooding the terminal
+ - Improvement: shell_plus, limit printing SQL queries to avoid flooding the terminal
+ - Docs: graph_models, document including/excluding specific models
+ - Docs: shell_plus, added PTPython
+
+
+1.7.9
+-----
+
+Changes:
+ - Fix: AutoSlugField, foreignkey relationships
+ - Fix: shell_plus, supported backends 'postgresql' for set_application_name
+ - Improvement: various commands, Add syntax highlighting when printing SQL
+ - Improvement: pipchecker, treat rc versions as unstable
+ - Improvement: shell_plus, allow to subclass and overwrite import_objects
+ - Improvement: shell_plus, fix SHELL_PLUS_PRE_IMPORTS example
+ - Improvement: setup.py, fix and unify running tests
+ - Improvement: runserver_plus, add RUNSERVERPLUS_POLLER_RELOADER_TYPE setting
+ - Improvement: generate_secret_key, use algoritme from django
+ - Docs: fix grammer and spelling mistakes
+
+
+
+1.7.8
+-----
+
+Changes:
+ - Improvement: django 1.11, add testing for Django 1.11
+ - Improvement: pipchecker, make it possible to parse https github urls
+ - Improvement: unreferenced_files, make command much faster by using set()
+ - Docs: add undocumented commands
+ - Docs: shell_plus, additional documentation for referencing nested modules
+ - Fix: sync_s3, fix exclusion of directories
+ - Fix: runprofileserver, fix ip:port specification
+ - Fix: runprofileserver, support --nothreading
+
+
 1.7.7
 -----
 

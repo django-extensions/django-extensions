@@ -5,7 +5,6 @@ from django_extensions.db.fields import (
     AutoSlugField,
     RandomCharField,
     ShortUUIDField,
-    UUIDField,
 )
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
@@ -33,14 +32,33 @@ class Note(models.Model):
         app_label = 'django_extensions'
 
 
+class Personality(models.Model):
+    description = models.CharField(max_length=50)
+
+
+class Club(models.Model):
+    name = models.CharField(max_length=50)
+
+
 class Person(models.Model):
-    name = models.ForeignKey(Name)
+    name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
     children = models.ManyToManyField('self')
     notes = models.ManyToManyField(Note)
+    personality = models.OneToOneField(
+        Personality,
+        null=True,
+        on_delete=models.CASCADE)
+    clubs = models.ManyToManyField(Club, through='testapp.Membership')
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class Membership(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now=True)
 
 
 class Post(ActivatorModel):
@@ -48,6 +66,12 @@ class Post(ActivatorModel):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class PostWithTitleOrdering(Post):
+    class Meta:
+        proxy = True
+        ordering = ['title']
 
 
 class SluggedTestModel(models.Model):
@@ -63,38 +87,48 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
+def get_readable_title(instance):
+    return "The title is {}".format(instance.title)
+
+
+class ModelMethodSluggedTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='get_readable_title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+    def get_readable_title(self):
+        return get_readable_title(self)
+
+
+class FunctionSluggedTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from=get_readable_title)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class FKSluggedTestModel(models.Model):
+    related_field = models.ForeignKey(SluggedTestModel, on_delete=models.CASCADE)
+    slug = AutoSlugField(populate_from="related_field__title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class FKSluggedTestModelCallable(models.Model):
+    related_field = models.ForeignKey(ModelMethodSluggedTestModel, on_delete=models.CASCADE)
+    slug = AutoSlugField(populate_from="related_field__get_readable_title")
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class JSONFieldTestModel(models.Model):
     a = models.IntegerField()
     j_field = JSONField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_field(models.Model):
-    a = models.IntegerField()
-    uuid_field = UUIDField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestModel_pk(models.Model):
-    uuid_field = UUIDField(primary_key=True)
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestAgregateModel(UUIDTestModel_pk):
-    a = models.IntegerField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
-class UUIDTestManyToManyModel(UUIDTestModel_pk):
-    many = models.ManyToManyField(UUIDTestModel_field)
 
     class Meta:
         app_label = 'django_extensions'
@@ -216,3 +250,25 @@ class UnicodeVerboseNameModel(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class Permission(models.Model):
+    text = models.CharField(max_length=32)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+
+
+class UniqueTestAppModel(models.Model):
+    global_id = models.CharField(max_length=32, unique=True)
+
+
+class SqlDiff(models.Model):
+    number = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
+    creator = models.CharField(max_length=20, null=True, blank=True)
+
+
+class SqlDiffUniqueTogether(models.Model):
+    aaa = models.CharField(max_length=20)
+    bbb = models.CharField(max_length=20)
+
+    class Meta:
+        unique_together = ['aaa', 'bbb']

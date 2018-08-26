@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.auth.views import login, logout
+from django.contrib.auth import views as auth_views
 
+login_view = auth_views.LoginView.as_view() if hasattr(auth_views, 'LoginView') else auth_views.login
+logout_view = auth_views.LogoutView.as_view() if hasattr(auth_views, 'LogoutView') else auth_views.logout
 
 urlpatterns = [
-    url(r'^login/$', login, {'template_name': 'login.html'}, name="login"),
-    url(r'^logout/$', logout, name="logout"),
+    url(r'^login/$', login_view, {'template_name': 'login.html'}, name="login"),
+    url(r'^logout/$', logout_view, name="logout"),
     url(r'^admin/', admin.site.urls),
 ]
