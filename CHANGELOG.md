@@ -1,6 +1,22 @@
 Changelog
 =========
 
+2.1.1
+-----
+
+Removed support for Django versions before 1.11
+
+Changes:
+  - Fix: foreignkey_searchinput, remove unnecessary img tag
+  - Fix: sqldiff, fix deprecated get_indexes call
+  - Fix: AutoSlugField, check that any non-callable value passed to populate_from is a string type
+  - Fix: tests, fix ChangingDirectoryTests: cd back in tearDown
+  - Fix: show_template_tags, should handle AppConfig class in INSTALLED applications
+  - Improvement: runserver_plus, reduce reraise pollution in traceback page
+  - Improvement: dumpscript, prevent many2many field with custom intermediate models to be added directly on the parent model
+  - Docs: fix typos
+
+
 2.1.0
 -----
 
