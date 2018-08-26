@@ -245,6 +245,13 @@ class TimestampedTestModel(TimeStampedModel):
         app_label = 'django_extensions'
 
 
+class UnicodeVerboseNameModel(models.Model):
+    cafe = models.IntegerField(verbose_name=u'café')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class Permission(models.Model):
     text = models.CharField(max_length=32)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)

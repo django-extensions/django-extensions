@@ -12,3 +12,11 @@ class ModelVizTests(SimpleTestCase):
         user_data = [x for x in models if x['name'] == 'User'][0]
         relation_labels = [x['label'] for x in user_data['relations']]
         self.assertIn("groups (user)", relation_labels)
+
+    def test_render_unicode_field_label(self):
+        app_labels = ['django_extensions']
+        data = generate_graph_data(app_labels, verbose_names=True)
+        models = data['graphs'][0]['models']
+        model = [x for x in models if x['name'] == 'UnicodeVerboseNameModel'][0]
+        s = model['fields'][1]['label']
+        self.assertEqual(u'Café', s)
