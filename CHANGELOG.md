@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.1.2
+-----
+
+Changes:
+  - Fix: AutoSlugField, fix check on list or tuple type
+
+
 2.1.1
 -----
 
