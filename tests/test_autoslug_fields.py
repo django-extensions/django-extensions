@@ -152,6 +152,18 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         self.assertEqual(m.slug, 'foo-2')
 
+    def test_populate_from_does_not_allow_bytes(self):
+        with pytest.raises(TypeError):
+            AutoSlugField(populate_from=b'bytes')
+
+        with pytest.raises(TypeError):
+            AutoSlugField(populate_from=[b'bytes'])
+
+    def test_populate_from_must_allow_string_or_list_str_or_tuple_str(self):
+        AutoSlugField(populate_from='str')
+        AutoSlugField(populate_from=['str'])
+        AutoSlugField(populate_from=('str', ))
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
