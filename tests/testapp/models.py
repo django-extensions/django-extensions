@@ -247,9 +247,13 @@ class TimestampedTestModel(TimeStampedModel):
 
 class UnicodeVerboseNameModel(models.Model):
     cafe = models.IntegerField(verbose_name=u'café')
+    parent_cafe = models.ForeignKey('self', related_name='children',
+                                    on_delete=models.CASCADE,
+                                    verbose_name='café latte')
 
     class Meta:
         app_label = 'django_extensions'
+        verbose_name = u'café unicode model'
 
 
 class Permission(models.Model):
