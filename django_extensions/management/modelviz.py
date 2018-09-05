@@ -8,8 +8,6 @@ Based on:
   Adapted to be used with django-extensions
 """
 
-# from __future__ import unicode_literals
-
 import datetime
 import os
 import re
@@ -151,7 +149,7 @@ class ModelGraph(object):
             related_query_name = field.related_query_name()
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
-            label = '{} ({})'.format(label, force_text(related_query_name))
+            label = u'{} ({})'.format(label, force_text(related_query_name))
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.remote_field.model, six.string_types):
