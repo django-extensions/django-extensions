@@ -60,6 +60,7 @@ class ModelGraph(object):
         self.graphs = []
         self.cli_options = kwargs.get('cli_options', None)
         self.disable_fields = kwargs.get('disable_fields', False)
+        self.disable_abstract_fields = kwargs.get('disable_abstract_fields', False)
         self.include_models = parse_file_or_list(
             kwargs.get('include_models', "")
         )
@@ -103,6 +104,7 @@ class ModelGraph(object):
             'created_at': now.strftime("%Y-%m-%d %H:%M"),
             'cli_options': self.cli_options,
             'disable_fields': self.disable_fields,
+            'disable_abstract_fields': self.disable_abstract_fields,
             'use_subgraph': self.use_subgraph,
         }
 

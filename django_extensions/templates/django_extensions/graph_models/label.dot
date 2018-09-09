@@ -18,11 +18,13 @@
     {{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ model.abstracts|join:"," }}</FONT>&gt;{% endif %}
     </FONT></TD></TR>
   {% if not disable_fields %}{% for field in model.fields %}
+  {% if not disable_abstract_fields or not field.abstract %}
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% endif %}{% if field.relation or field.primary_key %}Bold{% endif %}">{{ field.label }}</FONT>
     </TD><TD ALIGN="LEFT">
     <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Helvetica {% if field.abstract %}Italic{% endif %}{% if field.relation or field.primary_key %}Bold{% endif %}">{{ field.type }}</FONT>
     </TD></TR>
+  {% endif %}
   {% endfor %}{% endif %}
     </TABLE>
     >]

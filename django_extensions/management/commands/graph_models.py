@@ -58,6 +58,12 @@ class Command(BaseCommand):
                 'dest': 'disable_fields',
                 'help': 'Do not show the class member fields',
             },
+            '--disable-abstract-fields': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'disable_abstract_fields',
+                'help': 'Do not show the class member fields that were inherited',
+            },
             '--group-models -g': {
                 'action': 'store_true',
                 'default': False,
