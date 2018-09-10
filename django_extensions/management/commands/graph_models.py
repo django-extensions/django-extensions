@@ -200,7 +200,7 @@ class Command(BaseCommand):
         if six.PY3 and isinstance(dotdata, six.binary_type):
             dotdata = dotdata.decode()
 
-        print(dotdata)
+        self.stdout.write(dotdata)
 
     def render_output_json(self, graph_data, **kwargs):
         output_file = kwargs.get('outputfile')
@@ -208,7 +208,7 @@ class Command(BaseCommand):
             with open(output_file, 'wt') as json_output_f:
                 json.dump(graph_data, json_output_f)
         else:
-            print(json.dumps(graph_data))
+            self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
         """Renders the image using pygraphviz"""
