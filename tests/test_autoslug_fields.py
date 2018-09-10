@@ -165,6 +165,11 @@ class AutoSlugFieldTest(TestCase):
         AutoSlugField(populate_from=['str'])
         AutoSlugField(populate_from=('str', ))
 
+    def test_slug_argument_priority(self):
+        m = SluggedTestModel(slug='slug', title='title')
+        m.save()
+        self.assertEqual(m.slug, 'slug')
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
