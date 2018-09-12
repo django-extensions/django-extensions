@@ -149,6 +149,7 @@ class AutoSlugFieldTest(TestCase):
         self.assertEqual(m.slug, 'foo')
 
         m.pk = None
+        m.slug = None
         m.save()
         self.assertEqual(m.slug, 'foo-2')
 
