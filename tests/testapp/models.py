@@ -74,6 +74,19 @@ class PostWithTitleOrdering(Post):
         ordering = ['title']
 
 
+class AbstractInheritanceTestModelParent(models.Model):
+    my_field_that_my_child_will_inherit = models.BooleanField()
+
+    class Meta:
+        app_label = 'django_extensions'
+        abstract = True
+
+
+class AbstractInheritanceTestModelChild(AbstractInheritanceTestModelParent):
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class SluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
     slug = AutoSlugField(populate_from='title')
