@@ -119,6 +119,8 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         self.check_is_bool('overwrite')
+        self.overwrite_on_add = kwargs.pop('overwrite_on_add', True)
+        self.check_is_bool('overwrite_on_add')
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
         self.check_is_bool('allow_duplicates')
         self.max_unique_query_attempts = kwargs.pop('max_unique_query_attempts', MAX_UNIQUE_QUERY_ATTEMPTS)
@@ -156,9 +158,16 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def create_slug(self, model_instance, add):
         slug = getattr(model_instance, self.attname)
+        use_existing_slug = False
         if slug and not self.overwrite:
             # Existing slug and not configured to overwrite - Short-circuit
             # here to prevent slug generation when not required.
+            use_existing_slug = True
+
+        if self.overwrite_on_add and add:
+            use_existing_slug = False
+
+        if use_existing_slug:
             return slug
 
         # get fields to populate from and slug field to set

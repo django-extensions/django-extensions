@@ -11,8 +11,9 @@ import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
-    FKSluggedTestModel, FKSluggedTestModelCallable, \
-    FunctionSluggedTestModel, ModelMethodSluggedTestModel
+    SluggedTestNoOverwriteOnAddModel, FKSluggedTestModel, \
+    FKSluggedTestModelCallable, FunctionSluggedTestModel, \
+    ModelMethodSluggedTestModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -149,6 +150,15 @@ class AutoSlugFieldTest(TestCase):
         self.assertEqual(m.slug, 'foo')
 
         m.pk = None
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
+    def test_copy_model_generates_new_slug_no_overwrite_on_add(self):
+        m = SluggedTestNoOverwriteOnAddModel(title='foo')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m.pk = None
         m.slug = None
         m.save()
         self.assertEqual(m.slug, 'foo-2')
@@ -168,6 +178,11 @@ class AutoSlugFieldTest(TestCase):
 
     def test_slug_argument_priority(self):
         m = SluggedTestModel(slug='slug', title='title')
+        m.save()
+        self.assertEqual(m.slug, 'title')
+
+    def test_slug_argument_priority_no_overwrite_on_add(self):
+        m = SluggedTestNoOverwriteOnAddModel(slug='slug', title='title')
         m.save()
         self.assertEqual(m.slug, 'slug')
 

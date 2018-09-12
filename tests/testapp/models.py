@@ -87,6 +87,14 @@ class ChildSluggedTestModel(SluggedTestModel):
         app_label = 'django_extensions'
 
 
+class SluggedTestNoOverwriteOnAddModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title', overwrite_on_add=False)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 def get_readable_title(instance):
     return "The title is {}".format(instance.title)
 
