@@ -30,7 +30,7 @@ def test_graph_models_json():
 def test_disable_abstract_fields_not_active():
     out = StringIO()
     call_command('graph_models',
-                 app_label=['django_extensions'],
+                 'django_extensions',
                  include_models=['AbstractInheritanceTestModelChild'],
                  disable_abstract_fields=False,
                  stdout=out)
@@ -42,10 +42,10 @@ def test_disable_abstract_fields_not_active():
 def test_disable_abstract_fields_active():
     out = StringIO()
     call_command('graph_models',
-                app_label=['django_extensions'],
-                include_models=['AbstractInheritanceTestModelChild'],
-                disable_abstract_fields=True,
-                stdout=out)
+                 'django_extensions',
+                 include_models=['AbstractInheritanceTestModelChild'],
+                 disable_abstract_fields=True,
+                 stdout=out)
 
     output = out.getvalue()
     assert 'my_field_that_my_child_will_inherit' not in output
