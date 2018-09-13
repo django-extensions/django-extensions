@@ -23,7 +23,9 @@ def test_graph_models_json():
 
     output = out.getvalue()
 
-    assert """"app_name": "django.contrib.auth", """ in output
+    assert '"created_at": ' in output
+    assert '"cli_options": ' in output
+    assert '"app_name": "django.contrib.auth"' in output
     assert "created_at" in json.loads(output)
 
 
