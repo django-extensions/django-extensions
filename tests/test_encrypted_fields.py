@@ -13,9 +13,11 @@ from .testapp.models import Secret
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
 try:
     from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField  # NOQA
-    from keyczar import keyczar, keyczart, keyinfo  # NOQA
+    from keyczar import keyczar, keyinfo
+    from keyczar import keyczart  # NOQA
     keyczar_active = True
-except ImportError:
+except ImportError as e:
+    print(e)
     keyczar_active = False
 
 # Locations of both private and public keys.
@@ -240,3 +242,20 @@ class EncryptedFieldsTestCase(TestCase):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)
+
+    def test_raise_over_max_length_error(self):
+        """
+        Creates an EncryptedTextField with enforce_max_length set to True. tests
+        that a ValueError is raised if the encrypted length exceeds max_length.
+        """
+        with keys(keyinfo.DECRYPT_AND_ENCRYPT):
+            with secret_model() as model:
+                test_val = "Secret Value that is way too long XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + \
+                "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + \
+                "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                try:
+                    secret = model.objects.create(text=test_val)
+                    assert False
+                except ValueError:
+                    assert True
+                self.assertEqual(test_val, retrieved_secret.text)

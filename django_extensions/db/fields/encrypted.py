@@ -28,6 +28,8 @@ class BaseEncryptedField(models.Field):
         crypt_class = self.get_crypt_class()
         self.crypt = crypt_class.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
 
+        self.enforce_max_length = kwargs.pop('enforce_max_length', False)
+        
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
@@ -96,6 +98,17 @@ class BaseEncryptedField(models.Field):
             # so truncate before encryption
             max_length = self.unencrypted_length
             if max_length and len(value) > max_length:
+                #If enforcing length, raise error
+                if self.enforce_max_length:
+                    raise ValueError(
+                        'Field {0} max_length={1} encrypted_len={2}'.format(
+                            self.name,
+                            max_length,
+                            len(value),
+                        )
+                    )
+
+                #Otherwise warn
                 warnings.warn("Truncating field %s from %d to %d bytes" % (
                     self.name, len(value), max_length), EncryptionWarning
                 )
