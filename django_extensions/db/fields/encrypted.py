@@ -6,6 +6,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+import logging
 
 try:
     from keyczar import keyczar
@@ -29,7 +30,7 @@ class BaseEncryptedField(models.Field):
         self.crypt = crypt_class.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
 
         self.enforce_max_length = kwargs.pop('enforce_max_length', False)
-        
+
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
         if max_length:
@@ -71,6 +72,9 @@ class BaseEncryptedField(models.Field):
         return getattr(keyczar, crypt_class_name)
 
     def to_python(self, value):
+        if value is None or not isinstance(value, six.text_type):
+            return value
+
         if isinstance(self.crypt.primary_key, keyczar.keys.RsaPublicKey):
             retval = value
         elif value and (value.startswith(self.prefix)):
@@ -82,28 +86,32 @@ class BaseEncryptedField(models.Field):
                 retval = value
         else:
             retval = value
-        return retval
+
+        return super(BaseEncryptedField, self).to_python(retval)
 
     def from_db_value(self, value, expression, connection, context):
         return self.to_python(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
+        if prepared:
+            return value
+
+        value = super(BaseEncryptedField, self).get_prep_value(value)
+
+        if value is None or value == '' or not isinstance(value, six.text_type):
+            return value
+
         if value and not value.startswith(self.prefix):
-            # We need to encode a unicode string into a byte string, first.
-            # keyczar expects a bytestring, not a unicode string.
-            if six.PY2:
-                if type(value) == six.types.UnicodeType:
-                    value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
             # so truncate before encryption
             max_length = self.unencrypted_length
             if max_length and len(value) > max_length:
-                #If enforcing length, raise error
+                #If enforcing, throw error
                 if self.enforce_max_length:
                     raise ValueError(
                         'Field {0} max_length={1} encrypted_len={2}'.format(
                             self.name,
-                            max_length,
+                            self.unencrypted_length,
                             len(value),
                         )
                     )
@@ -123,7 +131,7 @@ class BaseEncryptedField(models.Field):
         return name, path, args, kwargs
 
 
-class EncryptedTextField(BaseEncryptedField):
+class EncryptedTextField(BaseEncryptedField, models.TextField):
     def get_internal_type(self):
         return 'TextField'
 
@@ -133,7 +141,7 @@ class EncryptedTextField(BaseEncryptedField):
         return super(EncryptedTextField, self).formfield(**defaults)
 
 
-class EncryptedCharField(BaseEncryptedField):
+class EncryptedCharField(BaseEncryptedField, models.CharField):
     def __init__(self, *args, **kwargs):
         super(EncryptedCharField, self).__init__(*args, **kwargs)
 
@@ -144,3 +152,16 @@ class EncryptedCharField(BaseEncryptedField):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
+
+
+class EncryptedDateTimeField(BaseEncryptedField, models.DateTimeField):
+    def __init__(self, *args, **kwargs):
+        super(EncryptedDateTimeField, self).__init__(*args, **kwargs)
+
+    def get_internal_type(self):
+        return "DateTimeField"
+
+    def formfield(self, **kwargs):
+        defaults = {'max_length': self.max_length}
+        defaults.update(kwargs)
+        return super(EncryptedDateTimeField, self).formfield(**defaults)
