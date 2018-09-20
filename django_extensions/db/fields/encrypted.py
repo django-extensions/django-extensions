@@ -101,6 +101,11 @@ class BaseEncryptedField(models.Field):
             return value
 
         if value and not value.startswith(self.prefix):
+            # We need to encode a unicode string into a byte string, first. 
+            # keyczar expects a bytestring, not a unicode string.   
+            if six.PY2: 
+                if type(value) == six.types.UnicodeType:    
+                    value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
             # so truncate before encryption
             max_length = self.unencrypted_length
