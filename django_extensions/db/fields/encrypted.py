@@ -6,7 +6,6 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-import logging
 
 try:
     from keyczar import keyczar
