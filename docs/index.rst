@@ -16,7 +16,7 @@ much more.
 Getting Started
 ===============
 
-The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__. In a couple minutes Eric walks you through a half a dozen command extensions.
+The easiest way to figure out what Django Extensions are all about is to watch the `excellent screencast by Eric Holscher`__ (`Direct Vimeo link`__). In a couple minutes Eric walks you through a half a dozen command extensions.
 
 Getting it
 ==========
@@ -81,3 +81,4 @@ Indices and tables
 * :ref:`search`
 
 __ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
+__ https://vimeo.com/1720508
