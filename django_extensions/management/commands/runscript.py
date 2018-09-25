@@ -179,7 +179,7 @@ class Command(EmailNotificationCommand):
                 try:
                     if importlib.util.find_spec(full_module_path) is None:
                         return False
-                except:
+                except Exception:
                     module_file = os.path.join(settings.BASE_DIR, *full_module_path.split('.')) + '.py'
                     if not os.path.isfile(module_file):
                         return False
