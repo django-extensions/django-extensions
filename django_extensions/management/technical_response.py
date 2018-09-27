@@ -24,11 +24,13 @@ def null_technical_500_response(request, exc_type, exc_value, tb, status_code=50
     eventually throws an error for not getting a valid response object for its debug view.
     """
 
-    # Store the most recent tb for WSGI requests. The class can be found in the second frame of the tb
-    if isinstance(tb.tb_next.tb_frame.f_locals['self'], WSGIHandler):
-        tld.wsgi_tb = tb
-
-    elif tld.wsgi_tb:
-        tb = tld.wsgi_tb
+    try:
+        # Store the most recent tb for WSGI requests. The class can be found in the second frame of the tb
+        if isinstance(tb.tb_next.tb_frame.f_locals['self'], WSGIHandler):
+            tld.wsgi_tb = tb
+        elif tld.wsgi_tb:
+            tb = tld.wsgi_tb
+    except AttributeError:
+        pass
 
     six.reraise(exc_type, exc_value, tb)
