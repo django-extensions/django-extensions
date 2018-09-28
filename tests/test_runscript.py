@@ -2,6 +2,7 @@
 import os
 import six
 import sys
+import importlib
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
@@ -55,6 +56,13 @@ class InvalidImportScriptsTests(RunScriptTests):
         call_command('runscript', 'invalid_import_script')
         self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
         self.assertRegexpMatches(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+
+    def test_prints_import_error_on_script_with_invalid_imports_reliably(self):
+        if hasattr(importlib, 'util') and hasattr(importlib.util, 'find_spec'):
+            with self.settings(BASE_DIR=os.path.dirname(os.path.abspath(__file__))):
+                call_command('runscript', 'invalid_import_script')
+                self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
+                self.assertRegexpMatches(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
 
 
 class InvalidScriptsTests(RunScriptTests):
