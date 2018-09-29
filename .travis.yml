@@ -61,13 +61,13 @@ matrix:
       sudo: required
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
-    - python: pypy3.5-5.10.0
+    - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-dj111
-    - python: pypy3.5-5.10.0
+    - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-dj20
-    - python: pypy3.5-5.10.0
+    - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-dj21
-    - python: pypy3.5-5.10.0
+    - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-djmaster
 
   allow_failures:
@@ -77,7 +77,7 @@ matrix:
       env: TOXENV=py36-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster
-    - python: pypy3.5-5.10.0
+    - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
