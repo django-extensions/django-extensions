@@ -5,6 +5,7 @@ import six
 from django.core.handlers.wsgi import WSGIHandler
 
 tld = threading.local()
+tld.wsgi_tb = None
 
 
 def null_technical_500_response(request, exc_type, exc_value, tb, status_code=500):
