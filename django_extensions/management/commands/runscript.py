@@ -176,9 +176,13 @@ class Command(EmailNotificationCommand):
                 t = importlib.import_module(full_module_path)
             except ImportError as e:
                 # The parent package exists, but the module doesn't
-                module_file = os.path.join(settings.BASE_DIR, *full_module_path.split('.')) + '.py'
-                if not os.path.isfile(module_file):
-                    return False
+                try:
+                    if importlib.util.find_spec(full_module_path) is None:
+                        return False
+                except Exception:
+                    module_file = os.path.join(settings.BASE_DIR, *full_module_path.split('.')) + '.py'
+                    if not os.path.isfile(module_file):
+                        return False
 
                 if silent:
                     return False
