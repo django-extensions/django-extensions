@@ -1,6 +1,20 @@
 Changelog
 =========
 
+2.1.3
+-----
+
+Changes:
+  - Fix: Readme, add direct linkt to screencast video
+  - Fix: graph_models, regression under Python 2
+  - Fix: ForeignKeyAutocompleteAdmin, 2.0.8 breaks ForeignKeyAutocompleteAdmin
+  - Fix: AutoSlugField, fix regression when copying an autoslug model require the explicit clearing of the slug if it needs to be recalculated
+  - Fix: technical_response, check for AttributeError
+  - Improvement: graph_models, Add feature disable_abstract_fields
+  - Improvement: AutoSlugField, Add overwrite_on_add
+  - Improvement: runscript, Improve module existence test in runscript
+
+
 2.1.2
 -----
 
