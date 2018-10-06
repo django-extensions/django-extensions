@@ -198,7 +198,7 @@ class Command(BaseCommand):
             elif use_pydot:
                 self.render_output_pydot(dotdata, **options)
             else:
-                raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image")
+                self.render_output_default(dotdata, **options)
         else:
             self.print_output(dotdata)
 
@@ -259,3 +259,13 @@ class Command(BaseCommand):
         ext = output_file[output_file.rfind('.') + 1:]
         format = ext if ext in formats else 'raw'
         graph.write(output_file, format=format)
+
+    def render_output_default(self, dotdata, **kwargs):
+        """Renders raw dot image"""
+        if six.PY3 and isinstance(dotdata, six.binary_type):
+            dotdata = dotdata.decode()
+
+        output_file = kwargs['outputfile']
+
+        with open(output_file, 'w') as ofile:
+            ofile.write(dotdata)
