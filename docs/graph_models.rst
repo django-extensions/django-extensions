@@ -34,8 +34,7 @@ that case you can try other methods to install or you can use PyDot.
 
 To install pydot you need to run this command::
 
-  $ pip install pyparsing==1.5.7
-  $ pip install pydot
+  $ pip install pyparsing pydot
 
 Installation should be fast and easy. Remember to install this exact version of
 pyparsing, otherwise it's possible you get this error:
