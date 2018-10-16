@@ -37,7 +37,8 @@ class Command(BaseCommand):
         space-separated args and the value is our kwarg dict.
 
         The default from settings is keyed as the long arg name with '--'
-        removed and any '-' replaced by '_'.
+        removed and any '-' replaced by '_'. For example, the default value for
+        --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
         self.arguments = {
             '--pygraphviz': {
