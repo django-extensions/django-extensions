@@ -182,6 +182,7 @@ class Command(BaseCommand):
         # availability
         outputfile = options.get("outputfile") or ""
         _, outputfile_ext = os.path.splitext(outputfile)
+        outputfile_ext = outputfile_ext.lower()
         output_opts_names = ['pydot', 'pygraphviz', 'json', 'dot']
         output_opts = {k: v for k, v in options.items() if k in output_opts_names}
         output_opts_count = sum(output_opts.values())
