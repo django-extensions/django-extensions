@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import json
+import os
 
 import six
 from django.conf import settings
@@ -37,20 +38,33 @@ class Command(BaseCommand):
         space-separated args and the value is our kwarg dict.
 
         The default from settings is keyed as the long arg name with '--'
-        removed and any '-' replaced by '_'.
+        removed and any '-' replaced by '_'. For example, the default value for
+        --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
         self.arguments = {
             '--pygraphviz': {
                 'action': 'store_true',
                 'default': False,
                 'dest': 'pygraphviz',
-                'help': 'Use PyGraphViz to generate the image.',
+                'help': 'Output graph data as image using PyGraphViz.',
             },
             '--pydot': {
                 'action': 'store_true',
                 'default': False,
                 'dest': 'pydot',
-                'help': 'Use PyDot(Plus) to generate the image.',
+                'help': 'Output graph data as image using PyDot(Plus).',
+            },
+            '--dot': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'dot',
+                'help': 'Output graph data as raw DOT (graph description language) text data.',
+            },
+            '--json': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'json',
+                'help': 'Output graph data as JSON',
             },
             '--disable-fields -d': {
                 'action': 'store_true',
@@ -138,12 +152,6 @@ class Command(BaseCommand):
                 'dest': 'sort_fields',
                 'help': 'Do not sort fields',
             },
-            '--json': {
-                'action': 'store_true',
-                'default': False,
-                'dest': 'json',
-                'help': 'Output graph data as JSON',
-            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -170,46 +178,74 @@ class Command(BaseCommand):
         if len(args) < 1 and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        use_pygraphviz = options['pygraphviz']
-        use_pydot = options['pydot']
-        use_json = options['json']
-        if use_json and (use_pydot or use_pygraphviz):
-            raise CommandError("Cannot specify --json with --pydot or --pygraphviz")
+        # determine output format based on options, file extension, and library
+        # availability
+        outputfile = options.get("outputfile") or ""
+        _, outputfile_ext = os.path.splitext(outputfile)
+        outputfile_ext = outputfile_ext.lower()
+        output_opts_names = ['pydot', 'pygraphviz', 'json', 'dot']
+        output_opts = {k: v for k, v in options.items() if k in output_opts_names}
+        output_opts_count = sum(output_opts.values())
+        if output_opts_count > 1:
+            raise CommandError(
+                "Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
+        elif output_opts_count == 1:
+            output = next(key for key, val in output_opts.items() if val)
+        elif not outputfile:
+            # When neither outputfile nor a output format option are set,
+            # default to printing .dot format to stdout. Kept for backward
+            # compatibility.
+            output = "dot"
+        elif outputfile_ext == ".dot":
+            output = "dot"
+        elif outputfile_ext == ".json":
+            output = "json"
+        elif HAS_PYGRAPHVIZ:
+            output = "pygraphviz"
+        elif HAS_PYDOT:
+            output = "pydot"
+        else:
+            raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image. To generate text output, use the --json or --dot options.")
+
+        # Consistency check: Abort if --pygraphviz or --pydot options are set
+        # but no outputfile is specified. Before 2.1.4 this silently fell back
+        # to printind .dot format to stdout.
+        if output in ["pydot", "pygraphiviz"] and not outputfile:
+            raise CommandError("An output file (--output) must be specified when --pydot or --pygraphviz are set.")
 
         cli_options = ' '.join(sys.argv[2:])
         graph_models = ModelGraph(args, cli_options=cli_options, **options)
         graph_models.generate_graph_data()
-        graph_data = graph_models.get_graph_data(as_json=use_json)
-        if use_json:
-            self.render_output_json(graph_data, **options)
-            return
 
+        if output == "json":
+            graph_data = graph_models.get_graph_data(as_json=True)
+            return self.render_output_json(graph_data, outputfile)
+
+        graph_data = graph_models.get_graph_data(as_json=False)
         dotdata = generate_dot(graph_data)
         if not six.PY3:
-            dotdata = dotdata.encode('utf-8')
-        if options['outputfile']:
-            if not use_pygraphviz and not use_pydot:
-                if HAS_PYGRAPHVIZ:
-                    use_pygraphviz = True
-                elif HAS_PYDOT:
-                    use_pydot = True
-            if use_pygraphviz:
-                self.render_output_pygraphviz(dotdata, **options)
-            elif use_pydot:
-                self.render_output_pydot(dotdata, **options)
-            else:
-                raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image")
-        else:
-            self.print_output(dotdata)
+            dotdata = dotdata.encode("utf-8")
 
-    def print_output(self, dotdata):
+        if output == "pygraphviz":
+            return self.render_output_pygraphviz(dotdata, **options)
+        if output == "pydot":
+            return self.render_output_pydot(dotdata, **options)
+        else:
+            self.print_output(dotdata, outputfile)
+
+    def print_output(self, dotdata, output_file=None):
+        """Writes model data to file or stdout in DOT (text) format."""
         if six.PY3 and isinstance(dotdata, six.binary_type):
             dotdata = dotdata.decode()
 
-        self.stdout.write(dotdata)
+        if output_file:
+            with open(output_file, 'wt') as dot_output_f:
+                dot_output_f.write(dotdata)
+        else:
+            self.stdout.write(dotdata)
 
-    def render_output_json(self, graph_data, **kwargs):
-        output_file = kwargs.get('outputfile')
+    def render_output_json(self, graph_data, output_file=None):
+        """Writes model data to file or stdout in JSON format."""
         if output_file:
             with open(output_file, 'wt') as json_output_f:
                 json.dump(graph_data, json_output_f)
@@ -217,7 +253,7 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
-        """Renders the image using pygraphviz"""
+        """Renders model data as image using pygraphviz"""
         if not HAS_PYGRAPHVIZ:
             raise CommandError("You need to install pygraphviz python module")
 
@@ -238,7 +274,7 @@ class Command(BaseCommand):
         graph.draw(kwargs['outputfile'])
 
     def render_output_pydot(self, dotdata, **kwargs):
-        """Renders the image using pydot"""
+        """Renders model data as image using pydot"""
         if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 
