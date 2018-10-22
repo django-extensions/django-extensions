@@ -11,7 +11,8 @@ class Command(BaseCommand):
     help = 'List out useful metadata for each model'
 
     def list_fields(self):
-        model_list = sorted(django_apps.get_models(), key=lambda x: (x._meta.app_label, x._meta.object_name), reverse=False)
+        model_list = sorted(django_apps.get_models(), key=lambda x: (x._meta.app_label, x._meta.object_name),
+                            reverse=False)
         for model in model_list:
             print('\nFields for App "' + model._meta.app_label + '", Model "' + model._meta.object_name + '":')
 
