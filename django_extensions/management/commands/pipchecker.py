@@ -71,9 +71,10 @@ class Command(BaseCommand):
         elif os.path.exists("requirements.txt"):
             req_files = ["requirements.txt"]
         elif os.path.exists("requirements"):
-            req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
-                         if os.path.isfile(os.path.join("requirements", f)) and
-                         f.lower().endswith(".txt")]
+            req_files = [
+                "requirements/{0}".format(f) for f in os.listdir("requirements")
+                if os.path.isfile(os.path.join("requirements", f)) and f.lower().endswith(".txt")
+            ]
         elif os.path.exists("requirements-dev.txt"):
             req_files = ["requirements-dev.txt"]
         elif os.path.exists("requirements-prod.txt"):

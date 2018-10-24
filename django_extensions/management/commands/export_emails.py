@@ -47,8 +47,7 @@ class Command(BaseCommand):
             help='Limit to users which are part of the supplied group name'),
         parser.add_argument(
             '--format', '-f', action='store', dest='format', default=FORMATS[0],
-            help="output format. May be one of '" + "', '".join(FORMATS) +
-            "'."),
+            help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
 
     @signalcommand
     def handle(self, *args, **options):

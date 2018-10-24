@@ -175,10 +175,10 @@ class ModelGraph(object):
     def get_abstract_models(self, appmodels):
         abstract_models = []
         for appmodel in appmodels:
-            abstract_models += [abstract_model for abstract_model in
-                                appmodel.__bases__ if
-                                hasattr(abstract_model, '_meta') and
-                                abstract_model._meta.abstract]
+            abstract_models += [
+                abstract_model for abstract_model in appmodel.__bases__
+                if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract
+            ]
         abstract_models = list(set(abstract_models))  # remove duplicates
         return abstract_models
 
@@ -200,10 +200,10 @@ class ModelGraph(object):
         return attributes
 
     def get_appmodel_abstracts(self, appmodel):
-        return [abstract_model.__name__ for abstract_model in
-                appmodel.__bases__ if
-                hasattr(abstract_model, '_meta') and
-                abstract_model._meta.abstract]
+        return [
+            abstract_model.__name__ for abstract_model in appmodel.__bases__
+            if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract
+        ]
 
     def get_appmodel_context(self, appmodel, appmodel_abstracts):
         context = {
@@ -314,9 +314,9 @@ class ModelGraph(object):
 
     def process_local_fields(self, field, model, abstract_fields):
         newmodel = model.copy()
-        if (field.attname.endswith('_ptr_id') or  # excluding field redundant with inheritance relation
-                field in abstract_fields or  # excluding fields inherited from abstract classes. they too show as local_fields
-                self.skip_field(field)):
+        if field.attname.endswith('_ptr_id') or field in abstract_fields or self.skip_field(field):
+            # excluding field redundant with inheritance relation
+            # excluding fields inherited from abstract classes. they too show as local_fields
             return newmodel
         if isinstance(field, OneToOneField):
             newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]'))
