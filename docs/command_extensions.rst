@@ -53,7 +53,7 @@ Current Command Extensions
 * *mail_debug* - Starts a mail server which echos out the contents of the email
   instead of sending it.
 
-* *list_fields* - Lists out all fields for all installed apps. This is helpful when you don't remember how to 
+* *list_fields* - Lists out all fields for all installed apps. This is helpful when you don't remember how to
   refer to a related field or which fields are available in a particular model.
 
 * :doc:`merge_model_instances` - Merges duplicate model instances by
