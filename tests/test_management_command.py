@@ -6,6 +6,7 @@ import logging
 import importlib
 
 from django.core.management import call_command, find_commands, load_command_class
+from django.db import models
 from django.test import TestCase
 from django.utils.six import StringIO, PY3
 
@@ -90,16 +91,15 @@ class DescribeFormTests(TestCase):
         call_command('describe_form', 'django_extensions.Secret', stdout=out)
         output = out.getvalue()
         self.assertIn("class SecretForm(forms.Form):", output)
-        self.assertRegexpMatches(output, "name = forms.CharField\(.*max_length=255")
-        self.assertRegexpMatches(output, "name = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, "name = forms.CharField\(.*label=u?'Name'")
-        self.assertRegexpMatches(output, "text = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, "text = forms.CharField\(.*label=u?'Text'")
+        self.assertRegexpMatches(output, r"name = forms.CharField\(.*max_length=255")
+        self.assertRegexpMatches(output, r"name = forms.CharField\(.*required=False")
+        self.assertRegexpMatches(output, r"name = forms.CharField\(.*label=u?'Name'")
+        self.assertRegexpMatches(output, r"text = forms.CharField\(.*required=False")
+        self.assertRegexpMatches(output, r"text = forms.CharField\(.*label=u?'Text'")
 
 
 class UpdatePermissionsTests(TestCase):
     def test_works(self):
-        from django.db import models
 
         class PermModel(models.Model):
             class Meta:

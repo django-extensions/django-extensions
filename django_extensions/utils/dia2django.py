@@ -37,7 +37,7 @@ tsd = {
 }
 
 # convert varchar -> CharField
-v2c = re.compile('varchar\((\d+)\)')
+v2c = re.compile(r'varchar\((\d+)\)')
 
 
 def index(fks, id):

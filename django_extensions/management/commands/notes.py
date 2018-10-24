@@ -11,8 +11,8 @@ from django.core.management.base import BaseCommand
 from django_extensions.compat import get_template_setting
 from django_extensions.management.utils import signalcommand
 
-ANNOTATION_RE = re.compile("\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
-ANNOTATION_END_RE = re.compile("(.*)#\}(.*)")
+ANNOTATION_RE = re.compile(r"\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s:]?(.+)")
+ANNOTATION_END_RE = re.compile(r"(.*)#\}(.*)")
 
 
 class Command(BaseCommand):
