@@ -94,7 +94,7 @@ class JSONField(models.TextField):
         def from_db_value(self, value, expression, connection, context):
             return self.to_python(value)
     else:
-        def from_db_value(self, value, expression, connection):
+        def from_db_value(self, value, expression, connection):  # type: ignore
             return self.to_python(value)
 
     def get_db_prep_save(self, value, connection, **kwargs):
