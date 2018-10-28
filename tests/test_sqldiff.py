@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 from django.apps import apps
 from django.test import TestCase
 
@@ -13,10 +14,13 @@ class SqlDiffTests(TestCase):
         if should_include_proxy_models:
             args.append("--include-proxy-models")
         options = parser.parse_args(args=args)
-
+        tmp_out = six.StringIO()
+        tmp_err = six.StringIO()
         instance = SqliteSQLDiff(
             apps.get_models(include_auto_created=True),
             vars(options),
+            stdout=tmp_out,
+            stderr=tmp_err,
         )
         instance.find_differences()
         checked_models = {"%s.%s" % (app_label, model_name) for app_label, model_name, _ in instance.differences}
@@ -29,5 +33,7 @@ class SqlDiffTests(TestCase):
         self._include_proxy_models_testing(True)
 
     # def test_sql_diff_run(self):
-    #     retcode = call_command("sqldiff", all_applications=True, migrate_for_tests=True)
-    #     self.assertEqual(retcode, 0)
+    #     tmp_out = six.StringIO()
+    #     call_command("sqldiff", all_applications=True, migrate_for_tests=True, stdout=tmp_out)
+    #     self.assertEqual('-- No differences', tmp_out.getvalue())
+    #     tmp_out.close()
