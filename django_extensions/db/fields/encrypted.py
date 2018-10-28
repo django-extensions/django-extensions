@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import warnings
 
+import django
 import six
 from django import forms
 from django.conf import settings
@@ -82,8 +83,12 @@ class BaseEncryptedField(models.Field):
             retval = value
         return retval
 
-    def from_db_value(self, value, expression, connection, context):
-        return self.to_python(value)
+    if django.VERSION < (2, ):
+        def from_db_value(self, value, expression, connection, context):
+            return self.to_python(value)
+    else:
+        def from_db_value(self, value, expression, connection):  # type: ignore
+            return self.to_python(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
