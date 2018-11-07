@@ -319,20 +319,27 @@ class ModelGraph(object):
             # excluding fields inherited from abstract classes. they too show as local_fields
             return newmodel
         if isinstance(field, OneToOneField):
-            newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]'))
+            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]')
         elif isinstance(field, ForeignKey):
-            newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=dot, dir=both]'))
+            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=dot, dir=both]')
+        else:
+            relation = None
+        if relation is not None:
+            newmodel['relations'].append(relation)
         return newmodel
 
     def process_local_many_to_many(self, field, model):
         newmodel = model.copy()
         if self.skip_field(field):
             return newmodel
+        relation = None
         if isinstance(field, ManyToManyField):
             if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
-                newmodel['relations'].append(self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]'))
+                relation = self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]')
         elif isinstance(field, GenericRelation):
-            newmodel['relations'].append(self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]')))
+            relation = self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
+        if relation is not None:
+            newmodel['relations'].append(relation)
         return newmodel
 
     def process_parent(self, parent, appmodel, model):

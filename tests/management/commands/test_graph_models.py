@@ -138,7 +138,7 @@ def test_exclude_models_hides_relationships():
     out = StringIO()
     call_command('graph_models',
                  'django_extensions',
-                 exclude_models='Personality',
+                 exclude_models=['Personality', 'Note'],
                  stdout=out)
 
     output = out.getvalue()
