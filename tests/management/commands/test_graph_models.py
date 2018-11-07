@@ -128,3 +128,18 @@ def test_disable_abstract_fields_active():
 
     output = out.getvalue()
     assert 'my_field_that_my_child_will_inherit' not in output
+
+
+def test_exclude_models_hides_relationships():
+    """ Expose bug #1229 where excluded models appear in relationships.
+
+    They are replaced with an underscore, but the relationship is still there.
+    """
+    out = StringIO()
+    call_command('graph_models',
+                 'django_extensions',
+                 exclude_models='Personality',
+                 stdout=out)
+
+    output = out.getvalue()
+    assert 'tests_testapp_models_Person -> _' not in output
