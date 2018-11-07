@@ -142,4 +142,5 @@ def test_exclude_models_hides_relationships():
                  stdout=out)
 
     output = out.getvalue()
+    assert 'tests_testapp_models_Person -> tests_testapp_models_Name' in output
     assert 'tests_testapp_models_Person -> _' not in output
