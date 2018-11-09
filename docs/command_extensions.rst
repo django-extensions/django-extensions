@@ -6,7 +6,7 @@ Current Command Extensions
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
 
-* *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
+* :doc:`admin_generator` - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
 
 * *clean_pyc* - Remove all python bytecode compiled files from the project
