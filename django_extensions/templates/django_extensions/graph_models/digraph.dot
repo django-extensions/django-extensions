@@ -3,18 +3,18 @@
   // Created: {{ created_at }}
   {% if cli_options %}// Cli Options: {{ cli_options }}{% endif %}
 
-  {% block digraph_options %}fontname = "Helvetica"
+  {% block digraph_options %}fontname = "Roboto"
   fontsize = 8
   splines  = true{% endblock %}
 
   node [{% block node_options %}
-    fontname = "Helvetica"
+    fontname = "Roboto"
     fontsize = 8
     shape = "plaintext"
   {% endblock %}]
 
   edge [{% block edge_options %}
-    fontname = "Helvetica"
+    fontname = "Roboto"
     fontsize = 8
   {% endblock %}]
 
