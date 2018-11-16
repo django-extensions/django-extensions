@@ -210,7 +210,7 @@ class Command(BaseCommand):
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
         # to printind .dot format to stdout.
-        if output in ["pydot", "pygraphiviz"] and not outputfile:
+        if output in ["pydot", "pygraphviz"] and not outputfile:
             raise CommandError("An output file (--output) must be specified when --pydot or --pygraphviz are set.")
 
         cli_options = ' '.join(sys.argv[2:])
@@ -230,8 +230,7 @@ class Command(BaseCommand):
             return self.render_output_pygraphviz(dotdata, **options)
         if output == "pydot":
             return self.render_output_pydot(dotdata, **options)
-        else:
-            self.print_output(dotdata, outputfile)
+        self.print_output(dotdata, outputfile)
 
     def print_output(self, dotdata, output_file=None):
         """Writes model data to file or stdout in DOT (text) format."""
