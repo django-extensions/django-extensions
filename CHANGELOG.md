@@ -1,6 +1,21 @@
 Changelog
 =========
 
+2.1.4
+-----
+
+Changes:
+  - Fix: null_technical_500_response, handle function-based middleware
+  - Fix: shell_plus, fix #1261 check for --notebook-dir=... argument style
+  - Fix: graph_models, Excluded models displayed as an underscore
+  - Fix: set_fake_password, requires_model_validation has been replaced with requires_system_checks since 1.9
+  - Docs: admin_generator, new documentation and examples
+  - Improvement: JSONField, use new from_db_value syntax on Django 2 and up
+  - Improvement: EncryptedTextField, use new from_db_value syntax on Django 2 and up
+  - Improvement: graph_models, add --dot option
+  - Improvement: graph_models, allow to redirect (text) output to file
+  - Improvement: sqldiff, better support for indexes, index_together and unique_together
+
 2.1.3
 -----
 
