@@ -86,15 +86,14 @@ class Command(BaseCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
-                    name = req.name if req.name else req.link.filename
                     # url attribute changed to link in pip version 6.1.0 and above
                     if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
-                        self.reqs[name] = {
+                        self.reqs[req.name] = {
                             "pip_req": req,
                             "url": req.link,
                         }
                     else:
-                        self.reqs[name] = {
+                        self.reqs[req.name] = {
                             "pip_req": req,
                             "url": req.url,
                         }
@@ -110,7 +109,7 @@ class Command(BaseCommand):
         if HAS_REQUESTS:
             self.check_github()
         else:
-            self.stdout.write(self.style.ERROR("Cannot check github urls. The requests library is not installed. ( pip install requests )"))
+            print(self.style.ERROR("Cannot check github urls. The requests library is not installed. ( pip install requests )"))
         self.check_other()
 
     def _urlopen_as_json(self, url, headers=None):
@@ -162,7 +161,7 @@ class Command(BaseCommand):
             else:
                 msg = "not installed"
                 pkg_info = name
-            self.stdout.write("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
+            print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
             del self.reqs[name]
 
     def check_github(self):
@@ -244,20 +243,20 @@ class Command(BaseCommand):
                     self.style.ERROR("\nFailed to parse %r\n" % (req_url, ))
                     continue
             except (ValueError, IndexError) as e:
-                self.stdout.write(self.style.ERROR("\nFailed to parse %r: %s\n" % (req_url, e)))
+                print(self.style.ERROR("\nFailed to parse %r: %s\n" % (req_url, e)))
                 continue
 
             try:
                 test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             except HTTPError as e:
-                self.stdout.write("\n%s\n" % str(e))
+                print("\n%s\n" % str(e))
                 return
 
             if "message" in test_auth and test_auth["message"] == "Bad credentials":
-                self.stdout.write(self.style.ERROR("\nGithub API: Bad credentials. Aborting!\n"))
+                print(self.style.ERROR("\nGithub API: Bad credentials. Aborting!\n"))
                 return
             elif "message" in test_auth and test_auth["message"].startswith("API Rate Limit Exceeded"):
-                self.stdout.write(self.style.ERROR("\nGithub API: Rate Limit Exceeded. Aborting!\n"))
+                print(self.style.ERROR("\nGithub API: Rate Limit Exceeded. Aborting!\n"))
                 return
 
             frozen_commit_sha = None
@@ -293,7 +292,7 @@ class Command(BaseCommand):
                 pkg_info = name
             else:
                 pkg_info = "{0} {1}".format(name, frozen_commit_sha[:10])
-            self.stdout.write("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
+            print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
             del self.reqs[name]
 
     def check_other(self):
@@ -304,7 +303,7 @@ class Command(BaseCommand):
         support here.
         """
         if self.reqs:
-            self.stdout.write(self.style.ERROR("\nOnly pypi and github based requirements are supported:"))
+            print(self.style.ERROR("\nOnly pypi and github based requirements are supported:"))
             for name, req in self.reqs.items():
                 if "dist" in req:
                     pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
@@ -312,4 +311,4 @@ class Command(BaseCommand):
                     pkg_info = "{url}".format(url=req["url"])
                 else:
                     pkg_info = "unknown package"
-                self.stdout.write(self.style.BOLD("{pkg_info:40} is not a pypi or github requirement".format(pkg_info=pkg_info)))
+                print(self.style.BOLD("{pkg_info:40} is not a pypi or github requirement".format(pkg_info=pkg_info)))
