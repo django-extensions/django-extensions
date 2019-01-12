@@ -87,4 +87,3 @@ class NoWhiteSpaceValidatorTests(TestCase):
         result = self.validator(value_without_leading_or_trailing_whitespaces)
 
         self.assertIsNone(result)
-
