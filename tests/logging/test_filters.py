@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
-from django.test.utils import override_settings
 import time
 
-try:
-    from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
-except ImportError:
-    from mock import Mock, call, patch
+from django.test import TestCase
+from django.test.utils import override_settings
 
 from django_extensions.logging.filters import RateLimiterFilter
+
+try:
+    from unittest.mock import Mock, call, patch
+except ImportError:
+    from mock import Mock, call, patch
 
 TEST_SUBJECT = 'test_subect'
 
