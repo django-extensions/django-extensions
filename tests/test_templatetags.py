@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import six
-from django.test import TestCase
 from django.template import engines
+from django.test import TestCase
 
 from django_extensions.templatetags.widont import widont, widont_html
 
 try:
-    from unittest.mock import Mock, MagicMock, patch
+    from unittest.mock import MagicMock
 except ImportError:
-    from mock import patch
+    from mock import MagicMock
 
 
 # TODO: these tests are far from having decent test coverage
@@ -30,6 +30,7 @@ class DebuggerTagsTests(TestCase):
         self.engine = engines['django']
 
     def test_pdb_filter(self):
+        """Test for pdb filter."""
         import pdb
         pdb.set_trace = MagicMock(return_value=None)
         template = self.engine.from_string(
@@ -39,5 +40,5 @@ class DebuggerTagsTests(TestCase):
             {{ test_object|pdb }}
             '''
         )
-        template.render({'test_object': Mock()})
+        template.render({'test_object': 'test_value'})
         self.assertTrue(pdb.set_trace.called)
