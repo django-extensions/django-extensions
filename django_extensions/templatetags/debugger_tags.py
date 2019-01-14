@@ -17,7 +17,7 @@ register = template.Library()
 
 
 @register.filter
-def ipdb(obj):
+def ipdb(obj):  # pragma: no cover
     """Interactive Python debugger filter."""
     __import__('ipdb').set_trace()
     return obj
@@ -31,7 +31,7 @@ def pdb(obj):
 
 
 @register.filter
-def wdb(obj):
+def wdb(obj):  # pragma: no cover
     """Web debugger filter."""
     __import__('wdb').set_trace()
     return obj

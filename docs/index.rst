@@ -54,6 +54,7 @@ Contents
    command_signals
    admin_extensions
    shell_plus
+   debugger_tags
    delete_squashed_migrations
    dumpscript
    runscript
