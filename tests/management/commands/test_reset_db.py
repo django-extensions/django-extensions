@@ -4,12 +4,7 @@ import os
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-
-try:
-        from StringIO import StringIO
-except ImportError:
-        from io import StringIO
-
+from django.utils.six import StringIO
 
 try:
     from unittest.mock import MagicMock, Mock, call, patch
@@ -66,7 +61,7 @@ class ResetDbSqlite3Tests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     @patch.object(os, 'unlink')
     def test_should_unlink_database_and_print_success_message(self, m_unlink, m_stdout):  # noqa
-        call_command('reset_db', '--noinput', '--verbosity=2')
+        call_command('reset_db', '--noinput', verbosity=2)
 
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
         m_unlink.assert_called_once_with('test_db.sqlite3')
@@ -74,7 +69,7 @@ class ResetDbSqlite3Tests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     @patch.object(os, 'unlink', side_effect=[OSError, ])
     def test_should_print_successful_message_even_if_unlink_failed(self, m_unlink, m_stdout):  # noqa
-        call_command('reset_db', '--noinput', '--verbosity=2')
+        call_command('reset_db', '--noinput', verbosity=2)
 
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
         m_unlink.assert_called_once_with('test_db.sqlite3')
@@ -113,7 +108,7 @@ class ResetDbMysqlTests(TestCase):
         ]
 
         with patch.dict("sys.modules", MySQLdb=m_database):
-            call_command('reset_db', '--noinput', '--verbosity=2')
+            call_command('reset_db', '--noinput', verbosity=2)
 
         m_database.connect.assert_called_once_with(
             host='127.0.0.1', passwd='bar', user='foo')
@@ -141,7 +136,7 @@ class ResetDbMysqlTests(TestCase):
         ]
 
         with patch.dict("sys.modules", MySQLdb=m_database):
-            call_command('reset_db', '--noinput', '--verbosity=2', '--no-utf8')
+            call_command('reset_db', '--noinput', '--no-utf8', verbosity=2)
 
         m_database.connect.assert_called_once_with(
             passwd='bar', port=3306, unix_socket='/var/run/mysqld/mysql.sock',
@@ -181,7 +176,7 @@ class ResetDbPostgresqlTests(TestCase):
         ]
 
         with patch.dict("sys.modules", psycopg2=m_database):
-            call_command('reset_db', '--noinput', '--verbosity=2')
+            call_command('reset_db', '--noinput', verbosity=2)
 
         m_database.connect.assert_called_once_with(
             database='template1', host='127.0.0.1', password='bar',
@@ -203,8 +198,8 @@ class ResetDbPostgresqlTests(TestCase):
         ]
 
         with patch.dict("sys.modules", psycopg2=m_database):
-            call_command('reset_db', '--noinput',
-                         '--verbosity=2', '--close-sessions')
+            call_command('reset_db', '--noinput', '--close-sessions',
+                         verbosity=2)
 
         m_database.connect.assert_called_once_with(
             database='template1', host='127.0.0.1', password='bar',
