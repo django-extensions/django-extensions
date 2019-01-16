@@ -131,7 +131,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             logging.info('Executing... "' + drop_query + '"')
             connection.query(drop_query)
             logging.info('Executing... "' + create_query + '"')
-            connection.query(create_query)
+            connection.query(create_query.strip())
 
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
             import psycopg2 as Database  # NOQA
