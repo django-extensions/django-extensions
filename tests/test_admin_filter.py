@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 try:
     from unittest.mock import Mock
 except ImportError:
