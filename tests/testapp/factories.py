@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 import factory
-
 
 from .models import Secret
 
