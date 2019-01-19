@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <django-objects>
     <object model="auth.user" pk="1">
-        <field name="password" type="CharField"/>    
+        <field name="password" type="CharField"/>
         <field name="is_superuser" type="BooleanField">False</field>
         <field name="username" type="CharField">jdoe</field>
         <field name="first_name" type="CharField"/>
