@@ -1,25 +1,27 @@
 from __future__ import print_function, unicode_literals
 
 import os
+from distutils.version import StrictVersion
+
 import pytest
 from django import get_version
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.six import StringIO
-from distutils.version import StrictVersion
-
 
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
 
+TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 
-@override_settings(
-    FIXTURE_DIRS=[os.path.join(os.path.dirname(__file__), 'fixtures')])
+
+@override_settings(FIXTURE_DIRS=[TEST_FIXTURE_DIR])
 class SyncDataExceptionsTests(TestCase):
+    """Tests for SyncData command exceptions."""
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_return_SyncDataError_when_unknown_fixture_format(self, m_stdout):  # noqa
@@ -35,12 +37,18 @@ class SyncDataExceptionsTests(TestCase):
             "No fixture data found for 'invalid_fixture'. (File format may be invalid.)\n",  # noqa
             m_stdout.getvalue())
 
-    def test_WIP(self):  # noqa
+    @pytest.mark.skipif(
+        StrictVersion(get_version()) < StrictVersion('2.0.0'),
+        reason="This test works only on Django greater than 2.x")
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_return_SyncDataError_when_multiple_fixtures(self, m_stdout):  # noqa
         call_command('syncdata', 'users', verbosity=2)
+        self.assertIn(
+            "Multiple fixtures named 'users' in '{}'. Aborting.\n".format(
+                TEST_FIXTURE_DIR), m_stdout.getvalue())
 
 
-@override_settings(
-    FIXTURE_DIRS=[os.path.join(os.path.dirname(__file__), 'fixtures')])
+@override_settings(FIXTURE_DIRS=[TEST_FIXTURE_DIR])
 class SyncDataTests(TestCase):
     """Tests for syncdata command."""
 
@@ -56,17 +64,19 @@ class SyncDataTests(TestCase):
 
         self.assertIn('No fixtures found.\n', m_stdout.getvalue())
 
-    def test_should_keep_old_objects_and_load_data_from_json_fixture(self):
+    def test_should_keep_old_objects_and_load_data_from_json_fixture(self):  # noqa
         User.objects.create(username='foo')
 
-        call_command('syncdata', '--skip-remove', 'users.json', verbosity=2)
+        call_command('syncdata', '--skip-remove',
+                     os.path.join(TEST_FIXTURE_DIR, 'users.json'), verbosity=2)
 
         self.assertTrue(User.objects.filter(username='jdoe').exists())
         self.assertTrue(User.objects.filter(username='foo').exists())
 
+    @pytest.mark.skipif(
+        StrictVersion(get_version()) < StrictVersion('2.0.0'),
+        reason="This test works only on Django greater than 2.x")
     @patch('sys.stdout', new_callable=StringIO)
-    @pytest.mark.skipif(StrictVersion(get_version()) < StrictVersion('2.0.0'),  # noqa
-                        reason="This test works only on Django 2.x")
     def test_should_delete_old_objects_and_load_data_from_json_fixture(self, m_stdout):  # noqa
         User.objects.create(username='foo')
 

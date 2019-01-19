@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 """
 SyncData
 ========
@@ -10,16 +10,15 @@ and anything extra will of been deleted.
 """
 
 import os
-import sys
 
 import six
 from django.apps import apps
+from django.conf import settings
 from django.core import serializers
-from django.template.defaultfilters import pluralize
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
-from django.conf import settings
 from django.db import connection, transaction
+from django.template.defaultfilters import pluralize
 
 from django_extensions.management.utils import signalcommand
 
@@ -39,7 +38,8 @@ class Command(BaseCommand):
         parser.add_argument('--skip-remove', action='store_false',
                             dest='remove', default=True,
                             help='Avoid remove any object from db'),
-        parser.add_argument('fixture_labels', nargs='?', type=str)
+        parser.add_argument('fixture_labels', nargs='?', type=str,
+                            help='Specify the fixture label (comma separated)')
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -179,6 +179,8 @@ class Command(BaseCommand):
                                 raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
 
                             fixture.close()
+                    except SyncDataError as e:
+                        raise e
                     except Exception:
                         if verbosity > 1:
                             print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
