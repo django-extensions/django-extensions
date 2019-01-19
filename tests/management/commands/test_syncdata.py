@@ -1,5 +1,4 @@
-from __future__ import print_function, unicode_literals
-
+# -*- coding: utf-8 -*-
 import os
 from distutils.version import StrictVersion
 
