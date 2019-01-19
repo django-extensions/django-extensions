@@ -78,7 +78,7 @@ class Command(BaseCommand):
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
         except SyncDataError as exc:
-            sys.stderr.write(self.style.ERROR(exc))
+            print(self.style.ERROR(exc))
 
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
