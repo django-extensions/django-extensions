@@ -29,5 +29,3 @@ If you want to keep old records use ``--skip-remove`` option::
 You can provide full path to your fixtures file like::
 
    $ python manage syncdata /var/fixtures/sample.json
-
-
