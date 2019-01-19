@@ -15,6 +15,7 @@ import sys
 import six
 from django.apps import apps
 from django.core import serializers
+from django.template.defaultfilters import pluralize
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
 from django.conf import settings
@@ -38,6 +39,7 @@ class Command(BaseCommand):
         parser.add_argument('--skip-remove', action='store_false',
                             dest='remove', default=True,
                             help='Avoid remove any object from db'),
+        parser.add_argument('fixture_labels', nargs='?', type=str)
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -68,8 +70,10 @@ class Command(BaseCommand):
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
     @signalcommand
-    def handle(self, *fixture_labels, **options):
+    def handle(self, *args, **options):
         self.style = no_style()
+        fixture_labels = options['fixture_labels'].split(',') \
+            if options['fixture_labels'] else ()
         try:
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
@@ -199,4 +203,7 @@ class Command(BaseCommand):
                 print("No fixtures found.")
         else:
             if verbosity > 0:
-                print("Installed %d object(s) from %d fixture(s)" % (object_count, fixture_count))
+                print("Installed %d object%s from %d fixture%s" % (
+                    object_count, pluralize(object_count),
+                    fixture_count, pluralize(fixture_count)
+                ))
