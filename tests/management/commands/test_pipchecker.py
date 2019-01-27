@@ -39,7 +39,7 @@ class PipCheckerTests(TestCase):
         out = StringIO()
 
         f = open(requirements_path, 'wt')
-        f.write('django-extensions==1.0.0')
+        f.write('djangorestframework==3.0.0')
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
@@ -58,7 +58,7 @@ class PipCheckerTests(TestCase):
         out = StringIO()
 
         f = open(requirements_path, 'wt')
-        f.write('django-extensions')
+        f.write('djangorestframework')
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
