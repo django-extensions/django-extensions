@@ -47,7 +47,7 @@ class PipCheckerTests(TestCase):
             pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         else:
             # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -70,7 +70,7 @@ class PipCheckerTests(TestCase):
             pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         else:
             # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -93,7 +93,7 @@ class PipCheckerTests(TestCase):
             pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         else:
             # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
