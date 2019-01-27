@@ -43,7 +43,11 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        if sys.version_info.major == 3:
+            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        else:
+            # Python 2.7
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -62,7 +66,11 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        if sys.version_info.major == 3:
+            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        else:
+            # Python 2.7
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -81,7 +89,11 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', 'django-json-widget'])
-        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        if sys.version_info.major == 3:
+            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        else:
+            # Python 2.7
+            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
