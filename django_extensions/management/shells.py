@@ -68,8 +68,8 @@ def get_app_name(mod_name):
             # MODELS_MODULE_NAME ('models' string) is not found
             return rparts[1]
     except IndexError:
-            # Some weird model naming scheme like in Sentry.
-            return mod_name
+        # Some weird model naming scheme like in Sentry.
+        return mod_name
 
 
 def import_items(import_directives, style, quiet_load=False):
