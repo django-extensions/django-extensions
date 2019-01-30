@@ -1,6 +1,15 @@
 Changelog
 =========
 
+2.1.5
+-----
+
+Changes:
+  - New: ipdb, pdb and wdb filters
+  - Fix: ForeignKeySearchInput, error with widget render(...) parameters on Django 2.1
+  - Fix: pipchecker, unsupported format string passed to NoneType.format error
+  - Tests: bunch of new test cases
+
 2.1.4
 -----
 
