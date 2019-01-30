@@ -43,7 +43,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         self.search_fields = search_fields
         super(ForeignKeySearchInput, self).__init__(rel, site, attrs)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
         opts = self.rel.model._meta
