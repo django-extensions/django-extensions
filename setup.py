@@ -155,15 +155,16 @@ setup(
     extras_require=extras_require,
     tests_require=[
         'Django',
-        'shortuuid',
-        'python-dateutil',
-        'pytest',
-        'pytest-django',
-        'pytest-cov',
-        'tox',
+        'Werkzeug',
+        'factory-boy',
         'mock',
+        'pytest',
+        'pytest-cov',
+        'pytest-django',
+        'python-dateutil',
+        'shortuuid',
+        'tox',
         'vobject',
-        'Werkzeug'
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

@@ -10,15 +10,15 @@ and anything extra will of been deleted.
 """
 
 import os
-import sys
 
 import six
 from django.apps import apps
+from django.conf import settings
 from django.core import serializers
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
-from django.conf import settings
 from django.db import connection, transaction
+from django.template.defaultfilters import pluralize
 
 from django_extensions.management.utils import signalcommand
 
@@ -38,6 +38,8 @@ class Command(BaseCommand):
         parser.add_argument('--skip-remove', action='store_false',
                             dest='remove', default=True,
                             help='Avoid remove any object from db'),
+        parser.add_argument('fixture_labels', nargs='?', type=str,
+                            help='Specify the fixture label (comma separated)')
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -68,14 +70,15 @@ class Command(BaseCommand):
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
     @signalcommand
-    def handle(self, *fixture_labels, **options):
+    def handle(self, *args, **options):
         self.style = no_style()
-
+        fixture_labels = options['fixture_labels'].split(',') \
+            if options['fixture_labels'] else ()
         try:
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
         except SyncDataError as exc:
-            sys.stderr.write(self.style.ERROR(exc))
+            print(self.style.ERROR(exc))
 
         # Close the DB connection. This is required as a workaround for an
         # edge case in MySQL: if the same connection is used to
@@ -176,6 +179,8 @@ class Command(BaseCommand):
                                 raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
 
                             fixture.close()
+                    except SyncDataError as e:
+                        raise e
                     except Exception:
                         if verbosity > 1:
                             print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
@@ -200,4 +205,7 @@ class Command(BaseCommand):
                 print("No fixtures found.")
         else:
             if verbosity > 0:
-                print("Installed %d object(s) from %d fixture(s)" % (object_count, fixture_count))
+                print("Installed %d object%s from %d fixture%s" % (
+                    object_count, pluralize(object_count),
+                    fixture_count, pluralize(fixture_count)
+                ))
