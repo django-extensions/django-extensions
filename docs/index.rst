@@ -55,6 +55,7 @@ Contents
    admin_extensions
    shell_plus
    debugger_tags
+   create_template_tags
    delete_squashed_migrations
    dumpscript
    runscript
@@ -70,6 +71,7 @@ Contents
    runprofileserver
    runserver_plus
    sync_s3
+   syncdata
    sqldiff
    sqlcreate
    sqldsn
