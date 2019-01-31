@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-import pytest
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -18,7 +17,6 @@ TEMPLATETAGS_DIR = os.path.join(
     testapp_with_no_models_file.__path__[0], 'templatetags')
 
 
-@pytest.mark.WIP
 class CreateTemplateTagsTests(TestCase):
     """Tests for create_template_tags command."""
 
@@ -49,5 +47,5 @@ class CreateTemplateTagsTests(TestCase):
 
         self.assertRegexpMatches(
             m_stderr.getvalue(),
-            "Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem."  # noqa
+            r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem."  # noqa
         )
