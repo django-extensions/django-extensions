@@ -70,7 +70,7 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float, datetime.datetime)):
+        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float)):
             clean_dict[key] = six.u("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
