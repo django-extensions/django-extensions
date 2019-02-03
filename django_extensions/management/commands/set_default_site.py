@@ -4,6 +4,7 @@ set_default_site.py
 """
 import socket
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import signalcommand
@@ -31,16 +32,24 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
+        if 'django.contrib.sites' not in settings.INSTALLED_APPS:
+            raise CommandError('The sites framework is not installed.')
+
         from django.contrib.sites.models import Site
 
         try:
-            site = Site.objects.get(pk=1)
+            site = Site.objects.get(pk=settings.SITE_ID)
         except Site.DoesNotExist:
-            raise CommandError("Default site with pk=1 does not exist")
+            raise CommandError("Default site with pk=%s does not exist" %
+                               settings.SITE_ID)
         else:
             name = options["site_name"]
             domain = options["site_domain"]
-            if options['set_as_system_fqdn']:
+            set_as_system_fqdn = options["set_as_system_fqdn"]
+            if all([domain, set_as_system_fqdn]):
+                raise CommandError(
+                    "The set_as_system_fqdn cannot be used with domain option.")  # noqa
+            if set_as_system_fqdn:
                 domain = socket.getfqdn()
                 if not domain:
                     raise CommandError("Cannot find systems FQDN")
@@ -55,8 +64,9 @@ class Command(BaseCommand):
                 update_kwargs["domain"] = domain
 
             if update_kwargs:
-                Site.objects.filter(pk=1).update(**update_kwargs)
-                site = Site.objects.get(pk=1)
+                Site.objects.filter(
+                    pk=settings.SITE_ID).update(**update_kwargs)
+                site = Site.objects.get(pk=settings.SITE_ID)
                 print("Updated default site. You might need to restart django as sites are cached aggressively.")
             else:
                 print("Nothing to update (need --name, --domain and/or --system-fqdn)")
