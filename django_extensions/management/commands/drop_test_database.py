@@ -132,7 +132,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             try:
                 cursor.execute(drop_query)
-            except (Database.ProgrammingError, Exception) as e:
+            except Database.ProgrammingError as e:
                 logging.exception("Error: %s" % str(e))
                 return
         else:
