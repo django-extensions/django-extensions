@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-
 from django.core.management import CommandError, call_command
-
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.six import StringIO
-import pytest
+
+
 try:
-    from unittest.mock import MagicMock, Mock, patch
+    from unittest.mock import patch
 except ImportError:
-    from mock import MagicMock, Mock, patch
+    from mock import patch
 
 MYSQL_DATABASE_SETTINGS = {
     'ENGINE': 'django.db.backends.mysql',
@@ -61,7 +60,6 @@ POSTGIS_WITH_PORT_DATABASE_SETTINGS = {
 }
 
 
-@pytest.mark.WIP
 class SqlDsnExceptionsTests(TestCase):
     """Tests for sqldsn management command exceptions."""
 
@@ -72,7 +70,6 @@ class SqlDsnExceptionsTests(TestCase):
             call_command('sqldsn', '--router=unknown')
 
 
-@pytest.mark.WIP
 class SqlDsnTests(TestCase):
     """Tests for sqldsn management command."""
     maxDiff = None
@@ -187,5 +184,35 @@ Unknown database, cant generate DSN
 """
 
         call_command('sqldsn', '--all')
+
+        self.assertEqual(expected_result, m_stdout.getvalue())
+
+    @override_settings(DATABASES={
+        'default': POSTGRESQL_DATABASE_SETTINGS,
+        'slave': MYSQL_DATABASE_SETTINGS,
+        'test': SQLITE3_DATABASE_SETTINGS,
+        'unknown': {
+            'ENGINE': 'django.db.backends.unknown'
+        }
+    })
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_info_with_all_style_for_all_routers(self, m_stdout):  # noqa
+        expected_result = """DSN for router 'default' with engine 'postgresql':
+host='localhost' dbname='database' user='foo' password='bar' port='5432'
+host='localhost', database='database', user='foo', password='bar', port='5432'
+postgresql://foo:bar@localhost:5432/database
+localhost:5432:database:foo:bar
+
+DSN for router 'slave' with engine 'mysql':
+host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"
+
+DSN for router 'test' with engine 'sqlite3':
+db.sqlite3
+
+DSN for router 'unknown' with engine 'unknown':
+Unknown database, cant generate DSN
+"""
+
+        call_command('sqldsn', '--all', '--style=all')
 
         self.assertEqual(expected_result, m_stdout.getvalue())
