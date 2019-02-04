@@ -50,8 +50,6 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
-        if args:
-            raise CommandError('Usage is mail_debug %s' % self.args)
         if not addrport:
             if options['use_settings']:
                 from django.conf import settings
