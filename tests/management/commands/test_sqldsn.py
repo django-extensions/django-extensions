@@ -214,4 +214,3 @@ Unknown database, cant generate DSN"""
         self.assertIn(slave_mysql, m_stdout.getvalue())
         self.assertIn(test_sqlite3, m_stdout.getvalue())
         self.assertIn(unknown, m_stdout.getvalue())
-
