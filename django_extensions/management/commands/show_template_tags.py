@@ -75,6 +75,9 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
+        if args:
+            appname, = args
+
         if options['no_color']:
             style = no_style()
         else:
