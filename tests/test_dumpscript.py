@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import ast
+import os
+import shutil
 import sys
 
 import six
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -67,3 +70,26 @@ class DumpScriptTests(TestCase):
         else:
             self.assertTrue(len(ast_syntax_tree.asList()) > 1)
         tmp_out.close()
+
+    def test_with_datetimefield(self):
+        Note.objects.create(
+            note='Note',
+            # Default User Model has DateTimeFields.
+            user=get_user_model().objects.create(username='Jack')
+        )
+
+        dumpscript_path = './django_extensions/scripts'
+
+        os.mkdir(dumpscript_path)
+
+        with open(dumpscript_path + '/test.py', 'wt') as test:
+            call_command('dumpscript', 'django_extensions', stdout=test)
+
+        # Check dumpscript without exception
+        call_command('runscript', 'test')
+
+        # Delete dumpscript
+        shutil.rmtree(dumpscript_path)
+
+        # Check if Note is duplicated
+        self.assertEqual(Note.objects.filter(note='Note').count(), 2)
