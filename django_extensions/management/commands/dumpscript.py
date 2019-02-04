@@ -29,7 +29,6 @@ Improvements:
 
 """
 
-import datetime
 import sys
 
 import six
