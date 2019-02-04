@@ -170,22 +170,21 @@ postgresql://foo:bar@localhost/database
     })
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_info_for_all_routers(self, m_stdout):  # noqa
-        expected_result = """DSN for router 'default' with engine 'postgresql':
-host='localhost' dbname='database' user='foo' password='bar' port='5432'
-
-DSN for router 'slave' with engine 'mysql':
-host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"
-
-DSN for router 'test' with engine 'sqlite3':
-db.sqlite3
-
-DSN for router 'unknown' with engine 'unknown':
-Unknown database, cant generate DSN
-"""
+        default_postgresql = """DSN for router 'default' with engine 'postgresql':
+host='localhost' dbname='database' user='foo' password='bar' port='5432'"""  # noqa
+        slave_mysql = '''DSN for router 'slave' with engine 'mysql':
+host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"'''
+        test_sqlite3 = """DSN for router 'test' with engine 'sqlite3':
+db.sqlite3"""
+        unknown = """DSN for router 'unknown' with engine 'unknown':
+Unknown database, cant generate DSN"""
 
         call_command('sqldsn', '--all')
 
-        self.assertEqual(expected_result, m_stdout.getvalue())
+        self.assertIn(default_postgresql, m_stdout.getvalue())
+        self.assertIn(slave_mysql, m_stdout.getvalue())
+        self.assertIn(test_sqlite3, m_stdout.getvalue())
+        self.assertIn(unknown, m_stdout.getvalue())
 
     @override_settings(DATABASES={
         'default': POSTGRESQL_DATABASE_SETTINGS,
@@ -197,22 +196,22 @@ Unknown database, cant generate DSN
     })
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_info_with_all_style_for_all_routers(self, m_stdout):  # noqa
-        expected_result = """DSN for router 'default' with engine 'postgresql':
+        default_postgresql = """DSN for router 'default' with engine 'postgresql':
 host='localhost' dbname='database' user='foo' password='bar' port='5432'
 host='localhost', database='database', user='foo', password='bar', port='5432'
 postgresql://foo:bar@localhost:5432/database
-localhost:5432:database:foo:bar
-
-DSN for router 'slave' with engine 'mysql':
-host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"
-
-DSN for router 'test' with engine 'sqlite3':
-db.sqlite3
-
-DSN for router 'unknown' with engine 'unknown':
-Unknown database, cant generate DSN
-"""
+localhost:5432:database:foo:bar"""
+        slave_mysql = '''DSN for router 'slave' with engine 'mysql':
+host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"'''
+        test_sqlite3 = """DSN for router 'test' with engine 'sqlite3':
+db.sqlite3"""
+        unknown = """DSN for router 'unknown' with engine 'unknown':
+Unknown database, cant generate DSN"""
 
         call_command('sqldsn', '--all', '--style=all')
 
-        self.assertEqual(expected_result, m_stdout.getvalue())
+        self.assertIn(default_postgresql, m_stdout.getvalue())
+        self.assertIn(slave_mysql, m_stdout.getvalue())
+        self.assertIn(test_sqlite3, m_stdout.getvalue())
+        self.assertIn(unknown, m_stdout.getvalue())
+
