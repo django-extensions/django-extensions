@@ -81,6 +81,7 @@ class DumpScriptTests(TestCase):
         dumpscript_path = './django_extensions/scripts'
 
         os.mkdir(dumpscript_path)
+        open(dumpscript_path + '/__init__.py', 'w').close()  # for python 2.7
 
         # This script will have a datetime string(not instance).
         # e.g. importer.locate_object( ..., 'date_joined': '2019-02-03 18:59:24.680191'} )
