@@ -50,7 +50,9 @@ class SqlCreateTests(TestCase):
     @override_settings(DATABASES={'default': MYSQL_DATABASE_SETTINGS})
     @patch('sys.stderr', new_callable=StringIO)
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_print_SQL_create_database_statement_for_mysql(self, m_stdout, m_stderr):  # noqa
+    @patch('django_extensions.management.commands.sqlcreate.socket')
+    def test_should_print_SQL_create_database_statement_for_mysql(self, m_socket, m_stdout, m_stderr):  # noqa
+        m_socket.gethostname.return_value = 'tumbleweed'
         expected_error = """-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
 -- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
 """  # noqa
