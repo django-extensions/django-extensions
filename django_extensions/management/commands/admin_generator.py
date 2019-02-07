@@ -18,11 +18,11 @@ https://github.com/WoLpH/django-admin-generator/
 import re
 import sys
 
+import six
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import LabelCommand, CommandError
 from django.db import models
-from django.utils import six
 
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand

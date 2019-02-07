@@ -7,7 +7,7 @@ import sys
 import pip
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.six import StringIO
+from six import StringIO
 from pip._internal.exceptions import InstallationError
 
 

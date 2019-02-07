@@ -4,7 +4,7 @@ import os
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils.six import StringIO
+from six import StringIO
 
 try:
     from unittest.mock import MagicMock, Mock, call, patch
