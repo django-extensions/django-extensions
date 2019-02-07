@@ -4,7 +4,7 @@ import shutil
 
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.six import StringIO
+from six import StringIO
 from tests import testapp_with_no_models_file
 
 try:

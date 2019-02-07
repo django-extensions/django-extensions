@@ -66,7 +66,7 @@ from typing import List  # NOQA
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.six import StringIO
+from six import StringIO
 
 from django_extensions.management.utils import signalcommand
 

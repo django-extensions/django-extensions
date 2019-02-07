@@ -8,7 +8,7 @@ import importlib
 from django.core.management import call_command, find_commands, load_command_class
 from django.db import models
 from django.test import TestCase
-from django.utils.six import StringIO, PY3
+from six import StringIO, PY3
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
 from django_extensions.management.commands.merge_model_instances import \

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 
 import pytest
 from django import get_version
@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils.six import StringIO
+from six import StringIO
 
 try:
     from unittest.mock import patch
@@ -37,7 +37,7 @@ class SyncDataExceptionsTests(TestCase):
             m_stdout.getvalue())
 
     @pytest.mark.skipif(
-        StrictVersion(get_version()) < StrictVersion('2.0.0'),
+        LooseVersion(get_version()) < LooseVersion('2.0.0'),
         reason="This test works only on Django greater than 2.x")
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_return_SyncDataError_when_multiple_fixtures(self, m_stdout):  # noqa
@@ -73,7 +73,7 @@ class SyncDataTests(TestCase):
         self.assertTrue(User.objects.filter(username='foo').exists())
 
     @pytest.mark.skipif(
-        StrictVersion(get_version()) < StrictVersion('2.0.0'),
+        LooseVersion(get_version()) < LooseVersion('2.0.0'),
         reason="This test works only on Django greater than 2.x")
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_delete_old_objects_and_load_data_from_json_fixture(self, m_stdout):  # noqa

@@ -8,8 +8,8 @@ import traceback
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.backends import utils
-from django.utils.six import PY3
 from django.utils.datastructures import OrderedSet
+from six import PY3
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand

@@ -4,8 +4,8 @@ import django
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
-from django.utils import six
 from django.utils.encoding import force_bytes
+import six
 
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField

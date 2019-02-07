@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils.six import StringIO
+from six import StringIO
 
 try:
     from unittest.mock import patch

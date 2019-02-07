@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.core.management import call_command, CommandError
 from django.contrib.auth.models import User
-from django.utils.six import StringIO
+from six import StringIO
 from django_extensions.management.commands.set_fake_passwords import Command, DEFAULT_FAKE_PASSWORD
 
 import pytest
