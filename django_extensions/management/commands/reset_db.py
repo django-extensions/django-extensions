@@ -60,10 +60,6 @@ class Command(BaseCommand):
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-
-        if args:
-            raise CommandError("reset_db takes no arguments")
-
         router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
