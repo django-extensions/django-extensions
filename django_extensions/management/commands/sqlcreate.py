@@ -73,4 +73,4 @@ The envisioned use case is something like this:
             # CREATE DATABASE is not SQL standard, but seems to be supported by most.
             sys.stderr.write("-- Don't know how to handle '%s' falling back to SQL.\n" % engine)
             print("CREATE DATABASE %s;" % dbname)
-            print("GRANT ALL PRIVILEGES ON DATABASE %s to %s" % (dbname, dbuser))
+            print("GRANT ALL PRIVILEGES ON DATABASE %s to %s;" % (dbname, dbuser))
