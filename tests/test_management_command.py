@@ -67,7 +67,7 @@ class ShowTemplateTagsTests(TestCase):
         # its templatetags
         self.assertIn('django_extensions', output)
         # let's check at least one
-        self.assertIn('syntax_color', output)
+        self.assertIn('truncate_letters', output)
 
 
 class AdminGeneratorTests(TestCase):
