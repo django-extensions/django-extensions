@@ -11,7 +11,7 @@ register = template.Library()
 @register.filter(is_safe=True)
 def truncateletters(value, arg):
     """
-    Truncate a string after a certain number of letters
+    Truncates a string after a certain number of letters
 
     Argument: Number of letters to truncate after
     """
