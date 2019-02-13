@@ -2,7 +2,6 @@
 from importlib import import_module
 from io import StringIO
 
-import pytest
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import CommandError, call_command
@@ -14,7 +13,6 @@ except ImportError:
     from mock import patch
 
 
-@pytest.mark.WIP
 class PrintUserForSessionExceptionsTests(TestCase):
     """Test if print_user_for_session command raises exception."""
 
@@ -24,7 +22,6 @@ class PrintUserForSessionExceptionsTests(TestCase):
                          'l6hxnwblpvrfu8bohelmqjj4soyo2r!?')
 
 
-@pytest.mark.WIP
 class PrintUserForSessionTests(TestCase):
     """Test for print_user_for_session command."""
 
@@ -80,12 +77,12 @@ class PrintUserForSessionTests(TestCase):
             '_auth_user_hash': 'b67352fde8582b12f068c10fd9d29f9fa1af0459'
         })
         session.create()
-        expected_out = """User id: 1
+        expected_out = """User id: {}
 full name: John Doe
 short name: John
 username: foobar
 email: foo@bar.com
-"""
+""".format(user.pk)
 
         call_command('print_user_for_session', session.session_key)
 
