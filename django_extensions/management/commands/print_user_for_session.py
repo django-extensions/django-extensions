@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals
+
 import importlib
 
 from django.conf import settings
@@ -13,20 +15,15 @@ class Command(BaseCommand):
     help = ("print the user information for the provided session key. "
             "this is very helpful when trying to track down the person who "
             "experienced a site crash.")
-    args = "session_key"
-    label = 'session key for the user'
 
-    can_import_settings = True
+    def add_arguments(self, parser):
+        parser.add_argument('session_id', nargs='+', type=str,
+                            help='user session id')
 
     @signalcommand
     def handle(self, *args, **options):
-        if len(args) > 1:
-            raise CommandError("extra arguments supplied")
 
-        if len(args) < 1:
-            raise CommandError("session_key argument missing")
-
-        key = args[0].lower()
+        key = options['session_id'][0]
 
         if not set(key).issubset(set(VALID_KEY_CHARS)):
             raise CommandError("malformed session key")
@@ -49,7 +46,7 @@ class Command(BaseCommand):
             print('No user associated with session')
             return
 
-        print("User id: %s" % uid)
+        print(u"User id: %s" % uid)
 
         User = get_user_model()
         try:
