@@ -73,22 +73,12 @@ class Command(BaseCommand):
         dsn = []
 
         if engine == 'mysql':
-            dsnstr = 'host="{0}", db="{2}", user="{3}", passwd="{4}"'
-            if dbport is not None:
-                dsnstr += ', port="{1}"'
-
-            dsn.append(dsnstr.format(dbhost,
-                                     dbport,
-                                     dbname,
-                                     dbuser,
-                                     dbpass))
-
+            dsn.append(self._mysql(dbhost, dbport, dbname, dbuser, dbpass))
         elif engine in ['postgresql', 'postgresql_psycopg2', 'postgis']:
-            dsn = self.postgresql(dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style)
-
+            dsn.extend(self._postgresql(
+                dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style))
         elif engine == 'sqlite3':
             dsn.append('{}'.format(dbname))
-
         else:
             dsn.append(self.style.ERROR('Unknown database, can''t generate DSN'))
 
@@ -98,7 +88,15 @@ class Command(BaseCommand):
         for output in dsn:
             sys.stdout.write("{}\n".format(output))
 
-    def postgresql(self, dbhost, dbport, dbname, dbuser, dbpass, dsn_style=None):
+    def _mysql(self, dbhost, dbport, dbname, dbuser, dbpass):
+        dsnstr = 'host="{0}", db="{2}", user="{3}", passwd="{4}"'
+
+        if dbport is not None:
+            dsnstr += ', port="{1}"'
+
+        return dsnstr.format(dbhost, dbport, dbname, dbuser, dbpass)
+
+    def _postgresql(self, dbhost, dbport, dbname, dbuser, dbpass, dsn_style=None):  # noqa
         """PostgreSQL psycopg2 driver  accepts two syntaxes
 
         Plus a string for .pgpass file
@@ -129,23 +127,14 @@ class Command(BaseCommand):
                                      dbpass))
 
         if dsn_style == 'all' or dsn_style == 'uri':
-            if dbport is not None:
-                dsnstr = "postgresql://{3}:{4}@{0}:{1}/{2}"
-            else:
-                dsnstr = "postgresql://{3}:{4}@{0}/{2}"
+            dsnstr = "postgresql://{user}:{password}@{host}/{name}"
 
-            dsn.append(dsnstr.format(dbhost,
-                                     dbport,
-                                     dbname,
-                                     dbuser,
-                                     dbpass,))
+            dsn.append(dsnstr.format(
+                host="{host}:{port}".format(host=dbhost, port=dbport) if dbport else dbhost,  # noqa
+                name=dbname, user=dbuser, password=dbpass))
 
         if dsn_style == 'all' or dsn_style == 'pgpass':
-            if dbport is not None:
-                dbport = 5432
-            dsn.append('{0}:{1}:{2}:{3}:{4}'.format(dbhost,
-                                                    dbport,
-                                                    dbname,
-                                                    dbuser,
-                                                    dbpass))
+            dsn.append(':'.join(map(str, filter(
+                None, [dbhost, dbport, dbname, dbuser, dbpass]))))
+
         return dsn
