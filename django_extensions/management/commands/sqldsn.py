@@ -130,7 +130,7 @@ class Command(BaseCommand):
             dsnstr = "postgresql://{user}:{password}@{host}/{name}"
 
             dsn.append(dsnstr.format(
-                host=":".join(map(str, filter(None, [dbhost, dbport]))),
+                host="{host}:{port}".format(host=dbhost, port=dbport) if dbport else dbhost,  # noqa
                 name=dbname, user=dbuser, password=dbpass))
 
         if dsn_style == 'all' or dsn_style == 'pgpass':
