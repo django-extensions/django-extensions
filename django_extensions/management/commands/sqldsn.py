@@ -132,7 +132,6 @@ class Command(BaseCommand):
             dsn.append(dsnstr.format(
                 host="{host}:{port}".format(host=dbhost, port=dbport) if dbport else dbhost,  # noqa
                 name=dbname, user=dbuser, password=dbpass))
-
         if dsn_style == 'all' or dsn_style == 'pgpass':
             dsn.append(':'.join(map(str, filter(
                 None, [dbhost, dbport, dbname, dbuser, dbpass]))))
