@@ -84,7 +84,7 @@ class DumpScriptTests(TestCase):
         open(dumpscript_path + '/__init__.py', 'w').close()  # for python 2.7
 
         # This script will have a datetime string(not instance).
-        # e.g. importer.locate_object( ..., 'date_joined': '2019-02-03 18:59:24.680191'} )
+        # e.g. importer.locate_object( ..., 'date_joined': datetime.datetime(2019, 2, 15, 7, 42, 58, 640302))
         with open(dumpscript_path + '/test.py', 'wt') as test:
             call_command('dumpscript', 'django_extensions', stdout=test)
 

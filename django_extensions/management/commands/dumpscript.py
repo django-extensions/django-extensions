@@ -28,9 +28,10 @@ Improvements:
     See TODOs and FIXMEs scattered throughout :-)
 
 """
-
+import datetime
 import sys
 
+import dateutil.parser
 import six
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
@@ -69,8 +70,11 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float)):
-            clean_dict[key] = six.u("%s" % v)
+        if v is not None:
+            if isinstance(v, datetime.datetime):
+                clean_dict[key] = dateutil.parser.parse(v.isoformat())
+            elif not isinstance(v, (six.string_types, six.integer_types, float)):
+                clean_dict[key] = six.u("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class, original_pk_name,
