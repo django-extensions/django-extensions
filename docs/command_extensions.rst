@@ -58,8 +58,6 @@ Current Command Extensions
 
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
-* *passwd* - Makes it easy to reset a user's password.
-
 * *pipchecker* - Scan pip requirement file(s)s for out-of-date packages. Similar to
   ``pip list -o`` which used installed packages (in virtualenv) instead of requirements file(s).
 
