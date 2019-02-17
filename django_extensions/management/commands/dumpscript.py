@@ -42,7 +42,8 @@ from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
 from django.db.models.deletion import Collector
-from django.utils.encoding import smart_text, force_text
+from django.utils.encoding import force_text, smart_text
+from django.utils.timezone import get_current_timezone
 
 from django_extensions.management.utils import signalcommand
 
@@ -72,6 +73,7 @@ def orm_item_locator(orm_obj):
         v = clean_dict[key]
         if v is not None:
             if isinstance(v, datetime.datetime):
+                v = v.replace(tzinfo=get_current_timezone())  # get tzinfo from settings.py
                 clean_dict[key] = dateutil.parser.parse(v.isoformat())
             elif not isinstance(v, (six.string_types, six.integer_types, float)):
                 clean_dict[key] = six.u("%s" % v)
@@ -607,6 +609,7 @@ from django.contrib.contenttypes.models import ContentType
 
 try:
     import dateutil.parser
+    from dateutil.tz import tzoffset
 except ImportError:
     print("Please install python-dateutil")
     sys.exit(os.EX_USAGE)

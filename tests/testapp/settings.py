@@ -81,3 +81,5 @@ CACHES = {
         'BACKEND': 'tests.test_clear_caches.OtherCacheMock',
     },
 }
+
+TIME_ZONE = 'Asia/Seoul'
