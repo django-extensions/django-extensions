@@ -42,7 +42,7 @@ try:
     from pygments.lexers import get_lexer_by_name
     from pygments.formatters import HtmlFormatter
     HAS_PYGMENTS = True
-except ImportError:
+except ImportError:  # pragma: no cover
     HAS_PYGMENTS = False
 
 register = template.Library()
@@ -93,7 +93,7 @@ def highlight(parser, token):
       {% endhighlight %}
 
     """
-    if not HAS_PYGMENTS:
+    if not HAS_PYGMENTS:  # pragma: no cover
         raise ImportError("Please install 'pygments' library to use highlighting.")
     nodelist = parser.parse(('endhighlight',))
     parser.delete_first_token()
