@@ -4,15 +4,19 @@ from contextlib import contextmanager
 
 import pytest
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import connection, models
+from django.forms.widgets import Textarea, TextInput
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from .testapp.models import Secret
 
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
 try:
-    from django_extensions.db.fields.encrypted import EncryptedTextField, EncryptedCharField  # NOQA
+    from django_extensions.db.fields.encrypted import BaseEncryptedField, \
+        EncryptedTextField, EncryptedCharField
     from keyczar import keyczar, keyczart, keyinfo  # NOQA
     keyczar_active = True
 except ImportError:
@@ -240,3 +244,57 @@ class EncryptedFieldsTestCase(TestCase):
             with secret_model() as model:
                 retrieved_secret = model.objects.get(id=secret.id)
                 self.assertEqual(test_val, retrieved_secret.name)
+
+
+class BaseEncryptedFieldTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):  # noqa
+        cls.tmpdir = tempfile.mkdtemp()
+        keyczart.Create(cls.tmpdir, "test", keyinfo.DECRYPT_AND_ENCRYPT,
+                        asymmetric=True)
+        keyczart.AddKey(cls.tmpdir, "PRIMARY", size=4096)
+
+    @classmethod
+    def tearDownClass(cls):  # noqa
+        import shutil
+        shutil.rmtree(cls.tmpdir)
+
+
+@pytest.mark.skipif(keyczar_active is False,
+                    reason="Encrypted fields needs that keyczar is installed")
+class BaseEncryptedFieldExceptions(BaseEncryptedFieldTestCase):
+    """Tests for BaseEncryptedField exceptions."""
+
+    def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):  # noqa
+        with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir,
+                               ENCRYPTED_FIELD_MODE='INVALID'):
+            with self.assertRaisesRegexp(
+                    ImproperlyConfigured,
+                    'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
+                BaseEncryptedField()
+
+
+@pytest.mark.skipif(keyczar_active is False,
+                    reason="Encrypted fields needs that keyczar is installed")
+class EncryptedTextFieldTests(BaseEncryptedFieldTestCase):
+    """Tests for EncryptedTextField."""
+
+    def test_should_return_formfield_with_Textarea_widget(self):
+        with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir):
+            formfield = EncryptedTextField(max_length=50).formfield()
+
+        self.assertTrue(isinstance(formfield.widget, Textarea))
+
+
+@pytest.mark.skipif(keyczar_active is False,
+                    reason="Encrypted fields needs that keyczar is installed")
+class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
+    """Tests for EncryptedCharField."""
+
+    def test_should_return_formfield_with_TextInput_widget(self):
+        with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir):
+            formfield = EncryptedCharField(max_length=50).formfield()
+
+        self.assertTrue(isinstance(formfield.widget, TextInput))
+        self.assertEqual(formfield.max_length, 700)
