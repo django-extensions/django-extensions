@@ -45,7 +45,8 @@ def indentby(parser, token):
     args = token.split_contents()
     largs = len(args)
     if largs not in (2, 4):
-        raise template.TemplateSyntaxError("%r tag requires 1 or 3 arguments")
+        raise template.TemplateSyntaxError(
+            "indentby tag requires 1 or 3 arguments")
     indent_level = args[1]
     if_statement = None
     if largs == 4:
