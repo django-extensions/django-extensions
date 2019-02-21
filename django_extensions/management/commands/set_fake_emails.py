@@ -77,7 +77,7 @@ class Command(BaseCommand):
             if groups:
                 users = users.exclude(groups__in=groups)
             else:
-                raise CommandError("No group matches filter: %s" % exclude_groups)
+                raise CommandError("No groups matches filter: %s" % exclude_groups)
         if include_groups:
             groups = Group.objects.filter(name__in=include_groups.split(","))
             if groups:
