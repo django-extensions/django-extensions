@@ -6,9 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
 from six import StringIO
 
-from django_extensions.management.commands.set_fake_passwords import (
-    DEFAULT_FAKE_PASSWORD, Command,
-)
+from django_extensions.management.commands.set_fake_passwords import DEFAULT_FAKE_PASSWORD, Command
 
 try:
     from unittest.mock import Mock, patch
