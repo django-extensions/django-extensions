@@ -445,6 +445,11 @@ class Command(BaseCommand):
                         execution_time = time.time() - starttime
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
 
+                        self.db.queries_log.append({
+                            'sql': raw_sql,
+                            'time': "%.3f" % execution_time,
+                        })
+
                         if sqlparse:
                             raw_sql = raw_sql[:truncate]
                             raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
