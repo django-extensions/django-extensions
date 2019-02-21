@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.core.management import call_command, CommandError
-from django.contrib.auth.models import User
-from six import StringIO
-from django_extensions.management.commands.set_fake_passwords import Command, DEFAULT_FAKE_PASSWORD
-from unittest.mock import patch, Mock
-
 import pytest
+from django.contrib.auth.models import User
+from django.core.management import CommandError, call_command
+from six import StringIO
+
+from django_extensions.management.commands.set_fake_passwords import (
+    DEFAULT_FAKE_PASSWORD, Command,
+)
+
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 
 @pytest.fixture(scope='module')  # noqa
