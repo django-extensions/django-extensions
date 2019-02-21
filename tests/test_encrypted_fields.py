@@ -15,7 +15,9 @@ from .testapp.models import Secret
 # Only perform encrypted fields tests if keyczar is present. Resolves
 # http://github.com/django-extensions/django-extensions/issues/#issue/17
 try:
-    from django_extensions.db.fields.encrypted import BaseEncryptedField, EncryptedTextField, EncryptedCharField
+    from django_extensions.db.fields.encrypted import (
+        BaseEncryptedField, EncryptedTextField, EncryptedCharField
+    )
     from keyczar import keyczar, keyczart, keyinfo  # NOQA
     keyczar_active = True
 except ImportError:
