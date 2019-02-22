@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import shutil
 import tempfile
 from contextlib import contextmanager
 
@@ -42,7 +43,6 @@ def keyczar_keys(request):
 
     # cleanup crypto key temp dirs
     def cleanup():
-        import shutil
         for name, path in KEY_LOCS.items():
             shutil.rmtree(path)
     request.addfinalizer(cleanup)
@@ -256,7 +256,6 @@ class BaseEncryptedFieldTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        import shutil
         shutil.rmtree(cls.tmpdir)
 
 
