@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.1.6
+-----
+
+Changes:
+  - runserver_plus, auto_reloader fix for compatibility with Django 2.2
+  - test, many many more tests :-) thanks @kuter
+
 2.1.5
 -----
 
