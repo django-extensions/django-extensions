@@ -57,7 +57,6 @@ class CleanPycTests(TestCase):
             pyo = '%s.pyo' % os.path.splitext(fn)[0]
             shutil.copyfile(fn, pyo)
             pyo_glob.append(pyo)
-        call_command('clean_pyc', verbosity=2, path=project_root,
-                     optimize=True, stdout=out)
+        call_command('clean_pyc', verbosity=2, path=project_root, optimize=True, stdout=out)
         output = out.getvalue().splitlines()
         self.assertEqual(sorted(pyc_glob + pyo_glob), sorted(output))

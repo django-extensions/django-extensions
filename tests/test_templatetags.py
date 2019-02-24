@@ -26,7 +26,7 @@ class DebuggerTagsTests(TestCase):
 
     """Test class for DebuggerTags."""
 
-    def setUp(self):  # noqa
+    def setUp(self):
         self.engine = engines['django']
 
     def test_pdb_filter(self):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import invalidpackage # NOQA
+import invalidpackage  # NOQA
 
 
 def run():

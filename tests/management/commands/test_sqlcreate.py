@@ -38,9 +38,8 @@ POSTGRESQL_DATABASE_SETTINGS = {
 class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
 
-    def test_should_raise_CommandError_if_router_is_unknown(self):  # noqa
-        with self.assertRaisesRegexp(
-                CommandError, "Unknown database router unknown"):
+    def test_should_raise_CommandError_if_router_is_unknown(self):
+        with self.assertRaisesRegexp(CommandError, "Unknown database router unknown"):
             call_command('sqlcreate', '--router=unknown')
 
 
@@ -51,14 +50,14 @@ class SqlCreateTests(TestCase):
     @patch('sys.stderr', new_callable=StringIO)
     @patch('sys.stdout', new_callable=StringIO)
     @patch('django_extensions.management.commands.sqlcreate.socket')
-    def test_should_print_SQL_create_database_statement_for_mysql(self, m_socket, m_stdout, m_stderr):  # noqa
+    def test_should_print_SQL_create_database_statement_for_mysql(self, m_socket, m_stdout, m_stderr):
         m_socket.gethostname.return_value = 'tumbleweed'
         expected_error = """-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
 -- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
-"""  # noqa
+"""
         expected_statement = """CREATE DATABASE dbatabase CHARACTER SET utf8 COLLATE utf8_bin;
 GRANT ALL PRIVILEGES ON dbatabase.* to 'foo'@'tumbleweed' identified by 'bar';
-"""  # noqa
+"""
 
         call_command('sqlcreate')
 
@@ -67,11 +66,11 @@ GRANT ALL PRIVILEGES ON dbatabase.* to 'foo'@'tumbleweed' identified by 'bar';
 
     @override_settings(DATABASES={'default': POSTGRESQL_DATABASE_SETTINGS})
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_print_SQL_create_database_statement_for_postgresql(self, m_stdout):  # noqa
+    def test_should_print_SQL_create_database_statement_for_postgresql(self, m_stdout):
         expected_statement = """CREATE USER foo WITH ENCRYPTED PASSWORD 'bar' CREATEDB;
 CREATE DATABASE database WITH ENCODING 'UTF-8' OWNER "foo";
 GRANT ALL PRIVILEGES ON DATABASE database TO foo;
-"""  # noqa
+"""
 
         call_command('sqlcreate')
 
@@ -79,13 +78,13 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
 
     @override_settings(DATABASES={'default': POSTGRESQL_DATABASE_SETTINGS})
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_print_SQL_drop_and_create_database_statement_for_postgresql(self, m_stdout):  # noqa
+    def test_should_print_SQL_drop_and_create_database_statement_for_postgresql(self, m_stdout):
         expected_statement = """DROP DATABASE IF EXISTS database;
 DROP USER IF EXISTS foo;
 CREATE USER foo WITH ENCRYPTED PASSWORD 'bar' CREATEDB;
 CREATE DATABASE database WITH ENCODING 'UTF-8' OWNER "foo";
 GRANT ALL PRIVILEGES ON DATABASE database TO foo;
-"""  # noqa
+"""
 
         call_command('sqlcreate', '--drop')
 
@@ -93,8 +92,8 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
 
     @override_settings(DATABASES={'default': SQLITE3_DATABASE_SETTINGS})
     @patch('sys.stderr', new_callable=StringIO)
-    def test_should_print_stderr_for_sqlite3(self, m_stderr):  # noqa
-        expected_error = "-- manage.py syncdb will automatically create a sqlite3 database file.\n"  # noqa
+    def test_should_print_stderr_for_sqlite3(self, m_stderr):
+        expected_error = "-- manage.py syncdb will automatically create a sqlite3 database file.\n"
 
         call_command('sqlcreate')
 
@@ -109,11 +108,11 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
     })
     @patch('sys.stderr', new_callable=StringIO)
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_print_stderr_and_standard_create_database_statement_for_unsupported_engine(self, m_stdout, m_stderr):  # noqa
-        expected_error = "-- Don't know how to handle 'unknown' falling back to SQL.\n"  # noqa
+    def test_should_print_stderr_and_standard_create_database_statement_for_unsupported_engine(self, m_stdout, m_stderr):
+        expected_error = "-- Don't know how to handle 'unknown' falling back to SQL.\n"
         expected_statement = """CREATE DATABASE database;
 GRANT ALL PRIVILEGES ON DATABASE database to foo;
-"""  # noqa
+"""
 
         call_command('sqlcreate', '--router=unknown')
 

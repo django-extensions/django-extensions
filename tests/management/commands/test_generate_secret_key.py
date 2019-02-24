@@ -18,10 +18,11 @@ class GenerateSecretKeyTests(TestCase):
 
     @pytest.mark.skipif(
         LooseVersion(get_version()) <= LooseVersion('1.10.0'),
-        reason="This test works only on Django greater than 1.10.x")
-    @patch('django_extensions.management.commands.generate_secret_key.get_random_secret_key')  # noqa
+        reason="This test works only on Django greater than 1.10.x",
+    )
+    @patch('django_extensions.management.commands.generate_secret_key.get_random_secret_key')
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_return_random_secret_key(self, m_stdout, m_get_random_secret):  # noqa
+    def test_should_return_random_secret_key(self, m_stdout, m_get_random_secret):
         m_get_random_secret.return_value = 'random_secret_key'
 
         call_command('generate_secret_key')
@@ -30,10 +31,11 @@ class GenerateSecretKeyTests(TestCase):
 
     @pytest.mark.skipif(
         LooseVersion(get_version()) > LooseVersion('1.10.0'),
-        reason="This test works only on Django older than 1.10.x")
-    @patch('django_extensions.management.commands.generate_secret_key.get_random_string')  # noqa
+        reason="This test works only on Django older than 1.10.x",
+    )
+    @patch('django_extensions.management.commands.generate_secret_key.get_random_string')
     @patch('sys.stdout', new_callable=StringIO)
-    def test_should_use_get_random_string_for_django_older_than_1_10(self, m_stdout, m_get_random_string):  # noqa
+    def test_should_use_get_random_string_for_django_older_than_1_10(self, m_stdout, m_get_random_string):
         m_get_random_string.return_value = 'random_secret_key'
 
         call_command('generate_secret_key')

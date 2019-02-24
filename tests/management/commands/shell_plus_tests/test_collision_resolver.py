@@ -3,20 +3,13 @@ from django.contrib.auth.models import Group, Permission
 from django.test import override_settings
 
 from django_extensions.collision_resolvers import AppNameCR, AppsOrderCR, BaseCR, PathBasedCR
-from tests.collisions.models import (
-    Group as Group_Col,
-    Name as Name_Col,
-    Note as Note_Col,
-    SystemUser,
-    UniqueModel,
-)
+from tests.collisions.models import Group as Group_Col
+from tests.collisions.models import Name as Name_Col
+from tests.collisions.models import Note as Note_Col
+from tests.collisions.models import SystemUser, UniqueModel
 from tests.management.commands.shell_plus_tests.test_utils import AutomaticShellPlusImportsTestCase
-from tests.testapp.models import (
-    Name,
-    Note,
-    Permission as TAPermission,
-    UniqueTestAppModel,
-)
+from tests.testapp.models import Name, Note, UniqueTestAppModel
+from tests.testapp.models import Permission as TAPermission
 
 
 # Bad user defined collision resolvers:

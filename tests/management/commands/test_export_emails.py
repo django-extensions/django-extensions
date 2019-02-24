@@ -10,7 +10,7 @@ from tests.testapp.settings import DATABASES
 
 
 @pytest.fixture(autouse=True)
-def custom_djsettings(settings):  # noqa
+def custom_djsettings(settings):
     """Custom django settings to avoid warnings in stdout"""
     settings.TEMPLATE_DEBUG = False
     settings.DEBUG = False
@@ -18,7 +18,7 @@ def custom_djsettings(settings):  # noqa
 
 
 @pytest.fixture(scope='module')
-def django_db_setup():  # noqa
+def django_db_setup():
     """Select default database for testing"""
     settings.DATABASES = DATABASES  # noqa
 
@@ -27,7 +27,7 @@ def django_db_setup():  # noqa
 def django_db_setup(django_db_setup, django_db_blocker):  # noqa
     """Load to database a set of users, create for export
     emails command testing"""
-    with django_db_blocker.unblock():  # noqa
+    with django_db_blocker.unblock():
         call_command('loaddata', 'group.json')
         call_command('loaddata', 'user.json')
 

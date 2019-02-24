@@ -5,17 +5,9 @@ import pytest
 
 from django.test import TestCase
 
-from .testapp.models import (
-    RandomCharTestModel,
-    RandomCharTestModelUnique,
-    RandomCharTestModelLowercase,
-    RandomCharTestModelUppercase,
-    RandomCharTestModelAlpha,
-    RandomCharTestModelDigits,
-    RandomCharTestModelPunctuation,
-    RandomCharTestModelLowercaseAlphaDigits,
-    RandomCharTestModelUppercaseAlphaDigits,
-)
+from .testapp.models import RandomCharTestModel, RandomCharTestModelUnique, RandomCharTestModelLowercase
+from .testapp.models import RandomCharTestModelUppercase, RandomCharTestModelAlpha, RandomCharTestModelDigits
+from .testapp.models import RandomCharTestModelPunctuation, RandomCharTestModelLowercaseAlphaDigits, RandomCharTestModelUppercaseAlphaDigits
 
 
 class RandomCharFieldTest(TestCase):
