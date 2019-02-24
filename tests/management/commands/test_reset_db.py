@@ -7,9 +7,9 @@ from django.test.utils import override_settings
 from six import StringIO
 
 try:
-    from unittest.mock import MagicMock, Mock, call, patch
+    from unittest import mock
 except ImportError:
-    from mock import MagicMock, Mock, call, patch
+    import mock
 
 
 class ResetDbExceptionsTests(TestCase):
@@ -48,23 +48,23 @@ class ResetDbExceptionsTests(TestCase):
 class ResetDbSqlite3Tests(TestCase):
     """Tests for reset_db command and sqlite3 engine."""
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('django_extensions.management.commands.reset_db.input')
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('django_extensions.management.commands.reset_db.input')
     def test_should_cancel_reset_db_if_input_is_different_than_yes(self, m_input, m_stdout):
         m_input.return_value = 'no'
         call_command('reset_db')
         self.assertEqual("Reset cancelled.\n", m_stdout.getvalue())
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch.object(os, 'unlink')
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch.object(os, 'unlink')
     def test_should_unlink_database_and_print_success_message(self, m_unlink, m_stdout):
         call_command('reset_db', '--noinput', verbosity=2)
 
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
         m_unlink.assert_called_once_with('test_db.sqlite3')
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch.object(os, 'unlink', side_effect=[OSError, ])
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch.object(os, 'unlink', side_effect=[OSError, ])
     def test_should_print_successful_message_even_if_unlink_failed(self, m_unlink, m_stdout):
         call_command('reset_db', '--noinput', verbosity=2)
 
@@ -85,8 +85,8 @@ class ResetDbSqlite3Tests(TestCase):
 class ResetDbMysqlTests(TestCase):
     """Tests for reset_db command and mysql engine."""
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('django_extensions.management.commands.reset_db.input')
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('django_extensions.management.commands.reset_db.input')
     def test_should_cancel_reset_db_if_input_is_different_than_yes(self, m_input, m_stdout):
         m_input.return_value = 'no'
 
@@ -94,17 +94,17 @@ class ResetDbMysqlTests(TestCase):
 
         self.assertEqual("Reset cancelled.\n", m_stdout.getvalue())
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_with_characterset_utf8_and_print_success_messsage(self, m_stdout):
-        m_database = MagicMock()
-        m_connection = Mock()
+        m_database = mock.MagicMock()
+        m_connection = mock.Mock()
         m_database.connect.return_value = m_connection
         expected_calls = [
-            call('DROP DATABASE IF EXISTS `test_db`'),
-            call('CREATE DATABASE `test_db` CHARACTER SET utf8'),
+            mock.call('DROP DATABASE IF EXISTS `test_db`'),
+            mock.call('CREATE DATABASE `test_db` CHARACTER SET utf8'),
         ]
 
-        with patch.dict("sys.modules", MySQLdb=m_database):
+        with mock.patch.dict("sys.modules", MySQLdb=m_database):
             call_command('reset_db', '--noinput', verbosity=2)
 
         m_database.connect.assert_called_once_with(host='127.0.0.1', passwd='bar', user='foo')
@@ -121,17 +121,17 @@ class ResetDbMysqlTests(TestCase):
             'PORT': '3306',
         },
     })
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_without_characterset_and_print_success_messsage(self, m_stdout):
-        m_database = MagicMock()
-        m_connection = Mock()
+        m_database = mock.MagicMock()
+        m_connection = mock.Mock()
         m_database.connect.return_value = m_connection
         expected_calls = [
-            call('DROP DATABASE IF EXISTS `test_db`'),
-            call('CREATE DATABASE `test_db`'),
+            mock.call('DROP DATABASE IF EXISTS `test_db`'),
+            mock.call('CREATE DATABASE `test_db`'),
         ]
 
-        with patch.dict("sys.modules", MySQLdb=m_database):
+        with mock.patch.dict("sys.modules", MySQLdb=m_database):
             call_command('reset_db', '--noinput', '--no-utf8', verbosity=2)
 
         m_database.connect.assert_called_once_with(passwd='bar', port=3306, unix_socket='/var/run/mysqld/mysql.sock', user='foo')
@@ -152,24 +152,24 @@ class ResetDbMysqlTests(TestCase):
 class ResetDbPostgresqlTests(TestCase):
     """Tests for reset_db command and sqlite3 engine."""
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('django_extensions.management.commands.reset_db.input')
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('django_extensions.management.commands.reset_db.input')
     def test_should_cancel_reset_db_if_input_is_different_than_yes(self, m_input, m_stdout):
         m_input.return_value = 'no'
         call_command('reset_db')
         self.assertEqual("Reset cancelled.\n", m_stdout.getvalue())
 
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_and_print_success_messsage(self, m_stdout):
-        m_database = MagicMock()
-        m_cursor = Mock()
+        m_database = mock.MagicMock()
+        m_cursor = mock.Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         expected_calls = [
-            call('DROP DATABASE "test_db";'),
-            call('CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\';'),
+            mock.call('DROP DATABASE "test_db";'),
+            mock.call('CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\';'),
         ]
 
-        with patch.dict("sys.modules", psycopg2=m_database):
+        with mock.patch.dict("sys.modules", psycopg2=m_database):
             call_command('reset_db', '--noinput', verbosity=2)
 
         m_database.connect.assert_called_once_with(database='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
@@ -178,18 +178,18 @@ class ResetDbPostgresqlTests(TestCase):
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
 
     @override_settings(DEFAULT_TABLESPACE='TEST_TABLESPACE')
-    @patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_create_database_close_sessions_and_print_success_messsage(self, m_stdout):
-        m_database = MagicMock()
-        m_cursor = Mock()
+        m_database = mock.MagicMock()
+        m_cursor = mock.Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         expected_calls = [
-            call("\n                    SELECT pg_terminate_backend(pg_stat_activity.pid)\n                    FROM pg_stat_activity\n                    WHERE pg_stat_activity.datname = 'test_db';\n                "),
-            call('DROP DATABASE "test_db";'),
-            call('CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\' TABLESPACE = TEST_TABLESPACE;'),
+            mock.call("\n                    SELECT pg_terminate_backend(pg_stat_activity.pid)\n                    FROM pg_stat_activity\n                    WHERE pg_stat_activity.datname = 'test_db';\n                "),
+            mock.call('DROP DATABASE "test_db";'),
+            mock.call('CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\' TABLESPACE = TEST_TABLESPACE;'),
         ]
 
-        with patch.dict("sys.modules", psycopg2=m_database):
+        with mock.patch.dict("sys.modules", psycopg2=m_database):
             call_command('reset_db', '--noinput', '--close-sessions', verbosity=2)
 
         m_database.connect.assert_called_once_with(database='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
