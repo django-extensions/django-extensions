@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.utils.encoding import force_bytes
 import six
 
+import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
 from .testapp.models import ChildSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel
