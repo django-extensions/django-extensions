@@ -120,8 +120,7 @@ def secret_model():
     yield type('Secret', (models.Model, ), attrs)
 
 
-@pytest.mark.skipif(keyczar_active is False,
-                    reason="Encrypted fields needs that keyczar is installed")
+@pytest.mark.skipif(keyczar_active is False, reason="Encrypted fields needs that keyczar is installed")
 @pytest.mark.usefixtures("admin_user", "keyczar_keys")
 class EncryptedFieldsTestCase(TestCase):
     def test_char_field_create(self):
@@ -248,33 +247,27 @@ class EncryptedFieldsTestCase(TestCase):
 class BaseEncryptedFieldTestCase(TestCase):
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setUpClass(cls):
         cls.tmpdir = tempfile.mkdtemp()
-        keyczart.Create(cls.tmpdir, "test", keyinfo.DECRYPT_AND_ENCRYPT,
-                        asymmetric=True)
+        keyczart.Create(cls.tmpdir, "test", keyinfo.DECRYPT_AND_ENCRYPT, asymmetric=True)
         keyczart.AddKey(cls.tmpdir, "PRIMARY", size=4096)
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def tearDownClass(cls):
         shutil.rmtree(cls.tmpdir)
 
 
-@pytest.mark.skipif(keyczar_active is False,
-                    reason="Encrypted fields needs that keyczar is installed")
+@pytest.mark.skipif(keyczar_active is False, reason="Encrypted fields needs that keyczar is installed")
 class BaseEncryptedFieldExceptions(BaseEncryptedFieldTestCase):
     """Tests for BaseEncryptedField exceptions."""
 
-    def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):  # noqa
-        with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir,
-                               ENCRYPTED_FIELD_MODE='INVALID'):
-            with self.assertRaisesRegexp(
-                    ImproperlyConfigured,
-                    'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
+    def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):
+        with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir, ENCRYPTED_FIELD_MODE='INVALID'):
+            with self.assertRaisesRegexp(ImproperlyConfigured, 'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):
                 BaseEncryptedField()
 
 
-@pytest.mark.skipif(keyczar_active is False,
-                    reason="Encrypted fields needs that keyczar is installed")
+@pytest.mark.skipif(keyczar_active is False, reason="Encrypted fields needs that keyczar is installed")
 class EncryptedTextFieldTests(BaseEncryptedFieldTestCase):
     """Tests for EncryptedTextField."""
 
@@ -285,8 +278,7 @@ class EncryptedTextFieldTests(BaseEncryptedFieldTestCase):
         self.assertTrue(isinstance(formfield.widget, Textarea))
 
 
-@pytest.mark.skipif(keyczar_active is False,
-                    reason="Encrypted fields needs that keyczar is installed")
+@pytest.mark.skipif(keyczar_active is False, reason="Encrypted fields needs that keyczar is installed")
 class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
     """Tests for EncryptedCharField."""
 

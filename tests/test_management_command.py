@@ -11,13 +11,9 @@ from django.test import TestCase
 from six import StringIO, PY3
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
-from django_extensions.management.commands.merge_model_instances import \
-    get_model_to_deduplicate, \
-    get_field_names, \
-    keep_first_or_last_instance
+from django_extensions.management.commands.merge_model_instances import get_model_to_deduplicate, get_field_names, keep_first_or_last_instance
 from . import force_color_support
-from .testapp.models import Person, Name, Note, Personality, Club, Membership, \
-    Permission
+from .testapp.models import Person, Name, Note, Personality, Club, Membership, Permission
 from .testapp.jobs.hourly.test_hourly_job import HOURLY_JOB_MOCK
 from .testapp.jobs.daily.test_daily_job import DAILY_JOB_MOCK
 from .testapp.jobs.weekly.test_weekly_job import WEEKLY_JOB_MOCK
@@ -118,10 +114,8 @@ class CommandSignalTests(TestCase):
     post = None
 
     def test_works(self):
-        from django_extensions.management.signals import post_command, \
-            pre_command
-        from django_extensions.management.commands.show_template_tags import \
-            Command
+        from django_extensions.management.signals import post_command, pre_command
+        from django_extensions.management.commands.show_template_tags import Command
 
         def pre(sender, **kwargs):
             CommandSignalTests.pre = dict(**kwargs)
@@ -167,95 +161,95 @@ class GraphModelsTests(TestCase):
             'Wildcard*InsideInclude',
             '*WildcardPrefixInclude',
             'WildcardSuffixInclude*',
-            '*WildcardBothInclude*'
+            '*WildcardBothInclude*',
         ]
         exclude_models = [
             'NoWildcardExclude',
             'Wildcard*InsideExclude',
             '*WildcardPrefixExclude',
             'WildcardSuffixExclude*',
-            '*WildcardBothExclude*'
+            '*WildcardBothExclude*',
         ]
         # Any model name should be used if neither include or exclude
         # are defined.
         self.assertTrue(use_model(
             'SomeModel',
             None,
-            None
+            None,
         ))
         # Any model name should be allowed if `*` is in `include_models`.
         self.assertTrue(use_model(
             'SomeModel',
             ['OtherModel', '*', 'Wildcard*Model'],
-            None
+            None,
         ))
         # No model name should be allowed if `*` is in `exclude_models`.
         self.assertFalse(use_model(
             'SomeModel',
             None,
-            ['OtherModel', '*', 'Wildcard*Model']
+            ['OtherModel', '*', 'Wildcard*Model'],
         ))
         # Some tests with the `include_models` defined above.
         self.assertFalse(use_model(
             'SomeModel',
             include_models,
-            None
+            None,
         ))
         self.assertTrue(use_model(
             'NoWildcardInclude',
             include_models,
-            None
+            None,
         ))
         self.assertTrue(use_model(
             'WildcardSomewhereInsideInclude',
             include_models,
-            None
+            None,
         ))
         self.assertTrue(use_model(
             'MyWildcardPrefixInclude',
             include_models,
-            None
+            None,
         ))
         self.assertTrue(use_model(
             'WildcardSuffixIncludeModel',
             include_models,
-            None
+            None,
         ))
         self.assertTrue(use_model(
             'MyWildcardBothIncludeModel',
             include_models,
-            None
+            None,
         ))
         # Some tests with the `exclude_models` defined above.
         self.assertTrue(use_model(
             'SomeModel',
             None,
-            exclude_models
+            exclude_models,
         ))
         self.assertFalse(use_model(
             'NoWildcardExclude',
             None,
-            exclude_models
+            exclude_models,
         ))
         self.assertFalse(use_model(
             'WildcardSomewhereInsideExclude',
             None,
-            exclude_models
+            exclude_models,
         ))
         self.assertFalse(use_model(
             'MyWildcardPrefixExclude',
             None,
-            exclude_models
+            exclude_models,
         ))
         self.assertFalse(use_model(
             'WildcardSuffixExcludeModel',
             None,
-            exclude_models
+            exclude_models,
         ))
         self.assertFalse(use_model(
             'MyWildcardBothExcludeModel',
             None,
-            exclude_models
+            exclude_models,
         ))
 
     def test_no_models_dot_py(self):
@@ -349,20 +343,18 @@ class MergeModelInstancesTests(TestCase):
 
         name = Name.objects.create(name="Name")
         note = Note.objects.create(note="This is a note.")
-        personality_1 = Personality.objects.create(
-            description="Child 1's personality.")
-        personality_2 = Personality.objects.create(
-            description="Child 2's personality.")
+        personality_1 = Personality.objects.create(description="Child 1's personality.")
+        personality_2 = Personality.objects.create(description="Child 2's personality.")
         child_1 = Person.objects.create(
             name=Name.objects.create(name="Child1"),
             age=10,
-            personality=personality_1
+            personality=personality_1,
         )
         child_1.notes.add(note)
         child_2 = Person.objects.create(
             name=Name.objects.create(name="Child2"),
             age=10,
-            personality=personality_2
+            personality=personality_2,
         )
         child_2.notes.add(note)
 
@@ -371,8 +363,7 @@ class MergeModelInstancesTests(TestCase):
         person_1 = Person.objects.create(
             name=name,
             age=50,
-            personality=Personality.objects.create(
-                description="First personality")
+            personality=Personality.objects.create(description="First personality"),
         )
         person_1.children.add(child_1)
         person_1.notes.add(note)
@@ -381,8 +372,7 @@ class MergeModelInstancesTests(TestCase):
         person_2 = Person.objects.create(
             name=name,
             age=50,
-            personality=Personality.objects.create(
-                description="Second personality")
+            personality=Personality.objects.create(description="Second personality"),
         )
         person_2.children.add(child_2)
         new_note = Note.objects.create(note="This is a new note")
@@ -394,8 +384,7 @@ class MergeModelInstancesTests(TestCase):
         person_3 = Person.objects.create(
             name=name,
             age=50,
-            personality=Personality.objects.create(
-                description="Third personality")
+            personality=Personality.objects.create(description="Third personality"),
         )
         person_3.children.add(child_2)
         person_3.notes.add(new_note)
@@ -412,14 +401,15 @@ class MergeModelInstancesTests(TestCase):
         person = Person.objects.get(name__name="Name")
         self.assertRaises(
             Person.DoesNotExist,
-            lambda: Person.objects.get(
-                personality__description="Second personality"))
+            lambda: Person.objects.get(personality__description="Second personality"),
+        )
         self.assertEqual(person.notes.count(), 2)
         self.assertEqual(person.clubs.distinct().count(), 2)
         self.assertEqual(person.permission_set.count(), 3)
         self.assertRaises(
             Personality.DoesNotExist,
-            lambda: Personality.objects.get(description="Second personality"))
+            lambda: Personality.objects.get(description="Second personality"),
+        )
 
 
 class RunJobsTests(TestCase):

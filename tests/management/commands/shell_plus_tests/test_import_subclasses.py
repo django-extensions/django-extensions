@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import (  # NOQA
-    Optional,
-    Set,
-)
+from typing import Optional, Set  # noqa
 
 from django.conf import settings
 from django.test.utils import override_settings
@@ -10,15 +7,8 @@ from django.test.utils import override_settings
 from tests.management.commands.shell_plus_tests.test_utils import AutomaticShellPlusImportsTestCase
 from tests.test_module_in_project_dir import FourthDerivedClass
 from tests.testapp.derived_classes_for_testing import SecondDerivedClass
-from tests.testapp.derived_classes_for_testing.test_module import (
-    ClassWhichShouldNotBeImported,
-    ThirdDerivedClass,
-)
-from tests.testapp.classes_to_include import (
-    BaseIncludedClass,
-    FirstDerivedClass,
-    IncludedMixin,
-)
+from tests.testapp.derived_classes_for_testing.test_module import ClassWhichShouldNotBeImported, ThirdDerivedClass
+from tests.testapp.classes_to_include import BaseIncludedClass, FirstDerivedClass, IncludedMixin
 
 
 class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
@@ -38,7 +28,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
         self.assert_imports(
             first={'FirstDerivedClass'},
             second={'SecondDerivedClass'},
-            fourth={'FourthDerivedClass'}
+            fourth={'FourthDerivedClass'},
         )
 
     @override_settings(
@@ -48,7 +38,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
         self.assert_imports(
             first={'FirstDerivedClass'},
             second={'SecondDerivedClass'},
-            fourth={'FourthDerivedClass'}
+            fourth={'FourthDerivedClass'},
         )
 
     @override_settings(
@@ -68,13 +58,13 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
             first={'FirstDerivedClass'},
             second={'SecondDerivedClass'},
             third={'ThirdDerivedClass'},
-            fourth={'FourthDerivedClass'}
+            fourth={'FourthDerivedClass'},
         )
 
     @override_settings(
         SHELL_PLUS_SUBCLASSES_IMPORT=[BaseIncludedClass, IncludedMixin],
         SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST=settings.SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST + [
-            'tests.testapp'
+            'tests.testapp',
         ]
     )
     def test_imports_two_base_classes_exclude_testapp(self):
@@ -85,7 +75,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
     @override_settings(
         SHELL_PLUS_SUBCLASSES_IMPORT=[BaseIncludedClass, IncludedMixin],
         SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST=settings.SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST + [
-            'tests.testapp.derived_classes_for_testing'
+            'tests.testapp.derived_classes_for_testing',
         ]
     )
     def test_imports_two_base_classes_exclude_derived_class_for_testing(self):
@@ -97,7 +87,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
     @override_settings(
         SHELL_PLUS_SUBCLASSES_IMPORT=[BaseIncludedClass, IncludedMixin],
         SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST=settings.SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST + [
-            'tests.testapp.derived_classes_for_testing.test_module'
+            'tests.testapp.derived_classes_for_testing.test_module',
         ]
     )
     def test_imports_two_base_classes_exclude_test_module(self):
@@ -110,7 +100,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
     @override_settings(
         SHELL_PLUS_SUBCLASSES_IMPORT=[BaseIncludedClass, IncludedMixin],
         SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST=settings.SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST + [
-            'tests.test_module_in_project_dir'
+            'tests.test_module_in_project_dir',
         ]
     )
     def test_imports_two_base_classes_exclude_classes_in_project_dir(self):
@@ -123,7 +113,7 @@ class ImportSubclassesTestCase(AutomaticShellPlusImportsTestCase):
     @override_settings(
         SHELL_PLUS_SUBCLASSES_IMPORT=[BaseIncludedClass, IncludedMixin],
         SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST=settings.SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST + [
-            'tests.testapp.classes_to_include'
+            'tests.testapp.classes_to_include',
         ]
     )
     def test_imports_two_base_classes_exclude_classes_in_classes_to_include(self):

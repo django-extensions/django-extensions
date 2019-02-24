@@ -6,7 +6,7 @@ from django.template import Context, Template, TemplateSyntaxError
 class IndentByTagExceptions(TestCase):
     """Test for indentby exceptions."""
 
-    def test_should_raise_TemplateSyntaxError_if_args_lenght_not_in_2_4(self):  # noqa
+    def test_should_raise_TemplateSyntaxError_if_args_lenght_not_in_2_4(self):
         content = """{% load indent_text %}
 {% indentby %}
 Hello World
@@ -19,7 +19,7 @@ Hello World
 class IndentByTagTests(TestCase):
     """Tests for indentby tag."""
 
-    def test_should_add_4_spaces_indent_before_given_text(self):  # noqa
+    def test_should_add_4_spaces_indent_before_given_text(self):
         content = """{% load indent_text %}
 {% indentby 4 %}
 Hello World
@@ -30,7 +30,7 @@ Hello World
 
         self.assertEqual(result, expected_result)
 
-    def test_should_add_2_spaces_indent_before_given_text_if_statement_True(self):  # noqa
+    def test_should_add_2_spaces_indent_before_given_text_if_statement_True(self):
         content = """{% load indent_text %}
 {% indentby 2 if test_statement %}
 Hello World
@@ -41,7 +41,7 @@ Hello World
 
         self.assertEqual(result, expected_result)
 
-    def test_should_not_add_any_spaces_indent_before_given_text_if_statement_variable_does_not_exist(self):  # noqa
+    def test_should_not_add_any_spaces_indent_before_given_text_if_statement_variable_does_not_exist(self):
         content = """{% load indent_text %}
 {% indentby 2 if test_statement %}
 Hello World

@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
-from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-)
+from django_extensions.db.fields import AutoSlugField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 

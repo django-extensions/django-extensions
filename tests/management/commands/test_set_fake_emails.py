@@ -9,11 +9,11 @@ from django_extensions.management.commands.set_fake_emails import Command
 import pytest
 
 
-@pytest.fixture(scope='module')  # noqa
-def django_db_setup(django_db_setup, django_db_blocker):  # noqa
+@pytest.fixture(scope='module')
+def django_db_setup(django_db_setup, django_db_blocker):
     """Load to database a set of users, create for export
     emails command testing"""
-    with django_db_blocker.unblock():  # noqa
+    with django_db_blocker.unblock():
         call_command('loaddata', 'group.json')
         call_command('loaddata', 'user.json')
 
