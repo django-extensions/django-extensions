@@ -22,8 +22,11 @@ class CreateCommandTests(TestCase):
         self.command_template_path = os.path.join(
             settings.BASE_DIR, 'django_extensions/conf/command_template')
 
-        self.files = ['__init__.py', 'commands/__init__.py',
-                      'commands/sample.py']
+        self.files = [
+            '__init__.py',
+            'commands/__init__.py',
+            'commands/sample.py',
+        ]
 
     def tearDown(self):  # noqa
         shutil.rmtree(self.management_command_path,
