@@ -4,7 +4,7 @@ from django.core.management import CommandError, call_command
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.views import View
+from django.views.generic.base import View
 from six import StringIO
 
 try:
@@ -32,13 +32,13 @@ class ShowUrlsExceptionsTests(TestCase):
     """Tests if show_urls command raises exceptions."""
 
     def test_should_raise_CommandError_when_format_style_does_not_exists(self):
-        with self.assertRaisesRegex(
+        with self.assertRaisesRegexp(
                 CommandError,
-                "Format style 'invalid_format' does not exist. Options: dense, table, aligned, verbose, json, pretty-json"):
+                "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, verbose"):
             call_command('show_urls', '--format=invalid_format')
 
     def test_should_raise_CommandError_when_doesnt_have_urlconf_attr(self):
-        with self.assertRaisesRegex(
+        with self.assertRaisesRegexp(
                 CommandError,
                 "Settings module <Settings \"tests.testapp.settings\"> does not have the attribute INVALID_URLCONF."):
             call_command('show_urls', '--urlconf=INVALID_URLCONF')
@@ -46,7 +46,7 @@ class ShowUrlsExceptionsTests(TestCase):
     @override_settings(INVALID_URLCONF='')
     def test_should_raise_CommandError_whsen_doesnt_have_urlconf_attr(self):
         m_traceback = Mock()
-        with self.assertRaisesRegex(
+        with self.assertRaisesRegexp(
                 CommandError,
                 'Error occurred while trying to load : Empty module name'):
             with patch.dict('sys.modules', traceback=m_traceback):

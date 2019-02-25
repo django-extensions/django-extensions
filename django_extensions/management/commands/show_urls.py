@@ -93,7 +93,9 @@ class Command(BaseCommand):
 
         format_style = options['format_style']
         if format_style not in FMTR:
-            raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, ", ".join(FMTR.keys())))
+            raise CommandError(
+                "Format style '%s' does not exist. Options: %s" %
+                (format_style, ", ".join(sorted(FMTR.keys()))))
         pretty_json = format_style == 'pretty-json'
         if pretty_json:
             format_style = 'json'
