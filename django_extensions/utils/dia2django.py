@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-# Author Igor Támara igor@tamarapatino.org
-# Use this little program as you wish, if you
-# include it in your work, let others know you
-# are using it preserving this note, you have
-# the right to make derivative works, Use it
-# at your own risk.
-# Tested to work on(etch testing 13-08-2007):
-#  Python 2.4.4 (#2, Jul 17 2007, 11:56:54)
-#  [GCC 4.1.3 20070629 (prerelease) (Debian 4.1.2-13)] on linux2
+"""
+Author Igor Támara igor@tamarapatino.org
+Use this little program as you wish, if you
+include it in your work, let others know you
+are using it preserving this note, you have
+the right to make derivative works, Use it
+at your own risk.
+Tested to work on(etch testing 13-08-2007):
+  Python 2.4.4 (#2, Jul 17 2007, 11:56:54)
+  [GCC 4.1.3 20070629 (prerelease) (Debian 4.1.2-13)] on linux2
+"""
 
 import codecs
 import gzip
@@ -41,9 +43,11 @@ v2c = re.compile(r'varchar\((\d+)\)')
 
 
 def index(fks, id):
-    """Looks for the id on fks, fks is an array of arrays, each array has on [1]
+    """
+    Look for the id on fks, fks is an array of arrays, each array has on [1]
     the id of the class in a dia diagram.  When not present returns None, else
-    it returns the position of the class with id on fks"""
+    it returns the position of the class with id on fks
+    """
     for i, j in fks.items():
         if fks[i][1] == id:
             return i
@@ -51,7 +55,8 @@ def index(fks, id):
 
 
 def addparentstofks(rels, fks):
-    """Gets a list of relations, between parents and sons and a dict of
+    """
+    Get a list of relations, between parents and sons and a dict of
     clases named in dia, and modifies the fks to add the parent as fk to get
     order on the output of classes and replaces the base class of the son, to
     put the class parent name.

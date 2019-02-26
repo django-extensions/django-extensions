@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
-"""
-Django Extensions abstract base model classes.
-"""
+
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
-from django_extensions.db.fields import (
-    AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
-)
+from django_extensions.db.fields import AutoSlugField, CreationDateTimeField, ModificationDateTimeField
 
 
 class TimeStampedModel(models.Model):
-    """ TimeStampedModel
+    """
+    TimeStampedModel
+
     An abstract base class model that provides self-managed "created" and
     "modified" fields.
     """
+
     created = CreationDateTimeField(_('created'))
     modified = ModificationDateTimeField(_('modified'))
 
@@ -30,9 +29,12 @@ class TimeStampedModel(models.Model):
 
 
 class TitleDescriptionModel(models.Model):
-    """ TitleDescriptionModel
+    """
+    TitleDescriptionModel
+
     An abstract base class model that provides title and description fields.
     """
+
     title = models.CharField(_('title'), max_length=255)
     description = models.TextField(_('description'), blank=True, null=True)
 
@@ -41,10 +43,13 @@ class TitleDescriptionModel(models.Model):
 
 
 class TitleSlugDescriptionModel(TitleDescriptionModel):
-    """ TitleSlugDescriptionModel
+    """
+    TitleSlugDescriptionModel
+
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
+
     slug = AutoSlugField(_('slug'), populate_from='title')
 
     class Meta:
@@ -52,41 +57,56 @@ class TitleSlugDescriptionModel(TitleDescriptionModel):
 
 
 class ActivatorQuerySet(models.query.QuerySet):
-    """ ActivatorQuerySet
+    """
+    ActivatorQuerySet
+
     Query set that returns statused results
     """
+
     def active(self):
-        """ Returns active query set """
+        """ Return active query set """
         return self.filter(status=ActivatorModel.ACTIVE_STATUS)
 
     def inactive(self):
-        """ Returns inactive query set """
+        """ Return inactive query set """
         return self.filter(status=ActivatorModel.INACTIVE_STATUS)
 
 
 class ActivatorModelManager(models.Manager):
-    """ ActivatorModelManager
+    """
+    ActivatorModelManager
+
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
+
     def get_queryset(self):
         """ Use ActivatorQuerySet for all results """
         return ActivatorQuerySet(model=self.model, using=self._db)
 
     def active(self):
-        """ Returns active instances of ActivatorModel: SomeModel.objects.active(),
-        proxy to ActivatorQuerySet.active """
+        """
+        Return active instances of ActivatorModel:
+
+        SomeModel.objects.active(), proxy to ActivatorQuerySet.active
+        """
         return self.get_queryset().active()
 
     def inactive(self):
-        """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive(),
-        proxy to ActivatorQuerySet.inactive """
+        """
+        Return inactive instances of ActivatorModel:
+
+        SomeModel.objects.inactive(), proxy to ActivatorQuerySet.inactive
+        """
         return self.get_queryset().inactive()
 
 
 class ActivatorModel(models.Model):
-    """ ActivatorModel
+    """
+    ActivatorModel
+
     An abstract base class model that provides activate and deactivate fields.
     """
+
     INACTIVE_STATUS = 0
     ACTIVE_STATUS = 1
 
