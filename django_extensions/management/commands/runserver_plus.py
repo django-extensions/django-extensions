@@ -357,7 +357,7 @@ class Command(BaseCommand):
             webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
-            extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
+            extra_files.extend(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
