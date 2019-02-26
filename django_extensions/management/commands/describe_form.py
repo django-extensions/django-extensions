@@ -19,9 +19,7 @@ class Command(LabelCommand):
 
 
 def describe_form(label, fields=None):
-    """
-    Returns a string describing a form based on the model
-    """
+    """ Return a string describing a form based on the model """
     try:
         app_name, model_name = label.split('.')[-2:]
     except (IndexError, ValueError):

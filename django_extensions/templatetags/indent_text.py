@@ -32,7 +32,7 @@ class IndentByNode(template.Node):
 @register.tag
 def indentby(parser, token):
     """
-    Adds indentation to text between the tags by the given indentation level.
+    Add indentation to text between the tags by the given indentation level.
 
     {% indentby <indent_level> [if <statement>] %}
     ...

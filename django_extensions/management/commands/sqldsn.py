@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-sqldns.py - Prints Data Source Name on stdout
+sqldns.py
 
+Prints Data Source Name on stdout
 """
 
 import sys

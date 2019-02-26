@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+reset_db command
+
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import logging
@@ -55,7 +57,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         """
-        Resets the database for this project.
+        Reset the database for this project.
 
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?

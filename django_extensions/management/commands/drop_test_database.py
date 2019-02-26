@@ -38,9 +38,7 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        """
-        Drop test database for this project.
-        """
+        """Drop test database for this project."""
         router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:

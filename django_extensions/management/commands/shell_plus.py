@@ -179,7 +179,7 @@ class Command(BaseCommand):
         no_browser = options['no_browser']
 
         def install_kernel_spec(app, display_name, ipython_arguments):
-            """install an IPython >= 3.0 kernelspec that loads django extensions"""
+            """Install an IPython >= 3.0 kernelspec that loads django extensions"""
             ksm = app.kernel_spec_manager
             try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
                 'python3' if PY3 else 'python2',
@@ -369,7 +369,8 @@ class Command(BaseCommand):
         return run_ptipython
 
     def set_application_name(self, options):
-        """Set the application_name on PostgreSQL connection
+        """
+        Set the application_name on PostgreSQL connection
 
         Use the fallback_application_name to let the user override
         it with PGAPPNAME env variable

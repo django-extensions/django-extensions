@@ -2,6 +2,7 @@
 import sys
 import json
 import os
+import tempfile
 
 import six
 from django.conf import settings
@@ -32,7 +33,8 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def __init__(self, *args, **kwargs):
-        """Allow defaults for arguments to be set in settings.GRAPH_MODELS.
+        """
+        Allow defaults for arguments to be set in settings.GRAPH_MODELS.
 
         Each argument in self.arguments is a dict where the key is the
         space-separated args and the value is our kwarg dict.
@@ -169,8 +171,7 @@ class Command(BaseCommand):
         """Unpack self.arguments for parser.add_arguments."""
         parser.add_argument('app_label', nargs='*')
         for argument in self.arguments:
-            parser.add_argument(*argument.split(' '),
-                                **self.arguments[argument])
+            parser.add_argument(*argument.split(' '), **self.arguments[argument])
 
     @signalcommand
     def handle(self, *args, **options):
@@ -187,8 +188,7 @@ class Command(BaseCommand):
         output_opts = {k: v for k, v in options.items() if k in output_opts_names}
         output_opts_count = sum(output_opts.values())
         if output_opts_count > 1:
-            raise CommandError(
-                "Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
+            raise CommandError("Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
         elif output_opts_count == 1:
             output = next(key for key, val in output_opts.items() if val)
         elif not outputfile:
@@ -233,7 +233,7 @@ class Command(BaseCommand):
         self.print_output(dotdata, outputfile)
 
     def print_output(self, dotdata, output_file=None):
-        """Writes model data to file or stdout in DOT (text) format."""
+        """Write model data to file or stdout in DOT (text) format."""
         if six.PY3 and isinstance(dotdata, six.binary_type):
             dotdata = dotdata.decode()
 
@@ -244,7 +244,7 @@ class Command(BaseCommand):
             self.stdout.write(dotdata)
 
     def render_output_json(self, graph_data, output_file=None):
-        """Writes model data to file or stdout in JSON format."""
+        """Write model data to file or stdout in JSON format."""
         if output_file:
             with open(output_file, 'wt') as json_output_f:
                 json.dump(graph_data, json_output_f)
@@ -252,7 +252,7 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
-        """Renders model data as image using pygraphviz"""
+        """Render model data as image using pygraphviz"""
         if not HAS_PYGRAPHVIZ:
             raise CommandError("You need to install pygraphviz python module")
 
@@ -260,7 +260,6 @@ class Command(BaseCommand):
         try:
             if tuple(int(v) for v in version.split('.')) < (0, 36):
                 # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
-                import tempfile
                 tmpfile = tempfile.NamedTemporaryFile()
                 tmpfile.write(dotdata)
                 tmpfile.seek(0)
@@ -273,7 +272,7 @@ class Command(BaseCommand):
         graph.draw(kwargs['outputfile'])
 
     def render_output_pydot(self, dotdata, **kwargs):
-        """Renders model data as image using pydot"""
+        """Render model data as image using pydot"""
         if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 
@@ -286,11 +285,13 @@ class Command(BaseCommand):
             graph = graph[0]
 
         output_file = kwargs['outputfile']
-        formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
-                   'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
-                   'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
-                   'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
-                   'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
+        formats = [
+            'bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
+            'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
+            'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
+            'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
+            'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot',
+        ]
         ext = output_file[output_file.rfind('.') + 1:]
-        format = ext if ext in formats else 'raw'
-        graph.write(output_file, format=format)
+        format_ = ext if ext in formats else 'raw'
+        graph.write(output_file, format=format_)

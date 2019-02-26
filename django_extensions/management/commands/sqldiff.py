@@ -255,7 +255,10 @@ class SQLDiff(object):
         return self.DATA_TYPES_REVERSE_OVERRIDE
 
     def sql_to_dict(self, query, param):
-        """ sql_to_dict(query, param) -> list of dicts
+        """
+        Execute query and return a dict
+
+        sql_to_dict(query, param) -> list of dicts
 
         code from snippet at http://www.djangosnippets.org/snippets/1383/
         """
@@ -670,7 +673,7 @@ class SQLDiff(object):
         self.has_differences = max([len(diffs) for _app_label, _model_name, diffs in self.differences])
 
     def print_diff(self, style=no_style()):
-        """ print differences to stdout """
+        """ Print differences to stdout """
         if self.options['sql']:
             self.print_diff_sql(style)
         else:
@@ -954,7 +957,11 @@ class PostgresqlSQLDiff(SQLDiff):
         }
 
     def get_constraints(self, cursor, table_name, introspection):
-        """ backport of django's introspection.get_constraints(...) """
+        """
+        Find constraints for table
+
+        Backport of django's introspection.get_constraints(...)
+        """
         constraints = {}
         # Loop over the key table, collecting things as constraints
         # This will get PKs, FKs, and uniques, but not CHECK

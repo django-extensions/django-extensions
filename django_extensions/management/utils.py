@@ -10,7 +10,6 @@ def _make_writeable(filename):
     """
     Make sure that the file is writeable. Useful if our source is
     read-only.
-
     """
     import stat
     if sys.platform.startswith('java'):
@@ -23,8 +22,10 @@ def _make_writeable(filename):
 
 
 def setup_logger(logger, stream, filename=None, fmt=None):
-    """Sets up a logger (if no handlers exist) for console output,
-    and file 'tee' output if desired."""
+    """
+    Set up a logger (if no handlers exist) for console output,
+    and file 'tee' output if desired.
+    """
     if len(logger.handlers) < 1:
         console = logging.StreamHandler(stream)
         console.setLevel(logging.DEBUG)
@@ -42,6 +43,7 @@ def setup_logger(logger, stream, filename=None, fmt=None):
 
 class RedirectHandler(logging.Handler):
     """Redirect logging sent to one logger (name) to another."""
+
     def __init__(self, name, level=logging.DEBUG):
         # Contemplate feasibility of copying a destination (allow original handler) and redirecting.
         logging.Handler.__init__(self, level)
@@ -53,7 +55,8 @@ class RedirectHandler(logging.Handler):
 
 
 def signalcommand(func):
-    """A decorator for management command handle defs that sends out a pre/post signal."""
+    """Python decorator for management command handle defs that sends out a pre/post signal."""
+
     def inner(self, *args, **kwargs):
         pre_command.send(self.__class__, args=args, kwargs=kwargs)
         ret = func(self, *args, **kwargs)

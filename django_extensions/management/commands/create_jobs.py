@@ -23,7 +23,7 @@ class Command(AppCommand):
 
 
 def copy_template(template_name, copy_to, **options):
-    """copies the specified template directory to the copy_to location"""
+    """Copy the specified template directory to the copy_to location"""
     import django_extensions
 
     style = color_style()

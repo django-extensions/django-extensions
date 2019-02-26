@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-signals we use to trigger regular batch jobs
-"""
+
 from django.dispatch import Signal
 
 run_minutely_jobs = Signal()

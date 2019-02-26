@@ -32,7 +32,7 @@ class SubclassesFinder:
 
     def collect_subclasses(self):  # type: () -> Dict[str, List[Tuple[str, str]]]
         """
-        Function to collect all subclasses of user-defined base classes from project.
+        Collect all subclasses of user-defined base classes from project.
         :return: Dictionary from module name to list of tuples.
         First element of tuple is model name and second is alias.
         Currently we set alias equal to model name,
