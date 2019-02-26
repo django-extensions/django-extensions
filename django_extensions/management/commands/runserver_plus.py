@@ -396,7 +396,8 @@ class Command(BaseCommand):
 
     @classmethod
     def _determine_path_for_file(cls, current_file, other_file, extension):
-        """ Determine path with proper extension. If path is absent then use path from alternative file.
+        """
+        Determine path with proper extension. If path is absent then use path from alternative file.
         If path is relative than use current working directory.
         :param current_file: path for current file
         :param other_file: path for alternative file
@@ -420,8 +421,7 @@ class Command(BaseCommand):
 
 
 def set_werkzeug_log_color():
-    """Try to set color to the werkzeug log.
-    """
+    """Try to set color to the werkzeug log."""
     from django.core.management.color import color_style
     from werkzeug.serving import WSGIRequestHandler
     from werkzeug._internal import _log

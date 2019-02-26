@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-set_default_site.py
-"""
 import socket
 
 from django.conf import settings

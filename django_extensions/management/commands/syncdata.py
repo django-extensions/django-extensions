@@ -43,7 +43,7 @@ class Command(BaseCommand):
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
-        Deletes all the objects in the database that are not in objects_to_keep.
+        Delete all the objects in the database that are not in objects_to_keep.
         - objects_to_keep: A map where the keys are classes, and the values are a
          set of the objects of that class we should keep.
         """
@@ -87,8 +87,6 @@ class Command(BaseCommand):
         connection.close()
 
     def syncdata(self, fixture_labels, options):
-        """ Main method of a Django command """
-
         verbosity = options['verbosity']
         show_traceback = options['traceback']
 

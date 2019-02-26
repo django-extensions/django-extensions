@@ -202,7 +202,7 @@ class Command(EmailNotificationCommand):
                     print(ERROR2("Found script '%s' but no run() function found." % full_module_path))
 
         def find_modules_for_script(script):
-            """ find script module which contains 'run' attribute """
+            """ Find script module which contains 'run' attribute """
             modules = []
             # first look in apps
             for app in apps.get_app_configs():

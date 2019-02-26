@@ -22,7 +22,8 @@ from django_extensions.admin.widgets import ForeignKeySearchInput
 
 
 class ForeignKeyAutocompleteAdminMixin(object):
-    """Admin class for models using the autocomplete feature.
+    """
+    Admin class for models using the autocomplete feature.
 
     There are two additional fields:
        - related_search_fields: defines fields of managed model that
@@ -65,7 +66,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
 
     def foreignkey_autocomplete(self, request):
         """
-        Searches in the fields of the given related model and returns the
+        Search in the fields of the given related model and returns the
         result as a simple string to be used by the jQuery Autocomplete plugin
         """
         query = request.GET.get('q', None)
@@ -125,10 +126,13 @@ class ForeignKeyAutocompleteAdminMixin(object):
         return HttpResponseNotFound()
 
     def get_related_filter(self, model, request):
-        """Given a model class and current request return an optional Q object
+        """
+        Given a model class and current request return an optional Q object
         that should be applied as an additional filter for autocomplete query.
         If no additional filtering is needed, this method should return
-        None."""
+        None.
+        """
+        return None
 
     def get_help_text(self, field_name, model_name):
         searchable_fields = self.related_search_fields.get(field_name, None)
@@ -142,7 +146,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         """
-        Overrides the default widget for Foreignkey fields if they are
+        Override the default widget for Foreignkey fields if they are
         specified in the related_search_fields class attribute.
         """
         if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:

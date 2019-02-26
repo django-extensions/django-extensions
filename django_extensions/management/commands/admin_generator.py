@@ -72,8 +72,10 @@ PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
 
 
 class UnicodeMixin(object):
-    """Mixin class to handle defining the proper __str__/__unicode__
-    methods in Python 2 or 3."""
+    """
+    Mixin class to handle defining the proper __str__/__unicode__
+    methods in Python 2 or 3.
+    """
 
     if six.PY3:  # Python 3
         def __str__(self):

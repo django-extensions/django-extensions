@@ -27,7 +27,6 @@ Example:
  def need_food(self):
      print("Love is <colder> than &death&")
  {% endhighlight %}
-
 """
 
 from django import template
@@ -77,7 +76,7 @@ class CodeNode(Node):
 @register.tag
 def highlight(parser, token):
     """
-    Allows you to put a highlighted source code <pre> block in your code.
+    Tag to put a highlighted source code <pre> block in your code.
     This takes two arguments, the language and a little explaination message
     that will be generated before the code.  The second argument is optional.
 

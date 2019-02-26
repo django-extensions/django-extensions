@@ -35,9 +35,7 @@ class BaseCR:
 
 
 class LegacyCR(BaseCR):
-    """
-    Default collision resolver. Model from last application in alphabetical order is selected.
-    """
+    """ Default collision resolver. Model from last application in alphabetical order is selected. """
 
     def resolve_collisions(self, namespace):
         result = {}

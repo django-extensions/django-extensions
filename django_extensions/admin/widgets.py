@@ -15,9 +15,10 @@ from django.utils.text import Truncator
 
 class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     """
-    A Widget for displaying ForeignKeys in an autocomplete search input
+    Widget for displaying ForeignKeys in an autocomplete search input
     instead in a <select> box.
     """
+
     # Set in subclass to render the widget with a different template
     widget_template = None
     # Set this to the patch of the search view

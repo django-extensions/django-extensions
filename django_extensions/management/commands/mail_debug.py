@@ -15,6 +15,7 @@ logger = getLogger(__name__)
 
 class ExtensionDebuggingServer(SMTPServer):
     """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
+
     # Do something with the gathered message
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         """Output will be sent to the module logger at INFO level."""

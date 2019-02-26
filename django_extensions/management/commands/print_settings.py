@@ -15,8 +15,6 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    """print_settings command"""
-
     help = "Print the active Django settings."
 
     def add_arguments(self, parser):
@@ -75,8 +73,6 @@ class Command(BaseCommand):
 
     @staticmethod
     def include_attr(attr, settings):
-        """Whether or not to include attribute in output"""
-
         if attr.startswith('__'):
             return False
         elif settings == []:
@@ -86,7 +82,5 @@ class Command(BaseCommand):
 
     @staticmethod
     def print_simple(a_dict):
-        """A very simple output format"""
-
         for key, value in a_dict.items():
             print('%-40s = %r' % (key, value))

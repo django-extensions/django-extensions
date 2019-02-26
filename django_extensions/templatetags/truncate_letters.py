@@ -9,7 +9,7 @@ register = template.Library()
 @stringfilter
 def truncateletters(value, arg):
     """
-    Truncates a string after a certain number of letters
+    Truncate a string after a certain number of letters
 
     Argument: Number of letters to truncate after
     """
