@@ -23,6 +23,7 @@ class BaseCR:
     (full model name means: module + model_name).
     You should return Dict[str, str], where key is model name and value is full model name.
     """
+
     @classmethod
     def get_app_name_and_model(cls, full_model_path):  # type: (str) -> Tuple[str, str]
         model_class = import_string(full_model_path)
@@ -37,6 +38,7 @@ class LegacyCR(BaseCR):
     """
     Default collision resolver. Model from last application in alphabetical order is selected.
     """
+
     def resolve_collisions(self, namespace):
         result = {}
         for name, models in namespace.items():
@@ -76,6 +78,7 @@ class InstalledAppsOrderCR(AppsOrderCR):
     This collision resolver will select model from first app on this list.
     If both app's are absent on this list, resolver will choose model from first app in alphabetical order.
     """
+
     @property
     def APP_PRIORITIES(self):
         from django.conf import settings
@@ -90,6 +93,7 @@ class PathBasedCR(LegacyCR):
     which should have one parameter. It will be full model name.
     It should return valid alias as str instance.
     """
+
     @abstractmethod
     def transform_import(self, module_path):  # type: (str) -> str
         pass
@@ -112,6 +116,7 @@ class FullPathCR(PathBasedCR):
     He also removes 'models' part of alias, because all models are in models.py files.
     Model from last application in alphabetical order is selected.
     """
+
     def transform_import(self, module_path):
         module, model = module_path.rsplit('.models', 1)
         module_path = module + model
@@ -126,6 +131,7 @@ class AppNameCR(PathBasedCR):
     app_name and model_name. For example: "{app_name}_{model_name}".
     Model from last application in alphabetical order is selected.
     """
+
     MODIFICATION_STRING = None  # type: Optional[str]
 
     def transform_import(self, module_path):
@@ -141,6 +147,7 @@ class AppNamePrefixCR(AppNameCR):
     Model from last application in alphabetical order is selected.
     Result is different than FullPathCR, when model has app_label other than current app.
     """
+
     MODIFICATION_STRING = "{app_name}_{model_name}"
 
 
@@ -149,6 +156,7 @@ class AppNameSuffixCR(AppNameCR):
     Collision resolver which transform pair (app name, model_name) to alias "{model_name}_{app_name}"
     Model from last application in alphabetical order is selected.
     """
+
     MODIFICATION_STRING = "{model_name}_{app_name}"
 
 
@@ -157,6 +165,7 @@ class AppNamePrefixCustomOrderCR(AppNamePrefixCR, InstalledAppsOrderCR):
     Collision resolver which is mixin of AppNamePrefixCR and InstalledAppsOrderCR.
     In case of collisions he sets aliases like AppNamePrefixCR, but sets default model using InstalledAppsOrderCR.
     """
+
     pass
 
 
@@ -165,6 +174,7 @@ class AppNameSuffixCustomOrderCR(AppNameSuffixCR, InstalledAppsOrderCR):
     Collision resolver which is mixin of AppNameSuffixCR and InstalledAppsOrderCR.
     In case of collisions he sets aliases like AppNameSuffixCR, but sets default model using InstalledAppsOrderCR.
     """
+
     pass
 
 
@@ -173,6 +183,7 @@ class FullPathCustomOrderCR(FullPathCR, InstalledAppsOrderCR):
     Collision resolver which is mixin of FullPathCR and InstalledAppsOrderCR.
     In case of collisions he sets aliases like FullPathCR, but sets default model using InstalledAppsOrderCR.
     """
+
     pass
 
 
@@ -186,6 +197,7 @@ class AppLabelCR(PathBasedCR):
     Gives sites_Site instead of django_contrib_sites_Site
     Model from last application in alphabetical order is selected.
     """
+
     MODIFICATION_STRING = None  # type: Optional[str]
 
     def transform_import(self, module_path):
@@ -200,6 +212,7 @@ class AppLabelPrefixCR(AppLabelCR):
     Collision resolver which transform pair (app_label, model_name) to alias "{app_label}_{model_name}".
     Model from last application in alphabetical order is selected.
     """
+
     MODIFICATION_STRING = "{app_label}_{model_name}"
 
 
@@ -208,6 +221,7 @@ class AppLabelSuffixCR(AppLabelCR):
     Collision resolver which transform pair (app_label, model_name) to alias "{model_name}_{app_label}".
     Model from last application in alphabetical order is selected.
     """
+
     MODIFICATION_STRING = "{model_name}_{app_label}"
 
 

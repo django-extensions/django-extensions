@@ -57,7 +57,6 @@ class BaseEncryptedField(models.Field):
 
         Override this method to customize the type of Keyczar class returned.
         """
-
         crypt_type = getattr(settings, 'ENCRYPTED_FIELD_MODE', 'DECRYPT_AND_ENCRYPT')
         if crypt_type == 'ENCRYPT':
             crypt_class_name = 'Encrypter'

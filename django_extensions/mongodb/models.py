@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Django Extensions abstract base mongoengine Document classes.
-"""
+
 import datetime
 
 from django.utils.translation import ugettext_lazy as _
@@ -9,16 +7,17 @@ from mongoengine.document import Document
 from mongoengine.fields import DateTimeField, IntField, StringField
 from mongoengine.queryset import QuerySetManager
 
-from django_extensions.mongodb.fields import (
-    AutoSlugField, CreationDateTimeField, ModificationDateTimeField,
-)
+from django_extensions.mongodb.fields import AutoSlugField, CreationDateTimeField, ModificationDateTimeField
 
 
 class TimeStampedModel(Document):
-    """ TimeStampedModel
+    """
+    TimeStampedModel
+
     An abstract base class model that provides self-managed "created" and
     "modified" fields.
     """
+
     created = CreationDateTimeField()
     modified = ModificationDateTimeField()
 
@@ -27,10 +26,13 @@ class TimeStampedModel(Document):
 
 
 class TitleSlugDescriptionModel(Document):
-    """ TitleSlugDescriptionModel
+    """
+    TitleSlugDescriptionModel
+
     An abstract base class model that provides title and description fields
     and a self-managed "slug" field that populates from the title.
     """
+
     title = StringField(max_length=255)
     slug = AutoSlugField(populate_from='title')
     description = StringField(blank=True, null=True)
@@ -40,22 +42,36 @@ class TitleSlugDescriptionModel(Document):
 
 
 class ActivatorModelManager(QuerySetManager):
-    """ ActivatorModelManager
+    """
+    ActivatorModelManager
+
     Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
     """
+
     def active(self):
-        """ Returns active instances of ActivatorModel: SomeModel.objects.active() """
+        """
+        Return active instances of ActivatorModel:
+
+        SomeModel.objects.active()
+        """
         return super(ActivatorModelManager, self).get_queryset().filter(status=1)
 
     def inactive(self):
-        """ Returns inactive instances of ActivatorModel: SomeModel.objects.inactive() """
+        """
+        Return inactive instances of ActivatorModel:
+
+        SomeModel.objects.inactive()
+        """
         return super(ActivatorModelManager, self).get_queryset().filter(status=0)
 
 
 class ActivatorModel(Document):
-    """ ActivatorModel
+    """
+    ActivatorModel
+
     An abstract base class model that provides activate and deactivate fields.
     """
+
     STATUS_CHOICES = (
         (0, _('Inactive')),
         (1, _('Active')),

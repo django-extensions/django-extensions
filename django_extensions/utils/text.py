@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import six
 from django.utils.encoding import force_text
 try:
@@ -10,9 +11,7 @@ except ImportError:
 
 
 def truncate_letters(s, num):
-    """
-    truncates a string to a number of letters, similar to truncate_words
-    """
+    """ Truncate a string to a number of letters, similar to truncate_words """
     s = force_text(s)
     length = int(num)
     if len(s) > length:
