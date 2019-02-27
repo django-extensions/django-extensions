@@ -19,4 +19,4 @@ class Command(LabelCommand):
         except TemplateDoesNotExist:
             sys.stderr.write("No template found\n")
         else:
-            print(template.name)
+            sys.stdout.write(self.style.SUCCESS((template.name)))
