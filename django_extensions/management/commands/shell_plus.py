@@ -36,6 +36,11 @@ class Command(BaseCommand):
             help='Tells Django to use plain Python, not BPython nor IPython.'
         )
         parser.add_argument(
+            '--idle', action='store_true', dest='idle',
+            default=False,
+            help='Tells Django to use Idle.'
+        )
+        parser.add_argument(
             '--bpython', action='store_true', dest='bpython',
             default=False,
             help='Tells Django to use BPython, not IPython.'
@@ -368,6 +373,24 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptipython
 
+    def get_idle(self, options):
+        from idlelib.pyshell import main
+
+        def run_idle():
+            sys.argv = [
+                sys.argv[0],
+                '-c',
+                """
+from django_extensions.management import shells
+from django.core.management.color import no_style
+for k, m in shells.import_objects({}, no_style()).items():
+    globals()[k] = m
+""",
+            ]
+            main()
+
+        return run_idle
+
     def set_application_name(self, options):
         """
         Set the application_name on PostgreSQL connection
@@ -408,6 +431,7 @@ class Command(BaseCommand):
         use_ipython = options['ipython']
         use_bpython = options['bpython']
         use_plain = options['plain']
+        use_idle = options['idle']
         use_ptpython = options['ptpython']
         use_ptipython = options['ptipython']
         verbosity = options["verbosity"]
@@ -470,6 +494,7 @@ class Command(BaseCommand):
             ('bpython', self.get_bpython),
             ('ipython', self.get_ipython),
             ('plain', self.get_plain),
+            ('idle', self.get_idle),
         )
         SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
@@ -497,6 +522,9 @@ class Command(BaseCommand):
         elif use_ptipython:
             shell = self.get_ptipython(options)
             shell_name = "ptipython"
+        elif use_idle:
+            shell = self.get_idle(options)
+            shell_name = "idle"
         elif SETTINGS_SHELL_PLUS:
             shell_name = SETTINGS_SHELL_PLUS
             shell = dict(shells)[shell_name](options)
