@@ -198,7 +198,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             setattr(model_instance, self.attname, slug)
             return slug
 
-        return super(AutoSlugField, self).find_unique(
+        return self.find_unique(
             model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def get_slug_fields(self, model_instance, lookup_value):
