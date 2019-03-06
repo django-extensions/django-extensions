@@ -1,22 +1,134 @@
 # -*- coding: utf-8 -*-
-from django.core.management import call_command
+from django.conf.urls import url
+from django.core.management import CommandError, call_command
+from django.http import HttpResponse
+from django.test import TestCase
+from django.test.utils import override_settings
+from django.views.generic.base import View
 from six import StringIO
 
-
-def test_show_urls_format_dense():
-    out = StringIO()
-    call_command('show_urls', stdout=out)
-
-    output = out.getvalue()
-    assert "/admin/\tdjango.contrib.admin.sites.index\tadmin:index\n" in output
-    assert "/admin/<app_label>/\tdjango.contrib.admin.sites.app_index\tadmin:app_list\n" in output
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 
-def test_show_urls_format_verbose():
-    out = StringIO()
-    call_command('show_urls', format="verbose", stdout=out)
+def function_based_view(request):
+    pass
 
-    output = out.getvalue()
-    assert """/login/
-\tController: django.contrib.auth.views.LoginView
-\tURL Name: login""" in output
+
+class ClassView(View):
+    pass
+
+
+urlpatterns = [
+    url(r'lambda/view', lambda request: HttpResponse('OK')),
+    url(r'function/based/', function_based_view, name='function-based-view'),
+    url(r'class/based/', ClassView.as_view(), name='class-based-view'),
+]
+
+
+class ShowUrlsExceptionsTests(TestCase):
+    """Tests if show_urls command raises exceptions."""
+
+    def test_should_raise_CommandError_when_format_style_does_not_exists(self):
+        with self.assertRaisesRegexp(
+                CommandError,
+                "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, verbose"):
+            call_command('show_urls', '--format=invalid_format')
+
+    def test_should_raise_CommandError_when_doesnt_have_urlconf_attr(self):
+        with self.assertRaisesRegexp(
+                CommandError,
+                "Settings module <Settings \"tests.testapp.settings\"> does not have the attribute INVALID_URLCONF."):
+            call_command('show_urls', '--urlconf=INVALID_URLCONF')
+
+    @override_settings(INVALID_URLCONF='')
+    def test_should_raise_CommandError_whsen_doesnt_have_urlconf_attr(self):
+        m_traceback = Mock()
+        with self.assertRaisesRegexp(
+                CommandError,
+                'Error occurred while trying to load : Empty module name'):
+            with patch.dict('sys.modules', traceback=m_traceback):
+                call_command(
+                    'show_urls', '--urlconf=INVALID_URLCONF', '--traceback')
+
+        self.assertTrue(m_traceback.print_exc.called)
+
+
+@override_settings(ROOT_URLCONF='tests.management.commands.test_show_urls')
+class ShowUrlsTests(TestCase):
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_unsorted_but_same_order_as_found_in_url_patterns(self, m_stdout):
+        call_command('show_urls', '-u', verbosity=3)
+
+        self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
+                      m_stdout.getvalue().splitlines()[0])
+        self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
+                      m_stdout.getvalue().splitlines()[1])
+        self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
+                      m_stdout.getvalue().splitlines()[2])
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_sorted_alphabetically(self, m_stdout):
+        call_command('show_urls', verbosity=3)
+
+        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
+                         m_stdout.getvalue().splitlines()[0])
+        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
+                         m_stdout.getvalue().splitlines()[1])
+        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
+                         m_stdout.getvalue().splitlines()[2])
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_in_json_format(self, m_stdout):
+        call_command('show_urls', '--format=json')
+
+        self.assertJSONEqual(m_stdout.getvalue(), [
+            {"url": "/lambda/view", "module": "tests.management.commands.test_show_urls.<lambda>", "name": "", "decorators": ""},
+            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""},
+            {"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""}
+        ])
+        self.assertEqual(len(m_stdout.getvalue().splitlines()), 1)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_in_pretty_json_format(self, m_stdout):
+        call_command('show_urls', '--format=pretty-json')
+
+        self.assertJSONEqual(m_stdout.getvalue(), [
+            {"url": "/lambda/view", "module": "tests.management.commands.test_show_urls.<lambda>", "name": "", "decorators": ""},
+            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""},
+            {"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""}
+        ])
+        self.assertEqual(len(m_stdout.getvalue().splitlines()), 20)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_in_table_format(self, m_stdout):
+        call_command('show_urls', '--format=table')
+
+        self.assertIn('/class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
+        self.assertIn('/function/based/ | tests.management.commands.test_show_urls.function_based_view | function-based-view |', m_stdout.getvalue())
+        self.assertIn('/lambda/view     | tests.management.commands.test_show_urls.<lambda>            |                     |', m_stdout.getvalue())
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_in_aligned_format(self, m_stdout):
+        call_command('show_urls', '--format=aligned')
+
+        self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ',
+                         m_stdout.getvalue().splitlines()[0])
+        self.assertEqual('/function/based/   tests.management.commands.test_show_urls.function_based_view   function-based-view   ',
+                         m_stdout.getvalue().splitlines()[1])
+        self.assertEqual('/lambda/view       tests.management.commands.test_show_urls.<lambda>                                    ',
+                         m_stdout.getvalue().splitlines()[2])
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_urls_with_no_color_option(self, m_stdout):
+        call_command('show_urls', '--no-color')
+
+        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
+                         m_stdout.getvalue().splitlines()[0])
+        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
+                         m_stdout.getvalue().splitlines()[1])
+        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
+                         m_stdout.getvalue().splitlines()[2])
