@@ -44,14 +44,13 @@ class ShowUrlsExceptionsTests(TestCase):
             call_command('show_urls', '--urlconf=INVALID_URLCONF')
 
     @override_settings(INVALID_URLCONF='')
-    def test_should_raise_CommandError_whsen_doesnt_have_urlconf_attr(self):
+    def test_should_raise_CommandError_when_doesnt_have_urlconf_attr_print_exc(self):
         m_traceback = Mock()
         with self.assertRaisesRegexp(
                 CommandError,
                 'Error occurred while trying to load : Empty module name'):
             with patch.dict('sys.modules', traceback=m_traceback):
-                call_command(
-                    'show_urls', '--urlconf=INVALID_URLCONF', '--traceback')
+                call_command('show_urls', '--urlconf=INVALID_URLCONF', '--traceback')
 
         self.assertTrue(m_traceback.print_exc.called)
 
@@ -63,23 +62,19 @@ class ShowUrlsTests(TestCase):
     def test_should_show_urls_unsorted_but_same_order_as_found_in_url_patterns(self, m_stdout):
         call_command('show_urls', '-u', verbosity=3)
 
-        self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
-                      m_stdout.getvalue().splitlines()[0])
-        self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
-                      m_stdout.getvalue().splitlines()[1])
-        self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
-                      m_stdout.getvalue().splitlines()[2])
+        lines = m_stdout.getvalue().splitlines()
+        self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[0])
+        self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
+        self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[2])
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_sorted_alphabetically(self, m_stdout):
         call_command('show_urls', verbosity=3)
 
-        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
-                         m_stdout.getvalue().splitlines()[0])
-        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
-                         m_stdout.getvalue().splitlines()[1])
-        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
-                         m_stdout.getvalue().splitlines()[2])
+        lines = m_stdout.getvalue().splitlines()
+        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
+        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_in_json_format(self, m_stdout):
@@ -115,20 +110,16 @@ class ShowUrlsTests(TestCase):
     def test_should_show_urls_in_aligned_format(self, m_stdout):
         call_command('show_urls', '--format=aligned')
 
-        self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ',
-                         m_stdout.getvalue().splitlines()[0])
-        self.assertEqual('/function/based/   tests.management.commands.test_show_urls.function_based_view   function-based-view   ',
-                         m_stdout.getvalue().splitlines()[1])
-        self.assertEqual('/lambda/view       tests.management.commands.test_show_urls.<lambda>                                    ',
-                         m_stdout.getvalue().splitlines()[2])
+        lines = m_stdout.getvalue().splitlines()
+        self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ', lines[0])
+        self.assertEqual('/function/based/   tests.management.commands.test_show_urls.function_based_view   function-based-view   ', lines[1])
+        self.assertEqual('/lambda/view       tests.management.commands.test_show_urls.<lambda>                                    ', lines[2])
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_with_no_color_option(self, m_stdout):
         call_command('show_urls', '--no-color')
 
-        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view',
-                         m_stdout.getvalue().splitlines()[0])
-        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
-                         m_stdout.getvalue().splitlines()[1])
-        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>',
-                         m_stdout.getvalue().splitlines()[2])
+        lines = m_stdout.getvalue().splitlines()
+        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+        self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
+        self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])
