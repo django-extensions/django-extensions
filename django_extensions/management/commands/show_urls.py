@@ -2,7 +2,6 @@
 import functools
 import json
 import re
-import traceback
 
 import django
 from django.conf import settings
@@ -115,6 +114,7 @@ class Command(BaseCommand):
             urlconf = __import__(getattr(settings, urlconf), {}, {}, [''])
         except Exception as e:
             if options['traceback']:
+                import traceback
                 traceback.print_exc()
             raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
 
