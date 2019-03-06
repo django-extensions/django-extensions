@@ -2,6 +2,7 @@
 import functools
 import json
 import re
+import traceback
 
 import django
 from django.conf import settings
@@ -94,8 +95,11 @@ class Command(BaseCommand):
         format_style = options['format_style']
         if format_style not in FMTR:
             raise CommandError(
-                "Format style '%s' does not exist. Options: %s" %
-                (format_style, ", ".join(sorted(FMTR.keys()))))
+                "Format style '%s' does not exist. Options: %s" % (
+                    format_style,
+                    ", ".join(sorted(FMTR.keys())),
+                )
+            )
         pretty_json = format_style == 'pretty-json'
         if pretty_json:
             format_style = 'json'
@@ -111,7 +115,6 @@ class Command(BaseCommand):
             urlconf = __import__(getattr(settings, urlconf), {}, {}, [''])
         except Exception as e:
             if options['traceback']:
-                import traceback
                 traceback.print_exc()
             raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
 
