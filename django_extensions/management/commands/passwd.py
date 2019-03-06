@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import sys
 import getpass
 import warnings
 
@@ -20,7 +24,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         warn_msg = "`django_extensions.management.commands.passwd` is deprecated. You should use built-in `changepassword` django command instead"
-        print(self.style.ERROR(warn_msg))
+        print(self.style.ERROR(warn_msg), file=sys.stderr)
         warnings.warn(warn_msg, RemovedInNextVersionWarning, stacklevel=2)
 
         username = options['username'] or getpass.getuser()
