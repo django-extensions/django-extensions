@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
-import os
-
 from django.core.management import call_command
 from django.test import TestCase
+from six import StringIO
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 class FindTemplateTests(TestCase):
-    def setUp(self):
-        self.project_root = os.path.join('tests', 'testapp')
-        self._settings = os.environ.get('DJANGO_SETTINGS_MODULE')
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'django_extensions.settings'
 
-    def tearDown(self):
-        if self._settings:
-            os.environ['DJANGO_SETTINGS_MODULE'] = self._settings
-
-    def test_finding_template(self):
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_finding_template(self, m_stdout):
         call_command('find_template', 'admin/change_form.html')
+
+        self.assertIn('admin/change_form.html', m_stdout.getvalue())
+
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_should_print_error_when_template_not_found(self, m_stderr):
+        call_command('find_template', 'not_found_template.html')
+
+        self.assertIn('No template found', m_stderr.getvalue())
