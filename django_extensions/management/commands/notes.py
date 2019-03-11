@@ -52,7 +52,7 @@ class Command(BaseCommand):
                                 if ANNOTATION_RE.search(line):
                                     tag, msg = ANNOTATION_RE.findall(line)[0]
                                     if options['tag']:
-                                        if tag not in map(str.upper, options['tag']):
+                                        if tag not in map(str.upper, map(str, options['tag'])):
                                             break
 
                                     if ANNOTATION_END_RE.search(msg.strip()):
