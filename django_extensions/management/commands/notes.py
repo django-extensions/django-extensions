@@ -17,8 +17,16 @@ ANNOTATION_END_RE = re.compile(r"(.*)#\}(.*)")
 
 class Command(BaseCommand):
     help = 'Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.'
-    args = 'tag'
     label = 'annotation tag (TODO, FIXME, BUG, HACK, WARNING, NOTE, XXX)'
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--tag',
+            dest='tag',
+            help='Search for specific tags only',
+            action='append'
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -43,9 +51,8 @@ class Command(BaseCommand):
                                 i += 1
                                 if ANNOTATION_RE.search(line):
                                     tag, msg = ANNOTATION_RE.findall(line)[0]
-                                    if len(args) == 1:
-                                        search_for_tag = args[0].upper()
-                                        if not search_for_tag == tag:
+                                    if options['tag']:
+                                        if tag not in map(str.upper, options['tag']):
                                             break
 
                                     if ANNOTATION_END_RE.search(msg.strip()):
@@ -55,7 +62,6 @@ class Command(BaseCommand):
                             if annotation_lines:
                                 self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    if six.PY2:
-                                        annotation = annotation.decode('utf-8')
+                                    annotation = annotation.decode('utf-8') if six.PY2 else annotation
                                     self.stdout.write("  * %s" % annotation)
                                 self.stdout.write("")
