@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-import mock
 from django_extensions.management.commands import mail_debug
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 def test_initialize_mail_server():

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import mock
 import os
 import sys
+import mock
 import logging
 import importlib
 

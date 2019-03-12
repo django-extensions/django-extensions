@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-import mock
 import pytest
 from django_extensions.management.commands import runserver_plus
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 @pytest.mark.django_db

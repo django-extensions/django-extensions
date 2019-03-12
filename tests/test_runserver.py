@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from mock import mock
 from os.path import join
 
 from django_extensions.management.commands.runserver_plus import Command as RunServerCommand
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 
 location = join('some', 'strange', 'path')
 different_path = join('some', 'other', 'path')
