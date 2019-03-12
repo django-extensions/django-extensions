@@ -492,8 +492,9 @@ class SQLDiff(object):
                     continue
                 if constraint['unique'] and field.unique:
                     continue
-                if constraint['index'] and constraint['type'] == 'idx' and constraint['orders'] and field.unique:
+                if constraint['index'] and constraint['type'] == 'idx' and constraint.get('orders') and field.unique:
                     # django automatically creates a _like varchar_pattern_ops/text_pattern_ops index see https://code.djangoproject.com/ticket/12234
+                    # note: mysql does not have and/or introspect and fill the 'orders' attribute of constraint information
                     continue
                 if constraint['index'] and field.db_index:
                     continue
