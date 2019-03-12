@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import mock
 import logging
 import importlib
 
 from django.core.management import call_command, find_commands, load_command_class
-from django.db import models
 from django.test import TestCase
 from six import StringIO, PY3
 
