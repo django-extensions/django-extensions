@@ -94,21 +94,6 @@ class DescribeFormTests(TestCase):
         self.assertRegexpMatches(output, r"text = forms.CharField\(.*label=u?'Text'")
 
 
-class UpdatePermissionsTests(TestCase):
-    def test_works(self):
-
-        class PermModel(models.Model):
-            class Meta:
-                app_label = 'django_extensions'
-                permissions = (('test_permission', 'test_permission'),)
-
-        original_stdout = sys.stdout
-        out = sys.stdout = StringIO()
-        call_command('update_permissions', stdout=out, verbosity=3)
-        sys.stdout = original_stdout
-        self.assertIn("Can change perm model", out.getvalue())
-
-
 class CommandSignalTests(TestCase):
     pre = None
     post = None
