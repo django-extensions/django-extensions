@@ -14,7 +14,7 @@ from django_extensions.management.commands.sync_s3 import Command
 try:
     from unittest.mock import Mock, patch
 except ImportError:
-    from mock import patch
+    from mock import Mock, patch
 
 
 class SyncS3ExceptionsTests(TestCase):
