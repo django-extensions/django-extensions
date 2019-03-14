@@ -70,13 +70,18 @@ from six import StringIO
 
 from django_extensions.management.utils import signalcommand
 
-# Make sure boto is available
-try:
-    import boto
-    import boto.exception
-    HAS_BOTO = True
-except ImportError:
-    HAS_BOTO = False
+
+def has_boto():
+    """Make sure boto is available."""
+    global boto
+
+    try:
+        import boto
+        # import boto.exception
+    except ImportError:
+        return False
+    else:
+        return True
 
 
 class Command(BaseCommand):
@@ -173,7 +178,8 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if not HAS_BOTO:
+
+        if not has_boto():
             raise ImportError("The boto Python library is not installed.")
 
         # Check for AWS keys in settings
