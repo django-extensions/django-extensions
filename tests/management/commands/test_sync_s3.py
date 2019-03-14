@@ -17,7 +17,7 @@ except ImportError:
     from mock import Mock, patch
 
 
-class SyncS3TestsMixin:
+class SyncS3TestsMixin(object):
 
     def setUp(self):
         self.m_boto = Mock()
