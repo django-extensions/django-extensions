@@ -77,7 +77,6 @@ def has_boto():
 
     try:
         import boto
-        # import boto.exception
     except ImportError:
         return False
     else:
