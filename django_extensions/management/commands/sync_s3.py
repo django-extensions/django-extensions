@@ -174,7 +174,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         if not HAS_BOTO:
-            raise ImportError("The boto Python library is not installed.")
+            raise CommandError("Please install the `boto` Python library. ($ pip install boto)")
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
