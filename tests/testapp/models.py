@@ -293,3 +293,7 @@ class SqlDiffUniqueTogether(models.Model):
 
     class Meta:
         unique_together = ['aaa', 'bbb']
+
+
+class Photo(models.Model):
+    photo = models.FileField()
