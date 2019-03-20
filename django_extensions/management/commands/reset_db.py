@@ -67,7 +67,7 @@ class Command(BaseCommand):
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
 
-        engine = dbinfo.get('ENGINE').split('.')[-1]
+        engine = dbinfo.get('ENGINE')
 
         user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
@@ -100,7 +100,20 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             print("Reset cancelled.")
             return
 
-        if engine in ('sqlite3', 'spatialite'):
+        SQLITE_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES', (
+            'django.db.backends.sqlite3',
+            'django.db.backends.spatialite',
+        ))
+        MYSQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_MYSQL_ENGINES', (
+            'django.db.backends.mysql',
+        ))
+        POSTGRESQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_POSTGRESQL_ENGINES', (
+            'django.db.backends.postgresql',
+            'django.db.backends.postgresql_psycopg2',
+            'django.db.backends.postgis',
+        ))
+
+        if engine in SQLITE_ENGINES:
             import os
             try:
                 logging.info("Unlinking %s database" % engine)
@@ -108,7 +121,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             except OSError:
                 pass
 
-        elif engine in ('mysql',):
+        elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
             kwargs = {
                 'user': user,
@@ -131,7 +144,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             logging.info('Executing... "' + create_query + '"')
             connection.query(create_query.strip())
 
-        elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
+        elif engine in POSTGRESQL_ENGINES:
             import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
