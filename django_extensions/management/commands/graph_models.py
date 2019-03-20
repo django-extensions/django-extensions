@@ -188,7 +188,8 @@ class Command(BaseCommand):
         output_opts_count = sum(output_opts.values())
         if output_opts_count > 1:
             raise CommandError("Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
-        elif output_opts_count == 1:
+
+        if output_opts_count == 1:
             output = next(key for key, val in output_opts.items() if val)
         elif not outputfile:
             # When neither outputfile nor a output format option are set,
