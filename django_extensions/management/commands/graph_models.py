@@ -117,8 +117,7 @@ class Command(BaseCommand):
             '--exclude-columns -x': {
                 'action': 'store',
                 'dest': 'exclude_columns',
-                'help': 'Exclude specific column(s) from the graph. '
-                'Can also load exclude list from file.',
+                'help': 'Exclude specific column(s) from the graph. Can also load exclude list from file.',
             },
             '--exclude-models -X': {
                 'action': 'store',
