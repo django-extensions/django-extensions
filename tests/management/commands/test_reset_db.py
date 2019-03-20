@@ -26,7 +26,7 @@ class ResetDbExceptionsTests(TestCase):
         }
     })
     def test_should_raise_CommandError_when_unknown_database_engine(self):
-        with self.assertRaisesRegexp(CommandError, 'Unknown database engine UNKNOWN'):
+        with self.assertRaisesRegexp(CommandError, 'Unknown database engine django.db.backends.UNKNOWN'):
             call_command('reset_db', '--noinput')
 
     @override_settings(DATABASES={

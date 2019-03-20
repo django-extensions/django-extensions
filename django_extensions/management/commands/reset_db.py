@@ -4,6 +4,7 @@ reset_db command
 
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
+import os
 import logging
 
 from django.conf import settings
@@ -114,9 +115,8 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         ))
 
         if engine in SQLITE_ENGINES:
-            import os
             try:
-                logging.info("Unlinking %s database" % engine)
+                logging.info("Unlinking %s database", engine)
                 os.unlink(database_name)
             except OSError:
                 pass
@@ -139,9 +139,9 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
             utf8_support = '' if options['no_utf8_support'] else 'CHARACTER SET utf8'
             create_query = 'CREATE DATABASE `%s` %s' % (database_name, utf8_support)
-            logging.info('Executing... "' + drop_query + '"')
+            logging.info('Executing... "%s"', drop_query)
             connection.query(drop_query)
-            logging.info('Executing... "' + create_query + '"')
+            logging.info('Executing... "%s"', create_query)
             connection.query(create_query.strip())
 
         elif engine in POSTGRESQL_ENGINES:
@@ -167,18 +167,18 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                     FROM pg_stat_activity
                     WHERE pg_stat_activity.datname = '%s';
                 """ % database_name
-                logging.info('Executing... "' + close_sessions_query.strip() + '"')
+                logging.info('Executing... "%s"', close_sessions_query.strip())
                 try:
                     cursor.execute(close_sessions_query)
                 except Database.ProgrammingError as e:
-                    logging.exception("Error: %s" % str(e))
+                    logging.exception("Error: %s", str(e))
 
             drop_query = "DROP DATABASE \"%s\";" % database_name
-            logging.info('Executing... "' + drop_query + '"')
+            logging.info('Executing... "%s"', drop_query)
             try:
                 cursor.execute(drop_query)
             except Database.ProgrammingError as e:
-                logging.exception("Error: %s" % str(e))
+                logging.exception("Error: %s", str(e))
 
             create_query = "CREATE DATABASE \"%s\"" % database_name
             if owner:
@@ -190,7 +190,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             else:
                 create_query += ';'
 
-            logging.info('Executing... "' + create_query + '"')
+            logging.info('Executing... "%s"', create_query)
             cursor.execute(create_query)
 
         else:
