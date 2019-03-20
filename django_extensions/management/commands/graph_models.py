@@ -175,7 +175,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         args = options['app_label']
-        if len(args) < 1 and not options['all_applications']:
+        if not args and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
         # determine output format based on options, file extension, and library
