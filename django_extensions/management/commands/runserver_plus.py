@@ -81,7 +81,7 @@ class Command(BaseCommand):
         cert_group.add_argument('--cert', dest='cert_path', action="store", type=str,
                                 help='Deprecated alias for --cert-file option.')
         cert_group.add_argument('--cert-file', dest='cert_path', action="store", type=str,
-                                help='SSL .cert file path. If not provided path from --key-file will be selected. '
+                                help='SSL .crt file path. If not provided path from --key-file will be selected. '
                                      'Either --cert-file or --key-file must be provided to use SSL.')
         parser.add_argument('--key-file', dest='key_file_path', action="store", type=str,
                             help='SSL .key file path. If not provided path from --cert-file will be selected. '
@@ -387,37 +387,38 @@ class Command(BaseCommand):
         )
 
     @classmethod
-    def _create_path_with_extension_from(cls, file_path, extension):
-        dir_path, cert_file = os.path.split(file_path)
-        if not dir_path:
-            dir_path = os.getcwd()
-        file_name, _ = os.path.splitext(cert_file)
-        return os.path.join(dir_path, file_name + "." + extension)
-
-    @classmethod
-    def _determine_path_for_file(cls, current_file, other_file, extension):
-        """
-        Determine path with proper extension. If path is absent then use path from alternative file.
-        If path is relative than use current working directory.
-        :param current_file: path for current file
-        :param other_file: path for alternative file
-        :param extension: expected extension
-        :return: path of this file.
-        """
-        if current_file is None:
-            return cls._create_path_with_extension_from(other_file, extension)
-        directory, file = os.path.split(current_file)
-        file_name, _ = os.path.splitext(file)
-        if not directory:
-            return cls._create_path_with_extension_from(current_file, extension)
-        else:
-            return os.path.join(directory, file_name + "." + extension)
-
-    @classmethod
     def determine_ssl_files_paths(cls, options):
-        cert_file = cls._determine_path_for_file(options['cert_path'], options['key_file_path'], "crt")
-        key_file = cls._determine_path_for_file(options['key_file_path'], options['cert_path'], "key")
+        key_file_path = options.get('key_file_path') or ""
+        cert_path = options.get('cert_path') or ""
+        cert_file = cls._determine_path_for_file(cert_path, key_file_path, cls.DEFAULT_CRT_EXTENSION)
+        key_file = cls._determine_path_for_file(key_file_path, cert_path, cls.DEFAULT_KEY_EXTENSION)
         return cert_file, key_file
+
+    DEFAULT_CRT_EXTENSION = ".crt"
+    DEFAULT_KEY_EXTENSION = ".key"
+
+    @classmethod
+    def _determine_path_for_file(cls, current_file_path, other_file_path, expected_extension):
+        directory = cls._get_directory_basing_on_file_paths(current_file_path, other_file_path)
+        file_name = cls._get_file_name(current_file_path) or cls._get_file_name(other_file_path)
+        extension = cls._get_extension(current_file_path) or expected_extension
+        return os.path.join(directory, file_name + extension)
+
+    @classmethod
+    def _get_directory_basing_on_file_paths(cls, current_file_path, other_file_path):
+        return cls._get_directory(current_file_path) or cls._get_directory(other_file_path) or os.getcwd()
+
+    @classmethod
+    def _get_directory(cls, file_path):
+        return os.path.split(file_path)[0]
+
+    @classmethod
+    def _get_file_name(cls, file_path):
+        return os.path.splitext(os.path.split(file_path)[1])[0]
+
+    @classmethod
+    def _get_extension(cls, file_path):
+        return os.path.splitext(file_path)[1]
 
 
 def set_werkzeug_log_color():
