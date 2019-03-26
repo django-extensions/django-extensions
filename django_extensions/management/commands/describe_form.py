@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
-
 from django.apps import apps
 from django.core.management.base import CommandError, LabelCommand
 from django.utils.encoding import force_text
