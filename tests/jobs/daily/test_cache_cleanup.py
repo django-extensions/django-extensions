@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.cache import caches
 from django.core.management import call_command
 from django.test import TestCase
