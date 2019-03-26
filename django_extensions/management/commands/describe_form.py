@@ -55,7 +55,7 @@ def describe_form(label, fields):
                 if k == 'widget':
                     attrs[k] = v.__class__
                 elif k in ['help_text', 'label']:
-                    attrs[k] = force_text(v).strip()
+                    attrs[k] = str(force_text(v).strip())
                 else:
                     attrs[k] = v
 
