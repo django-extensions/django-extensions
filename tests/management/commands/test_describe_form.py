@@ -14,8 +14,6 @@ class DescribeFormExceptionsTests(TestCase):
             call_command('describe_form', 'testapp')
 
 
-import pytest
-@pytest.mark.WIP
 class DescribeFormTests(TestCase):
     """Tests for describe_form command."""
 
