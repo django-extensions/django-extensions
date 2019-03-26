@@ -59,7 +59,7 @@ def describe_form(label, fields):
                 else:
                     attrs[k] = v
 
-        params = ', '.join(['%s=%r' % (k, v) for k, v in attrs.items()])
+        params = ', '.join(['%s=%r' % (k, v) for k, v in sorted(attrs.items())])
         field_list.append('    %(field_name)s = forms.%(field_type)s(%(params)s)' % {
             'field_name': f.name,
             'field_type': formfield.__class__.__name__,

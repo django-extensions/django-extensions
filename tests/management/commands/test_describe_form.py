@@ -14,6 +14,8 @@ class DescribeFormExceptionsTests(TestCase):
             call_command('describe_form', 'testapp')
 
 
+import pytest
+@pytest.mark.WIP
 class DescribeFormTests(TestCase):
     """Tests for describe_form command."""
 
@@ -39,7 +41,7 @@ class DescribeFormTests(TestCase):
 from testapp.models import BaseModel
 
 class BaseModelForm(forms.Form):
-    title = forms.CharField(max_length=50, label='Title')
+    title = forms.CharField(label='Title', max_length=50)
     body = forms.CharField(label='Body')'''
 
         call_command('describe_form', 'testapp.BaseModel', stdout=self.out)
@@ -51,7 +53,7 @@ class BaseModelForm(forms.Form):
 from testapp.models import NonEditableModel
 
 class NonEditableModelForm(forms.Form):
-    title = forms.CharField(max_length=50, label='Title')'''
+    title = forms.CharField(label='Title', max_length=50)'''
 
         call_command('describe_form', 'testapp.NonEditableModel', stdout=self.out)
 
