@@ -104,9 +104,13 @@ class EmailNotificationCommand(BaseCommand):
 
         # Set email fields.
         subject = email_settings.get('subject', "Django extensions email notification.")
+        try:
+            command_name = self.argv_string
+        except AttributeError:
+            command_name = self.__module__.split('.')[-1]
         body = email_settings.get(
             'body',
-            "Reporting execution of command: '%s'" % self.argv_string
+            "Reporting execution of command: '%s'" % command_name
         )
 
         # Include traceback
@@ -125,7 +129,7 @@ class EmailNotificationCommand(BaseCommand):
         recipients = list(email_settings.get('recipients', []))
 
         if not email_settings.get('no_admins', False):
-            recipients.extend([a[1] for a in settings.ADMINS])
+            recipients.extend(settings.ADMINS)
 
         if not recipients:
             if verbosity > 0:
