@@ -104,10 +104,9 @@ class EmailNotificationCommand(BaseCommand):
 
         # Set email fields.
         subject = email_settings.get('subject', "Django extensions email notification.")
-        try:
-            command_name = self.argv_string
-        except AttributeError:
-            command_name = self.__module__.split('.')[-1]
+
+        command_name = self.__module__.split('.')[-1]
+
         body = email_settings.get(
             'body',
             "Reporting execution of command: '%s'" % command_name
