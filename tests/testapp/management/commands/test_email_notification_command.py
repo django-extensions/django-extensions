@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django_extensions.management.email_notifications import EmailNotificationCommand
 
 
