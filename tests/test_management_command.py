@@ -64,21 +64,6 @@ class ShowTemplateTagsTests(TestCase):
         self.assertIn('syntax_color', output)
 
 
-class AdminGeneratorTests(TestCase):
-    def test_command(self):
-        out = StringIO()
-        call_command('admin_generator', 'django_extensions', stdout=out)
-        output = out.getvalue()
-        self.assertIn("@admin.register(Secret)", output)
-        self.assertIn("class SecretAdmin(admin.ModelAdmin):", output)
-        if PY3:
-            self.assertIn("list_display = ('id', 'name', 'text')", output)
-            self.assertIn("search_fields = ('name',)", output)
-        else:
-            self.assertIn("list_display = (u'id', u'name', u'text')", output)
-            self.assertIn("search_fields = (u'name',)", output)
-
-
 class DescribeFormTests(TestCase):
     def test_command(self):
         out = StringIO()
