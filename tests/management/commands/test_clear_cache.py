@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
 import mock
+import os
+import six
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -18,6 +19,7 @@ class ClearCacheTests(TestCase):
         os.environ['DJANGO_SETTINGS_MODULE'] = 'django_extensions.settings'
         DefaultCacheMock.reset_mock()
         OtherCacheMock.reset_mock()
+        self.out = six.StringIO()
 
     def tearDown(self):
         if self._settings:
@@ -43,10 +45,22 @@ class ClearCacheTests(TestCase):
 
     def test_called_with_explicit_all(self):
         with self.settings(BASE_DIR=self.project_root):
-            call_command('clear_cache', '--cache', 'default', '--cache', 'other')
+            call_command('clear_cache', '--cache', 'default', '--cache', 'other',
+                         stdout=self.out)
         DefaultCacheMock.return_value.clear.assert_called()
         OtherCacheMock.return_value.clear.assert_called()
 
+        self.assertIn('Cache "default" has been cleared!', self.out.getvalue())
+        self.assertIn('Cache "other" has been cleared!', self.out.getvalue())
+
     def test_called_with_invalid_arguments(self):
         with self.settings(BASE_DIR=self.project_root):
-            self.assertRaises(CommandError, call_command, 'clear_cache', '--all', '--cache', 'foo')
+            self.assertRaisesRegexp(
+                CommandError,
+                'Using both --all and --cache is not supported',
+                call_command, 'clear_cache', '--all', '--cache', 'foo')
+
+    def test_should_print_that_cache_is_invalid_on_InvalidCacheBackendError(self):
+        call_command('clear_cache', '--cache', 'invalid', stderr=self.out)
+
+        self.assertIn('Cache "invalid" is invalid!', self.out.getvalue())
