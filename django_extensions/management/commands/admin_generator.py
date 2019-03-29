@@ -16,7 +16,6 @@ https://github.com/WoLpH/django-admin-generator/
 """
 
 import re
-import sys
 
 import six
 from django.apps import apps
