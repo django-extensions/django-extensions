@@ -6,7 +6,7 @@ import importlib
 
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
-from six import StringIO, PY3
+from six import StringIO
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
 from django_extensions.management.commands.merge_model_instances import get_model_to_deduplicate, get_field_names, keep_first_or_last_instance
