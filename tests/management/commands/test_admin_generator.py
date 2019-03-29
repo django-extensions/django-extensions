@@ -38,13 +38,14 @@ Available apps:
         self.assertIn('from .models import Group', self.out.getvalue())
 
     def test_should_print_admin_class_with_date_hierarchy(self):
-        class TestModel(models.Model):
+        class TestAdminModel(models.Model):
             created_at = models.DateTimeField(auto_now_add=True)
             title = models.CharField(max_length=50)
 
             class Meta:
                 app_label = 'testapp'
 
-        call_command('admin_generator', 'testapp', 'TestModel', stdout=self.out)
+        call_command('admin_generator', 'testapp', 'TestAdminModel',
+                     stdout=self.out)
 
         self.assertIn("date_hierarchy = 'created_at'", self.out.getvalue())
