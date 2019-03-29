@@ -78,9 +78,9 @@ SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
 
 CACHES = {
     'default': {
-        'BACKEND': 'tests.test_clear_caches.DefaultCacheMock',
+        'BACKEND': 'tests.management.commands.test_clear_cache.DefaultCacheMock',
     },
     'other': {
-        'BACKEND': 'tests.test_clear_caches.OtherCacheMock',
+        'BACKEND': 'tests.management.commands.test_clear_cache.OtherCacheMock',
     },
 }
