@@ -4,6 +4,7 @@ import shutil
 from tempfile import mkdtemp
 
 import pytest
+import six
 from django.core.exceptions import ImproperlyConfigured
 from django.forms.widgets import Textarea, TextInput
 from django.test import TestCase
@@ -77,7 +78,7 @@ class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
 
         self.assertTrue(result.startswith('enc_str:::encrypted_foo'))
 
-    @pytest.mark.skipif("sys.version_info < (3, 0)", reason='issues with vobject library on PY2x')
+    @pytest.mark.skipif(six.PY2, reason='other number of parameters')
     def test_should_decrypt_encrypted_str(self):  # noqa
         with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir):
             field = EncryptedCharField(max_length=50)
