@@ -3,8 +3,8 @@ import os
 import shutil
 from tempfile import mkdtemp
 
+import django
 import pytest
-import six
 from django.core.exceptions import ImproperlyConfigured
 from django.forms.widgets import Textarea, TextInput
 from django.test import TestCase
@@ -82,7 +82,7 @@ class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
 
         self.assertTrue(result.startswith('enc_str:::encrypted_foo'))
 
-    @pytest.mark.skipif(six.PY2, reason='other number of parameters')
+    @pytest.mark.skipif(django.VERSION < (2, 0), reason='run only on Django greater than 2.0')
     def test_should_decrypt_encrypted_str(self):  # noqa
         with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir):
             field = EncryptedCharField(max_length=50)
