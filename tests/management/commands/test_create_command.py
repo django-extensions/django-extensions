@@ -12,13 +12,15 @@ try:
 except ImportError:
     from mock import patch
 
+TEST_APP = 'testapp_with_appconfig'
+
 
 class CreateCommandTests(TestCase):
     """Tests for create_command command."""
 
     def setUp(self):  # noqa
         self.management_command_path = os.path.join(
-            settings.BASE_DIR, 'tests/testapp/management')
+            settings.BASE_DIR, 'tests/{}/management'.format(TEST_APP))
         self.command_template_path = os.path.join(
             settings.BASE_DIR, 'django_extensions/conf/command_template')
 
@@ -51,7 +53,7 @@ class CreateCommandTests(TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_management_command_files_only_on_dry_run(self, m_stdout):  # noqa
-        call_command('create_command', 'testapp', '--dry-run', verbosity=2)
+        call_command('create_command', TEST_APP, '--dry-run', verbosity=2)
 
         for f in self.files:
             filepath = os.path.join(self.management_command_path, f)
@@ -60,7 +62,7 @@ class CreateCommandTests(TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_create_management_command_files_and_print_filepaths(self, m_stdout):  # noqa
-        call_command('create_command', 'testapp', verbosity=2)
+        call_command('create_command', TEST_APP, verbosity=2)
 
         for f in self.files:
             filepath = os.path.join(self.management_command_path, f)
@@ -71,7 +73,7 @@ class CreateCommandTests(TestCase):
     def test_should_print_that_filepaths_already_exists(self, m_stdout):  # noqa
         self._create_management_command_with_empty_files()
 
-        call_command('create_command', 'testapp', verbosity=2)
+        call_command('create_command', TEST_APP, verbosity=2)
 
         for f in self.files:
             filepath = os.path.join(self.management_command_path, f)
@@ -87,7 +89,7 @@ class CreateCommandTests(TestCase):
         self._create__pycache__in_command_template_directory()
         self._create_hidden_directory_in_command_template_directory()
 
-        call_command('create_command', 'testapp')
+        call_command('create_command', TEST_APP)
         for f in self.files:
             filepath = os.path.join(self.management_command_path, f)
             self.assertIn("Notice: Couldn't set permission bits on {}. You're probably using an uncommon filesystem setup. No problem.\n".format(filepath),  # noqa
