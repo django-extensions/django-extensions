@@ -23,26 +23,6 @@ KEYCZAR_1 = '''{"publicKey": {"modulus": "AKljEv64fu7jXoyURILoKcYueSXCodwXuvSgjG
 ENCRYPTED_TEST_VALUE = 'enc_str:::AGFc2bEtqb4ybkQ7kGBBJEnsEPMJAjX5BIIWNKok-g8r2D2WNNt3CbUen2oYr_a5cCN0kvCTfRgBiuaJO04ioB3OuGI-KrQbeJp9GZbs8zc0jTsd7MIgJz6saqmWbZwNDPZYxNBnqdRDxCo1B-nnNrUzYJRb7d0nn_iPwUY4avOLiePCqDX_NRZ7WVooZjzTkRpfpiPvC3gWuKzoz0Cu2AuwdEcO9422BtRDhI30yu7dk5VUL6Zv3OxOz5fvFkJjW-eg3EcGfj2q7_J-YWLVkWsrrwdFJK4w4Yeqkl06qF5sdkakJn2rJJRsSTcDj0ceWAqfnEECdtHkXe0LpfZY1zH_Hwyz'  # noqa
 
 
-class BaseEncryptionFieldExceptions(TestCase):
-    """Tests for BaseEncryptedField exceptions."""
-
-    def test_should_raise_ImproperlyConfigured_if_ENCRYPTED_FIELD_KEYS_DIR_is_not_set(self):  # noqa
-        with self.assertRaisesRegexp(
-                ImproperlyConfigured,
-                'You must set the settings.ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory'):  # noqa
-            BaseEncryptedField()
-
-    @override_settings(
-        ENCRYPTED_FIELD_KEYS_DIR='/srv/keys',
-        ENCRYPTED_FIELD_MODE='INVALID'
-    )
-    def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):  # noqa
-        with self.assertRaisesRegexp(
-                ImproperlyConfigured,
-                'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
-            BaseEncryptedField()
-
-
 class BaseEncryptedFieldTestCase(TestCase):
 
     @classmethod
@@ -56,6 +36,30 @@ class BaseEncryptedFieldTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):  # noqa
         shutil.rmtree(cls.tmpdir)
+
+
+class BaseEncryptionFieldExceptions(TestCase):
+    """Tests for BaseEncryptedField exceptions."""
+
+    @override_settings(
+        ENCRYPTED_FIELD_KEYS_DIR=None,
+        ENCRYPTED_FIELD_MODE='INVALID'
+    )
+    def test_should_raise_ImproperlyConfigured_if_ENCRYPTED_FIELD_KEYS_DIR_is_not_set(self):  # noqa
+        with self.assertRaisesRegexp(
+            ImproperlyConfigured,
+            'You must set the settings.ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory'):  # noqa
+            BaseEncryptedField()
+
+    @override_settings(
+        ENCRYPTED_FIELD_KEYS_DIR='/srv/keys',
+        ENCRYPTED_FIELD_MODE='INVALID'
+    )
+    def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):  # noqa
+        with self.assertRaisesRegexp(
+                ImproperlyConfigured,
+                'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
+            BaseEncryptedField()
 
 
 class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
