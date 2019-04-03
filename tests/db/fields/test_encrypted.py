@@ -22,7 +22,6 @@ KEYCZAR_1 = '''{"publicKey": {"modulus": "AKljEv64fu7jXoyURILoKcYueSXCodwXuvSgjG
 ENCRYPTED_TEST_VALUE = 'enc_str:::AGFc2bEtqb4ybkQ7kGBBJEnsEPMJAjX5BIIWNKok-g8r2D2WNNt3CbUen2oYr_a5cCN0kvCTfRgBiuaJO04ioB3OuGI-KrQbeJp9GZbs8zc0jTsd7MIgJz6saqmWbZwNDPZYxNBnqdRDxCo1B-nnNrUzYJRb7d0nn_iPwUY4avOLiePCqDX_NRZ7WVooZjzTkRpfpiPvC3gWuKzoz0Cu2AuwdEcO9422BtRDhI30yu7dk5VUL6Zv3OxOz5fvFkJjW-eg3EcGfj2q7_J-YWLVkWsrrwdFJK4w4Yeqkl06qF5sdkakJn2rJJRsSTcDj0ceWAqfnEECdtHkXe0LpfZY1zH_Hwyz'  # noqa
 
 
-@pytest.mark.WIP
 class BaseEncryptionFieldExceptions(TestCase):
     """Tests for BaseEncryptedField exceptions."""
 
@@ -42,7 +41,7 @@ class BaseEncryptionFieldExceptions(TestCase):
                 'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
             BaseEncryptedField()
 
-@pytest.mark.WIP
+
 class BaseEncryptedFieldTestCase(TestCase):
 
     @classmethod
@@ -58,7 +57,6 @@ class BaseEncryptedFieldTestCase(TestCase):
         shutil.rmtree(cls.tmpdir)
 
 
-@pytest.mark.WIP
 class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
 
     def test_should_return_formfield_with_TextInput_widget(self):
@@ -112,7 +110,6 @@ class EncryptedCharFieldTests(BaseEncryptedFieldTestCase):
         self.assertEqual(internal_type, 'CharField')
 
 
-@pytest.mark.WIP
 class EncryptedTextFieldTests(BaseEncryptedFieldTestCase):
 
     def test_should_return_formfield_with_Textarea_widget(self):
