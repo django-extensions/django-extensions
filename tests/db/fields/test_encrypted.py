@@ -10,18 +10,16 @@ from django.forms.widgets import Textarea, TextInput
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from django_extensions.db.fields.encrypted import BaseEncryptedField, EncryptedCharField, EncryptedTextField
+try:
+    from django_extensions.db.fields.encrypted import BaseEncryptedField, EncryptedCharField, EncryptedTextField
+    keyczar_active = True
+except ImportError:
+    keyczar_active = False
 
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
-
-try:
-    from keyczar import keyczar, keyczart, keyinfo  # noqa
-    keyczar_active = True
-except ImportError:
-    keyczar_active = False
 
 
 KEYCZAR_META = '''{"name": "Test", "purpose": "DECRYPT_AND_ENCRYPT", "type": "RSA_PRIV", "encrypted": false, "versions": [{"versionNumber": 1, "status": "PRIMARY", "exportable": false}]}'''  # noqa
