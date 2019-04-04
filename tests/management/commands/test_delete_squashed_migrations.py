@@ -42,7 +42,7 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
     def test_should_raise_CommandError_if_app_does_not_have_migrations(self):
         with self.assertRaisesRegexp(
                 CommandError,
-                "App 'testapp_with_no_models_file' does not have migrations \(so delete_squashed_migrations on it makes no sense\)"):
+                r"App 'testapp_with_no_models_file' does not have migrations \(so delete_squashed_migrations on it makes no sense\)"):
 
             call_command('delete_squashed_migrations', 'testapp_with_no_models_file')
 
