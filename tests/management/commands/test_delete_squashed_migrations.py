@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+from distutils.version import LooseVersion
 
+import pytest
+from django import get_version
 from django.core.management import CommandError, call_command
 from django.db import models
 from django.test import TestCase
-
 from tests import testapp_with_appconfig
 
 MIGRATIONS_DIR = os.path.join(testapp_with_appconfig.__path__[0], 'migrations')
@@ -36,6 +38,10 @@ class BaseDeleteSquashedMigrationsTestCase(TestCase):
                     os.remove(os.path.join(root, filename))
 
 
+@pytest.mark.skipif(
+    LooseVersion(get_version()) <= LooseVersion('2.0.0'),
+    reason="This test works only on Django greater than 2.0.0",
+)
 class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCase):
     """Tests for delete_squashed_migrations command exceptions."""
 
@@ -97,6 +103,10 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
                          '0002')
 
 
+@pytest.mark.skipif(
+    LooseVersion(get_version()) <= LooseVersion('2.0.0'),
+    reason="This test works only on Django greater than 2.0.0",
+)
 class DeleteSquashedMigrationsTests(BaseDeleteSquashedMigrationsTestCase):
     """Tests for delete_squashed_migrations command."""
 
