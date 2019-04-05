@@ -58,6 +58,8 @@ class Command(BaseCommand):
 
     # Validation is called explicitly each time the server is reloaded.
     requires_system_checks = False
+    DEFAULT_CRT_EXTENSION = ".crt"
+    DEFAULT_KEY_EXTENSION = ".key"
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -393,9 +395,6 @@ class Command(BaseCommand):
         cert_file = cls._determine_path_for_file(cert_path, key_file_path, cls.DEFAULT_CRT_EXTENSION)
         key_file = cls._determine_path_for_file(key_file_path, cert_path, cls.DEFAULT_KEY_EXTENSION)
         return cert_file, key_file
-
-    DEFAULT_CRT_EXTENSION = ".crt"
-    DEFAULT_KEY_EXTENSION = ".key"
 
     @classmethod
     def _determine_path_for_file(cls, current_file_path, other_file_path, expected_extension):
