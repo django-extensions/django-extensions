@@ -150,9 +150,6 @@ You can set path to .key file using ``--key-file`` option.
 If this option is not set than runserver_plus assumes that,
 this file is in the same directory as file from ``--cert-file`` option.
 
-Certificate file must have .crt extension and key file must have .key extension.
-Otherwise new files will be created.
-
 If you want to create new files,
 than you can pass file name without extension.
 Proper files with this name and .crt and .key extensions will be created.
