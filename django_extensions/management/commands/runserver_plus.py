@@ -72,7 +72,7 @@ class Command(BaseCommand):
                             help='Tells Django to NOT use the auto-reloader.')
         parser.add_argument('--browser', action='store_true', dest='open_browser',
                             help='Tells Django to open a browser.')
-        parser.add_argument('--nothreading', action='store_false', dest='threaded',
+        parser.add_argument('--nothreading', action='store_false', dest='threaded', default=None,
                             help='Do not run in multithreaded mode.')
         parser.add_argument('--threaded', action='store_true', dest='threaded',
                             help='Run in multithreaded mode.')
@@ -223,6 +223,13 @@ class Command(BaseCommand):
                     p = pdb
                 print("Exception occured: %s, %s" % (exc_type, exc_value), file=sys.stderr)
                 p.post_mortem(tb)
+
+        # Disable threading by default if debugger options are used.
+        if options["threaded"] is None:
+            if pdb_option or ipdb_option or pm:
+                options["threaded"] = False
+            else:
+                options["threaded"] = True
 
         # usurp django's handler
         from django.views import debug
