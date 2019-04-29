@@ -19,17 +19,6 @@ try:
 except ImportError:  # Django >=2.2
     from django.utils.autoreload import get_reloader
 
-    if django.VERSION == (2, 2):
-        # backport fix https://github.com/django/django/commit/99cfb28e995388db109e2f2ed15307f09945dda8
-        from django.utils import autoreload
-        iter_modules_and_files_orig = autoreload.iter_modules_and_files
-
-        def iter_modules_and_files(modules, extra_files):
-            modules = [module for module in modules if getattr(module, '__spec__', None) is not None]
-            return iter_modules_and_files(modules, extra_files)
-
-        autoreload.iter_modules_and_files = iter_modules_and_files
-
     def gen_filenames():
         return get_reloader().watched_files()
 
