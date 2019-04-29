@@ -53,14 +53,14 @@ class UpdatePermissionsTests(TestCase):
         original_stdout = sys.stdout
         out = sys.stdout = StringIO()
 
-        call_command('update_permissions', verbosity=3)
+        call_command('update_permissions', verbosity=3, create_only=True)
         self.assertIn('testapp | test model | testapp_permission', out.getvalue())
 
         testapp_permission = Permission.objects.get(name="testapp_permission")
         testapp_permission.name = "testapp_permission_wrong"
         testapp_permission.save()
 
-        call_command('update_permissions', verbosity=3)
+        call_command('update_permissions', verbosity=3, update_only=True)
 
         sys.stdout = original_stdout
         self.assertIn("'testapp | test model | testapp_permission_wrong' to 'testapp | test model | testapp_permission'", out.getvalue())
