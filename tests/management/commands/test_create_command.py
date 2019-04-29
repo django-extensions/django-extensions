@@ -19,10 +19,8 @@ class CreateCommandTests(TestCase):
     """Tests for create_command command."""
 
     def setUp(self):  # noqa
-        self.management_command_path = os.path.join(
-            settings.BASE_DIR, 'tests/{}/management'.format(TEST_APP))
-        self.command_template_path = os.path.join(
-            settings.BASE_DIR, 'django_extensions/conf/command_template')
+        self.management_command_path = os.path.join(settings.BASE_DIR, 'tests/{}/management'.format(TEST_APP))
+        self.command_template_path = os.path.join(settings.BASE_DIR, 'django_extensions/conf/command_template')
 
         self.files = [
             '__init__.py',
@@ -31,10 +29,8 @@ class CreateCommandTests(TestCase):
         ]
 
     def tearDown(self):  # noqa
-        shutil.rmtree(self.management_command_path,
-                      ignore_errors=True)
-        shutil.rmtree(os.path.join(self.command_template_path, '.hidden'),
-                      ignore_errors=True)
+        shutil.rmtree(self.management_command_path, ignore_errors=True)
+        shutil.rmtree(os.path.join(self.command_template_path, '.hidden'), ignore_errors=True)
         test_pyc_path = os.path.join(self.command_template_path, 'test.pyc')
         if os.path.isfile(test_pyc_path):
             os.remove(test_pyc_path)
@@ -43,10 +39,12 @@ class CreateCommandTests(TestCase):
         os.mkdir(self.management_command_path)
         os.mkdir(os.path.join(self.management_command_path, 'commands'))
         for f in self.files:
-            os.mknod(os.path.join(self.management_command_path, f))
+            with open(os.path.join(self.management_command_path, f), "a"):
+                pass
 
     def _create__pycache__in_command_template_directory(self):
-        os.mknod(os.path.join(self.command_template_path, 'test.pyc'))
+        with open(os.path.join(self.command_template_path, 'test.pyc'), "a"):
+            pass
 
     def _create_hidden_directory_in_command_template_directory(self):
         os.mkdir(os.path.join(self.command_template_path, '.hidden'))
@@ -77,8 +75,7 @@ class CreateCommandTests(TestCase):
 
         for f in self.files:
             filepath = os.path.join(self.management_command_path, f)
-            self.assertIn(
-                '{} already exists'.format(filepath), m_stdout.getvalue())
+            self.assertIn('{} already exists'.format(filepath), m_stdout.getvalue())
             self.assertTrue(os.path.isfile(filepath))
             self.assertEqual(os.path.getsize(filepath), 0)
 
