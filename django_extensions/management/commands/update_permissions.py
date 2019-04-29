@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import VERSION as DJANGO_VERSION
 from django.apps import apps as django_apps
 from django.contrib.auth.management import create_permissions, _get_all_permissions
 from django.contrib.auth.models import Permission
@@ -14,8 +15,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument('--apps', dest='apps', help='Reload permissions only for apps (comma separated)')
-        parser.add_argument('--create-only', action='store_true', default=False, help='Only create missing permissions'),
-        parser.add_argument('--update-only', action='store_true', default=False, help='Only update permissions'),
+        parser.add_argument('--create-only', action='store_true', default=False, help='Only create missing permissions')
+        parser.add_argument('--update-only', action='store_true', default=False, help='Only update permissions')
 
     @signalcommand
     def handle(self, *args, **options):
@@ -33,6 +34,14 @@ class Command(BaseCommand):
             do_create, do_update = True, True
 
         for app in apps:
+            if DJANGO_VERSION < (2, 2):
+                # see https://github.com/django/django/commit/bec651a427fc032d9115d30c8c5d0e702d754f6c
+                # Ensure that contenttypes are created for this app. Needed if
+                # 'django.contrib.auth' is in INSTALLED_APPS before
+                # 'django.contrib.contenttypes'.
+                from django.contrib.contenttypes.management import create_contenttypes
+                create_contenttypes(app, verbosity=options['verbosity'])
+
             if do_create:
                 # create permissions if they do not exist
                 create_permissions(app, options['verbosity'])
