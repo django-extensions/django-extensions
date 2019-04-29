@@ -85,8 +85,6 @@ matrix:
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
-    - python: 3.7
-      env: TOXENV=py37-dj22
 
 install:
   - pip install virtualenv tox coveralls
