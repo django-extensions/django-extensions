@@ -116,13 +116,13 @@ class Command(BaseCommand):
                 model.objects.get(**kwargs)
             except model.MultipleObjectsReturned:
                 instances = model.objects.filter(**kwargs)
-
                 if first_or_last == "first":
-                    primary_object = instances[0]
-                    alias_objects = instances[1:]
+                    primary_object = instances.first()
+                    alias_objects = instances.exclude(pk=primary_object.pk)
                 elif first_or_last == "last":
-                    primary_object = instances[len(instances) - 1]
-                    alias_objects = instances[:len(instances) - 1]
+                    primary_object = instances.last()
+                    alias_objects = instances.exclude(pk=primary_object.pk)
+
                 primary_object, deleted_objects, deleted_objects_count = self.merge_model_instances(primary_object, alias_objects)
                 total_deleted_objects_count += deleted_objects_count
 
