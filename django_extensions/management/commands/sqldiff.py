@@ -879,6 +879,7 @@ class PostgresqlSQLDiff(SQLDiff):
 
     DATA_TYPES_REVERSE_NAME = {
         'hstore': 'django.contrib.postgres.fields.HStoreField',
+        'jsonb': 'django.contrib.postgres.fields.JSONField',
     }
 
     # Hopefully in the future we can add constraint checking and other more
