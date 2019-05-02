@@ -96,9 +96,6 @@ matrix:
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
 
-before_script:
-  - psql -c 'CREATE DATABASE django_extensions_test;' -U postgres
-
 install:
   - pip install virtualenv tox coveralls
 
