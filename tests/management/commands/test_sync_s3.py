@@ -168,8 +168,10 @@ class SyncS3Tests(TestCase):
     def test_sync_s3_dir_exclusions(self):
         sync_s3_command = Command()
         try:
-            sync_s3_command.run_from_argv(
-                ["manage.py", "sync_s3", "--acl=authenticated-read", "--filter-list=testsamenamedir,testdir1"]
+            call_command(
+                "sync_s3",
+                "--acl=authenticated-read",
+                "--filter-list=testsamenamedir,testdir1",
             )
         except Exception:
             # Exception is expected, we're not actually attempting to connect to S3

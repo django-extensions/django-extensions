@@ -26,7 +26,7 @@ def test_without_args(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails'])
+    call_command(generate_email)
     out, err = capsys.readouterr()
     assert 'Changed 3 emails' in out
 
@@ -42,7 +42,7 @@ def test_no_admin(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '-a'])
+    call_command(generate_email, '-a')
     out, err = capsys.readouterr()
     assert 'Changed 2 emails' in out
 
@@ -61,7 +61,7 @@ def test_no_staff(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '-s'])
+    call_command(generate_email, '-s')
     out, err = capsys.readouterr()
     assert 'Changed 2 emails' in out
 
@@ -80,7 +80,7 @@ def test_include_groups(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '--include-groups=Attendees'])
+    call_command(generate_email, '--include-groups=Attendees')
     out, err = capsys.readouterr()
     assert 'Changed 2 emails' in out
 
@@ -112,7 +112,7 @@ def test_exclude_groups(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '--exclude-groups=Attendees'])
+    call_command(generate_email, '--exclude-groups=Attendees')
     out, err = capsys.readouterr()
     assert 'Changed 1 emails' in out
 
@@ -144,7 +144,7 @@ def test_include_regexp(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '--include=.*briel'])
+    call_command(generate_email, '--include=.*briel')
     out, err = capsys.readouterr()
     assert 'Changed 1 emails' in out
 
@@ -163,7 +163,7 @@ def test_exclude_regexp(capsys, settings):
     assert all(email.endswith("@gmail.com") for email in emails)
 
     generate_email = Command()
-    generate_email.run_from_argv(['manage.py', 'set_fake_emails', '--exclude=.*briel'])
+    call_command(generate_email, '--exclude=.*briel')
     out, err = capsys.readouterr()
     assert 'Changed 2 emails' in out
 

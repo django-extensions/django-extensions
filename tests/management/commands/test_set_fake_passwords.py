@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
 from six import StringIO
 
-from django_extensions.management.commands.set_fake_passwords import DEFAULT_FAKE_PASSWORD, Command
+from django_extensions.management.commands.set_fake_passwords import DEFAULT_FAKE_PASSWORD
 
 try:
     from unittest.mock import Mock, patch
@@ -30,8 +30,7 @@ def test_without_args(capsys, settings):
     old_passwords = User.objects.values_list('password', flat=True).order_by('id')
     assert len(set(old_passwords)) == 3
 
-    generate_password = Command()
-    generate_password.run_from_argv(['manage.py', 'set_fake_passwords'])
+    call_command('set_fake_passwords')
     out, err = capsys.readouterr()
     assert 'Reset 3 passwords' in out
 
@@ -47,8 +46,7 @@ def test_without_args(capsys, settings):
 def test_with_password(capsys, settings):
     settings.DEBUG = True
 
-    generate_password = Command()
-    generate_password.run_from_argv(['manage.py', 'set_fake_passwords', '--password=helloworld'])
+    call_command('set_fake_passwords', '--password=helloworld')
     out, err = capsys.readouterr()
     assert 'Reset 3 passwords' in out
 

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.core.management import call_command
 
-from django_extensions.management.commands.export_emails import Command, full_name
+from django_extensions.management.commands.export_emails import full_name
 
 import pytest
 
@@ -35,8 +35,7 @@ def django_db_setup(django_db_setup, django_db_blocker):  # noqa
 @pytest.mark.django_db()
 def test_do_export_emails_stdout_start(capsys):
     """Testing export_emails command without args.stdout starts."""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails'])
+    call_command('export_emails')
 
     out, err = capsys.readouterr()
     assert out.startswith('"Mijaíl Bulgakóv')
@@ -45,8 +44,7 @@ def test_do_export_emails_stdout_start(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_stdout_end(capsys):
     """Testing export_emails command without args.stdout end."""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails'])
+    call_command('export_emails')
 
     out, err = capsys.readouterr()
     assert '"Frédéric Mistral" <frederic_mistral@gmail.com>;\n\n' in out
@@ -55,8 +53,7 @@ def test_do_export_emails_stdout_end(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_format_email(capsys):
     """Testing python manage.py export_emails -f emails"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=emails'])
+    call_command('export_emails', '--format=emails')
 
     out, err = capsys.readouterr()
     assert 'frederic_mistral@gmail.com' in out
@@ -65,8 +62,7 @@ def test_do_export_emails_format_email(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_address(capsys):
     """Testing python manage export_emails -f address"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=address'])
+    call_command('export_emails', '--format=address')
 
     out, err = capsys.readouterr()
     assert '"Frédéric Mistral"' in out
@@ -75,8 +71,7 @@ def test_do_export_emails_address(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_format_google(capsys):
     """Testing python manage export_emails -f google"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=google'])
+    call_command('export_emails', '--format=google')
 
     out, err = capsys.readouterr()
     assert out.startswith('Name,Email')
@@ -85,8 +80,7 @@ def test_do_export_emails_format_google(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_format_linkedin(capsys):
     """Testing python manage.py export_emails -f linkedin"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=linkedin'])
+    call_command('export_emails', '--format=linkedin')
 
     out, err = capsys.readouterr()
 
@@ -97,8 +91,7 @@ def test_do_export_emails_format_linkedin(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_format_outlook(capsys):
     """Testing python manage.py export_emails -f outlook"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=outlook'])
+    call_command('export_emails', '--format=outlook')
 
     out, err = capsys.readouterr()
     assert out.startswith('Name,E-mail Address')
@@ -109,8 +102,7 @@ def test_do_export_emails_format_outlook(capsys):
 @pytest.mark.django_db()
 def test_do_export_emails_format_vcard_start(capsys):
     """Testing python manage.py export_emails -f vcard"""
-    export_emails = Command()
-    export_emails.run_from_argv(['manage.py', 'export_emails', '--format=vcard'])
+    call_command('export_emails', '--format=vcard')
 
     out, err = capsys.readouterr()
 
