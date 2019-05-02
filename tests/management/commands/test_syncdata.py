@@ -59,6 +59,7 @@ class SyncDataTests(TestCase):
         self.assertIn('No fixtures found.\n', m_stdout.getvalue())
 
     def test_should_keep_old_objects_and_load_data_from_json_fixture(self):
+        User.objects.all().delete()
         User.objects.create(username='foo')
 
         call_command('syncdata', '--skip-remove', os.path.join(TEST_FIXTURE_DIR, 'users.json'), verbosity=2)
@@ -72,6 +73,7 @@ class SyncDataTests(TestCase):
     )
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_delete_old_objects_and_load_data_from_json_fixture(self, m_stdout):
+        User.objects.all().delete()
         User.objects.create(username='foo')
 
         call_command('syncdata', 'users.json', verbosity=2)
