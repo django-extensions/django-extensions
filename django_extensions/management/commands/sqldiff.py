@@ -878,7 +878,7 @@ class PostgresqlSQLDiff(SQLDiff):
     can_detect_unsigned_differ = True
 
     DATA_TYPES_REVERSE_NAME = {
-        'hstore': 'django_hstore.hstore.DictionaryField',
+        'hstore': 'django.contrib.postgres.fields.HStoreField',
     }
 
     # Hopefully in the future we can add constraint checking and other more
