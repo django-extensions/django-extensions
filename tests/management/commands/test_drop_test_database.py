@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import six
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -15,7 +15,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
     """Test for drop_test_database command."""
 
     def test_should_raise_CommandError_if_router_is_unknown(self):
-        with self.assertRaisesRegexp(CommandError, "Unknown database router unknown"):
+        with six.assertRaisesRegex(self, CommandError, "Unknown database router unknown"):
             call_command('drop_test_database', '--router=unknown')
 
     @override_settings(DATABASES={
@@ -27,7 +27,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
     @patch('django_extensions.management.commands.drop_test_database.input')
     def test_should_raise_CommandError_if_unknown_database_engine(self, m_input):
         m_input.return_value = 'yes'
-        with self.assertRaisesRegexp(CommandError, "Unknown database engine unknown"):
+        with six.assertRaisesRegex(self, CommandError, "Unknown database engine unknown"):
             call_command('drop_test_database')
 
     @override_settings(DATABASES={
@@ -40,7 +40,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
         }
     })
     def test_shoul_raise_CommandError_if_test_database_name_is_empty(self):
-        with self.assertRaisesRegex(CommandError, "You need to specify DATABASE_NAME in your Django settings file."):
+        with six.assertRaisesRegex(self, CommandError, "You need to specify DATABASE_NAME in your Django settings file."):
             call_command('drop_test_database')
 
 

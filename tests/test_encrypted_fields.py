@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 import shutil
 import tempfile
 from contextlib import contextmanager
@@ -263,7 +264,7 @@ class BaseEncryptedFieldExceptions(BaseEncryptedFieldTestCase):
 
     def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):
         with override_settings(ENCRYPTED_FIELD_KEYS_DIR=self.tmpdir, ENCRYPTED_FIELD_MODE='INVALID'):
-            with self.assertRaisesRegexp(ImproperlyConfigured, 'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):
+            with six.assertRaisesRegex(self, ImproperlyConfigured, 'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):
                 BaseEncryptedField()
 
 

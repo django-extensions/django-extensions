@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import six
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -39,7 +40,7 @@ class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
 
     def test_should_raise_CommandError_if_router_is_unknown(self):
-        with self.assertRaisesRegexp(CommandError, "Unknown database router unknown"):
+        with six.assertRaisesRegex(self, CommandError, "Unknown database router unknown"):
             call_command('sqlcreate', '--router=unknown')
 
 

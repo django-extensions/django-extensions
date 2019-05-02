@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 from django.test import TestCase
 from django.template import Context, Template, TemplateSyntaxError
 
@@ -11,8 +12,7 @@ class IndentByTagExceptions(TestCase):
 {% indentby %}
 Hello World
 {% endindentby %}"""
-        with self.assertRaisesRegexp(
-                TemplateSyntaxError, "indentby tag requires 1 or 3 arguments"):
+        with six.assertRaisesRegex(self, TemplateSyntaxError, "indentby tag requires 1 or 3 arguments"):
             Template(content).render(Context())
 
 

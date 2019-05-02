@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import six
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management import call_command
@@ -18,24 +19,24 @@ class SetDefaultSiteTests(TestCase):
 
     @override_settings(SITE_ID=321)
     def test_should_raise_CommandError_when_Site_object_does_not_exist(self):
-        with self.assertRaisesRegexp(CommandError, "Default site with pk=321 does not exist"):
+        with six.assertRaisesRegex(self, CommandError, "Default site with pk=321 does not exist"):
             call_command('set_default_site')
 
     @patch('django_extensions.management.commands.set_default_site.socket')
     def test_should_raise_CommandError_if_system_fqdn_return_None(self, m_socket):
         m_socket.getfqdn.return_value = None
-        with self.assertRaisesRegex(CommandError, "Cannot find systems FQDN"):
+        with six.assertRaisesRegex(self, CommandError, "Cannot find systems FQDN"):
             call_command('set_default_site', '--system-fqdn')
 
     def test_should_raise_CommandError_if_both_domain_and_set_as_system_fqdn_are_present(self):
-        with self.assertRaisesRegex(CommandError, "The set_as_system_fqdn cannot be used with domain option."):
+        with six.assertRaisesRegex(self, CommandError, "The set_as_system_fqdn cannot be used with domain option."):
             call_command('set_default_site', '--domain=foo', '--system-fqdn')
 
     @override_settings(INSTALLED_APPS=[
         app for app in settings.INSTALLED_APPS
         if app != 'django.contrib.sites'])
     def test_should_raise_CommandError_Sites_framework_not_installed(self):
-        with self.assertRaisesRegex(CommandError, "The sites framework is not installed."):
+        with six.assertRaisesRegex(self, CommandError, "The sites framework is not installed."):
             call_command('set_default_site', '--domain=foo', '--system-fqdn')
 
     @patch('sys.stdout', new_callable=StringIO)

@@ -167,7 +167,8 @@ class ChangingDirectoryTests(RunScriptTests):
 
     @override_settings(RUNSCRIPT_CHDIR='bad path')
     def test_custom_policy_django_settings_bad_path(self):
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+            self,
             BadCustomDirectoryException,
             'bad path is not a directory! If --dir-policy is custom than you must set '
             'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'

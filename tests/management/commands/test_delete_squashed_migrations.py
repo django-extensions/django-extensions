@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 from distutils.version import LooseVersion
 
 import pytest
@@ -46,14 +47,16 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
     """Tests for delete_squashed_migrations command exceptions."""
 
     def test_should_raise_CommandError_if_app_does_not_have_migrations(self):
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 CommandError,
                 r"App 'testapp_with_no_models_file' does not have migrations \(so delete_squashed_migrations on it makes no sense\)"):
 
             call_command('delete_squashed_migrations', 'testapp_with_no_models_file')
 
     def test_should_raise_CommandEror_if_migration_is_not_squashed(self):
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 CommandError,
                 "The migration testapp_with_appconfig 0001_initial is not a squashed migration."):
 
@@ -71,7 +74,8 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
         call_command('makemigrations', 'testapp_with_appconfig')
         call_command('squashmigrations', 'testapp_with_appconfig', '0002', '--noinput')
 
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 CommandError,
                 "More than one migration matches '0001' in app 'testapp_with_appconfig'. Please be more specific."):
 
@@ -88,14 +92,16 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
 
         call_command('makemigrations', 'testapp_with_appconfig')
 
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 CommandError,
                 "Cannot find a squashed migration in app 'testapp_with_appconfig'."):
 
             call_command('delete_squashed_migrations', 'testapp_with_appconfig')
 
     def test_should_raise_CommandEror_if_squashed_migration_not_foundee(self):
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 CommandError,
                 "Cannot find a migration matching '0002' from app 'testapp_with_appconfig'."):
 

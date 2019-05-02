@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import shutil
 from tempfile import mkdtemp
 
@@ -51,7 +52,8 @@ class BaseEncryptionFieldExceptions(TestCase):
         ENCRYPTED_FIELD_MODE='INVALID'
     )
     def test_should_raise_ImproperlyConfigured_if_ENCRYPTED_FIELD_KEYS_DIR_is_not_set(self):  # noqa
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
             ImproperlyConfigured,
             'You must set the settings.ENCRYPTED_FIELD_KEYS_DIR setting to your Keyczar keys directory'):  # noqa
             BaseEncryptedField()
@@ -61,7 +63,8 @@ class BaseEncryptionFieldExceptions(TestCase):
         ENCRYPTED_FIELD_MODE='INVALID'
     )
     def test_should_raise_ImproperlyConfigured_if_invalid_ENCRYPTED_FIELD_MODE_is_set(self):  # noqa
-        with self.assertRaisesRegexp(
+        with six.assertRaisesRegex(
+                self,
                 ImproperlyConfigured,
                 'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT or ENCRYPT, not INVALID.'):  # noqa
             BaseEncryptedField()

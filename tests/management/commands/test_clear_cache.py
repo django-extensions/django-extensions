@@ -55,10 +55,8 @@ class ClearCacheTests(TestCase):
 
     def test_called_with_invalid_arguments(self):
         with self.settings(BASE_DIR=self.project_root):
-            self.assertRaisesRegexp(
-                CommandError,
-                'Using both --all and --cache is not supported',
-                call_command, 'clear_cache', '--all', '--cache', 'foo')
+            with six.assertRaisesRegex(self, CommandError, 'Using both --all and --cache is not supported'):
+                call_command('clear_cache', '--all', '--cache', 'foo')
 
     def test_should_print_that_cache_is_invalid_on_InvalidCacheBackendError(self):
         call_command('clear_cache', '--cache', 'invalid', stderr=self.out)

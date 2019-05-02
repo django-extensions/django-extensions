@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import shutil
 from tempfile import mkdtemp
 
@@ -20,8 +21,7 @@ class UnreferencedFilesExceptionsTests(TestCase):
 
     @override_settings(MEDIA_ROOT=None)
     def test_should_raise_ComandError_if_MEDIA_ROOT_is_not_set(self):
-        with self.assertRaisesRegexp(
-                CommandError, 'MEDIA_ROOT is not set, nothing to do'):
+        with six.assertRaisesRegex(self, CommandError, 'MEDIA_ROOT is not set, nothing to do'):
             call_command('unreferenced_files')
 
 

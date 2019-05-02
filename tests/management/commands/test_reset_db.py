@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 
 from django.core.management import CommandError, call_command
 from django.test import TestCase
@@ -16,7 +17,7 @@ class ResetDbExceptionsTests(TestCase):
     """Tests if reset_db command raises exceptions."""
 
     def test_should_raise_CommandError_when_router_does_not_exist(self):
-        with self.assertRaisesRegexp(CommandError, 'Unknown database router non-existing_router'):
+        with six.assertRaisesRegex(self, CommandError, 'Unknown database router non-existing_router'):
             call_command('reset_db', '--router=non-existing_router')
 
     @override_settings(DATABASES={
@@ -26,7 +27,7 @@ class ResetDbExceptionsTests(TestCase):
         }
     })
     def test_should_raise_CommandError_when_unknown_database_engine(self):
-        with self.assertRaisesRegexp(CommandError, 'Unknown database engine django.db.backends.UNKNOWN'):
+        with six.assertRaisesRegex(self, CommandError, 'Unknown database engine django.db.backends.UNKNOWN'):
             call_command('reset_db', '--noinput')
 
     @override_settings(DATABASES={
@@ -35,7 +36,7 @@ class ResetDbExceptionsTests(TestCase):
         }
     })
     def test_should_raise_CommandError_when_no_db_name_provided(self):
-        with self.assertRaisesRegexp(CommandError, 'You need to specify DATABASE_NAME in your Django settings file.'):
+        with six.assertRaisesRegex(self, CommandError, 'You need to specify DATABASE_NAME in your Django settings file.'):
             call_command('reset_db', '--noinput')
 
 

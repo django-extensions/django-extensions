@@ -10,7 +10,7 @@ class DescribeFormExceptionsTests(TestCase):
     """Tests for describe_form command exceptions."""
 
     def test_should_raise_CommandError_if_invalid_arg(self):
-        with self.assertRaisesRegexp(CommandError, "Need application and model name in the form: appname.model"):
+        with six.assertRaisesRegex(self, CommandError, "Need application and model name in the form: appname.model"):
             call_command('describe_form', 'testapp')
 
 
