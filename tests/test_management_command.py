@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import mock
 import logging
 import importlib
@@ -70,11 +71,11 @@ class DescribeFormTests(TestCase):
         call_command('describe_form', 'django_extensions.Secret', stdout=out)
         output = out.getvalue()
         self.assertIn("class SecretForm(forms.Form):", output)
-        self.assertRegexpMatches(output, r"name = forms.CharField\(.*max_length=255")
-        self.assertRegexpMatches(output, r"name = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, r"name = forms.CharField\(.*label=u?'Name'")
-        self.assertRegexpMatches(output, r"text = forms.CharField\(.*required=False")
-        self.assertRegexpMatches(output, r"text = forms.CharField\(.*label=u?'Text'")
+        six.assertRegex(self, output, r"name = forms.CharField\(.*max_length=255")
+        six.assertRegex(self, output, r"name = forms.CharField\(.*required=False")
+        six.assertRegex(self, output, r"name = forms.CharField\(.*label=u?'Name'")
+        six.assertRegex(self, output, r"text = forms.CharField\(.*required=False")
+        six.assertRegex(self, output, r"text = forms.CharField\(.*label=u?'Text'")
 
 
 class CommandSignalTests(TestCase):

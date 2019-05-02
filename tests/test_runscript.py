@@ -55,14 +55,14 @@ class InvalidImportScriptsTests(RunScriptTests):
     def test_prints_import_error_on_script_with_invalid_imports_by_default(self):
         call_command('runscript', 'invalid_import_script')
         self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-        self.assertRegexpMatches(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+        six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
 
     def test_prints_import_error_on_script_with_invalid_imports_reliably(self):
         if hasattr(importlib, 'util') and hasattr(importlib.util, 'find_spec'):
             with self.settings(BASE_DIR=os.path.dirname(os.path.abspath(__file__))):
                 call_command('runscript', 'invalid_import_script')
                 self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-                self.assertRegexpMatches(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+                six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
 
 
 class InvalidScriptsTests(RunScriptTests):

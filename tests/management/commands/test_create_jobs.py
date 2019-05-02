@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import shutil
 
 from django.core.management import call_command
@@ -34,7 +35,8 @@ class CreateJobsExceptionsTests(CreateJobsTestsMixin, TestCase):
     def test_should_print_error_notice_on_OSError(self, m__make_writeable, m_stderr):
         call_command('create_jobs', 'testapp_with_no_models_file')
 
-        self.assertRegexpMatches(
+        six.assertRegex(
+            self,
             m_stderr.getvalue(),
             r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem.",
         )

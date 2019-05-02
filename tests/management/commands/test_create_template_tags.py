@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import shutil
 
 from django.core.management import call_command
@@ -41,7 +42,8 @@ class CreateTemplateTagsTests(TestCase):
         with patch.dict('sys.modules', shutil=m_shutil):
             call_command('create_template_tags', 'testapp_with_no_models_file')
 
-        self.assertRegexpMatches(
+        six.assertRegex(
+            self,
             m_stderr.getvalue(),
             r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem.",
         )
