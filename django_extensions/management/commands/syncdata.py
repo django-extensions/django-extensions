@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.management.base import BaseCommand
 from django.core.management.color import no_style
-from django.db import connection, transaction
+from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.template.defaultfilters import pluralize
 
 from django_extensions.management.utils import signalcommand
@@ -35,11 +35,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument('--skip-remove', action='store_false',
-                            dest='remove', default=True,
-                            help='Avoid remove any object from db'),
-        parser.add_argument('fixture_labels', nargs='?', type=str,
-                            help='Specify the fixture label (comma separated)')
+        parser.add_argument(
+            '--skip-remove', action='store_false', dest='remove', default=True,
+            help='Avoid remove any object from db',
+        )
+        parser.add_argument(
+            '--database', default=DEFAULT_DB_ALIAS,
+            help='Nominates a specific database to load fixtures into. Defaults to the "default" database.',
+        )
+        parser.add_argument(
+            'fixture_labels', nargs='?', type=str,
+            help='Specify the fixture label (comma separated)',
+        )
 
     def remove_objects_not_in(self, objects_to_keep, verbosity):
         """
@@ -72,19 +79,20 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         self.style = no_style()
-        fixture_labels = options['fixture_labels'].split(',') \
-            if options['fixture_labels'] else ()
+        self.using = options['database']
+        fixture_labels = options['fixture_labels'].split(',') if options['fixture_labels'] else ()
         try:
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
         except SyncDataError as exc:
             print(self.style.ERROR(exc))
 
-        # Close the DB connection. This is required as a workaround for an
-        # edge case in MySQL: if the same connection is used to
-        # create tables, load data, and query, the query can return
-        # incorrect results. See Django #7572, MySQL #37735.
-        connection.close()
+        # Close the DB connection -- unless we're still in a transaction. This
+        # is required as a workaround for an edge case in MySQL: if the same
+        # connection is used to create tables, load data, and query, the query
+        # can return incorrect results. See Django #7572, MySQL #37735.
+        if transaction.get_autocommit(self.using):
+            connections[self.using].close()
 
     def syncdata(self, fixture_labels, options):
         verbosity = options['verbosity']
@@ -101,7 +109,7 @@ class Command(BaseCommand):
         # Get a cursor (even though we don't need one yet). This has
         # the side effect of initializing the test database (if
         # it isn't already initialized).
-        cursor = connection.cursor()
+        cursor = connections[self.using].cursor()
 
         app_modules = [app.module for app in apps.get_app_configs()]
         app_fixtures = [os.path.join(os.path.dirname(app.__file__), 'fixtures') for app in app_modules]
@@ -191,7 +199,7 @@ class Command(BaseCommand):
         # If we found even one object in a fixture, we need to reset the
         # database sequences.
         if object_count > 0:
-            sequence_sql = connection.ops.sequence_reset_sql(self.style, models)
+            sequence_sql = connections[self.using].ops.sequence_reset_sql(self.style, models)
             if sequence_sql:
                 if verbosity > 1:
                     print("Resetting sequences")
