@@ -30,7 +30,7 @@ MIDDLEWARE = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': os.environ.get('DJANGO_EXTENSIONS_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
         'NAME': os.environ.get('DJANGO_EXTENSIONS_DATABASE_NAME', ':memory:'),
     }
 }

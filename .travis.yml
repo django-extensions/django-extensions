@@ -58,9 +58,21 @@ matrix:
       dist: xenial
       sudo: required
     - python: 3.7
+      env: TOXENV=py37-dj22-postgres
+      dist: xenial
+      sudo: required
+      services:
+        - postgresql
+    - python: 3.7
       env: TOXENV=py37-djmaster
       dist: xenial
       sudo: required
+    - python: 3.7
+      env: TOXENV=py37-djmaster-postgres
+      dist: xenial
+      sudo: required
+      services:
+        - postgresql
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
     - python: pypy3.5-5.10.1
@@ -77,10 +89,15 @@ matrix:
       env: TOXENV=py36-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster
+    - python: 3.7
+      env: TOXENV=py37-djmaster-postgres
     - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
+
+before_script:
+  - psql -c 'CREATE DATABASE django_extensions_test;' -U postgres
 
 install:
   - pip install virtualenv tox coveralls
