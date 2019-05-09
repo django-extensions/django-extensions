@@ -46,11 +46,11 @@ class Command(EmailNotificationCommand):
         parser.add_argument('script', nargs='+')
         parser.add_argument(
             '--fixtures', action='store_true', dest='infixtures', default=False,
-            help='Only look in app.fixtures subdir',
+            help='Also look in app.fixtures subdir',
         )
         parser.add_argument(
             '--noscripts', action='store_true', dest='noscripts', default=False,
-            help='Look in app.scripts subdir',
+            help='Do not look in app.scripts subdir',
         )
         parser.add_argument(
             '-s', '--silent', action='store_true', dest='silent', default=False,
