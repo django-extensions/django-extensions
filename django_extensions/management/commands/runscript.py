@@ -91,7 +91,7 @@ class Command(EmailNotificationCommand):
         scripts = options['script']
 
         if not options['noscripts']:
-            subdirs.append('scripts')
+            subdirs.append(getattr(settings, 'RUNSCRIPT_SCRIPT_DIR', 'scripts'))
         if options['infixtures']:
             subdirs.append('fixtures')
         verbosity = options["verbosity"]
