@@ -153,6 +153,12 @@ class Command(BaseCommand):
                 'dest': 'sort_fields',
                 'help': 'Do not sort fields',
             },
+            '--hide-edge-labels': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'hide_edge_labels',
+                'help': 'Do not showrelations labels in the graph.',
+            }
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)

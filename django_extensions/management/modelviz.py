@@ -79,6 +79,7 @@ class ModelGraph(object):
         self.exclude_models = parse_file_or_list(
             kwargs.get('exclude_models', "")
         )
+        self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
@@ -152,6 +153,8 @@ class ModelGraph(object):
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
             label = u'{} ({})'.format(label, force_text(related_query_name))
+        if self.hide_edge_labels:
+            label = ''
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.remote_field.model, six.string_types):
@@ -236,6 +239,8 @@ class ModelGraph(object):
         if appmodel._meta.proxy:
             label = "proxy"
         label += r"\ninheritance"
+        if self.hide_edge_labels:
+            label = ''
         return {
             'target_app': parent.__module__.replace(".", "_"),
             'target': parent.__name__,
