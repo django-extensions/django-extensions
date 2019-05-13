@@ -19,8 +19,8 @@
   {% endblock %}]
 
   // Labels
-{% block labels %}{% for graph in graphs %}{% include "django_extensions/graph_models/label.dot" %}{% endfor %}{% endblock %}
+{% block labels %}{% for graph in graphs %}{% include "django_extensions/graph_models/original/label.dot" %}{% endfor %}{% endblock %}
 
   // Relations
-{% block relations %}{% for graph in graphs %}{% include "django_extensions/graph_models/relation.dot" %}{% endfor %}{% endblock %}
+{% block relations %}{% for graph in graphs %}{% include "django_extensions/graph_models/original/relation.dot" %}{% endfor %}{% endblock %}
 }{% endblock %}

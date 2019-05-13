@@ -387,15 +387,16 @@ class ModelGraph(object):
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    t = loader.get_template(template)
+    if isinstance(template, six.string_types):
+        template = loader.get_template(template)
 
-    if not isinstance(t, Template) and not (hasattr(t, 'template') and isinstance(t.template, Template)):
+    if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):
         raise Exception("Default Django template loader isn't used. "
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
     c = Context(graph_data).flatten()
-    dot = t.render(c)
+    dot = template.render(c)
 
     return dot
 

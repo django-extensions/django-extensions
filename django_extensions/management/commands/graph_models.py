@@ -7,6 +7,7 @@ import tempfile
 import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.template import loader
 
 from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
@@ -102,6 +103,12 @@ class Command(BaseCommand):
                 'dest': 'layout',
                 'default': 'dot',
                 'help': 'Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi',
+            },
+            '--theme -t': {
+                'action': 'store',
+                'dest': 'theme',
+                'default': 'original',
+                'help': 'Theme to use. Supplied are \'original\' and \'django2018\'. You can create your own by creating dot templates in \'django_extentions/graph_models/themename/\' template directory.',
             },
             '--verbose-names -n': {
                 'action': 'store_true',
@@ -222,7 +229,12 @@ class Command(BaseCommand):
             return self.render_output_json(graph_data, outputfile)
 
         graph_data = graph_models.get_graph_data(as_json=False)
-        dotdata = generate_dot(graph_data)
+
+        theme = options['theme']
+        template_name = os.path.join('django_extensions', 'graph_models', theme, 'digraph.dot')
+        template = loader.get_template(template_name)
+
+        dotdata = generate_dot(graph_data, template=template)
         if not six.PY3:
             dotdata = dotdata.encode("utf-8")
 
