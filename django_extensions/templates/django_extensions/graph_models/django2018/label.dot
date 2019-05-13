@@ -19,9 +19,9 @@
     </B></FONT></TD></TR>
   {% if not disable_fields %}{% for field in model.fields %}
     <TR><TD ALIGN="LEFT" BORDER="0">
-    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.label }}{% if field.abstract %}</I>{% endif %}{% if field.relation or field.primary_key %}</B>{% endif %}</FONT>
+    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.label }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
     </TD><TD ALIGN="LEFT">
-    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.type }}{% if field.abstract %}</I>{% endif %}{% if field.relation or field.primary_key %}</B>{% endif %}</FONT>
+    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.type }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
     </TD></TR>
   {% endfor %}{% endif %}
     </TABLE>
