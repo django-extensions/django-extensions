@@ -107,7 +107,7 @@ class Command(BaseCommand):
             '--theme -t': {
                 'action': 'store',
                 'dest': 'theme',
-                'default': 'original',
+                'default': 'django2018',
                 'help': 'Theme to use. Supplied are \'original\' and \'django2018\'. You can create your own by creating dot templates in \'django_extentions/graph_models/themename/\' template directory.',
             },
             '--verbose-names -n': {
