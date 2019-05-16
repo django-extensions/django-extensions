@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import re
 import tempfile
 from contextlib import contextmanager
 
@@ -150,3 +151,10 @@ def test_exclude_models_hides_relationships():
     output = out.getvalue()
     assert 'tests_testapp_models_Person -> tests_testapp_models_Name' in output
     assert 'tests_testapp_models_Person -> _' not in output
+
+
+def test_hide_edge_labels():
+    out = StringIO()
+    call_command('graph_models', 'django_extensions', all_applications=True, hide_edge_labels=True, stdout=out)
+    output = out.getvalue()
+    assert not re.search(r'\[label=\"[a-zA-Z]+"\]', output)
