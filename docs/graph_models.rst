@@ -113,6 +113,11 @@ image by using the *graph_models* command::
   # Create a excluding certain models
   $ ./manage.py graph_models -a -X Foo,Bar -o my_project_sans_foo_bar.png
 
+::
+
+  # Create a graph without showing its edges' labels
+  $ ./manage.py graph_models -a --hide-edge-labels -o my_project_sans_foo_bar.png
+
 
 .. _GraphViz: http://www.graphviz.org/
 .. _pygraphviz: https://pygraphviz.github.io/
