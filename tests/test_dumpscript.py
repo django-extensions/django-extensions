@@ -72,15 +72,10 @@ class DumpScriptTests(TestCase):
 
     @override_settings(TIME_ZONE='Asia/Seoul')
     def test_with_datetimefield(self):
-        name = Name.objects.create(name='Jack')
-
         Note.objects.create(
             note='Note',
             # Default User Model has DateTimeFields.
-            user=Person.objects.create(
-                name=name,
-                age=20,
-            )
+            user=get_user_model().objects.create(username='Jack')
         )
 
         dumpscript_path = './django_extensions/scripts'

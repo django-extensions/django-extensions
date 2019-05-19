@@ -24,7 +24,7 @@ class Name(models.Model):
 class Note(models.Model):
     note = models.TextField()
     # for DumpScriptTests.test_with_datetimefield
-    user = models.ForeignKey('Person', null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'django_extensions'
