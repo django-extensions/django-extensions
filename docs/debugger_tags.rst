@@ -6,12 +6,13 @@ Debugger tags
 Introduction
 ------------
 
-These templatetags makes debugging Django templates easier. You can choose between ipdb, pdb or wdb filters.
+These templatetags make debugging Django templates easier.
+You can choose between ipdb, pdb or wdb filters.
 
 Usage
 -----
 
-Make sure that you loaded `debugger_tags` like::
+Make sure that you load `debugger_tags`::
 
     {% load debugger_tags %}
 
@@ -21,4 +22,4 @@ Now, you're ready to use debugger filters inside a template::
         {{ object|ipdb }}
     {% endfor %}
 
-When rendering a template ipdb session will be started.
+When rendering the template an ipdb session will be started.

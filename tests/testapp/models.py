@@ -2,11 +2,7 @@
 from django.conf import settings
 from django.db import models
 
-from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-)
+from django_extensions.db.fields import AutoSlugField, RandomCharField, ShortUUIDField, ModificationDateTimeField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
@@ -300,3 +296,33 @@ class SqlDiffUniqueTogether(models.Model):
 
     class Meta:
         unique_together = ['aaa', 'bbb']
+
+
+class Photo(models.Model):
+    photo = models.FileField()
+
+
+class CustomModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    custom_modified = ModificationDateTimeField()
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class ModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    modified = ModificationDateTimeField()
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class DisabledUpdateModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    modified = ModificationDateTimeField()
+
+    update_modified = False
+
+    class Meta:
+        app_label = 'django_extensions'

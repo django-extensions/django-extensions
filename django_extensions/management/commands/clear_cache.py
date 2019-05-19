@@ -10,6 +10,7 @@ from django_extensions.management.utils import signalcommand
 
 class Command(BaseCommand):
     """A simple management command which clears the site-wide cache."""
+
     help = 'Fully clear site-wide cache.'
 
     def add_arguments(self, parser):

@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-django_extensions.management.jobs
-"""
 
 import os
 import sys
@@ -104,7 +101,7 @@ def import_job(app_name, name, when=None):
 
 def get_jobs(when=None, only_scheduled=False):
     """
-    Returns a dictionary mapping of job names together with their respective
+    Return a dictionary mapping of job names together with their respective
     application class.
     """
     # FIXME: HACK: make sure the project dir is on the path when executed as ./manage.py

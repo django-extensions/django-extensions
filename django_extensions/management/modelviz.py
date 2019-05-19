@@ -79,6 +79,7 @@ class ModelGraph(object):
         self.exclude_models = parse_file_or_list(
             kwargs.get('exclude_models', "")
         )
+        self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
@@ -152,6 +153,8 @@ class ModelGraph(object):
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
             label = u'{} ({})'.format(label, force_text(related_query_name))
+        if self.hide_edge_labels:
+            label = ''
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.remote_field.model, six.string_types):
@@ -236,6 +239,8 @@ class ModelGraph(object):
         if appmodel._meta.proxy:
             label = "proxy"
         label += r"\ninheritance"
+        if self.hide_edge_labels:
+            label = ''
         return {
             'target_app': parent.__module__.replace(".", "_"),
             'target': parent.__name__,
@@ -387,15 +392,16 @@ class ModelGraph(object):
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    t = loader.get_template(template)
+    if isinstance(template, six.string_types):
+        template = loader.get_template(template)
 
-    if not isinstance(t, Template) and not (hasattr(t, 'template') and isinstance(t.template, Template)):
+    if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):
         raise Exception("Default Django template loader isn't used. "
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
     c = Context(graph_data).flatten()
-    dot = t.render(c)
+    dot = template.render(c)
 
     return dot
 

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Django Extensions additional model fields
+
+Some fields might require additional dependencies to be installed.
 """
+
 import re
 import six
 import string
@@ -73,7 +76,8 @@ class UniqueFieldMixin(object):
 
 
 class AutoSlugField(UniqueFieldMixin, SlugField):
-    """ AutoSlugField
+    """
+    AutoSlugField
 
     By default, sets editable=False, blank=True.
 
@@ -98,6 +102,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -128,7 +133,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def _slug_strip(self, value):
         """
-        Cleans up a slug by removing slug separator characters that occur at
+        Clean up a slug by removing slug separator characters that occur at
         the beginning or end of a slug.
 
         If an alternate separator is used, it will also replace any instances
@@ -236,7 +241,8 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
 
 class RandomCharField(UniqueFieldMixin, CharField):
-    """ RandomCharField
+    """
+    RandomCharField
 
     By default, sets editable=False, blank=True, unique=False.
 
@@ -265,6 +271,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
     include_punctuation
         If set to True, include punctuation characters (default: False)
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -353,7 +360,8 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField
+    """
+    CreationDateTimeField
 
     By default, sets editable=False, blank=True, auto_now_add=True
     """
@@ -379,7 +387,8 @@ class CreationDateTimeField(DateTimeField):
 
 
 class ModificationDateTimeField(CreationDateTimeField):
-    """ ModificationDateTimeField
+    """
+    ModificationDateTimeField
 
     By default, sets editable=False, blank=True, auto_now=True
 
@@ -401,7 +410,7 @@ class ModificationDateTimeField(CreationDateTimeField):
 
     def pre_save(self, model_instance, add):
         if not getattr(model_instance, 'update_modified', True):
-            return model_instance.modified
+            return getattr(model_instance, self.attname)
         return super(ModificationDateTimeField, self).pre_save(model_instance, add)
 
 
@@ -410,13 +419,15 @@ class UUIDVersionError(Exception):
 
 
 class UUIDFieldMixin(object):
-    """ UUIDFieldMixin
+    """
+    UUIDFieldMixin
 
     By default uses UUID version 4 (randomly generated UUID).
 
     The field support all uuid versions which are natively supported by the uuid python module, except version 2.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
+
     DEFAULT_MAX_LENGTH = 36
 
     def __init__(
@@ -498,12 +509,14 @@ class UUIDFieldMixin(object):
 
 
 class ShortUUIDField(UUIDFieldMixin, CharField):
-    """ ShortUUIDFied
+    """
+    ShortUUIDFied
 
     Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
 
     Based on `shortuuid`: https://github.com/stochastic-technologies/shortuuid
     """
+
     DEFAULT_MAX_LENGTH = 22
 
     def __init__(self, *args, **kwargs):

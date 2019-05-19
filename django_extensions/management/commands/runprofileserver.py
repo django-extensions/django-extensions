@@ -152,8 +152,6 @@ class Command(BaseCommand):
         import errno
         from django.core.servers.basehttp import run
 
-        if args:
-            raise CommandError('Usage is runserver %s' % self.args)
         if not addrport:
             addr = ''
             port = '8000'

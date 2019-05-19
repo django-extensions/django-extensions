@@ -1,6 +1,37 @@
 Changelog
 =========
 
+2.1.7
+-----
+
+Changes:
+  - New: test, many many more tests :-) thanks everybody
+  - New: docs, many documentation updates
+  - New: graph_model, add simple theming support and django2018 theme
+  - Improvement: ModificationDateTimeField, make modificationfield name modifiable
+  - Improvement: graph_model, option to not showrelations labels in the graph
+  - Improvement: reset_db, allow to override list of backends for database engines
+  - Improvement: reset_db, add psqlextra backend
+  - Improvement: runserver_plus, idle support
+  - Improvement: generate_secret_key, removed get_random_string in favour of get_random_secret_key
+  - Improvement: update_permissions, add create-only and update-only flags
+  - Improvement: update_permissions, update changed names of permission to match correct permission name
+  - Improvement: syncdata, add --database option
+  - Improvement: runscript, allow to override RUNSCRIPT_SCRIPT_DIR
+  - Fix: create_command, fix mknod error on macos
+  - Fix: runserver_plus, fix in resolving ssl certificate path
+  - Fix: sqldiff, fix hstorefield
+  - Deprecate: truncate_letters, use Django's truncatechars
+  - Deprecate: passwd, use Django's changepassword
+  - Deprecate: Keyczar encrypted fields, Keyczar is abandonned / deprecated
+
+2.1.6
+-----
+
+Changes:
+  - Fix: runserver_plus, auto_reloader fix for compatibility with Django 2.2
+  - New: test, many many more tests :-) thanks @kuter
+
 2.1.5
 -----
 

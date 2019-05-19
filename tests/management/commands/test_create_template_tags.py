@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
+import six
 import shutil
 
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.six import StringIO
+from six import StringIO
 from tests import testapp_with_no_models_file
 
 try:
@@ -13,8 +14,7 @@ except ImportError:
     from mock import Mock, patch
 
 
-TEMPLATETAGS_DIR = os.path.join(
-    testapp_with_no_models_file.__path__[0], 'templatetags')
+TEMPLATETAGS_DIR = os.path.join(testapp_with_no_models_file.__path__[0], 'templatetags')
 
 
 class CreateTemplateTagsTests(TestCase):
@@ -27,25 +27,23 @@ class CreateTemplateTagsTests(TestCase):
         except OSError:
             pass
 
-    def test_should_create_testapp_with_no_models_file_tags_file(self):  # noqa
+    def test_should_create_testapp_with_no_models_file_tags_file(self):
         call_command('create_template_tags', 'testapp_with_no_models_file')
-        self.assertTrue(os.path.isfile(os.path.join(
-            TEMPLATETAGS_DIR, 'testapp_with_no_models_file_tags.py')))
+        self.assertTrue(os.path.isfile(os.path.join(TEMPLATETAGS_DIR, 'testapp_with_no_models_file_tags.py')))
 
-    def test_should_create_custom__name_tags_file(self):  # noqa
-        call_command('create_template_tags', 'testapp_with_no_models_file',
-                     '--name', 'custom_name_tags')
-        self.assertTrue(os.path.isfile(os.path.join(
-            TEMPLATETAGS_DIR, 'custom_name_tags.py')))
+    def test_should_create_custom__name_tags_file(self):
+        call_command('create_template_tags', 'testapp_with_no_models_file', '--name', 'custom_name_tags')
+        self.assertTrue(os.path.isfile(os.path.join(TEMPLATETAGS_DIR, 'custom_name_tags.py')))
 
     @patch('sys.stderr', new_callable=StringIO)
-    def test_should_print_error_notice_on_OSError(self, m_stderr):  # noqa
+    def test_should_print_error_notice_on_OSError(self, m_stderr):
         m_shutil = Mock()
         m_shutil.copymode.side_effect = OSError
         with patch.dict('sys.modules', shutil=m_shutil):
             call_command('create_template_tags', 'testapp_with_no_models_file')
 
-        self.assertRegexpMatches(
+        six.assertRegex(
+            self,
             m_stderr.getvalue(),
-            r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem."  # noqa
+            r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem.",
         )

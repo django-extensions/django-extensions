@@ -130,9 +130,7 @@ class Command(BaseCommand):
         return LooseVersion(available[0]) if available else None
 
     def check_pypi(self):
-        """
-        If the requirement is frozen to pypi, check for a new version.
-        """
+        """If the requirement is frozen to pypi, check for a new version."""
         for dist in get_installed_distributions():
             name = dist.project_name
             if name in self.reqs.keys():

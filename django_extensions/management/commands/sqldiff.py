@@ -255,7 +255,10 @@ class SQLDiff(object):
         return self.DATA_TYPES_REVERSE_OVERRIDE
 
     def sql_to_dict(self, query, param):
-        """ sql_to_dict(query, param) -> list of dicts
+        """
+        Execute query and return a dict
+
+        sql_to_dict(query, param) -> list of dicts
 
         code from snippet at http://www.djangosnippets.org/snippets/1383/
         """
@@ -489,8 +492,9 @@ class SQLDiff(object):
                     continue
                 if constraint['unique'] and field.unique:
                     continue
-                if constraint['index'] and constraint['type'] == 'idx' and constraint['orders'] and field.unique:
+                if constraint['index'] and constraint['type'] == 'idx' and constraint.get('orders') and field.unique:
                     # django automatically creates a _like varchar_pattern_ops/text_pattern_ops index see https://code.djangoproject.com/ticket/12234
+                    # note: mysql does not have and/or introspect and fill the 'orders' attribute of constraint information
                     continue
                 if constraint['index'] and field.db_index:
                     continue
@@ -670,7 +674,7 @@ class SQLDiff(object):
         self.has_differences = max([len(diffs) for _app_label, _model_name, diffs in self.differences])
 
     def print_diff(self, style=no_style()):
-        """ print differences to stdout """
+        """ Print differences to stdout """
         if self.options['sql']:
             self.print_diff_sql(style)
         else:
@@ -874,7 +878,8 @@ class PostgresqlSQLDiff(SQLDiff):
     can_detect_unsigned_differ = True
 
     DATA_TYPES_REVERSE_NAME = {
-        'hstore': 'django_hstore.hstore.DictionaryField',
+        'hstore': 'django.contrib.postgres.fields.HStoreField',
+        'jsonb': 'django.contrib.postgres.fields.JSONField',
     }
 
     # Hopefully in the future we can add constraint checking and other more
@@ -954,7 +959,11 @@ class PostgresqlSQLDiff(SQLDiff):
         }
 
     def get_constraints(self, cursor, table_name, introspection):
-        """ backport of django's introspection.get_constraints(...) """
+        """
+        Find constraints for table
+
+        Backport of django's introspection.get_constraints(...)
+        """
         constraints = {}
         # Loop over the key table, collecting things as constraints
         # This will get PKs, FKs, and uniques, but not CHECK

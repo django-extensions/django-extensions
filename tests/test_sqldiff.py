@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import six
+import pytest
+from django.conf import settings
 from django.apps import apps
 from django.test import TestCase
 
@@ -26,9 +28,11 @@ class SqlDiffTests(TestCase):
         checked_models = {"%s.%s" % (app_label, model_name) for app_label, model_name, _ in instance.differences}
         self.assertEqual(should_include_proxy_models, "testapp.PostWithTitleOrdering" in checked_models)
 
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3', reason="Test can only run on sqlite3")
     def test_sql_diff_without_proxy_models(self):
         self._include_proxy_models_testing(False)
 
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3', reason="Test can only run on sqlite3")
     def test_sql_diff_with_proxy_models(self):
         self._include_proxy_models_testing(True)
 

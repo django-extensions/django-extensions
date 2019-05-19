@@ -38,21 +38,26 @@ class JSONDict(dict):
     Hack so repr() called by dumpdata will output JSON instead of
     Python formatted data.  This way fixtures will work!
     """
+
     def __repr__(self):
         return dumps(self)
 
 
 class JSONList(list):
     """
-    As above
+    Hack so repr() called by dumpdata will output JSON instead of
+    Python formatted data.  This way fixtures will work!
     """
+
     def __repr__(self):
         return dumps(self)
 
 
 class JSONField(models.TextField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly.  Main thingy must be a dict object."""
+    """
+    JSONField is a generic textfield that neatly serializes/unserializes
+    JSON objects seamlessly.  Main thingy must be a dict object.
+    """
 
     def __init__(self, *args, **kwargs):
         kwargs['default'] = kwargs.get('default', dict)

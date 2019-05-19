@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
-import pytest
-from django.core.management import call_command, CommandError
-from django.utils.six import StringIO
+import os
+import six
+import shutil
+from tempfile import mkdtemp
+
+from django.conf import settings
+from django.core.management import CommandError, call_command
+from django.test import TestCase
+from django.test.utils import override_settings
+from six import StringIO
 
 
 def test_validate_templates():
@@ -16,9 +23,47 @@ def test_validate_templates():
     assert "0 errors found\n" in output
 
 
-def test_validate_templates_with_error(settings):
-    settings.INSTALLED_APPS += ['tests.testapp_with_template_errors']
+class ValidateTemplatesTests(TestCase):
 
-    out = StringIO()
-    with pytest.raises(CommandError, message="1 errors found"):
-        call_command('validate_templates', verbosity=3, stdout=out, stderr=out)
+    def setUp(self):
+        self.tempdir = mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+
+    def test_should_print_that_there_is_error(self):
+        with override_settings(INSTALLED_APPS=settings.INSTALLED_APPS + ['tests.testapp_with_template_errors']):
+            with six.assertRaisesRegex(self, CommandError, '1 errors found'):
+                call_command('validate_templates', verbosity=3)
+
+    def test_should_not_print_any_errors_if_template_in_VALIDATE_TEMPLATES_IGNORES(self):
+        out = StringIO()
+
+        with override_settings(
+                INSTALLED_APPS=settings.INSTALLED_APPS + ['tests.testapp_with_template_errors'],
+                VALIDATE_TEMPLATES_IGNORES=['template_with_error.html']):
+            call_command('validate_templates', verbosity=3, stdout=out, stderr=out)
+
+        output = out.getvalue()
+
+        self.assertIn('0 errors found\n', output)
+
+    def test_should_not_print_any_errors_if_app_in_VALIDATE_TEMPLATES_IGNORE_APPS(self):
+        out = StringIO()
+
+        with override_settings(
+                INSTALLED_APPS=settings.INSTALLED_APPS + ['tests.testapp_with_template_errors'],
+                VALIDATE_TEMPLATES_IGNORE_APPS=['tests.testapp_with_template_errors']):
+            call_command('validate_templates', verbosity=3, stdout=out, stderr=out)
+
+        output = out.getvalue()
+
+        self.assertIn('0 errors found\n', output)
+
+    def test_should_break_when_first_error_occur(self):
+        fn = os.path.join(self.tempdir, 'template_with_error.html')
+        with open(fn, 'w') as f:
+            f.write("""{% invalid_tag %}""")
+
+        with six.assertRaisesRegex(self, CommandError, 'Errors found'):
+            call_command('validate_templates', '-i', self.tempdir, '-b', verbosity=3)

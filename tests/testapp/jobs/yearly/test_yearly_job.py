@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-import mock
-
 from django_extensions.management.jobs import YearlyJob
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 YEARLY_JOB_MOCK = mock.MagicMock()

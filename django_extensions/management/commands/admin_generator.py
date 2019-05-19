@@ -16,15 +16,13 @@ https://github.com/WoLpH/django-admin-generator/
 """
 
 import re
-import sys
 
+import six
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import LabelCommand, CommandError
 from django.db import models
-from django.utils import six
 
-from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
 # Configurable constants
@@ -72,8 +70,10 @@ PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
 
 
 class UnicodeMixin(object):
-    """Mixin class to handle defining the proper __str__/__unicode__
-    methods in Python 2 or 3."""
+    """
+    Mixin class to handle defining the proper __str__/__unicode__
+    methods in Python 2 or 3.
+    """
 
     if six.PY3:  # Python 3
         def __str__(self):
@@ -333,18 +333,17 @@ class Command(LabelCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        self.style = color_style()
-
         app_name = options['app_name']
+
         try:
             app = apps.get_app_config(app_name)
         except LookupError:
-            print(self.style.WARN('This command requires an existing app name as argument'))
-            print(self.style.WARN('Available apps:'))
+            self.stderr.write('This command requires an existing app name as argument')
+            self.stderr.write('Available apps:')
             app_labels = [app.label for app in apps.get_app_configs()]
             for label in sorted(app_labels):
-                print(self.style.WARN('    %s' % label))
-            sys.exit(1)
+                self.stderr.write('    %s' % label)
+            return
 
         model_res = []
         for arg in options['model_name']:

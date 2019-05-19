@@ -7,8 +7,6 @@ matrix:
   include:
     - python: 2.7
       env: TOXENV=py27-flake8
-    - python: 3.4
-      env: TOXENV=py34-flake8
     - python: 3.5
       env: TOXENV=py35-flake8
     - python: 3.6
@@ -27,38 +25,40 @@ matrix:
       env: TOXENV=compile-catalog
     - python: 2.7
       env: TOXENV=py27-dj111
-    - python: 3.4
-      env: TOXENV=py34-dj111
-    - python: 3.4
-      env: TOXENV=py34-dj20
     - python: 3.5
       env: TOXENV=py35-dj111
     - python: 3.5
-      env: TOXENV=py35-dj20
-    - python: 3.5
       env: TOXENV=py35-dj21
-    - python: 3.5
-      env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-dj111
-    - python: 3.6
-      env: TOXENV=py36-dj20
     - python: 3.6
       env: TOXENV=py36-dj21
     - python: 3.6
       env: TOXENV=py36-djmaster
     - python: 3.7
-      env: TOXENV=py37-dj20
-      dist: xenial
-      sudo: required
-    - python: 3.7
       env: TOXENV=py37-dj21
       dist: xenial
       sudo: required
     - python: 3.7
+      env: TOXENV=py37-dj22
+      dist: xenial
+      sudo: required
+    - python: 3.7
+      env: TOXENV=py37-dj22-postgres
+      dist: xenial
+      sudo: required
+      services:
+        - postgresql
+    - python: 3.7
       env: TOXENV=py37-djmaster
       dist: xenial
       sudo: required
+    - python: 3.7
+      env: TOXENV=py37-djmaster-postgres
+      dist: xenial
+      sudo: required
+      services:
+        - postgresql
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
     - python: pypy3.5-5.10.1
@@ -71,12 +71,12 @@ matrix:
       env: TOXENV=pypy3-djmaster
 
   allow_failures:
-    - python: 3.5
-      env: TOXENV=py35-djmaster
     - python: 3.6
       env: TOXENV=py36-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster
+    - python: 3.7
+      env: TOXENV=py37-djmaster-postgres
     - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0

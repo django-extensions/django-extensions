@@ -22,13 +22,15 @@ class ForeignKeySearchInputTestCase(TestCase):
 
         widget = widgets.ForeignKeySearchInput(
             models.Membership._meta.get_field('person').remote_field,
-            ['person__name'])
+            ['person__name'],
+        )
 
         label = widget.label_for_value(membership.pk)
 
         self.assertEqual(
             Truncator(person).words(14, truncate='...'),
-            label)
+            label,
+        )
 
         # Just making sure rendering the widget doesn't cause any issue
         widget.render('person', person.pk)

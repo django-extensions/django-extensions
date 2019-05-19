@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django_extensions.management.commands.print_settings import Command
+from django.core.management import call_command
 
 
 def test_without_args(capsys):
-    print_settings = Command()
-    print_settings.run_from_argv(['manage.py', 'print_settings'])
+    call_command('print_settings')
 
     out, err = capsys.readouterr()
     assert 'DEBUG' in out
@@ -14,8 +13,7 @@ def test_without_args(capsys):
 
 
 def test_with_setting_args(capsys):
-    print_settings = Command()
-    print_settings.run_from_argv(['manage.py', 'print_settings', 'DEBUG'])
+    call_command('print_settings', 'DEBUG')
 
     out, err = capsys.readouterr()
     assert 'DEBUG' in out
@@ -23,14 +21,12 @@ def test_with_setting_args(capsys):
 
 
 def test_with_multiple_setting_args(capsys):
-    print_settings = Command()
-    print_settings.run_from_argv([
-        'manage.py',
+    call_command(
         'print_settings',
         'SECRET_KEY',
         'DATABASES',
         'INSTALLED_APPS',
-    ])
+    )
 
     out, err = capsys.readouterr()
     assert 'DEBUG' not in out
@@ -40,13 +36,11 @@ def test_with_multiple_setting_args(capsys):
 
 
 def test_format(capsys):
-    print_settings = Command()
-    print_settings.run_from_argv([
-        'manage.py',
+    call_command(
         'print_settings',
         'DEBUG',
         '--format=text',
-    ])
+    )
 
     out, err = capsys.readouterr()
     expected = 'DEBUG = False\n'
@@ -54,14 +48,12 @@ def test_format(capsys):
 
 
 def test_format_json_without_indent(capsys):
-    print_settings = Command()
-    print_settings.run_from_argv([
-        'manage.py',
+    call_command(
         'print_settings',
         'DEBUG',
         '--format=json',
         '--indent=0',
-    ])
+    )
 
     expected = '{\n"DEBUG": false\n}\n'
     out, err = capsys.readouterr()

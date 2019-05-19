@@ -21,7 +21,7 @@ FORMATS = [
 
 
 def full_name(first_name, last_name, username, **extra):
-    """Returns full name or username."""
+    """Return full name or username."""
     name = " ".join(n for n in [first_name, last_name] if n)
     if not name:
         return username
@@ -44,10 +44,12 @@ class Command(BaseCommand):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--group', '-g', action='store', dest='group', default=None,
-            help='Limit to users which are part of the supplied group name'),
+            help='Limit to users which are part of the supplied group name',
+        ),
         parser.add_argument(
             '--format', '-f', action='store', dest='format', default=FORMATS[0],
-            help="output format. May be one of '" + "', '".join(FORMATS) + "'."),
+            help="output format. May be one of %s." % ", ".join(FORMATS),
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -68,29 +70,31 @@ class Command(BaseCommand):
         getattr(self, options['format'])(qs)
 
     def address(self, qs):
-        """Simple single entry per line in the format of:
+        """
+        Single entry per line in the format of:
             "full name" <my@address.com>;
         """
         self.stdout.write("\n".join('"%s" <%s>;' % (full_name(**ent), ent['email']) for ent in qs))
         self.stdout.write("\n")
 
     def emails(self, qs):
-        """Simpler single entry with email only in the format of:
+        """
+        Single entry with email only in the format of:
             my@address.com,
         """
         self.stdout.write(",\n".join(ent['email'] for ent in qs))
         self.stdout.write("\n")
 
     def google(self, qs):
-        """CSV format suitable for importing into google GMail
-        """
+        """CSV format suitable for importing into google GMail"""
         csvf = writer(sys.stdout)
         csvf.writerow(['Name', 'Email'])
         for ent in qs:
             csvf.writerow([full_name(**ent), ent['email']])
 
     def linkedin(self, qs):
-        """CSV format suitable for importing into linkedin Groups.
+        """
+        CSV format suitable for importing into linkedin Groups.
         perfect for pre-approving members of a linkedin group.
         """
         csvf = writer(sys.stdout)
@@ -115,10 +119,9 @@ class Command(BaseCommand):
         try:
             import vobject
         except ImportError:
-            print(self.style.ERROR("Please install python-vobject to use the vcard export format."))
-            import sys
+            print(self.style.ERROR("Please install vobject to use the vcard export format."))
             sys.exit(1)
-        import sys
+
         out = sys.stdout
         for ent in qs:
             card = vobject.vCard()

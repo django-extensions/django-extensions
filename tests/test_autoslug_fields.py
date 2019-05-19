@@ -4,16 +4,15 @@ import django
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
-from django.utils import six
 from django.utils.encoding import force_bytes
+import six
 
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
-from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
-    SluggedTestNoOverwriteOnAddModel, FKSluggedTestModel, \
-    FKSluggedTestModelCallable, FunctionSluggedTestModel, \
-    ModelMethodSluggedTestModel
+from .testapp.models import ChildSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel
+from .testapp.models import FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel
+from .testapp.models import ModelMethodSluggedTestModel
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -210,9 +209,12 @@ class MigrationTest(TestCase):
 
         migration = type(str("Migration"), (migrations.Migration,), {
             "operations": [
-                migrations.CreateModel("MyModel", tuple(fields.items()),
-                                       {'populate_from': 'otherfield'},
-                                       (models.Model,)),
+                migrations.CreateModel(
+                    "MyModel",
+                    tuple(fields.items()),
+                    {'populate_from': 'otherfield'},
+                    (models.Model,)
+                ),
             ],
         })
         writer = MigrationWriter(migration)

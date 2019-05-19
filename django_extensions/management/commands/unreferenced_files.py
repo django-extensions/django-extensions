@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import models
 
 from django_extensions.management.utils import signalcommand
@@ -15,9 +15,8 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if settings.MEDIA_ROOT == '':
-            print("MEDIA_ROOT is not set, nothing to do")
-            return
+        if not getattr(settings, 'MEDIA_ROOT'):
+            raise CommandError("MEDIA_ROOT is not set, nothing to do")
 
         # Get a list of all files under MEDIA_ROOT
         media = set()

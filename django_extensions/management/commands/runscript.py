@@ -46,11 +46,11 @@ class Command(EmailNotificationCommand):
         parser.add_argument('script', nargs='+')
         parser.add_argument(
             '--fixtures', action='store_true', dest='infixtures', default=False,
-            help='Only look in app.fixtures subdir',
+            help='Also look in app.fixtures subdir',
         )
         parser.add_argument(
             '--noscripts', action='store_true', dest='noscripts', default=False,
-            help='Look in app.scripts subdir',
+            help='Do not look in app.scripts subdir',
         )
         parser.add_argument(
             '-s', '--silent', action='store_true', dest='silent', default=False,
@@ -91,7 +91,7 @@ class Command(EmailNotificationCommand):
         scripts = options['script']
 
         if not options['noscripts']:
-            subdirs.append('scripts')
+            subdirs.append(getattr(settings, 'RUNSCRIPT_SCRIPT_DIR', 'scripts'))
         if options['infixtures']:
             subdirs.append('fixtures')
         verbosity = options["verbosity"]
@@ -202,7 +202,7 @@ class Command(EmailNotificationCommand):
                     print(ERROR2("Found script '%s' but no run() function found." % full_module_path))
 
         def find_modules_for_script(script):
-            """ find script module which contains 'run' attribute """
+            """ Find script module which contains 'run' attribute """
             modules = []
             # first look in apps
             for app in apps.get_app_configs():

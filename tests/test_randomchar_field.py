@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-import mock
 import string
 import pytest
 
 from django.test import TestCase
 
-from .testapp.models import (
-    RandomCharTestModel,
-    RandomCharTestModelUnique,
-    RandomCharTestModelLowercase,
-    RandomCharTestModelUppercase,
-    RandomCharTestModelAlpha,
-    RandomCharTestModelDigits,
-    RandomCharTestModelPunctuation,
-    RandomCharTestModelLowercaseAlphaDigits,
-    RandomCharTestModelUppercaseAlphaDigits,
-)
+from .testapp.models import RandomCharTestModel, RandomCharTestModelUnique, RandomCharTestModelLowercase
+from .testapp.models import RandomCharTestModelUppercase, RandomCharTestModelAlpha, RandomCharTestModelDigits
+from .testapp.models import RandomCharTestModelPunctuation, RandomCharTestModelLowercaseAlphaDigits, RandomCharTestModelUppercaseAlphaDigits
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 class RandomCharFieldTest(TestCase):
