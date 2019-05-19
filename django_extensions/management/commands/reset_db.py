@@ -113,6 +113,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             'django.db.backends.postgresql_psycopg2',
             'django.db.backends.postgis',
             'psqlextra.backend',
+            'django.contrib.gis.db.backends.postgis'
         ))
 
         if engine in SQLITE_ENGINES:
