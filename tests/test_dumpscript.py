@@ -72,10 +72,15 @@ class DumpScriptTests(TestCase):
         tmp_out.close()
 
     def test_with_datetimefield(self):
+        name = Name.objects.create(name='Jack')
+
         Note.objects.create(
             note='Note',
             # Default User Model has DateTimeFields.
-            user=get_user_model().objects.create(username='Jack')
+            user=Person.objects.create(
+                name=name,
+                age=20,
+            )
         )
 
         dumpscript_path = './django_extensions/scripts'
