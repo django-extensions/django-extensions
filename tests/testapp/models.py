@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.db import models
 
 from django_extensions.db.fields import AutoSlugField, RandomCharField, ShortUUIDField, ModificationDateTimeField
