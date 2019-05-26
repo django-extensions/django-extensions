@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
 
@@ -100,20 +101,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         if confirm != 'yes':
             print("Reset cancelled.")
             return
-
-        SQLITE_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES', (
-            'django.db.backends.sqlite3',
-            'django.db.backends.spatialite',
-        ))
-        MYSQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_MYSQL_ENGINES', (
-            'django.db.backends.mysql',
-        ))
-        POSTGRESQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_POSTGRESQL_ENGINES', (
-            'django.db.backends.postgresql',
-            'django.db.backends.postgresql_psycopg2',
-            'django.db.backends.postgis',
-            'psqlextra.backend',
-        ))
 
         if engine in SQLITE_ENGINES:
             try:
