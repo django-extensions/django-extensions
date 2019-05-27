@@ -20,6 +20,58 @@ Current Database Model Field Extensions
 
     slug = AutoSlugField(populate_from=['related_model__title', 'related_model__get_readable_name'])
 
+  AutoSlugField uses Django's slugify_ function by default to "slugify" ``populate_from`` field.
+
+  .. _slugify: https://docs.djangoproject.com/en/dev/ref/utils/#django.utils.text.slugify
+
+  To provide custom "slugify" function you could either provide the function as
+  an argument to :py:class:`~AutoSlugField` or define your ``slugify_function``
+  method within a model.
+
+1. ``slugify_function`` as an argument to :py:class:`~AutoSlugField`.
+
+  .. code-block:: python
+
+    # models.py
+
+    from django.db import models
+
+    from django_extensions.db.fields import AutoSlugField
+
+
+    def my_slugify_function(content):
+        return content.replace('_', '-').lower()
+
+
+    class MyModel(models.Model):
+
+        title = models.CharField(max_length=42)
+        slug = AutoSlugField(populate_from='title', slugify_function=my_slugify_function)
+
+2. ``slugify_function`` as a method within a model class.
+
+  .. code-block:: python
+
+    # models.py
+
+    from django.db import models
+
+    from django_extensions.db.fields import AutoSlugField
+
+
+    class MyModel(models.Model):
+
+        title = models.CharField(max_length=42)
+        slug = AutoSlugField(populate_from='title')
+
+        def slugify_function(self, content):
+            return content.replace('_', '-').lower()
+
+  **Important.**
+  If you both provide ``slugify_function`` in a model class and
+  pass ``slugify_function`` to :py:class:`~AutoSlugField` field,
+  then model's ``slugify_function`` method will take precedence.
+
 * *RandomCharField* - AutoRandomCharField will automatically create a
   unique random character field with the specified length. By default
   upper/lower case and digits are included as possible characters. Given

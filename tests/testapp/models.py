@@ -91,6 +91,34 @@ class SluggedTestModel(models.Model):
         app_label = 'django_extensions'
 
 
+class CustomFuncSluggedTestModel(models.Model):
+
+    def slugify_function(self, content):
+        return content.upper()
+
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class CustomFuncPrecedenceSluggedTestModel(models.Model):
+    def custom_slug_one(self, content):
+        return content.upper()
+
+    def custom_slug_two(content):
+        return content.lower()
+
+    slugify_function = custom_slug_one
+
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title', slugify_function=custom_slug_two)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class ChildSluggedTestModel(SluggedTestModel):
     class Meta:
         app_label = 'django_extensions'
