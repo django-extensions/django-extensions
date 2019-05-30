@@ -45,7 +45,7 @@ class NoControlCharactersValidator(object):
 
 @deconstructible
 class NoWhitespaceValidator(object):
-    message = _("Leading and Trailing whitespace is not allowed.")
+    message = _("Leading and Trailing whitespaces are not allowed.")
     code = "no_whitespace"
 
     def __init__(self, message=None, code=None, whitelist=None):
@@ -72,9 +72,9 @@ class NoWhitespaceValidator(object):
 class HexValidator(object):
     messages = {
         'invalid': _("Only a hex string is allowed."),
-        'length': _("Invalid length must be %(length)d characters."),
-        'min_length': _("Ensure that there are more then %(min)s characters."),
-        'max_length': _("Ensure that there are no more then %(max)s characters."),
+        'length': _("Invalid length. Must be %(length)d characters."),
+        'min_length': _("Ensure that there are more than %(min)s characters."),
+        'max_length': _("Ensure that there are no more than %(max)s characters."),
     }
     code = "hex_only"
 

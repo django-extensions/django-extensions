@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-extensions\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-29 09:46-0500\n"
+"POT-Creation-Date: 2019-05-30 14:51-0500\n"
 "PO-Revision-Date: 2011-02-02 10:42+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,10 +90,14 @@ msgstr "Строка (Не длиннее: %(max_length)s)"
 
 #: validators.py:14
 msgid "Control Characters like new lines or tabs are not allowed."
-msgstr "Управляющие символы, такие как символ новой строки и символ табуляции недопустимы."
+msgstr ""
+"Управляющие символы, такие как символ новой строки и символ табуляции "
+"недопустимы."
 
 #: validators.py:48
-msgid "Leading and Trailing whitespace is not allowed."
+#, fuzzy
+#| msgid "Leading and Trailing whitespace is not allowed."
+msgid "Leading and Trailing whitespaces are not allowed."
 msgstr "Пробел в начале или в конце недопустим."
 
 #: validators.py:74
@@ -101,18 +105,21 @@ msgid "Only a hex string is allowed."
 msgstr "Допустимо использование только шестнадцатеричных строк."
 
 #: validators.py:75
-#, python-format
-msgid "Invalid length must be %(length)d characters."
+#, fuzzy, python-format
+#| msgid "Invalid length must be %(length)d characters."
+msgid "Invalid length. Must be %(length)d characters."
 msgstr "Недопустимая длина, должно быть %(length)d символов."
 
 #: validators.py:76
-#, python-format
-msgid "Ensure that there are more then %(min)s characters."
+#, fuzzy, python-format
+#| msgid "Ensure that there are more then %(min)s characters."
+msgid "Ensure that there are more than %(min)s characters."
 msgstr "Убедитесь, что длина строки больше %(min)s символов."
 
 #: validators.py:77
-#, python-format
-msgid "Ensure that there are no more then %(max)s characters."
+#, fuzzy, python-format
+#| msgid "Ensure that there are no more then %(max)s characters."
+msgid "Ensure that there are no more than %(max)s characters."
 msgstr "Убедитесь, что длина строки не больше %(max)s символов."
 
 #~ msgid "Lookup"

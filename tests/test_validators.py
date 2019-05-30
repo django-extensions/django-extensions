@@ -50,7 +50,7 @@ class NoWhiteSpaceValidatorTests(TestCase):
         with self.assertRaises(ValidationError) as cm:
             self.validator(value_with_leading_whitespace)
 
-        self.assertEqual(cm.exception.message, 'Leading and Trailing whitespace is not allowed.')
+        self.assertEqual(cm.exception.message, 'Leading and Trailing whitespaces are not allowed.')
         self.assertEqual(cm.exception.code, 'no_whitespace')
         self.assertDictEqual(cm.exception.params, {'value': value_with_leading_whitespace})
 
