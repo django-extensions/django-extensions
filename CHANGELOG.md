@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.1.8
+-----
+
+Changes:
+  - New: HexValidator, validate hex strings
+  - Improvement: reset_db, move settings to `django_settings.settings` which makes it easier to override.
+  - Improvement: AutoSlugField, extend support for custom slugify function
+  - Fix: runprofileserver, fix autoreloader for newer Django versions
+
+
 2.1.7
 -----
 
@@ -25,12 +35,14 @@ Changes:
   - Deprecate: passwd, use Django's changepassword
   - Deprecate: Keyczar encrypted fields, Keyczar is abandonned / deprecated
 
+
 2.1.6
 -----
 
 Changes:
   - Fix: runserver_plus, auto_reloader fix for compatibility with Django 2.2
   - New: test, many many more tests :-) thanks @kuter
+
 
 2.1.5
 -----
@@ -40,6 +52,7 @@ Changes:
   - Fix: ForeignKeySearchInput, error with widget render(...) parameters on Django 2.1
   - Fix: pipchecker, unsupported format string passed to NoneType.format error
   - Tests: bunch of new test cases
+
 
 2.1.4
 -----
@@ -55,6 +68,7 @@ Changes:
   - Improvement: graph_models, add --dot option
   - Improvement: graph_models, allow to redirect (text) output to file
   - Improvement: sqldiff, better support for indexes, index_together and unique_together
+
 
 2.1.3
 -----
@@ -125,8 +139,6 @@ Changes:
   - Improvement: clear_cache, add --all option
   - Improvement: pipchecker, treat dev versions as unstable
   - Deprecation: ForeignKeyAutocompleteAdmin, Django 2.0 has similar capabilities, which are much better supported.
-
-
 
 
 2.0.7
