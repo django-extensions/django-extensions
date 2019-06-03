@@ -33,23 +33,23 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in settings.py'
+            help='Use another user for the database than defined in settings.py'
         )
         parser.add_argument(
             '-O', '--owner', action='store', dest='owner', default=None,
-            help='Use another owner for creating the database then the user defined in settings or via --user'
+            help='Use another owner for creating the database than the user defined in settings or via --user'
         )
         parser.add_argument(
             '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in settings.py'
+            help='Use another password for the database than defined in settings.py'
         )
         parser.add_argument(
             '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py'
+            help='Use another database name than defined in settings.py'
         )
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py'
+            help='Use this router-database other than defined in settings.py'
         )
         parser.add_argument(
             '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
