@@ -86,6 +86,8 @@ class Command(BaseCommand):
         if language is not None:
             translation.activate(language)
             self.LANGUAGES = [(code, name) for code, name in getattr(settings, 'LANGUAGES', []) if code == language]
+        else:
+            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
 
         decorator = options['decorator']
         if not decorator:
