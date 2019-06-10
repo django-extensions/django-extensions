@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.1.9
+-----
+
+Changes:
+  - Fix: show_urls, fix for traceback on multi language sites
+  - Improvement: reset_db, fix typo's in help test
+
+
 2.1.8
 -----
 
