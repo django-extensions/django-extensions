@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
-from django_extensions.db.fields import AutoSlugField, RandomCharField, ShortUUIDField, ModificationDateTimeField
+from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
+
+from .fields import UniqField
 
 
 class Secret(models.Model):
@@ -68,6 +70,57 @@ class PostWithTitleOrdering(Post):
     class Meta:
         proxy = True
         ordering = ['title']
+
+
+class DummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class SecondDummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class ThirdDummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class PostWithUniqField(models.Model):
+
+    uniq_field = UniqField(
+        max_length=255,
+        boolean_attr=True,
+        non_boolean_attr='non_boolean_attr'
+    )
+    common_field = models.CharField(max_length=10)
+    another_common_field = models.CharField(max_length=10)
+    many_to_one_field = models.ForeignKey(DummyRelationModel, on_delete=models.CASCADE)
+    one_to_one_field = models.OneToOneField(SecondDummyRelationModel, on_delete=models.CASCADE)
+    many_to_many_field = models.ManyToManyField(ThirdDummyRelationModel, related_name='posts_with_uniq')
+
+    class Meta:
+        app_label = 'django_extensions'
+        unique_together = ('common_field', 'uniq_field',)
+
+
+class ReverseModel(models.Model):
+    post_field = models.ForeignKey(
+        PostWithUniqField, related_name='reverse_models', on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class InheritedFromPostWithUniqField(PostWithUniqField):
+    new_field = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = 'django_extensions'
 
 
 class AbstractInheritanceTestModelParent(models.Model):
