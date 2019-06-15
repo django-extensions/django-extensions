@@ -6,7 +6,7 @@ import sys
 
 import six
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from .testapp.models import Name, Note, Person
 
@@ -70,6 +70,7 @@ class DumpScriptTests(TestCase):
             self.assertTrue(len(ast_syntax_tree.asList()) > 1)
         tmp_out.close()
 
+    @override_settings(TIME_ZONE='Asia/Seoul')
     def test_with_datetimefield(self):
         name = Name.objects.create(name='Jack')
 
