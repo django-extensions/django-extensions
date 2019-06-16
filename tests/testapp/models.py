@@ -24,21 +24,21 @@ class Name(models.Model):
         app_label = 'django_extensions'
 
 
-class Note(models.Model):
-    note = models.TextField()
-    # for DumpScriptTests.test_with_datetimefield
-    user = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
 class Personality(models.Model):
     description = models.CharField(max_length=50)
 
 
 class Club(models.Model):
     name = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now=True)
+
+
+class Note(models.Model):
+    note = models.TextField()
+    club = models.ForeignKey(Club, null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'
 
 
 class Person(models.Model):

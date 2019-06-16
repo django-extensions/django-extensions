@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import ast
+import datetime
 import os
 import shutil
 import sys
@@ -9,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
-from .testapp.models import Name, Note, Person
+from .testapp.models import Name, Note, Person, Club, Membership
 
 
 class DumpScriptTests(TestCase):
@@ -73,10 +74,10 @@ class DumpScriptTests(TestCase):
 
     @override_settings(TIME_ZONE='Asia/Seoul')
     def test_with_datetimefield(self):
+        django = Club.objects.create(name='Club Django')
         Note.objects.create(
-            note='Note',
-            # Default User Model has DateTimeFields.
-            user=get_user_model().objects.create(username='Jack')
+            note='Django Tips',
+            club=django,
         )
 
         dumpscript_path = './django_extensions/scripts'
@@ -97,4 +98,4 @@ class DumpScriptTests(TestCase):
         shutil.rmtree(dumpscript_path)
 
         # Check if Note is duplicated
-        self.assertEqual(Note.objects.filter(note='Note').count(), 2)
+        self.assertEqual(Note.objects.filter(note='Django Tips').count(), 2)
