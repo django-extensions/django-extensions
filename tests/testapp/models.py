@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
@@ -27,7 +27,7 @@ class Name(models.Model):
 class Note(models.Model):
     note = models.TextField()
     # for DumpScriptTests.test_with_datetimefield
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'django_extensions'
