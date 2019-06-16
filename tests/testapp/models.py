@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField

@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 import ast
-import datetime
 import os
 import shutil
 import sys
 
 import six
-from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
-from .testapp.models import Name, Note, Person, Club, Membership
+from .testapp.models import Name, Note, Person, Club
 
 
 class DumpScriptTests(TestCase):
