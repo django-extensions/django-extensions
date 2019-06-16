@@ -98,7 +98,7 @@ class Command(BaseCommand):
         return dsnstr.format(dbhost, dbport, dbname, dbuser, dbpass)
 
     def _postgresql(self, dbhost, dbport, dbname, dbuser, dbpass, dsn_style=None):  # noqa
-        """PostgreSQL psycopg2 driver  accepts two syntaxes
+        """PostgreSQL psycopg2 driver accepts two syntaxes
 
         Plus a string for .pgpass file
         """
