@@ -76,6 +76,7 @@ Contents
    sqlcreate
    sqldsn
    validate_templates
+   validators
 
 
 Indices and tables

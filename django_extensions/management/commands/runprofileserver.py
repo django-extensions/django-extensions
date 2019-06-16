@@ -283,7 +283,11 @@ class Command(BaseCommand):
                     print(shutdown_message)
                 sys.exit(0)
         if use_reloader:
-            from django.utils import autoreload
-            autoreload.main(inner_run)
+            try:
+                from django.utils.autoreload import run_with_reloader
+                run_with_reloader(inner_run)
+            except ImportError:
+                from django.utils import autoreload
+                autoreload.main(inner_run)
         else:
             inner_run()
