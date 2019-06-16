@@ -66,16 +66,13 @@ def orm_item_locator(orm_obj):
         pk_value = getattr(pk_value, pk_name)
 
     clean_dict = make_clean_dict(orm_obj.__dict__)
-    datetimes_to_replace = list()
 
-    for i, key in enumerate(clean_dict):
+    for key in clean_dict:
         v = clean_dict[key]
         if v is not None:
             if isinstance(v, datetime.datetime):
                 v = timezone.make_aware(v)
-                datetime_value = '%s %s' % (i, v.isoformat())
-                clean_dict[key] = datetime_value
-                datetimes_to_replace.append(("'%s'" % datetime_value, 'dateutil.parser.parse("%s")' % v.isoformat()))
+                clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
             elif not isinstance(v, (six.string_types, six.integer_types, float)):
                 clean_dict[key] = six.u("%s" % v)
 
@@ -83,10 +80,6 @@ def orm_item_locator(orm_obj):
         original_class, original_pk_name,
         the_class, pk_name, pk_value, clean_dict
     )
-
-    # to make a dateutil codes(e.g. dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00"))
-    for k, v in datetimes_to_replace:
-        output = output.replace(k, v)
 
     return output
 
@@ -755,3 +748,12 @@ class SkipValue(Exception):
 
 class DoLater(Exception):
     """ Value could not be parsed or should simply be skipped. """
+
+
+class StrToCodeChanger:
+
+    def __init__(self, string):
+        self.repr = string
+
+    def __repr__(self):
+        return self.repr
