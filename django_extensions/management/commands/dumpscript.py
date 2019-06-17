@@ -28,7 +28,6 @@ Improvements:
     See TODOs and FIXMEs scattered throughout :-)
 
 """
-
 import datetime
 import sys
 
@@ -42,7 +41,8 @@ from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
 from django.db.models.deletion import Collector
-from django.utils.encoding import smart_text, force_text
+from django.utils import timezone
+from django.utils.encoding import force_text, smart_text
 
 from django_extensions.management.utils import signalcommand
 
@@ -69,13 +69,18 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float, datetime.datetime)):
-            clean_dict[key] = six.u("%s" % v)
+        if v is not None:
+            if isinstance(v, datetime.datetime):
+                v = timezone.make_aware(v)
+                clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
+            elif not isinstance(v, (six.string_types, six.integer_types, float)):
+                clean_dict[key] = six.u("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class, original_pk_name,
         the_class, pk_name, pk_value, clean_dict
     )
+
     return output
 
 
@@ -608,6 +613,7 @@ from django.contrib.contenttypes.models import ContentType
 
 try:
     import dateutil.parser
+    from dateutil.tz import tzoffset
 except ImportError:
     print("Please install python-dateutil")
     sys.exit(os.EX_USAGE)
@@ -742,3 +748,12 @@ class SkipValue(Exception):
 
 class DoLater(Exception):
     """ Value could not be parsed or should simply be skipped. """
+
+
+class StrToCodeChanger:
+
+    def __init__(self, string):
+        self.repr = string
+
+    def __repr__(self):
+        return self.repr

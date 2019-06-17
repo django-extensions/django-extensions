@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import ast
+import os
+import shutil
 import sys
 
 import six
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
-from .testapp.models import Name, Note, Person
+from .testapp.models import Name, Note, Person, Club
 
 
 class DumpScriptTests(TestCase):
@@ -67,3 +69,31 @@ class DumpScriptTests(TestCase):
         else:
             self.assertTrue(len(ast_syntax_tree.asList()) > 1)
         tmp_out.close()
+
+    @override_settings(TIME_ZONE='Asia/Seoul')
+    def test_with_datetimefield(self):
+        django = Club.objects.create(name='Club Django')
+        Note.objects.create(
+            note='Django Tips',
+            club=django,
+        )
+
+        dumpscript_path = './django_extensions/scripts'
+
+        os.mkdir(dumpscript_path)
+        open(dumpscript_path + '/__init__.py', 'w').close()  # for python 2.7
+
+        # This script will have a dateutil codes.
+        # e.g. importer.locate_object(...,
+        # 'date_joined': dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00")
+        with open(dumpscript_path + '/test.py', 'wt') as test:
+            call_command('dumpscript', 'django_extensions', stdout=test)
+
+        # Check dumpscript without exception
+        call_command('runscript', 'test')
+
+        # Delete dumpscript
+        shutil.rmtree(dumpscript_path)
+
+        # Check if Note is duplicated
+        self.assertEqual(Note.objects.filter(note='Django Tips').count(), 2)
