@@ -65,6 +65,7 @@ Contents
    graph_models
    jobs_scheduling
    merge_model_instances
+   migrationstate
    model_extensions
    namespace_proposal
    print_settings
