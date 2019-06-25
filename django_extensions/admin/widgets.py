@@ -26,13 +26,16 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     search_path = None
 
     def _media(self):
-        js_files = [static('django_extensions/js/jquery.bgiframe.js'),
-                    static('django_extensions/js/jquery.ajaxQueue.js'),
-                    static('django_extensions/js/jquery.autocomplete.js')]
+        js_files = [
+            static('django_extensions/js/jquery.bgiframe.js'),
+            static('django_extensions/js/jquery.ajaxQueue.js'),
+            static('django_extensions/js/jquery.autocomplete.js'),
+        ]
 
-        return forms.Media(css={'all': (static('django_extensions/css/jquery.autocomplete.css'),)},
-                               js=js_files)
-
+        return forms.Media(
+            css={'all': (static('django_extensions/css/jquery.autocomplete.css'), )},
+            js=js_files,
+        )
     media = property(_media)
 
     def label_for_value(self, value):
