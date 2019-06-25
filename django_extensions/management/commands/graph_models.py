@@ -191,8 +191,8 @@ class Command(BaseCommand):
         if not args and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        # determine output format based on options, file extension, and library
-        # availability
+        # Determine output format based on options, file extension, and library
+        # availability.
         outputfile = options.get("outputfile") or ""
         _, outputfile_ext = os.path.splitext(outputfile)
         outputfile_ext = outputfile_ext.lower()
@@ -270,7 +270,7 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
-        """Render model data as image using pygraphviz"""
+        """Render model data as image using pygraphviz."""
         if not HAS_PYGRAPHVIZ:
             raise CommandError("You need to install pygraphviz python module")
 
@@ -290,7 +290,7 @@ class Command(BaseCommand):
         graph.draw(kwargs['outputfile'])
 
     def render_output_pydot(self, dotdata, **kwargs):
-        """Render model data as image using pydot"""
+        """Render model data as image using pydot."""
         if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 
