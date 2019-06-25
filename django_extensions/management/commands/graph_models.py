@@ -191,8 +191,8 @@ class Command(BaseCommand):
         if not args and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        # determine output format based on options, file extension, and library
-        # availability
+        # Determine output format based on options, file extension, and library
+        # availability.
         outputfile = options.get("outputfile") or ""
         _, outputfile_ext = os.path.splitext(outputfile)
         outputfile_ext = outputfile_ext.lower()
