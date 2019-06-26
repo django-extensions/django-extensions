@@ -80,6 +80,7 @@ class ModelGraph(object):
             kwargs.get('exclude_models', "")
         )
         self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
+        self.arrow_shape = kwargs.get("arrow_shape")
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
@@ -324,9 +325,17 @@ class ModelGraph(object):
             # excluding fields inherited from abstract classes. they too show as local_fields
             return newmodel
         if isinstance(field, OneToOneField):
-            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]')
+            relation = self.add_relation(
+                field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]'
+            )
         elif isinstance(field, ForeignKey):
-            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=dot, dir=both]')
+            relation = self.add_relation(
+                field,
+                newmodel,
+                '[arrowhead=none, arrowtail={}, dir=both]'.format(
+                    self.arrow_shape
+                ),
+            )
         else:
             relation = None
         if relation is not None:
@@ -340,7 +349,13 @@ class ModelGraph(object):
         relation = None
         if isinstance(field, ManyToManyField):
             if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
-                relation = self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]')
+                relation = self.add_relation(
+                    field,
+                    newmodel,
+                    '[arrowhead={} arrowtail={}, dir=both]'.format(
+                        self.arrow_shape, self.arrow_shape
+                    ),
+                )
         elif isinstance(field, GenericRelation):
             relation = self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
         if relation is not None:
