@@ -168,10 +168,10 @@ class Command(BaseCommand):
             },
             '--arrow-shape': {
                 'action': 'store',
+                'default': 'dot',
                 'dest': 'arrow_shape',
-                'help': 'Arrow shape to use for relations. \
-                    Default is dot. Available shapes: box, crow, \
-                    curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
+                'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
+                'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
             }
         }
 

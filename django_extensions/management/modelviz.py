@@ -55,26 +55,6 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
-def parse_arrow_shape(arg):
-    shapes = (
-        "box",
-        "crow",
-        "curve",
-        "icurve",
-        "diamond",
-        "dot",
-        "inv",
-        "none",
-        "normal",
-        "tee",
-        "vee"
-    )
-    if arg in shapes:
-        return arg
-    else:
-        return "dot"
-
-
 class ModelGraph(object):
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
@@ -100,7 +80,7 @@ class ModelGraph(object):
             kwargs.get('exclude_models', "")
         )
         self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
-        self.arrow_shape = parse_arrow_shape(kwargs.get("arrow_shape", None))
+        self.arrow_shape = kwargs.get("arrow_shape")
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
