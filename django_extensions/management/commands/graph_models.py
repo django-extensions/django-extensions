@@ -165,6 +165,13 @@ class Command(BaseCommand):
                 'default': False,
                 'dest': 'hide_edge_labels',
                 'help': 'Do not showrelations labels in the graph.',
+            },
+            '--arrow-shape': {
+                'action': 'store',
+                'dest': 'arrow_shape',
+                'help': 'Arrow shape to use for relations. \
+                    Default is dot. Available shapes: box, crow, \
+                    curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
             }
         }
 

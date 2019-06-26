@@ -55,6 +55,26 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
+def parse_arrow_shape(arg):
+    shapes = (
+        "box",
+        "crow",
+        "curve",
+        "icurve",
+        "diamond",
+        "dot",
+        "inv",
+        "none",
+        "normal",
+        "tee",
+        "vee"
+    )
+    if arg in shapes:
+        return arg
+    else:
+        return "dot"
+
+
 class ModelGraph(object):
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
@@ -80,6 +100,7 @@ class ModelGraph(object):
             kwargs.get('exclude_models', "")
         )
         self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
+        self.arrow_shape = parse_arrow_shape(kwargs.get("arrow_shape", None))
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
@@ -326,7 +347,7 @@ class ModelGraph(object):
         if isinstance(field, OneToOneField):
             relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]')
         elif isinstance(field, ForeignKey):
-            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=dot, dir=both]')
+            relation = self.add_relation(field, newmodel, f'[arrowhead=none, arrowtail={self.arrow_shape}, dir=both]')
         else:
             relation = None
         if relation is not None:
@@ -340,7 +361,7 @@ class ModelGraph(object):
         relation = None
         if isinstance(field, ManyToManyField):
             if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
-                relation = self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]')
+                relation = self.add_relation(field, newmodel, f'[arrowhead={self.arrow_shape} arrowtail={self.arrow_shape}, dir=both]')
         elif isinstance(field, GenericRelation):
             relation = self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
         if relation is not None:
