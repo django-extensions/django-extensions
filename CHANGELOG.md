@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.1
+-----
+
+Changes:
+  - Fix: tests, support for newer versions of pytest
+  - Fix: tests, disable test with drf dependency for older python versions
+
+
 2.2.0
 -----
 
