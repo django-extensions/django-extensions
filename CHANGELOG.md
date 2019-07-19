@@ -1,6 +1,18 @@
 Changelog
 =========
 
+2.2.0
+-----
+
+Changes:
+  - Fix: removing wrongly released text_tags template
+  - Fix: graph_models, support for Python <3.6
+  - Improvement: ForeignKeySearchInput, wrap media files in static()
+  - Improvement: UniqField, added tests
+  - Improvement: dumpscript, fix orm_item_locator to use dateutil
+  - Improvement: graph_models, added argument to change arrow_shape
+
+
 2.1.9
 -----
 
