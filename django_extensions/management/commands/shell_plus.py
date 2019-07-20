@@ -287,7 +287,7 @@ class Command(BaseCommand):
                 # Match the behavior of the cpython shell where an error in
                 # PYTHONSTARTUP prints an exception and continues.
                 try:
-                    exec(compile(pythonrc_code, pythonrc, 'exec'), imported_objects)
+                    exec(compile(pythonrc_code, pythonrc, 'exec'), imported_objects) in globals(), locals()
                 except Exception:
                     traceback.print_exc()
                     if self.tests_mode:
