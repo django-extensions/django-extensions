@@ -254,6 +254,9 @@ class SQLDiff(object):
         # type: () -> Dict[int, Union[str, Callable]]
         return self.DATA_TYPES_REVERSE_OVERRIDE
 
+    def format_field_names(self, field_names):
+        return field_names
+
     def sql_to_dict(self, query, param):
         """
         Execute query and return a dict
@@ -265,6 +268,7 @@ class SQLDiff(object):
         cursor = connection.cursor()
         cursor.execute(query, param)
         fieldnames = [name[0] for name in cursor.description]
+        fieldnames = self.format_field_names(fieldnames)
         result = []
         for row in cursor.fetchall():
             rowset = []
@@ -755,6 +759,9 @@ class MySQLDiff(SQLDiff):
         super(MySQLDiff, self).__init__(*args, **kwargs)
         self.auto_increment = set()
         self.load_auto_increment()
+
+    def format_field_names(self, field_names):
+        return [f.lower() for f in field_names]
 
     def load_null(self):
         tablespace = 'public'
