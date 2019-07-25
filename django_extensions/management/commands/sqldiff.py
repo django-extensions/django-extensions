@@ -203,10 +203,6 @@ class SQLDiff(object):
 
         self.introspection = connection.introspection
 
-        self.cursor = connection.cursor()
-        self.django_tables = self.introspection.django_table_names(only_existing=options['only_existing'])
-        # TODO: We are losing information about tables which are views here
-        self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
         self.differences = []
         self.unknown_db_fields = {}
         self.new_db_fields = set()
@@ -230,6 +226,12 @@ class SQLDiff(object):
             'field-parameter-differ': self.SQL_FIELD_PARAMETER_DIFFER,
             'notnull-differ': self.SQL_NOTNULL_DIFFER,
         }
+
+    def load(self):
+        self.cursor = connection.cursor()
+        self.django_tables = self.introspection.django_table_names(only_existing=self.options['only_existing'])
+        # TODO: We are losing information about tables which are views here
+        self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
 
         if self.can_detect_notnull_differ:
             self.load_null()
@@ -361,8 +363,8 @@ class SQLDiff(object):
             module_path, package_name = class_path.rsplit('.', 1)
             module = importlib.import_module(module_path)
             return getattr(module, package_name)
-        else:
-            return getattr(models, class_path)
+
+        return getattr(models, class_path)
 
     def get_field_db_nullable(self, field, table_name):
         tablespace = field.db_tablespace
@@ -744,6 +746,13 @@ class SQLDiff(object):
 
 class GenericSQLDiff(SQLDiff):
     can_detect_notnull_differ = False
+    can_detect_unsigned_differ = False
+
+    def load_null(self):
+        pass
+
+    def load_unsigned(self):
+        pass
 
 
 class MySQLDiff(SQLDiff):
@@ -751,8 +760,8 @@ class MySQLDiff(SQLDiff):
     can_detect_unsigned_differ = True
     unsigned_suffix = 'UNSIGNED'
 
-    def __init__(self, *args, **kwargs):
-        super(MySQLDiff, self).__init__(*args, **kwargs)
+    def load(self):
+        super(MySQLDiff, self).load()
         self.auto_increment = set()
         self.load_auto_increment()
 
@@ -818,6 +827,7 @@ class MySQLDiff(SQLDiff):
 
 class SqliteSQLDiff(SQLDiff):
     can_detect_notnull_differ = True
+    can_detect_unsigned_differ = False
 
     def load_null(self):
         for table_name in self.db_tables:
@@ -829,11 +839,15 @@ class SqliteSQLDiff(SQLDiff):
                 key = (tablespace, table_name, table_info['name'])
                 self.null[key] = not table_info['notnull']
 
+    def load_unsigned(self):
+        pass
+
     # Unique does not seem to be implied on Sqlite for Primary_key's
     # if this is more generic among databases this might be usefull
     # to add to the superclass's find_unique_missing_in_db method
-    def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name):
-        skip_list = []
+    def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name, skip_list=None):
+        if skip_list is None:
+            skip_list = []
 
         unique_columns = [field.db_column or field.attname for field in all_local_fields(meta) if field.unique]
 
@@ -864,7 +878,7 @@ class SqliteSQLDiff(SQLDiff):
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super(SqliteSQLDiff, self).get_field_db_type(description, field, table_name)
         if not db_type:
-            return
+            return None
         if field:
             field_type = self.get_field_model_type(field)
             # Fix char/varchar inconsistencies
@@ -885,26 +899,26 @@ class PostgresqlSQLDiff(SQLDiff):
     # Hopefully in the future we can add constraint checking and other more
     # advanced checks based on this database.
     SQL_LOAD_CONSTRAINTS = """
-    SELECT nspname, relname, conname, attname, pg_get_constraintdef(pg_constraint.oid)
-    FROM pg_constraint
-    INNER JOIN pg_attribute ON pg_constraint.conrelid = pg_attribute.attrelid AND pg_attribute.attnum = any(pg_constraint.conkey)
-    INNER JOIN pg_class ON conrelid=pg_class.oid
-    INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
-    ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END,contype,nspname,relname,conname;
+        SELECT nspname, relname, conname, attname, pg_get_constraintdef(pg_constraint.oid)
+        FROM pg_constraint
+        INNER JOIN pg_attribute ON pg_constraint.conrelid = pg_attribute.attrelid AND pg_attribute.attnum = any(pg_constraint.conkey)
+        INNER JOIN pg_class ON conrelid=pg_class.oid
+        INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace
+        ORDER BY CASE WHEN contype='f' THEN 0 ELSE 1 END,contype,nspname,relname,conname;
     """
     SQL_LOAD_NULL = """
-    SELECT nspname, relname, attname, attnotnull
-    FROM pg_attribute
-    INNER JOIN pg_class ON attrelid=pg_class.oid
-    INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace;
+        SELECT nspname, relname, attname, attnotnull
+        FROM pg_attribute
+        INNER JOIN pg_class ON attrelid=pg_class.oid
+        INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace;
     """
 
     SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
     SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD("TYPE"), style.SQL_COLTYPE(args[2]))
     SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
-    def __init__(self, *args, **kwargs):
-        super(PostgresqlSQLDiff, self).__init__(*args, **kwargs)
+    def load(self):
+        super(PostgresqlSQLDiff, self).load()
         self.check_constraints = {}
         self.load_constraints()
 
@@ -1251,6 +1265,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
 
         cls = DATABASE_SQLDIFF_CLASSES.get(engine, GenericSQLDiff)
         sqldiff_instance = cls(app_models, options, stdout=self.stdout, stderr=self.stderr)
+        sqldiff_instance.load()
         sqldiff_instance.find_differences()
         if not sqldiff_instance.has_differences:
             self.exit_code = 0
