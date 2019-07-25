@@ -24,6 +24,7 @@ class SqlDiffTests(TestCase):
             stdout=tmp_out,
             stderr=tmp_err,
         )
+        instance.load()
         instance.find_differences()
         checked_models = {"%s.%s" % (app_label, model_name) for app_label, model_name, _ in instance.differences}
         self.assertEqual(should_include_proxy_models, "testapp.PostWithTitleOrdering" in checked_models)
