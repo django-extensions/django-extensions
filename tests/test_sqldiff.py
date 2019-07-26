@@ -72,8 +72,10 @@ class SqlDiffTests(TestCase):
         mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         sqlite_dict = sqlite_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         postgresql_dict = postgresql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        self.assertEquals(mysql_dict, sqlite_dict)
-        self.assertEquals(mysql_dict, postgresql_dict)
+        self.assertEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
+        self.assertEquals(sqlite_dict, [{'BAR': 2, 'foo': 1}])
+        self.assertEquals(postgresql_dict, [{'bar': 2, 'foo': 1}])
+
 
     # def test_sql_diff_run(self):
     #     tmp_out = six.StringIO()
