@@ -52,7 +52,7 @@ class SqlDiffTests(TestCase):
         expected_field_name = ['name', 'email', 'address']
         self.assertEquals(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
 
-    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on sqlite3")
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
     def test_mysql_to_dict(self):
         mysql_instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
@@ -63,10 +63,10 @@ class SqlDiffTests(TestCase):
         mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
 
-    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on sqlite3")
-    @mock.patch('django_extensions.management.commands.sqldiff.MySQLDiff.sql_to_dict')
-    def test_invalid_mysql_to_dict(self, sql_to_dict):
-        sql_to_dict.return_value = [{'BAR': 2, 'foo': 1}]
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
+    @mock.patch('django_extensions.management.commands.sqldiff.MySQLDiff.format_field_names')
+    def test_invalid_mysql_to_dict(self, format_field_names):
+        format_field_names.return_value = lambda x: x
         mysql_instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
             vars(self.options),
@@ -88,7 +88,7 @@ class SqlDiffTests(TestCase):
         sqlite_dict = sqlite_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEquals(sqlite_dict, [{'BAR': 2, 'foo': 1}])
 
-    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql', reason="Test can only run on sqlite3")
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql', reason="Test can only run on postgresql")
     def test_postgresql_to_dict(self):
         postgresql_instance = PostgresqlSQLDiff(
             apps.get_models(include_auto_created=True),
