@@ -66,7 +66,7 @@ class SqlDiffTests(TestCase):
     @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
     @mock.patch('django_extensions.management.commands.sqldiff.MySQLDiff.format_field_names')
     def test_invalid_mysql_to_dict(self, format_field_names):
-        format_field_names.return_value = lambda x: x
+        format_field_names.side_effect = lambda x: x
         mysql_instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
             vars(self.options),
