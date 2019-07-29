@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import mock
 import six
 import pytest
 from django.conf import settings
@@ -50,30 +51,52 @@ class SqlDiffTests(TestCase):
         expected_field_name = ['name', 'email', 'address']
         self.assertEquals(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
 
-    def test_sql_to_dict(self):
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on sqlite3")
+    def test_mysql_to_dict(self):
         mysql_instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
             vars(self.options),
             stdout=self.tmp_out,
             stderr=self.tmp_err,
         )
-        sqlite_instance = SqliteSQLDiff(
-            apps.get_models(include_auto_created=True),
-            vars(self.options),
-            stdout=self.tmp_out,
-            stderr=self.tmp_err,
-        )
-        postgresql_instance = PostgresqlSQLDiff(
+        mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
+        self.assertEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
+
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on sqlite3")
+    @mock.patch('django_extensions.management.commands.sqldiff.MySQLDiff.sql_to_dict')
+    def test_invalid_mysql_to_dict(self, sql_to_dict):
+        sql_to_dict.return_value = [{'BAR': 2, 'foo': 1}]
+        mysql_instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
             vars(self.options),
             stdout=self.tmp_out,
             stderr=self.tmp_err,
         )
         mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
+        self.assertNotEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
+
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3', reason="Test can only run on sqlite3")
+    def test_sqlite_to_dict(self):
+        sqlite_instance = SqliteSQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+
         sqlite_dict = sqlite_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        postgresql_dict = postgresql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        self.assertEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
         self.assertEquals(sqlite_dict, [{'BAR': 2, 'foo': 1}])
+
+    @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql', reason="Test can only run on sqlite3")
+    def test_postgresql_to_dict(self):
+        postgresql_instance = PostgresqlSQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+
+        postgresql_dict = postgresql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEquals(postgresql_dict, [{'BAR': 2, 'foo': 1}])
 
     # def test_sql_diff_run(self):
