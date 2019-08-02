@@ -1,0 +1,28 @@
+from django.contrib.auth.mixins import AccessMixin
+
+class UserPermissionMixin(AccessMixin):
+    model_permission_user_field = 'user'
+
+    def get_model_permission_user_field(self):
+        return self.model_permission_user_field
+
+    def test_func(self):
+        model_attr = self.get_model_permission_user_field()
+        current_user = self.request.user
+
+        if current_user == getattr(self.model, model_attr):
+            return True
+
+        return False
+
+
+class UserQueryListViewMixin:
+    model_user_field = 'user'
+
+    def get_model_user_field(self):
+        return self.model_user_field
+
+    def get_queryset(self):
+        model_attr = self.get_model_user_field();
+        filter_kwargs = { model_attr: self.request.user }
+        return self.model.objects.filter(filter_kwargs)
