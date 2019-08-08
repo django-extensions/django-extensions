@@ -14,15 +14,3 @@ class UserPermissionMixin(AccessMixin):
             return True
 
         return False
-
-
-class UserQueryListViewMixin:
-    model_user_field = 'user'
-
-    def get_model_user_field(self):
-        return self.model_user_field
-
-    def get_queryset(self):
-        model_attr = self.get_model_user_field();
-        filter_kwargs = { model_attr: self.request.user }
-        return self.model.objects.filter(filter_kwargs)

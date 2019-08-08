@@ -30,7 +30,7 @@ By default, the "owner" will be called "user".
 
    # views.py
 
-   from django.views.generic import MyModelUpdateView
+   from django.views.generic import UpdateView
 
    from django_extensions.auth.mixins import UserPermissionMixin
 
