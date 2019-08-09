@@ -354,7 +354,7 @@ class SQLDiff(object):
         tablespace = field.db_tablespace
         if not tablespace:
             tablespace = "public"
-        if (tablespace, table_name, field.column) in self.unsigned:
+        if (tablespace, table_name, field.column) in self.unsigned and self.unsigned_suffix not in field_db_type:
             field_db_type = '%s %s' % (field_db_type, self.unsigned_suffix)
 
         return field_db_type
@@ -827,7 +827,7 @@ class MySQLDiff(SQLDiff):
             # just convert it back to it's proper type, a bool is a bool and nothing else.
             if db_type == 'integer' and description[1] == FIELD_TYPE.TINY and description[2] == 1:
                 db_type = 'bool'
-            if (table_name, field.column) in self.auto_increment:
+            if (table_name, field.column) in self.auto_increment and 'AUTO_INCREMENT' not in db_type:
                 db_type += ' AUTO_INCREMENT'
         return db_type
 
