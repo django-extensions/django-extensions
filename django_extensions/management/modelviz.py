@@ -381,18 +381,18 @@ class ModelGraph(object):
         Decide whether to use a model, based on the model name and the lists of
         models to exclude and include.
         """
+        # Check against include list.
+        if self.include_models:
+            for model_pattern in self.include_models:
+                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
+                if re.search(model_pattern, model_name):
+                    return True
         # Check against exclude list.
         if self.exclude_models:
             for model_pattern in self.exclude_models:
                 model_pattern = '^%s$' % model_pattern.replace('*', '.*')
                 if re.search(model_pattern, model_name):
                     return False
-        # Check against exclude list.
-        elif self.include_models:
-            for model_pattern in self.include_models:
-                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
-                if re.search(model_pattern, model_name):
-                    return True
         # Return `True` if `include_models` is falsey, otherwise return `False`.
         return not self.include_models
 
