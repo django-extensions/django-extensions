@@ -108,8 +108,11 @@ Other configuration options include:
 
   SHELL_PLUS_PRINT_SQL = True
 
-  # Truncate sql queries to this number of characters
+  # Truncate sql queries to this number of characters (this is the default)
   SHELL_PLUS_PRINT_SQL_TRUNCATE = 1000
+
+  # To disable truncation of sql queries use
+  SHELL_PLUS_PRINT_SQL_TRUNCATE = None
 
   # Specify sqlparse configuration options when printing sql queries to the console
   SHELL_PLUS_SQLPARSE_FORMAT_KWARGS = dict(
