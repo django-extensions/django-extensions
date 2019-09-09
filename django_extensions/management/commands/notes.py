@@ -31,13 +31,12 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         # don't add django internal code
-        apps = [app for app in filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)]
+        apps = [app.replace(".", "/") for app in filter(lambda app: not app.startswith('django.contrib'), settings.INSTALLED_APPS)]
         template_dirs = get_template_setting('DIRS', [])
         base_dir = getattr(settings, 'BASE_DIR')
         if template_dirs:
             apps += template_dirs
         for app_dir in apps:
-            app_dir = app_dir.replace(".", "/")
             if base_dir:
                 app_dir = os.path.join(base_dir, app_dir)
             for top, dirs, files in os.walk(app_dir):
