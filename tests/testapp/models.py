@@ -149,7 +149,12 @@ class SluggedTestModel(models.Model):
 class OverridedFindUniqueAutoSlugField(AutoSlugField):
     def find_unique(self, model_instance, field, iterator, *args):
         self.overrided = True
-        return super().find_unique(model_instance, field, iterator, *args)
+        return super(OverridedFindUniqueAutoSlugField, self).find_unique(
+            model_instance,
+            field,
+            iterator,
+            *args,
+        )
 
 
 class OverridedFindUniqueModel(models.Model):
