@@ -7,6 +7,7 @@ import tempfile
 import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.template import loader
 
 from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
@@ -103,6 +104,12 @@ class Command(BaseCommand):
                 'default': 'dot',
                 'help': 'Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi',
             },
+            '--theme -t': {
+                'action': 'store',
+                'dest': 'theme',
+                'default': 'django2018',
+                'help': 'Theme to use. Supplied are \'original\' and \'django2018\'. You can create your own by creating dot templates in \'django_extentions/graph_models/themename/\' template directory.',
+            },
             '--verbose-names -n': {
                 'action': 'store_true',
                 'default': False,
@@ -153,6 +160,19 @@ class Command(BaseCommand):
                 'dest': 'sort_fields',
                 'help': 'Do not sort fields',
             },
+            '--hide-edge-labels': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'hide_edge_labels',
+                'help': 'Do not showrelations labels in the graph.',
+            },
+            '--arrow-shape': {
+                'action': 'store',
+                'default': 'dot',
+                'dest': 'arrow_shape',
+                'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
+                'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
+            }
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -178,8 +198,8 @@ class Command(BaseCommand):
         if not args and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        # determine output format based on options, file extension, and library
-        # availability
+        # Determine output format based on options, file extension, and library
+        # availability.
         outputfile = options.get("outputfile") or ""
         _, outputfile_ext = os.path.splitext(outputfile)
         outputfile_ext = outputfile_ext.lower()
@@ -222,7 +242,12 @@ class Command(BaseCommand):
             return self.render_output_json(graph_data, outputfile)
 
         graph_data = graph_models.get_graph_data(as_json=False)
-        dotdata = generate_dot(graph_data)
+
+        theme = options['theme']
+        template_name = os.path.join('django_extensions', 'graph_models', theme, 'digraph.dot')
+        template = loader.get_template(template_name)
+
+        dotdata = generate_dot(graph_data, template=template)
         if not six.PY3:
             dotdata = dotdata.encode("utf-8")
 
@@ -252,7 +277,7 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
-        """Render model data as image using pygraphviz"""
+        """Render model data as image using pygraphviz."""
         if not HAS_PYGRAPHVIZ:
             raise CommandError("You need to install pygraphviz python module")
 
@@ -272,7 +297,7 @@ class Command(BaseCommand):
         graph.draw(kwargs['outputfile'])
 
     def render_output_pydot(self, dotdata, **kwargs):
-        """Render model data as image using pydot"""
+        """Render model data as image using pydot."""
         if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 

@@ -138,6 +138,7 @@ class GraphModelsTests(TestCase):
             '*WildcardPrefixExclude',
             'WildcardSuffixExclude*',
             '*WildcardBothExclude*',
+            '*Include',
         ]
         # Any model name should be used if neither include or exclude
         # are defined.
@@ -219,6 +220,19 @@ class GraphModelsTests(TestCase):
             'MyWildcardBothExcludeModel',
             None,
             exclude_models,
+        ))
+        # Test with `exclude_models` and `include_models` combined
+        # where the user wants to exclude some models through a wildcard
+        # while still being able to include given models
+        self.assertTrue(use_model(
+            'MyWildcardPrefixInclude',
+            include_models,
+            exclude_models
+        ))
+        self.assertFalse(use_model(
+            'MyInclude',
+            include_models,
+            exclude_models
         ))
 
     def test_no_models_dot_py(self):

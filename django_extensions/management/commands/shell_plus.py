@@ -469,9 +469,10 @@ for k, m in shells.import_objects({}, no_style()).items():
                     finally:
                         execution_time = time.time() - starttime
                         raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+                        if truncate:
+                            raw_sql = raw_sql[:truncate]
 
                         if sqlparse:
-                            raw_sql = raw_sql[:truncate]
                             raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
 
                         if pygments:

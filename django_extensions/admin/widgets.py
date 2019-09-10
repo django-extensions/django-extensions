@@ -5,6 +5,11 @@ from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 try:
+    from django.templatetags import static
+except ImportError:
+    # compatibility with django < 2.1
+    from django.contrib.admin.templatetags.admin_static import static
+try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
@@ -25,13 +30,16 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     search_path = None
 
     def _media(self):
-        js_files = ['django_extensions/js/jquery.bgiframe.js',
-                    'django_extensions/js/jquery.ajaxQueue.js',
-                    'django_extensions/js/jquery.autocomplete.js']
+        js_files = [
+            static('django_extensions/js/jquery.bgiframe.js'),
+            static('django_extensions/js/jquery.ajaxQueue.js'),
+            static('django_extensions/js/jquery.autocomplete.js'),
+        ]
 
-        return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
-                           js=js_files)
-
+        return forms.Media(
+            css={'all': (static('django_extensions/css/jquery.autocomplete.css'), )},
+            js=js_files,
+        )
     media = property(_media)
 
     def label_for_value(self, value):

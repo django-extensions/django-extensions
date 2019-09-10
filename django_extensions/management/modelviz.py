@@ -79,6 +79,8 @@ class ModelGraph(object):
         self.exclude_models = parse_file_or_list(
             kwargs.get('exclude_models', "")
         )
+        self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
+        self.arrow_shape = kwargs.get("arrow_shape")
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
@@ -152,6 +154,8 @@ class ModelGraph(object):
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
             label = u'{} ({})'.format(label, force_text(related_query_name))
+        if self.hide_edge_labels:
+            label = ''
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.remote_field.model, six.string_types):
@@ -236,6 +240,8 @@ class ModelGraph(object):
         if appmodel._meta.proxy:
             label = "proxy"
         label += r"\ninheritance"
+        if self.hide_edge_labels:
+            label = ''
         return {
             'target_app': parent.__module__.replace(".", "_"),
             'target': parent.__name__,
@@ -319,9 +325,17 @@ class ModelGraph(object):
             # excluding fields inherited from abstract classes. they too show as local_fields
             return newmodel
         if isinstance(field, OneToOneField):
-            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]')
+            relation = self.add_relation(
+                field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]'
+            )
         elif isinstance(field, ForeignKey):
-            relation = self.add_relation(field, newmodel, '[arrowhead=none, arrowtail=dot, dir=both]')
+            relation = self.add_relation(
+                field,
+                newmodel,
+                '[arrowhead=none, arrowtail={}, dir=both]'.format(
+                    self.arrow_shape
+                ),
+            )
         else:
             relation = None
         if relation is not None:
@@ -335,7 +349,13 @@ class ModelGraph(object):
         relation = None
         if isinstance(field, ManyToManyField):
             if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
-                relation = self.add_relation(field, newmodel, '[arrowhead=dot arrowtail=dot, dir=both]')
+                relation = self.add_relation(
+                    field,
+                    newmodel,
+                    '[arrowhead={} arrowtail={}, dir=both]'.format(
+                        self.arrow_shape, self.arrow_shape
+                    ),
+                )
         elif isinstance(field, GenericRelation):
             relation = self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
         if relation is not None:
@@ -361,18 +381,18 @@ class ModelGraph(object):
         Decide whether to use a model, based on the model name and the lists of
         models to exclude and include.
         """
+        # Check against include list.
+        if self.include_models:
+            for model_pattern in self.include_models:
+                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
+                if re.search(model_pattern, model_name):
+                    return True
         # Check against exclude list.
         if self.exclude_models:
             for model_pattern in self.exclude_models:
                 model_pattern = '^%s$' % model_pattern.replace('*', '.*')
                 if re.search(model_pattern, model_name):
                     return False
-        # Check against exclude list.
-        elif self.include_models:
-            for model_pattern in self.include_models:
-                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
-                if re.search(model_pattern, model_name):
-                    return True
         # Return `True` if `include_models` is falsey, otherwise return `False`.
         return not self.include_models
 
@@ -387,15 +407,16 @@ class ModelGraph(object):
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    t = loader.get_template(template)
+    if isinstance(template, six.string_types):
+        template = loader.get_template(template)
 
-    if not isinstance(t, Template) and not (hasattr(t, 'template') and isinstance(t.template, Template)):
+    if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):
         raise Exception("Default Django template loader isn't used. "
                         "This can lead to the incorrect template rendering. "
                         "Please, check the settings.")
 
     c = Context(graph_data).flatten()
-    dot = t.render(c)
+    dot = template.render(c)
 
     return dot
 

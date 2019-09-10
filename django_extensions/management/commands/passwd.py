@@ -14,7 +14,7 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    help = "Clone of the UNIX program ``passwd'', for django.contrib.auth."
+    help = "Clone of the UNIX program `passwd`, for django.contrib.auth."
 
     requires_system_checks = False
 

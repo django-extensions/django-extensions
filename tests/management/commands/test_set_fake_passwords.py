@@ -83,5 +83,5 @@ def test_without_debug(settings):
     settings.DEBUG = False
 
     out = StringIO()
-    with pytest.raises(CommandError, message="Only available in debug mod"):
+    with pytest.raises(CommandError, match="Only available in debug mode"):
         call_command('set_fake_passwords', verbosity=3, stdout=out, stderr=out)

@@ -50,6 +50,12 @@ matrix:
       services:
         - postgresql
     - python: 3.7
+      env: TOXENV=py37-dj22-mysql
+      dist: xenial
+      sudo: required
+      services:
+        - mysql
+    - python: 3.7
       env: TOXENV=py37-djmaster
       dist: xenial
       sudo: required

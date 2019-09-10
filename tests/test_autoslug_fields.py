@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
-import pytest
 import django
+import pytest
+import six
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
 from django.utils.encoding import force_bytes
-import six
 
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
-from .testapp.models import ChildSluggedTestModel, SluggedTestModel, OverridedFindUniqueModel, SluggedTestNoOverwriteOnAddModel
-from .testapp.models import FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel
-from .testapp.models import ModelMethodSluggedTestModel
+from .testapp.models import (
+    ChildSluggedTestModel, CustomFuncPrecedenceSluggedTestModel, CustomFuncSluggedTestModel,
+    FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel,
+    ModelMethodSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel,
+    OverridedFindUniqueModel,
+)
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -21,6 +24,8 @@ class AutoSlugFieldTest(TestCase):
         super(AutoSlugFieldTest, self).tearDown()
 
         SluggedTestModel.objects.all().delete()
+        CustomFuncSluggedTestModel.objects.all().delete()
+        CustomFuncPrecedenceSluggedTestModel.objects.all().delete()
 
     def test_auto_create_slug(self):
         m = SluggedTestModel(title='foo')
@@ -192,6 +197,34 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         slug_field = m._meta.fields[2]
         self.assertTrue(slug_field.overrided)
+
+    def test_slugify_func(self):
+        to_upper = lambda c: c.upper()
+        to_lower = lambda c: c.lower()
+
+        content_n_func_n_expected = (
+            ('test', to_upper, 'TEST'),
+            ('', to_upper, ''),
+            ('TEST', to_lower, 'test'),
+        )
+
+        for content, slugify_function, expected in content_n_func_n_expected:
+            self.assertEqual(
+                AutoSlugField.slugify_func(content, slugify_function),
+                expected
+            )
+
+    def test_use_custom_slug_function(self):
+        m = CustomFuncSluggedTestModel(title='test')
+        m.save()
+        self.assertEqual(m.slug, 'TEST')
+
+    def test_precedence_custom_slug_function(self):
+        m = CustomFuncPrecedenceSluggedTestModel(title='test')
+        m.save()
+        self.assertEqual(m.slug, 'TEST')
+        self.assertTrue(hasattr(m._meta.get_field('slug'), 'slugify_function'))
+        self.assertEqual(m._meta.get_field('slug').slugify_function('TEST'), 'test')
 
 
 class MigrationTest(TestCase):

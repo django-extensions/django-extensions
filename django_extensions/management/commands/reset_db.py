@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
 
@@ -32,23 +33,23 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in settings.py'
+            help='Use another user for the database than defined in settings.py'
         )
         parser.add_argument(
             '-O', '--owner', action='store', dest='owner', default=None,
-            help='Use another owner for creating the database then the user defined in settings or via --user'
+            help='Use another owner for creating the database than the user defined in settings or via --user'
         )
         parser.add_argument(
             '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in settings.py'
+            help='Use another password for the database than defined in settings.py'
         )
         parser.add_argument(
             '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py'
+            help='Use another database name than defined in settings.py'
         )
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py'
+            help='Use this router-database other than defined in settings.py'
         )
         parser.add_argument(
             '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
@@ -100,20 +101,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
         if confirm != 'yes':
             print("Reset cancelled.")
             return
-
-        SQLITE_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES', (
-            'django.db.backends.sqlite3',
-            'django.db.backends.spatialite',
-        ))
-        MYSQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_MYSQL_ENGINES', (
-            'django.db.backends.mysql',
-        ))
-        POSTGRESQL_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_POSTGRESQL_ENGINES', (
-            'django.db.backends.postgresql',
-            'django.db.backends.postgresql_psycopg2',
-            'django.db.backends.postgis',
-            'psqlextra.backend',
-        ))
 
         if engine in SQLITE_ENGINES:
             try:

@@ -7,6 +7,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+from django.utils.deprecation import RemovedInNextVersionWarning
 
 try:
     from keyczar import keyczar
@@ -23,6 +24,16 @@ class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Please do not use these fields. Since Keyczar is deprecated and authors deleted "
+            "all code we highly recommend to stop using potentially unsafe abandonware directly "
+            "these versions of encrypted fields will be removed soon but it's highly likely their "
+            "names will be reused. Please see github issues/1359 for discussion on possible "
+            "replacement fields",
+            RemovedInNextVersionWarning,
+            stacklevel=2,
+        )
+
         if not getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', None):
             raise ImproperlyConfigured('You must set the settings.ENCRYPTED_FIELD_KEYS_DIR '
                                        'setting to your Keyczar keys directory.')
