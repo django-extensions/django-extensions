@@ -91,6 +91,20 @@ class SluggedTestModel(models.Model):
         app_label = 'django_extensions'
 
 
+class OverridedFindUniqueAutoSlugField(AutoSlugField):
+    def find_unique(self, model_instance, field, iterator, *args):
+        self.overrided = True
+        return super().find_unique(model_instance, field, iterator, *args)
+
+
+class OverridedFindUniqueModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = OverridedFindUniqueAutoSlugField(populate_from='title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class ChildSluggedTestModel(SluggedTestModel):
     class Meta:
         app_label = 'django_extensions'
