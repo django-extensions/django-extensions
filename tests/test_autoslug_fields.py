@@ -14,6 +14,7 @@ from .testapp.models import (
     ChildSluggedTestModel, CustomFuncPrecedenceSluggedTestModel, CustomFuncSluggedTestModel,
     FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel,
     ModelMethodSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel,
+    OverridedFindUniqueModel,
 )
 
 
@@ -188,6 +189,14 @@ class AutoSlugFieldTest(TestCase):
         m = SluggedTestNoOverwriteOnAddModel(slug='slug', title='title')
         m.save()
         self.assertEqual(m.slug, 'slug')
+
+    def test_overrided_find_unique_autoslug_field(self):
+        m = OverridedFindUniqueModel(title='foo')
+        slug_field = m._meta.fields[2]
+        self.assertFalse(hasattr(slug_field, 'overrided'))
+        m.save()
+        slug_field = m._meta.fields[2]
+        self.assertTrue(slug_field.overrided)
 
     def test_slugify_func(self):
         to_upper = lambda c: c.upper()

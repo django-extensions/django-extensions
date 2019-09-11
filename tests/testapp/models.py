@@ -146,6 +146,17 @@ class SluggedTestModel(models.Model):
         app_label = 'django_extensions'
 
 
+class OverridedFindUniqueAutoSlugField(AutoSlugField):
+    def find_unique(self, model_instance, field, iterator, *args):
+        self.overrided = True
+        return super(OverridedFindUniqueAutoSlugField, self).find_unique(model_instance, field, iterator, *args)
+
+
+class OverridedFindUniqueModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = OverridedFindUniqueAutoSlugField(populate_from='title')
+
+
 class CustomFuncSluggedTestModel(models.Model):
 
     def slugify_function(self, content):

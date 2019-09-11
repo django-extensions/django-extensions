@@ -232,7 +232,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             setattr(model_instance, self.attname, slug)
             return slug
 
-        return super(AutoSlugField, self).find_unique(
+        return self.find_unique(
             model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def get_slug_fields(self, model_instance, lookup_value):
@@ -365,7 +365,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             setattr(model_instance, self.attname, new)
             return new
 
-        return super(RandomCharField, self).find_unique(
+        return self.find_unique(
             model_instance,
             model_instance._meta.get_field(self.attname),
             random_chars,
