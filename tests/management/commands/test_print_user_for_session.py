@@ -58,6 +58,7 @@ class PrintUserForSessionTests(TestCase):
         session.create()
 
         call_command('print_user_for_session', session.session_key)
+
         self.assertIn('No user associated with that id.', m_stdout.getvalue())
 
     @patch('sys.stdout', new_callable=StringIO)
