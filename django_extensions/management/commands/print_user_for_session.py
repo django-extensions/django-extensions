@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals
 import importlib
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.base import VALID_KEY_CHARS
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.module_loading import import_string
