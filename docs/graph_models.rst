@@ -115,6 +115,12 @@ image by using the *graph_models* command::
 
 ::
 
+  # Create a graph including models matching a given pattern and excluding some of them
+  # It will first select the included ones, then filter out the ones to exclude
+  $ ./manage.py graph_models -a -I Product* -X *Meta -o my_project_products_sans_meta.png
+
+::
+
   # Create a graph without showing its edges' labels
   $ ./manage.py graph_models -a --hide-edge-labels -o my_project_sans_foo_bar.png
 
