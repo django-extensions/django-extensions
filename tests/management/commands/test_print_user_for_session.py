@@ -47,6 +47,21 @@ class PrintUserForSessionTests(TestCase):
 
         self.assertIn('No user associated with session', m_stdout.getvalue())
 
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_that_there_is_no_backend_associated_with_given_session(self, m_stdout):
+        session = self.engine.SessionStore()
+        session.update({
+            '_auth_user_id': 1234,
+            '_auth_user_hash': 'b67352fde8582b12f068c10fd9d29f9fa1af0459',
+        })
+        session.create()
+
+        call_command('print_user_for_session', session.session_key)
+
+        self.assertIn('No authentication backend associated with session', m_stdout.getvalue())
+
+
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_that_there_is_no_user_associated_with_id(self, m_stdout):
         session = self.engine.SessionStore()
