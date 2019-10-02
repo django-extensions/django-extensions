@@ -35,3 +35,17 @@ class ForeignKeySearchInputTestCase(TestCase):
         # Just making sure rendering the widget doesn't cause any issue
         widget.render('person', person.pk)
         widget.render('person', None)
+
+        # Check media to make sure rendering media doesn't cause any issue
+        self.assertListEqual(
+            [
+                '/static/django_extensions/js/jquery.bgiframe.js',
+                '/static/django_extensions/js/jquery.ajaxQueue.js',
+                '/static/django_extensions/js/jquery.autocomplete.js',
+            ],
+            widget.media._js,
+        )
+        self.assertListEqual(
+            ['/static/django_extensions/css/jquery.autocomplete.css'],
+            list(widget.media._css['all']),
+        )
