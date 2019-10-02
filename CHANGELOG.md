@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.3
+-----
+
+Changes:
+  - Fix: admin widgets, fix import of static template tag (part 2)
+
 2.2.2
 -----
 
