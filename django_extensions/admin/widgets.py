@@ -5,7 +5,7 @@ from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 try:
-    from django.templatetags import static
+    from django.templatetags.static import static
 except ImportError:
     # compatibility with django < 2.1
     from django.contrib.admin.templatetags.admin_static import static
