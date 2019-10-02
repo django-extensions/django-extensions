@@ -1,6 +1,21 @@
 Changelog
 =========
 
+2.2.2
+-----
+
+Changes:
+  - Fix: autoslugfield, find unique method overrideable
+  - Fix: notes, do not replace dot in template dirs
+  - Fix: admin widgets, fix import of static template tag
+  - Improvement: print_user_for_session, use session backend
+  - Improvement: sqlcreate, postgis support
+  - Improvement: graph_models, permit combination of includes and excludes
+  - Improvement: Adds missing GIS engine to DEFAULT_MYSQL_ENGINES
+  - Improvement: sqldiff, use lowercase field names in MySQL
+  - Improvement: sqldiff, mysql code could duplicate AUTO_INCREMENT and UNSIGNED statements
+
+
 2.2.1
 -----
 
