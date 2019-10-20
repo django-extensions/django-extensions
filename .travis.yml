@@ -13,15 +13,13 @@ matrix:
       env: TOXENV=py36-flake8
     - python: 3.7
       env: TOXENV=py37-flake8
-      dist: xenial
-      sudo: required
-    - python: 3.6
+    - python: 3.7
       env: TOXENV=precommit
-    - python: 3.6
+    - python: 3.7
       env: TOXENV=safety
-    - python: 3.6
+    - python: 3.7
       env: TOXENV=mypy
-    - python: 3.6
+    - python: 3.7
       env: TOXENV=compile-catalog
     - python: 2.7
       env: TOXENV=py27-dj111
@@ -37,48 +35,30 @@ matrix:
       env: TOXENV=py36-djmaster
     - python: 3.7
       env: TOXENV=py37-dj21
-      dist: xenial
-      sudo: required
     - python: 3.7
       env: TOXENV=py37-dj22
-      dist: xenial
-      sudo: required
     - python: 3.7
       env: TOXENV=py37-dj30
-      dist: xenial
-      sudo: required
     - python: 3.7
       env: TOXENV=py37-dj22-postgres
-      dist: xenial
-      sudo: required
       services:
         - postgresql
     - python: 3.7
       env: TOXENV=py37-dj30-postgres
-      dist: xenial
-      sudo: required
       services:
         - postgresql
     - python: 3.7
       env: TOXENV=py37-dj22-mysql
-      dist: xenial
-      sudo: required
       services:
         - mysql
     - python: 3.7
       env: TOXENV=py37-dj30-mysql
-      dist: xenial
-      sudo: required
       services:
         - mysql
     - python: 3.7
       env: TOXENV=py37-djmaster
-      dist: xenial
-      sudo: required
     - python: 3.7
       env: TOXENV=py37-djmaster-postgres
-      dist: xenial
-      sudo: required
       services:
         - postgresql
     - python: pypy2.7-5.10.0
