@@ -340,6 +340,12 @@ class RandomCharField(UniqueFieldMixin, CharField):
             yield ''.join(get_random_string(self.length, chars))
         raise RuntimeError('max random character attempts exceeded (%s)' % self.max_unique_query_attempts)
 
+    def in_unique_together(self, model_instance):
+        for params in model_instance._meta.unique_together:
+            if self.attname in params:
+                return True
+        return False
+
     def pre_save(self, model_instance, add):
         if not add and getattr(model_instance, self.attname) != '':
             return getattr(model_instance, self.attname)
@@ -360,7 +366,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
             population += string.punctuation
 
         random_chars = self.random_char_generator(population)
-        if not self.unique:
+        if not self.unique and not self.in_unique_together(model_instance):
             new = six.next(random_chars)
             setattr(model_instance, self.attname, new)
             return new
