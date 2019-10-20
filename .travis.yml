@@ -13,6 +13,8 @@ matrix:
       env: TOXENV=py36-flake8
     - python: 3.7
       env: TOXENV=py37-flake8
+    - python: 3.8
+      env: TOXENV=py38-flake8
     - python: 3.7
       env: TOXENV=precommit
     - python: 3.7
@@ -37,28 +39,54 @@ matrix:
       env: TOXENV=py37-dj21
     - python: 3.7
       env: TOXENV=py37-dj22
+    - python: 3.8
+      env: TOXENV=py38-dj22
     - python: 3.7
       env: TOXENV=py37-dj30
+    - python: 3.8
+      env: TOXENV=py38-dj30
     - python: 3.7
       env: TOXENV=py37-dj22-postgres
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj22-postgres
       services:
         - postgresql
     - python: 3.7
       env: TOXENV=py37-dj30-postgres
       services:
         - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj30-postgres
+      services:
+        - postgresql
     - python: 3.7
       env: TOXENV=py37-dj22-mysql
+      services:
+        - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj22-mysql
       services:
         - mysql
     - python: 3.7
       env: TOXENV=py37-dj30-mysql
       services:
         - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj30-mysql
+      services:
+        - mysql
     - python: 3.7
       env: TOXENV=py37-djmaster
+    - python: 3.8
+      env: TOXENV=py38-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster-postgres
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-djmaster-postgres
       services:
         - postgresql
     - python: pypy2.7-5.10.0
@@ -77,8 +105,12 @@ matrix:
       env: TOXENV=py36-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster
+    - python: 3.8
+      env: TOXENV=py38-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster-postgres
+    - python: 3.8
+      env: TOXENV=py38-djmaster-postgres
     - python: pypy3.5-5.10.1
       env: TOXENV=pypy3-djmaster
     - python: pypy2.7-5.10.0
