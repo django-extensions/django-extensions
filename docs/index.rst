@@ -77,6 +77,7 @@ Contents
    sqldsn
    validate_templates
    validators
+   admin_generator
 
 
 Indices and tables
