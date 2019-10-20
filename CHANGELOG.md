@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.4
+-----
+
+Changes:
+ - Improvement: RandomCharField, Support unique_together
+ - Improvement: export_emails, add settings for overriding queryset fields, order_by and the full_name function
+
+
 2.2.3
 -----
 
