@@ -351,6 +351,15 @@ class RandomCharTestModelPunctuation(models.Model):
         app_label = 'django_extensions'
 
 
+class RandomCharTestModelUniqueTogether(models.Model):
+    random_char_field = RandomCharField(length=8)
+    common_field = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = 'django_extensions'
+        unique_together = ('random_char_field', 'common_field')
+
+
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'
