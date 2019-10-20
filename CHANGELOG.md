@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.2.5
+-----
+
+Changes:
+ - Improvement: travis, add Python 3.8
+ - Improvement: setup.py, update classifiers
+
+
 2.2.4
 -----
 
