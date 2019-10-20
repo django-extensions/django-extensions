@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function
 import sys
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
@@ -20,12 +21,24 @@ FORMATS = [
 ]
 
 
-def full_name(first_name, last_name, username, **extra):
+def full_name(**kwargs):
     """Return full name or username."""
+    first_name = kwargs.get('first_name')
+    last_name = kwargs.get('last_name')
+
     name = " ".join(n for n in [first_name, last_name] if n)
-    if not name:
+    if name:
+        return name
+
+    name = kwargs.get('name')
+    if name:
+        return name
+
+    username = kwargs.get('username')
+    if username:
         return username
-    return name
+
+    return ""
 
 
 class Command(BaseCommand):
@@ -51,6 +64,9 @@ class Command(BaseCommand):
             help="output format. May be one of %s." % ", ".join(FORMATS),
         )
 
+    def full_name(self, **kwargs):
+        return getattr(settings, 'EXPORT_EMAILS_FULL_NAME_FUNC', full_name)(**kwargs)
+
     @signalcommand
     def handle(self, *args, **options):
         if len(args) > 1:
@@ -63,10 +79,13 @@ class Command(BaseCommand):
             raise CommandError("Unknown group '" + group + "'. Valid group names are: " + names)
 
         UserModel = get_user_model()
-        qs = UserModel.objects.all().order_by('last_name', 'first_name', 'username', 'email')
+        order_by = getattr(settings, 'EXPORT_EMAILS_ORDER_BY', ['last_name', 'first_name', 'username', 'email'])
+        fields = getattr(settings, 'EXPORT_EMAILS_FIELDS', ['last_name', 'first_name', 'username', 'email'])
+
+        qs = UserModel.objects.all().order_by(*order_by)
         if group:
             qs = qs.filter(groups__name=group).distinct()
-        qs = qs.values('last_name', 'first_name', 'username', 'email')
+        qs = qs.values(*fields)
         getattr(self, options['format'])(qs)
 
     def address(self, qs):
@@ -74,7 +93,7 @@ class Command(BaseCommand):
         Single entry per line in the format of:
             "full name" <my@address.com>;
         """
-        self.stdout.write("\n".join('"%s" <%s>;' % (full_name(**ent), ent['email']) for ent in qs))
+        self.stdout.write("\n".join('"%s" <%s>;' % (self.full_name(**ent), ent.get('email', '')) for ent in qs))
         self.stdout.write("\n")
 
     def emails(self, qs):
@@ -82,7 +101,7 @@ class Command(BaseCommand):
         Single entry with email only in the format of:
             my@address.com,
         """
-        self.stdout.write(",\n".join(ent['email'] for ent in qs))
+        self.stdout.write(",\n".join(ent['email'] for ent in qs if ent.get('email')))
         self.stdout.write("\n")
 
     def google(self, qs):
@@ -90,7 +109,7 @@ class Command(BaseCommand):
         csvf = writer(sys.stdout)
         csvf.writerow(['Name', 'Email'])
         for ent in qs:
-            csvf.writerow([full_name(**ent), ent['email']])
+            csvf.writerow([self.full_name(**ent), ent.get('email', '')])
 
     def linkedin(self, qs):
         """
@@ -100,7 +119,7 @@ class Command(BaseCommand):
         csvf = writer(sys.stdout)
         csvf.writerow(['First Name', 'Last Name', 'Email'])
         for ent in qs:
-            csvf.writerow([ent['first_name'], ent['last_name'], ent['email']])
+            csvf.writerow([ent.get('first_name', ''), ent.get('last_name', ''), ent.get('email', '')])
 
     def outlook(self, qs):
         """CSV format suitable for importing into outlook"""
@@ -112,7 +131,7 @@ class Command(BaseCommand):
         csvf.writerow(columns)
         empty = [''] * (len(columns) - 2)
         for ent in qs:
-            csvf.writerow([full_name(**ent), ent['email']] + empty)
+            csvf.writerow([self.full_name(**ent), ent.get('email', '')] + empty)
 
     def vcard(self, qs):
         """VCARD format."""
@@ -125,14 +144,15 @@ class Command(BaseCommand):
         out = sys.stdout
         for ent in qs:
             card = vobject.vCard()
-            card.add('fn').value = full_name(**ent)
-            if not ent['last_name'] and not ent['first_name']:
-                # fallback to fullname, if both first and lastname are not declared
-                card.add('n').value = vobject.vcard.Name(full_name(**ent))
-            else:
+            card.add('fn').value = self.full_name(**ent)
+            if ent.get('last_name') and ent.get('first_name'):
                 card.add('n').value = vobject.vcard.Name(ent['last_name'], ent['first_name'])
-            emailpart = card.add('email')
-            emailpart.value = ent['email']
-            emailpart.type_param = 'INTERNET'
+            else:
+                # fallback to fullname, if both first and lastname are not declared
+                card.add('n').value = vobject.vcard.Name(self.full_name(**ent))
+            if ent.get('email'):
+                emailpart = card.add('email')
+                emailpart.value = ent['email']
+                emailpart.type_param = 'INTERNET'
 
             out.write(card.serialize())
