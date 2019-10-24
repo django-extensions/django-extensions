@@ -25,7 +25,21 @@ class TimeStampedModel(models.Model):
     class Meta:
         get_latest_by = 'modified'
         ordering = ('-modified', '-created',)
-        indexes = [models.Index(fields=["created"]), models.Index(fields=["modified"])]
+        abstract = True
+
+
+class IndexedTimeStampedModel(TimeStampedModel):
+    """
+    IndexedTimeStampedModel
+
+    An abstract base class model that provides self-managed "created" and
+    "modified" fields with db indices on them.
+    """
+    class Meta(TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["-created", "-modified"]),
+            models.Index(fields=["-created"]), models.Index(fields=["-modified"])
+        ]
         abstract = True
 
 
@@ -40,6 +54,20 @@ class TitleDescriptionModel(models.Model):
     description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
+        abstract = True
+
+
+class IndexedTitleDescriptionModel(TitleDescriptionModel):
+    """
+    IndexedTitleDescriptionModel
+
+    An abstract base class model that provides title and description fields
+    with an index on title field.
+    """
+    class Meta(TitleDescriptionModel.Meta):
+        indexes = [
+            models.Index(fields=["title"]),
+        ]
         abstract = True
 
 
@@ -61,6 +89,22 @@ class TitleSlugDescriptionModel(TitleDescriptionModel):
     slug = AutoSlugField(_('slug'), populate_from='title')
 
     class Meta:
+        abstract = True
+
+
+class IndexedTitleSlugDescriptionModel(TitleSlugDescriptionModel):
+    """
+    IndexedTitleSlugDescriptionModel
+
+    An abstract base class model that provides title and description fields
+    and a self-managed "slug" field that populates from the title with indexes
+    on "title" and "slug" fields.
+    """
+    class Meta(TitleSlugDescriptionModel.Meta):
+        indexes = [
+            models.Index(fields=["title", "slug"]),
+            models.Index(fields=["title"]), models.Index(fields=["slug"])
+        ]
         abstract = True
 
 
@@ -135,3 +179,20 @@ class ActivatorModel(models.Model):
         if not self.activate_date:
             self.activate_date = now()
         super(ActivatorModel, self).save(*args, **kwargs)
+
+
+class IndexedActivatorModel(ActivatorModel):
+    """
+    ActivatorModel
+
+    An abstract base class model that provides activate and deactivate fields
+    with indexes on "activate_date" and "deactivate_date".
+    """
+
+    class Meta(ActivatorModel.Meta):
+        indexes = [
+            models.Index(fields=["-activate_date", "-deactivate_date"]),
+            models.Index(fields=["-activate_date"]),
+            models.Index(fields=["-deactivate_date"])
+        ]
+        abstract = True
