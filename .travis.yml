@@ -37,7 +37,7 @@ matrix:
       env: TOXENV=py37-dj111
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy3-dj111
 
     - python: 3.4
@@ -48,7 +48,7 @@ matrix:
       env: TOXENV=py36-dj20
     - python: 3.7
       env: TOXENV=py37-dj20
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-dj20
 
     - python: 3.5
@@ -57,7 +57,7 @@ matrix:
       env: TOXENV=py36-dj21
     - python: 3.7
       env: TOXENV=py37-dj21
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-dj21
 
     - python: 3.5
@@ -66,7 +66,7 @@ matrix:
       env: TOXENV=py36-dj22
     - python: 3.7
       env: TOXENV=py37-dj22
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-dj22
 
     - python: 3.6
@@ -75,7 +75,7 @@ matrix:
       env: TOXENV=py37-dj30
     - python: 3.8
       env: TOXENV=py38-dj30
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-dj30
 
     - python: 3.6
@@ -84,7 +84,7 @@ matrix:
       env: TOXENV=py37-djmaster
     - python: 3.8
       env: TOXENV=py38-djmaster
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-djmaster
 
     - python: 3.7
@@ -124,17 +124,17 @@ matrix:
       env: TOXENV=py37-djmaster
     - python: 3.8
       env: TOXENV=py38-djmaster
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-djmaster
     - python: 3.7
       env: TOXENV=py37-djmaster-postgres
     - python: 3.8
       env: TOXENV=py38-djmaster-postgres
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy-djmaster
     - python: pypy2.7-5.10.0
       env: TOXENV=pypy-dj111
-    - python: pypy3.5-5.10.1
+    - python: pypy3.6-7.2.0
       env: TOXENV=pypy3-dj111
 
 install:
