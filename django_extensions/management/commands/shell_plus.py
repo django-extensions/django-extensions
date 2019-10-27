@@ -472,6 +472,11 @@ for k, m in shells.import_objects({}, no_style()).items():
                         if truncate:
                             raw_sql = raw_sql[:truncate]
 
+                        self.db.queries_log.append({
+                            'sql': raw_sql,
+                            'time': "%.3f" % execution_time,
+                        })
+
                         if sqlparse:
                             raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
 
