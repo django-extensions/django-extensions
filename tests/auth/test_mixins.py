@@ -8,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 
 from django_extensions.auth.mixins import ModelUserFieldPermissionMixin
 
-from .testapp.models import HasOwnerModel
+from testapp.models import HasOwnerModel
 
 
 class EmptyResponseView(View):
