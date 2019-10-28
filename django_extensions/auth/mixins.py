@@ -1,7 +1,7 @@
-from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 
-class ModelUserFieldPermissionMixin(AccessMixin):
+class ModelUserFieldPermissionMixin(UserPassesTestMixin):
     model_permission_user_field = 'user'
 
     def get_model_permission_user_field(self):
@@ -11,7 +11,4 @@ class ModelUserFieldPermissionMixin(AccessMixin):
         model_attr = self.get_model_permission_user_field()
         current_user = self.request.user
 
-        if current_user == getattr(self.model, model_attr):
-            return True
-
-        return False
+        return current_user == getattr(self.get_queryset().first(), model_attr)
