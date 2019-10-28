@@ -10,6 +10,7 @@ from django_extensions.auth.mixins import ModelUserFieldPermissionMixin
 
 from .testapp.models import HasOwnerModel
 
+
 class EmptyResponseView(View):
     def get(self, request, *args, **kwargs):
         return HttpResponse()
