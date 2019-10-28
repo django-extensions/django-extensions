@@ -3,7 +3,7 @@ from django.db import models
 from django.http import HttpResponse
 from django.views.generic import View
 from django.contrib.auth import get_user_model
-from django.contrib.auth import AnonymousUser
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 
 from django_extensions.auth.mixins import ModelUserFieldPermissionMixin
