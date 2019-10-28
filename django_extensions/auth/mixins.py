@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import AccessMixin
 
-class UserPermissionMixin(AccessMixin):
+class ModelUserFieldPermissionMixin(AccessMixin):
     model_permission_user_field = 'user'
 
     def get_model_permission_user_field(self):
