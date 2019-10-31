@@ -7,6 +7,7 @@ import re
 import socket
 import sys
 import time
+import traceback
 
 import django
 from django.conf import settings
@@ -180,6 +181,7 @@ class Command(BaseCommand):
                         logger.info(raw_sql)
                         logger.info("")
                         logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
+                        logger.info('Location of SQL Call: %s' % traceback.format_stack())
                         logger.info("")
 
             utils.CursorDebugWrapper = PrintQueryWrapper
