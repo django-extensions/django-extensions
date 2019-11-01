@@ -408,9 +408,10 @@ class DisabledUpdateModelModificationDateTimeField(models.Model):
     class Meta:
         app_label = 'django_extensions'
 
+
 class HasOwnerModel(models.Model):
-    content = models.TextField(default = "")
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
+    content = models.TextField(default="")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'django_extensions'
