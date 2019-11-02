@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.conf import settings
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
@@ -423,6 +424,14 @@ class DisabledUpdateModelModificationDateTimeField(models.Model):
     modified = ModificationDateTimeField()
 
     update_modified = False
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class HasOwnerModel(models.Model):
+    content = models.TextField(default="")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'django_extensions'
