@@ -27,8 +27,7 @@ def dumps(value):
 
 def loads(txt):
     value = json.loads(
-        txt,
-        encoding=settings.DEFAULT_CHARSET
+        txt
     )
     return value
 
