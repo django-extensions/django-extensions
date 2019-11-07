@@ -76,6 +76,7 @@ Generate (and view) a graphviz graph of app models::
 Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for a project::
 
     $ python manage.py show_urls
+    $ python manage.py show_urls <app_label>
 
 Check templates for rendering errors::
 
