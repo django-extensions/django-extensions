@@ -139,7 +139,7 @@ def import_items(import_directives, style, quiet_load=False):
                     print(style.ERROR("Unable to import %r" % directive))
             except TypeError:
                 if not quiet_load:
-                    print(style.ERROR("Unable to import %r from %r" % directive))
+                    print(style.ERROR("Unable to import %r from %r" % (directive[1], directive[0])))
 
     return imported_objects
 
