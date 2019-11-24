@@ -5,6 +5,7 @@ import django
 import pytest
 import six
 from django import get_version
+from django.core.exceptions import ValidationError
 from django.db import migrations, models, IntegrityError
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase, TransactionTestCase
@@ -293,6 +294,6 @@ class AutoFieldTransactionTest(TransactionTestCase):
         m.save()
         self.assertEqual(m.slug, 'foo')
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises((IntegrityError, ValidationError)):
             m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
             m.save()
