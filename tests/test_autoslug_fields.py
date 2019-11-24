@@ -283,7 +283,7 @@ class MigrationTest(TestCase):
 
 
 @pytest.mark.skipif(
-    LooseVersion(get_version()) <= LooseVersion('2.2.0'),
+    LooseVersion(get_version()) < LooseVersion('2.2.0'),
     reason="This test works only on Django greater than 2.2.0",
 )
 class AutoFieldTransactionTest(TransactionTestCase):
