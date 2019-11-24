@@ -7,12 +7,11 @@ except ImportError:
     import mock
 
 import six
-from django.db import models, IntegrityError
-from django.test import TestCase, TransactionTestCase
+from django.db import models
+from django.test import TestCase
 from tests.testapp.models import (
     DummyRelationModel, InheritedFromPostWithUniqField, PostWithUniqField,
     ReverseModel, SecondDummyRelationModel, ThirdDummyRelationModel,
-    TitleWithUniqueConstraintCondition,
 )
 
 from django_extensions.db.fields import UniqueFieldMixin
@@ -157,29 +156,3 @@ class UniqFieldMixinTestCase(TestCase):
         self.assertEqual(res, 'b')
         self.assertTrue(hasattr(self.post, 'uniq_field'))
         self.assertEqual(self.post.uniq_field, 'b')
-
-
-class UniqFieldMixinWithTransactionTestCase(TransactionTestCase):
-
-    def test_unique_constraint_condition(self):
-        if django.VERSION < (2, 2):
-            return
-        author = 'Kim'
-        another_author = 'Lee'
-        TitleWithUniqueConstraintCondition.objects.create(
-            title='self-introduction',
-            author=author,
-        )
-        TitleWithUniqueConstraintCondition.objects.create(
-            title='self-introduction',
-            author=another_author,
-        )
-        TitleWithUniqueConstraintCondition.objects.create(
-            title='my opinion',
-            author=author,
-        )
-        with self.assertRaises(IntegrityError):
-            TitleWithUniqueConstraintCondition.objects.create(
-                title='self-introduction',
-                author=author,
-            )
