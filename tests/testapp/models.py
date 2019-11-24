@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import django
+
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Q, UniqueConstraint
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
@@ -156,6 +159,22 @@ class OverridedFindUniqueAutoSlugField(AutoSlugField):
 class OverridedFindUniqueModel(models.Model):
     title = models.CharField(max_length=42)
     slug = OverridedFindUniqueAutoSlugField(populate_from='title')
+
+
+class TitleWithUniqueConstraintCondition(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
+
+    class Meta:
+        app_label = 'django_extensions'
+        if django.VERSION >= (2, 2):
+            constraints = [
+                UniqueConstraint(
+                    fields=['author'],
+                    condition=Q(title='self-introduction'),
+                    name="unique_self_introduction_of_author",
+                ),
+            ]
 
 
 class CustomFuncSluggedTestModel(models.Model):
