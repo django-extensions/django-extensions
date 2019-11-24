@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import django
-
 try:
     from unittest import mock
 except ImportError:
