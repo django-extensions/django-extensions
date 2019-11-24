@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+from distutils.version import LooseVersion
+
 import django
 import pytest
 import six
+from django import get_version
 from django.db import migrations, models, IntegrityError
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase, TransactionTestCase
@@ -279,6 +282,10 @@ class MigrationTest(TestCase):
         self.assertEqual(slug_field.deconstruct(), construction_values)
 
 
+@pytest.mark.skipif(
+    LooseVersion(get_version()) <= LooseVersion('2.2.0'),
+    reason="This test works only on Django greater than 2.2.0",
+)
 class AutoFieldTransactionTest(TransactionTestCase):
 
     def test_fail_to_create_by_constraints(self):
