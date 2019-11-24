@@ -11,6 +11,9 @@ from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 from .fields import UniqField
 
+if django.VERSION >= (2, 2):
+    from django.db.models import UniqueConstraint
+
 
 class Secret(models.Model):
     name = models.CharField(blank=True, max_length=255, null=True)
@@ -168,7 +171,6 @@ class TitleWithUniqueConstraintCondition(models.Model):
     class Meta:
         app_label = 'django_extensions'
         if django.VERSION >= (2, 2):
-            from django.db.models import UniqueConstraint
             constraints = [
                 UniqueConstraint(
                     fields=['author'],
