@@ -3,7 +3,7 @@ import django
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import Q, UniqueConstraint
+from django.db.models import Q
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
@@ -168,6 +168,7 @@ class TitleWithUniqueConstraintCondition(models.Model):
     class Meta:
         app_label = 'django_extensions'
         if django.VERSION >= (2, 2):
+            from django.db.models import UniqueConstraint
             constraints = [
                 UniqueConstraint(
                     fields=['author'],
