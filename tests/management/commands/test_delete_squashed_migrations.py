@@ -7,7 +7,7 @@ import pytest
 from django import get_version
 from django.core.management import CommandError, call_command
 from django.db import models
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from tests import testapp_with_appconfig
 
 MIGRATIONS_DIR = os.path.join(testapp_with_appconfig.__path__[0], 'migrations')
@@ -18,6 +18,7 @@ except ImportError:
     from mock import patch
 
 
+@override_settings(MIGRATION_MODULES={'testapp_with_appconfig': 'tests.testapp_with_appconfig.migrations'})
 class BaseDeleteSquashedMigrationsTestCase(TestCase):
     def migration_exists(self, filename):
         return os.path.exists(os.path.join(MIGRATIONS_DIR, filename))
