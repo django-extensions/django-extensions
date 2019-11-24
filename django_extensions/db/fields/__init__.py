@@ -68,11 +68,13 @@ class UniqueFieldMixin(object):
 
         # for support django 2.2+
         query = Q()
-        for constraint in getattr(model_instance._meta, 'constraints', None):
-            query &= Q(
-                constraint.condition,
-                **{field: getattr(model_instance, field, None) for field in constraint.fields}
-            )
+        constraints = getattr(model_instance._meta, 'constraints', None)
+        if constraints:
+            for constraint in constraints:
+                query &= Q(
+                    constraint.condition,
+                    **{field: getattr(model_instance, field, None) for field in constraint.fields}
+                )
 
         new = six.next(iterator)
         kwargs[self.attname] = new
