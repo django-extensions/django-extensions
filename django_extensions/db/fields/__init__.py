@@ -68,7 +68,7 @@ class UniqueFieldMixin(object):
 
         # for support django 2.2+
         query = Q()
-        for constraint in model_instance._meta.constraints:
+        for constraint in getattr(model_instance._meta, 'constraints', None):
             query &= Q(
                 constraint.condition,
                 **{field: getattr(model_instance, field, None) for field in constraint.fields}
