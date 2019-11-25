@@ -71,10 +71,9 @@ class UniqueFieldMixin(object):
         constraints = getattr(model_instance._meta, 'constraints', None)
         if constraints:
             for constraint in constraints:
-                query &= Q(
-                    constraint.condition,
-                    **{field: getattr(model_instance, field, None) for field in constraint.fields}
-                )
+                query &= Q(**{field: getattr(model_instance, field, None) for field in constraint.fields})
+                if constraint.condition:
+                    query &= constraint.condition
 
         new = six.next(iterator)
         kwargs[self.attname] = new
