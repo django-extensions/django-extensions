@@ -13,6 +13,7 @@ DEFAULT_SQLITE_ENGINES = (
 DEFAULT_MYSQL_ENGINES = (
     'django.db.backends.mysql',
     'django.contrib.gis.db.backends.mysql',
+    'mysql.connector.django',
 )
 DEFAULT_POSTGRESQL_ENGINES = (
     'django.db.backends.postgresql',
