@@ -17,7 +17,6 @@ def py_from_pyc(pyc_fn):
 
 
 class Command(BaseCommand):
-
     help = "Deletes left over migrations that have been replaced by a "
     "squashed migration and converts squashed migration into a normal "
     "migration. Modifies your source tree! Use with care!"
