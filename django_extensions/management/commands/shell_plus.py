@@ -490,6 +490,7 @@ for k, m in shells.import_objects({}, no_style()).items():
             utils.CursorDebugWrapper = PrintQueryWrapper
 
         shells = (
+            ('notebook', self.get_notebook),
             ('ptipython', self.get_ptipython),
             ('ptpython', self.get_ptpython),
             ('bpython', self.get_bpython),
