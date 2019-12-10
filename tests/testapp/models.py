@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+import django
+
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 from .fields import UniqField
+
+if django.VERSION >= (2, 2):
+    from django.db.models import UniqueConstraint
 
 
 class Secret(models.Model):
@@ -145,6 +151,23 @@ class SluggedTestModel(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class SluggedWithConstraintsTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title')
+    category = models.CharField(max_length=20, null=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        if django.VERSION >= (2, 2):
+            constraints = [
+                UniqueConstraint(
+                    fields=['slug'],
+                    condition=Q(category='self-introduction'),
+                    name="unique_slug_of_self_introduction",
+                ),
+            ]
 
 
 class OverridedFindUniqueAutoSlugField(AutoSlugField):

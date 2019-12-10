@@ -131,7 +131,7 @@ class UniqFieldMixinTestCase(TestCase):
         mocked_qs_all.assert_called_with()
 
     def test_find_unique(self):
-        def filter_func(**kwargs):
+        def filter_func(*args, **kwargs):
             uniq_field = kwargs.get('uniq_field')
             if uniq_field == 'a':
                 return mocked_qs

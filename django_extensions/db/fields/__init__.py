@@ -23,7 +23,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import DateTimeField, CharField, SlugField
+from django.db.models import DateTimeField, CharField, SlugField, Q
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
@@ -66,9 +66,18 @@ class UniqueFieldMixin(object):
                 for param in params:
                     kwargs[param] = getattr(model_instance, param, None)
 
+        # for support django 2.2+
+        query = Q()
+        constraints = getattr(model_instance._meta, 'constraints', None)
+        if constraints:
+            for constraint in constraints:
+                query &= Q(**{field: getattr(model_instance, field, None) for field in constraint.fields})
+                if constraint.condition:
+                    query &= constraint.condition
+
         new = six.next(iterator)
         kwargs[self.attname] = new
-        while not new or queryset.filter(**kwargs):
+        while not new or queryset.filter(query, **kwargs):
             new = six.next(iterator)
             kwargs[self.attname] = new
         setattr(model_instance, self.attname, new)

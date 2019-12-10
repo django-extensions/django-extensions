@@ -2,9 +2,11 @@
 import django
 import pytest
 import six
-from django.db import migrations, models
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import migrations, models, IntegrityError
 from django.db.migrations.writer import MigrationWriter
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils.encoding import force_bytes
 
 import django_extensions  # noqa
@@ -14,7 +16,7 @@ from .testapp.models import (
     ChildSluggedTestModel, CustomFuncPrecedenceSluggedTestModel, CustomFuncSluggedTestModel,
     FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel,
     ModelMethodSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel,
-    OverridedFindUniqueModel,
+    OverridedFindUniqueModel, SluggedWithConstraintsTestModel,
 )
 
 
@@ -277,3 +279,20 @@ class MigrationTest(TestCase):
         m = SluggedTestModel(title='foo')
         m.save()
         self.assertEqual(slug_field.deconstruct(), construction_values)
+
+
+@pytest.mark.skipif(django.VERSION < (2, 2), reason="This test works only on Django greater than 2.2.0")
+@pytest.mark.skipif(
+    settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql',
+    reason='The condition argument is ignored with MySQL and MariaDB'
+)
+class AutoFieldTransactionTest(TransactionTestCase):
+
+    def test_fail_to_create_by_constraints(self):
+        m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        with self.assertRaises((IntegrityError, ValidationError)):
+            m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
+            m.save()
