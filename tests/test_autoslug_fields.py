@@ -2,11 +2,9 @@
 import django
 import pytest
 import six
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.db import migrations, models, IntegrityError
+from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from django.utils.encoding import force_bytes
 
 import django_extensions  # noqa
@@ -17,6 +15,7 @@ from .testapp.models import (
     FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel,
     ModelMethodSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel,
     OverridedFindUniqueModel, SluggedWithConstraintsTestModel,
+    SluggedWithUniqueTogetherTestModel,
 )
 
 
@@ -228,6 +227,35 @@ class AutoSlugFieldTest(TestCase):
         self.assertTrue(hasattr(m._meta.get_field('slug'), 'slugify_function'))
         self.assertEqual(m._meta.get_field('slug').slugify_function('TEST'), 'test')
 
+    def test_auto_create_slug_with_unique_together(self):
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='self-introduction')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        # check if satisfy database integrity
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
+    @pytest.mark.skipif(django.VERSION < (2, 2), reason="This test works only on Django greater than 2.2.0")
+    def test_auto_create_slug_with_constraints(self):
+        m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m = SluggedWithConstraintsTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        # check if satisfy database integrity
+        m = SluggedWithConstraintsTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
@@ -279,20 +307,3 @@ class MigrationTest(TestCase):
         m = SluggedTestModel(title='foo')
         m.save()
         self.assertEqual(slug_field.deconstruct(), construction_values)
-
-
-@pytest.mark.skipif(django.VERSION < (2, 2), reason="This test works only on Django greater than 2.2.0")
-@pytest.mark.skipif(
-    settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql',
-    reason='The condition argument is ignored with MySQL and MariaDB'
-)
-class AutoFieldTransactionTest(TransactionTestCase):
-
-    def test_fail_to_create_by_constraints(self):
-        m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
-        m.save()
-        self.assertEqual(m.slug, 'foo')
-
-        with self.assertRaises((IntegrityError, ValidationError)):
-            m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
-            m.save()
