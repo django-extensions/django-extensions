@@ -164,17 +164,20 @@ class Command(BaseCommand):
         return run_kernel
 
     def get_notebook(self, options):
-        from IPython import release
+        try:
+            from IPython import release
+        except ImportError:
+            return traceback.format_exc()
         try:
             from notebook.notebookapp import NotebookApp
         except ImportError:
             if release.version_info[0] >= 7:
-                raise
+                return traceback.format_exc()
             try:
                 from IPython.html.notebookapp import NotebookApp
             except ImportError:
                 if release.version_info[0] >= 3:
-                    raise
+                    return traceback.format_exc()
                 try:
                     from IPython.frontend.html.notebook import notebookapp
                     NotebookApp = notebookapp.NotebookApp
