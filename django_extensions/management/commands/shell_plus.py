@@ -108,6 +108,10 @@ class Command(BaseCommand):
             dest='no_browser',
             help='Don\'t open the notebook in a browser after startup.'
         )
+        parser.add_argument(
+            '-c', '--command',
+            help='Instead of opening an interactive shell, run a command as Django and exit.',
+        )
 
     def run_from_argv(self, argv):
         if '--' in argv[2:]:
@@ -551,5 +555,10 @@ for k, m in shells.import_objects({}, no_style()).items():
 
         if self.tests_mode:
             return 130
+
+        if options['command']:
+            imported_objects = self.get_imported_objects(options)
+            exec(options['command'], {}, imported_objects)
+            return
 
         shell()
