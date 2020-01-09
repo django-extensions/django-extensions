@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import six
+import django
 import pytest
 import inspect
 
@@ -12,8 +14,9 @@ from django_extensions.management.commands import shell_plus
 from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
 
 
+@pytest.mark.skipif(django.VERSION < (2, 0), reason="This test works only on Django greater than 2.0.0")
 @pytest.mark.django_db()
-@override_settings(SHELL_PLUS_PYGMENTS_FORMATTER=False)
+@override_settings(SHELL_PLUS_SQLPARSE_ENABLED=False, SHELL_PLUS_PYGMENTS_ENABLED=False)
 def test_shell_plus_print_sql(capsys):
     out = six.StringIO()
     try:
@@ -28,8 +31,7 @@ def test_shell_plus_print_sql(capsys):
 
     out, err = capsys.readouterr()
 
-    assert 'SELECT (1)' in out
-    assert 'FROM "auth_user"' in out
+    assert re.search("SELECT .+ FROM .auth_user. LIMIT 1", out)
 
 
 def test_shell_plus_plain_startup():

@@ -447,27 +447,28 @@ for k, m in shells.import_objects({}, no_style()).items():
 
         if options["print_sql"] or print_sql:
             # Code from http://gist.github.com/118990
-            try:
-                import sqlparse
 
-                sqlparse_format_kwargs_defaults = dict(
-                    reindent_aligned=True,
-                    truncate_strings=500,
-                )
-                sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
-            except ImportError:
-                sqlparse = None
+            sqlparse = None
+            if getattr(settings, 'SHELL_PLUS_SQLPARSE_ENABLED', True):
+                try:
+                    import sqlparse
+
+                    sqlparse_format_kwargs_defaults = dict(
+                        reindent_aligned=True,
+                        truncate_strings=500,
+                    )
+                    sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
+                except ImportError:
+                    sqlparse = None
 
             pygments = None
-            pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER')
-            pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
-            if pygments_formatter is not False:
+            if getattr(settings, 'SHELL_PLUS_PYGMENTS_ENABLED', True):
                 try:
                     import pygments.lexers
                     import pygments.formatters
 
-                    if not pygments_formatter:
-                        pygments_formatter = pygments.formatters.TerminalFormatter
+                    pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
+                    pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
                 except ImportError:
                     pass
 
