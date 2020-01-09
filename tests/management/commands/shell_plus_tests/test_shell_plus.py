@@ -1,12 +1,27 @@
 # -*- coding: utf-8 -*-
 import os
+import six
+import pytest
 import inspect
 
+from django.core.management import call_command
 from django.db.models import Model
 from django.test import override_settings
 
 from django_extensions.management.commands import shell_plus
 from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
+
+
+@pytest.mark.django_db()
+@override_settings(SHELL_PLUS_PYGMENTS_FORMATTER=False)
+def test_shell_plus_print_sql(capsys):
+    out = six.StringIO()
+    call_command("shell_plus", plain=True, print_sql=True, command="User.objects.all().exists()")
+
+    out, err = capsys.readouterr()
+
+    assert 'SELECT (1)' in out
+    assert 'FROM "auth_user"' in out
 
 
 def test_shell_plus_plain_startup():

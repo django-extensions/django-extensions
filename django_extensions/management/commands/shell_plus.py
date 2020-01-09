@@ -459,14 +459,18 @@ for k, m in shells.import_objects({}, no_style()).items():
             except ImportError:
                 sqlparse = None
 
-            try:
-                import pygments.lexers
-                import pygments.formatters
+            pygments = None
+            pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER')
+            pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
+            if pygments_formatter is not False:
+                try:
+                    import pygments.lexers
+                    import pygments.formatters
 
-                pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
-                pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
-            except ImportError:
-                pygments = None
+                    if not pygments_formatter:
+                        pygments_formatter = pygments.formatters.TerminalFormatter
+                except ImportError:
+                    pass
 
             class PrintQueryWrapper(utils.CursorDebugWrapper):
                 def execute(self, sql, params=()):
@@ -495,6 +499,11 @@ for k, m in shells.import_objects({}, no_style()).items():
                         print("")
 
             utils.CursorDebugWrapper = PrintQueryWrapper
+            try:
+                from django.db import connection
+                connection.force_debug_cursor = True
+            except Exception:
+                pass
 
         shells = (
             ('notebook', self.get_notebook),
