@@ -446,7 +446,6 @@ for k, m in shells.import_objects({}, no_style()).items():
         truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
         if options["print_sql"] or print_sql:
-
             # Code from http://gist.github.com/118990
             try:
                 import sqlparse
