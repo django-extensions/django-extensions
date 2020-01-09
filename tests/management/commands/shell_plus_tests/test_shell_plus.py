@@ -31,7 +31,7 @@ def test_shell_plus_print_sql(capsys):
 
     out, err = capsys.readouterr()
 
-    assert re.search("SELECT .+ FROM .auth_user. LIMIT 1", out)
+    assert re.search(r"SELECT\s+.+\s+FROM\s+.auth_user.\s+LIMIT\s+1", out)
 
 
 def test_shell_plus_plain_startup():
