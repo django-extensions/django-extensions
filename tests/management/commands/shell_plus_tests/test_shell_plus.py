@@ -16,7 +16,15 @@ from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
 @override_settings(SHELL_PLUS_PYGMENTS_FORMATTER=False)
 def test_shell_plus_print_sql(capsys):
     out = six.StringIO()
-    call_command("shell_plus", plain=True, print_sql=True, command="User.objects.all().exists()")
+    try:
+        from django.db import connection
+        from django.db.backends import utils
+        CursorDebugWrapper = utils.CursorDebugWrapper
+        force_debug_cursor = True if connection.force_debug_cursor else False
+        call_command("shell_plus", plain=True, print_sql=True, command="User.objects.all().exists()")
+    finally:
+        utils.CursorDebugWrapper = CursorDebugWrapper
+        connection.force_debug_cursor = force_debug_cursor
 
     out, err = capsys.readouterr()
 
