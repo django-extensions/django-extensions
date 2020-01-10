@@ -4,7 +4,9 @@ import six
 import sys
 import time
 import traceback
+from contextlib import contextmanager
 
+from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.backends import utils
@@ -21,6 +23,101 @@ def use_vi_mode():
         return False
     editor = os.path.basename(editor)
     return editor.startswith('vi') or editor.endswith('vim')
+
+
+@contextmanager
+def monkey_patch_cursordebugwrapper(print_sql=None, truncate=None):
+    if not print_sql:
+        yield
+    else:
+        # Code orginally from http://gist.github.com/118990
+        sqlparse = None
+        if getattr(settings, 'SHELL_PLUS_SQLPARSE_ENABLED', True):
+            try:
+                import sqlparse
+
+                sqlparse_format_kwargs_defaults = dict(
+                    reindent_aligned=True,
+                    truncate_strings=500,
+                )
+                sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
+            except ImportError:
+                sqlparse = None
+
+        pygments = None
+        if getattr(settings, 'SHELL_PLUS_PYGMENTS_ENABLED', True):
+            try:
+                import pygments.lexers
+                import pygments.formatters
+
+                pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
+                pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
+            except ImportError:
+                pass
+
+        class PrintQueryWrapperMixin:
+            def execute(self, sql, params=()):
+                starttime = time.time()
+                try:
+                    return utils.CursorWrapper.execute(self, sql, params)
+                finally:
+                    execution_time = time.time() - starttime
+                    raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+                    if truncate:
+                        raw_sql = raw_sql[:truncate]
+
+                    if sqlparse:
+                        raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
+
+                    if pygments:
+                        raw_sql = pygments.highlight(
+                            raw_sql,
+                            pygments.lexers.get_lexer_by_name("sql"),
+                            pygments_formatter(**pygments_formatter_kwargs),
+                        )
+
+                    print(raw_sql)
+                    print("")
+                    print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
+                    print("")
+
+        _CursorDebugWrapper = utils.CursorDebugWrapper
+
+        class PrintCursorQueryWrapper(PrintQueryWrapperMixin, _CursorDebugWrapper):
+            pass
+
+        try:
+            from django.db import connection
+            _force_debug_cursor = connection.force_debug_cursor
+        except Exception:
+            connection = None
+
+        utils.CursorDebugWrapper = PrintCursorQueryWrapper
+
+        try:
+            from django.db.backends.postgresql import base as postgresql_base
+            _PostgreSQLCursorDebugWrapper = postgresql_base.CursorDebugWrapper
+
+            class PostgreSQLPrintCursorDebugWrapper(PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper):
+                pass
+        except (ImproperlyConfigured, TypeError):
+            postgresql_base = None
+
+        if postgresql_base:
+            postgresql_base.CursorDebugWrapper = PostgreSQLPrintCursorDebugWrapper
+
+        if connection:
+            connection.force_debug_cursor = True
+
+        yield
+
+        utils.CursorDebugWrapper = _CursorDebugWrapper
+
+        if postgresql_base:
+            postgresql_base.CursorDebugWrapper = _PostgreSQLCursorDebugWrapper
+
+        if connection:
+            connection.force_debug_cursor = _force_debug_cursor
 
 
 class Command(BaseCommand):
@@ -445,129 +542,70 @@ for k, m in shells.import_objects({}, no_style()).items():
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
         truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
-        if options["print_sql"] or print_sql:
-            # Code from http://gist.github.com/118990
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, truncate=truncate):
+            shells = (
+                ('notebook', self.get_notebook),
+                ('ptipython', self.get_ptipython),
+                ('ptpython', self.get_ptpython),
+                ('bpython', self.get_bpython),
+                ('ipython', self.get_ipython),
+                ('plain', self.get_plain),
+                ('idle', self.get_idle),
+            )
+            SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
-            sqlparse = None
-            if getattr(settings, 'SHELL_PLUS_SQLPARSE_ENABLED', True):
-                try:
-                    import sqlparse
+            shell = None
+            shell_name = "any"
+            self.set_application_name(options)
+            if use_kernel:
+                shell = self.get_kernel(options)
+                shell_name = "IPython Kernel"
+            elif use_notebook:
+                shell = self.get_notebook(options)
+                shell_name = "IPython Notebook"
+            elif use_plain:
+                shell = self.get_plain(options)
+                shell_name = "plain"
+            elif use_ipython:
+                shell = self.get_ipython(options)
+                shell_name = "IPython"
+            elif use_bpython:
+                shell = self.get_bpython(options)
+                shell_name = "BPython"
+            elif use_ptpython:
+                shell = self.get_ptpython(options)
+                shell_name = "ptpython"
+            elif use_ptipython:
+                shell = self.get_ptipython(options)
+                shell_name = "ptipython"
+            elif use_idle:
+                shell = self.get_idle(options)
+                shell_name = "idle"
+            elif SETTINGS_SHELL_PLUS:
+                shell_name = SETTINGS_SHELL_PLUS
+                shell = dict(shells)[shell_name](options)
+            else:
+                for shell_name, func in shells:
+                    if verbosity > 2:
+                        print(self.style.NOTICE("Trying shell: %s" % shell_name))
+                    shell = func(options)
+                    if callable(shell):
+                        if verbosity > 1:
+                            print(self.style.NOTICE("Using shell: %s" % shell_name))
+                        break
 
-                    sqlparse_format_kwargs_defaults = dict(
-                        reindent_aligned=True,
-                        truncate_strings=500,
-                    )
-                    sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
-                except ImportError:
-                    sqlparse = None
+            if not callable(shell):
+                if shell:
+                    print(shell)
+                print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
+                return
 
-            pygments = None
-            if getattr(settings, 'SHELL_PLUS_PYGMENTS_ENABLED', True):
-                try:
-                    import pygments.lexers
-                    import pygments.formatters
+            if self.tests_mode:
+                return 130
 
-                    pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
-                    pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
-                except ImportError:
-                    pass
+            if options['command']:
+                imported_objects = self.get_imported_objects(options)
+                exec(options['command'], {}, imported_objects)
+                return
 
-            class PrintQueryWrapper(utils.CursorDebugWrapper):
-                def execute(self, sql, params=()):
-                    starttime = time.time()
-                    try:
-                        return utils.CursorWrapper.execute(self, sql, params)
-                    finally:
-                        execution_time = time.time() - starttime
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-                        if truncate:
-                            raw_sql = raw_sql[:truncate]
-
-                        if sqlparse:
-                            raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
-
-                        if pygments:
-                            raw_sql = pygments.highlight(
-                                raw_sql,
-                                pygments.lexers.get_lexer_by_name("sql"),
-                                pygments_formatter(**pygments_formatter_kwargs),
-                            )
-
-                        print(raw_sql)
-                        print("")
-                        print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
-                        print("")
-
-            utils.CursorDebugWrapper = PrintQueryWrapper
-            try:
-                from django.db import connection
-                connection.force_debug_cursor = True
-            except Exception:
-                pass
-
-        shells = (
-            ('notebook', self.get_notebook),
-            ('ptipython', self.get_ptipython),
-            ('ptpython', self.get_ptpython),
-            ('bpython', self.get_bpython),
-            ('ipython', self.get_ipython),
-            ('plain', self.get_plain),
-            ('idle', self.get_idle),
-        )
-        SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
-
-        shell = None
-        shell_name = "any"
-        self.set_application_name(options)
-        if use_kernel:
-            shell = self.get_kernel(options)
-            shell_name = "IPython Kernel"
-        elif use_notebook:
-            shell = self.get_notebook(options)
-            shell_name = "IPython Notebook"
-        elif use_plain:
-            shell = self.get_plain(options)
-            shell_name = "plain"
-        elif use_ipython:
-            shell = self.get_ipython(options)
-            shell_name = "IPython"
-        elif use_bpython:
-            shell = self.get_bpython(options)
-            shell_name = "BPython"
-        elif use_ptpython:
-            shell = self.get_ptpython(options)
-            shell_name = "ptpython"
-        elif use_ptipython:
-            shell = self.get_ptipython(options)
-            shell_name = "ptipython"
-        elif use_idle:
-            shell = self.get_idle(options)
-            shell_name = "idle"
-        elif SETTINGS_SHELL_PLUS:
-            shell_name = SETTINGS_SHELL_PLUS
-            shell = dict(shells)[shell_name](options)
-        else:
-            for shell_name, func in shells:
-                if verbosity > 2:
-                    print(self.style.NOTICE("Trying shell: %s" % shell_name))
-                shell = func(options)
-                if callable(shell):
-                    if verbosity > 1:
-                        print(self.style.NOTICE("Using shell: %s" % shell_name))
-                    break
-
-        if not callable(shell):
-            if shell:
-                print(shell)
-            print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
-            return
-
-        if self.tests_mode:
-            return 130
-
-        if options['command']:
-            imported_objects = self.get_imported_objects(options)
-            exec(options['command'], {}, imported_objects)
-            return
-
-        shell()
+            shell()
