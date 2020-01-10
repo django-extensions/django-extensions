@@ -6,6 +6,7 @@ import time
 import traceback
 from contextlib import contextmanager
 
+import django
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -94,14 +95,16 @@ def monkey_patch_cursordebugwrapper(print_sql=None, truncate=None):
 
         utils.CursorDebugWrapper = PrintCursorQueryWrapper
 
-        try:
-            from django.db.backends.postgresql import base as postgresql_base
-            _PostgreSQLCursorDebugWrapper = postgresql_base.CursorDebugWrapper
+        postgresql_base = None
+        if django.VERSION >= (3, 0):
+            try:
+                from django.db.backends.postgresql import base as postgresql_base
+                _PostgreSQLCursorDebugWrapper = postgresql_base.CursorDebugWrapper
 
-            class PostgreSQLPrintCursorDebugWrapper(PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper):
-                pass
-        except (ImproperlyConfigured, TypeError):
-            postgresql_base = None
+                class PostgreSQLPrintCursorDebugWrapper(PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper):
+                    pass
+            except (ImproperlyConfigured, TypeError):
+                postgresql_base = None
 
         if postgresql_base:
             postgresql_base.CursorDebugWrapper = PostgreSQLPrintCursorDebugWrapper
