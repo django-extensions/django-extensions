@@ -2,20 +2,16 @@
 import os
 import six
 import sys
-import time
 import traceback
-from contextlib import contextmanager
 
-import django
-from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db.backends import utils
 from django.utils.datastructures import OrderedSet
 from six import PY3
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
+from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
 
 def use_vi_mode():
@@ -24,103 +20,6 @@ def use_vi_mode():
         return False
     editor = os.path.basename(editor)
     return editor.startswith('vi') or editor.endswith('vim')
-
-
-@contextmanager
-def monkey_patch_cursordebugwrapper(print_sql=None, truncate=None):
-    if not print_sql:
-        yield
-    else:
-        # Code orginally from http://gist.github.com/118990
-        sqlparse = None
-        if getattr(settings, 'SHELL_PLUS_SQLPARSE_ENABLED', True):
-            try:
-                import sqlparse
-
-                sqlparse_format_kwargs_defaults = dict(
-                    reindent_aligned=True,
-                    truncate_strings=500,
-                )
-                sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
-            except ImportError:
-                sqlparse = None
-
-        pygments = None
-        if getattr(settings, 'SHELL_PLUS_PYGMENTS_ENABLED', True):
-            try:
-                import pygments.lexers
-                import pygments.formatters
-
-                pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
-                pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
-            except ImportError:
-                pass
-
-        class PrintQueryWrapperMixin:
-            def execute(self, sql, params=()):
-                starttime = time.time()
-                try:
-                    return utils.CursorWrapper.execute(self, sql, params)
-                finally:
-                    execution_time = time.time() - starttime
-                    raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-                    if truncate:
-                        raw_sql = raw_sql[:truncate]
-
-                    if sqlparse:
-                        raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
-
-                    if pygments:
-                        raw_sql = pygments.highlight(
-                            raw_sql,
-                            pygments.lexers.get_lexer_by_name("sql"),
-                            pygments_formatter(**pygments_formatter_kwargs),
-                        )
-
-                    print(raw_sql)
-                    print("")
-                    print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
-                    print("")
-
-        _CursorDebugWrapper = utils.CursorDebugWrapper
-
-        class PrintCursorQueryWrapper(PrintQueryWrapperMixin, _CursorDebugWrapper):
-            pass
-
-        try:
-            from django.db import connection
-            _force_debug_cursor = connection.force_debug_cursor
-        except Exception:
-            connection = None
-
-        utils.CursorDebugWrapper = PrintCursorQueryWrapper
-
-        postgresql_base = None
-        if django.VERSION >= (3, 0):
-            try:
-                from django.db.backends.postgresql import base as postgresql_base
-                _PostgreSQLCursorDebugWrapper = postgresql_base.CursorDebugWrapper
-
-                class PostgreSQLPrintCursorDebugWrapper(PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper):
-                    pass
-            except (ImproperlyConfigured, TypeError):
-                postgresql_base = None
-
-        if postgresql_base:
-            postgresql_base.CursorDebugWrapper = PostgreSQLPrintCursorDebugWrapper
-
-        if connection:
-            connection.force_debug_cursor = True
-
-        yield
-
-        utils.CursorDebugWrapper = _CursorDebugWrapper
-
-        if postgresql_base:
-            postgresql_base.CursorDebugWrapper = _PostgreSQLCursorDebugWrapper
-
-        if connection:
-            connection.force_debug_cursor = _force_debug_cursor
 
 
 class Command(BaseCommand):
@@ -188,6 +87,11 @@ class Command(BaseCommand):
             '--print-sql', action='store_true',
             default=False,
             help="Print SQL queries as they're executed"
+        )
+        parser.add_argument(
+            '--print-sql-location', action='store_true',
+            default=False,
+            help="Show location in code where SQL query generated from"
         )
         parser.add_argument(
             '--dont-load', action='append', dest='dont_load', default=[],
@@ -543,9 +447,8 @@ for k, m in shells.import_objects({}, no_style()).items():
         use_ptipython = options['ptipython']
         verbosity = options["verbosity"]
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
-        truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
-        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, truncate=truncate):
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
             shells = (
                 ('notebook', self.get_notebook),
                 ('ptipython', self.get_ptipython),

@@ -6,15 +6,12 @@ import os
 import re
 import socket
 import sys
-import time
-import traceback
 
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
-from django.db.backends import utils
 try:
     from django.utils.autoreload import gen_filenames
 except ImportError:  # Django >=2.2
@@ -39,6 +36,7 @@ except ImportError:
 
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
+from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
 
 naiveip_re = re.compile(r"""^(?:
@@ -80,6 +78,8 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
+        parser.add_argument('--print-sql-location', action='store_true', default=False,
+                            help="Show location in code where SQL query generated from")
         cert_group = parser.add_mutually_exclusive_group()
         cert_group.add_argument('--cert', dest='cert_path', action="store", type=str,
                                 help='Deprecated alias for --cert-file option.')
@@ -143,48 +143,6 @@ class Command(BaseCommand):
         werklogger.setLevel(logging.INFO)
         werklogger.addHandler(logredirect)
         werklogger.propagate = False
-
-        if options["print_sql"]:
-            try:
-                import sqlparse
-            except ImportError:
-                sqlparse = None  # noqa
-
-            try:
-                import pygments.lexers
-                import pygments.formatters
-            except ImportError:
-                pygments = None
-
-            truncate = getattr(settings, 'RUNSERVER_PLUS_PRINT_SQL_TRUNCATE', 1000)
-
-            class PrintQueryWrapper(utils.CursorDebugWrapper):
-                def execute(self, sql, params=()):
-                    starttime = time.time()
-                    try:
-                        return utils.CursorWrapper.execute(self, sql, params)
-                    finally:
-                        execution_time = time.time() - starttime
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-
-                        if sqlparse:
-                            raw_sql = raw_sql[:truncate]
-                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
-
-                        if pygments:
-                            raw_sql = pygments.highlight(
-                                raw_sql,
-                                pygments.lexers.get_lexer_by_name("sql"),
-                                pygments.formatters.TerminalFormatter()
-                            )
-
-                        logger.info(raw_sql)
-                        logger.info("")
-                        logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
-                        logger.info('Location of SQL Call: %s' % traceback.format_stack())
-                        logger.info("")
-
-            utils.CursorDebugWrapper = PrintQueryWrapper
 
         pdb_option = options['pdb']
         ipdb_option = options['ipdb']
@@ -261,7 +219,8 @@ class Command(BaseCommand):
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
             self._raw_ipv6 = True
 
-        self.inner_run(options)
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], logger=logger.info, confprefix="RUNSERVER_PLUS"):
+            self.inner_run(options)
 
     def inner_run(self, options):
         try:
