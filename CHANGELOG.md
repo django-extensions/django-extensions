@@ -1,6 +1,21 @@
 Changelog
 =========
 
+2.2.6
+-----
+
+Changes:
+ - Improvement: travis, update pypy and pypy3 versions
+ - Improvement: shell_plus, ability to print location/traceback besides sql
+ - Improvement: runserver_plus, ability to print location/traceback besides sql
+ - Improvement: UniqueFieldMixin, Support Django 2.2 UniqueConstraint.condition
+ - Improvement: DEFAULT_MYSQL_ENGINES, add mysql.connector.django
+ - Improvement: shell_plus, allow setting SHELL_PLUS="notebook"
+ - Improvement: shell_plus, add -c/--command to shell_plus mirroring django's shell command
+ - Fix: shell_plus, fix postgresql debug wrapper on django 3.0 or higher
+ - Fix: runserver_plus, fix postgresql debug wrapper on django 3.0 or higher
+
+
 2.2.5
 -----
 
