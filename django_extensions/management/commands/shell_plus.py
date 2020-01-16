@@ -217,7 +217,7 @@ class Command(BaseCommand):
 
             manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
 
-            if manage_py == 'manage.py' and os.path.isdir(manage_py_dir) and manage_py_dir != os.getcwd():
+            if manage_py == 'manage.py' and os.path.isdir(manage_py_dir):
                 pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
                 pythonpath = pythonpath.split(os.pathsep)
                 if manage_py_dir not in pythonpath:
