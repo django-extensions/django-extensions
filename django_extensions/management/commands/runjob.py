@@ -53,7 +53,4 @@ class Command(BaseCommand):
         if options['list_jobs']:
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)
         else:
-            if not job_name:
-                print("Run a single maintenance job. Please specify the name of the job.")
-                return
             self.runjob(app_name, job_name, options)

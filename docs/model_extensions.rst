@@ -26,7 +26,7 @@ active status.
 
 * *TitleDescriptionModel* - This Abstract Base Class model provides ``title`` and ``description`` fields.
 
-The ``title`` field is ``CharField`` with a maximun length of 255 characters,
+The ``title`` field is ``CharField`` with a maximum length of 255 characters,
 non-nullable. ``description``. On the other hand, ``description`` is a
 nullable ``TextField``.
 
@@ -43,6 +43,28 @@ and modification, respectively
   ``TitleDescriptionModel``, provides ``title`` and ``description`` fields
   but also provides a self-managed ``slug`` field which populates from the title.
 
-That field's class is a custom defined ``AutoSlugField``, based on Django's
+That field's class is a custom defined `AutoSlugField <field_extensions.html>`_, based on Django's
 ``SlugField``. By default, it uses ``-`` as a separator, is unique and does
-not accept blank values
+not accept blank values.
+It is possible to customize ``slugify_function``
+by defining your custom function within a model:
+
+.. code-block:: python
+
+    # models.py
+
+    from django.db import models
+
+    from django_extensions.db.models import TitleSlugDescriptionModel
+
+
+    class MyModel(TitleSlugDescriptionModel, models.Model):
+
+        def slugify_function(self, content):
+            """
+            This function will be used to slugify
+            the title (default `populate_from` field)
+            """
+            return content.replace('_', '-').lower()
+
+See `AutoSlugField docs <field_extensions.html>`_ for more details.

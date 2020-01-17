@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
-import six
 import sys
+import six
 
 from django.core.management import call_command
 from django.test import TestCase
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 class RunJobTests(TestCase):
@@ -24,7 +29,7 @@ class RunJobTests(TestCase):
 
     def test_list_jobs(self):
         call_command('runjob', '-l', verbosity=2)
-        self.assertRegexpMatches(sys.stdout.getvalue(), "tests.testapp\ +- sample_job\ +-\ +- My sample job.\n")
+        six.assertRegex(self, sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
 
     def test_list_jobs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={
@@ -32,7 +37,7 @@ class RunJobTests(TestCase):
             'remove': 'tests.testapp',
         }):
             call_command('runjob', '-l', verbosity=2)
-            self.assertRegexpMatches(sys.stdout.getvalue(), "tests.testapp\ +- sample_job\ +-\ +- My sample job.\n")
+            six.assertRegex(self, sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
 
     def test_runs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={
@@ -42,3 +47,28 @@ class RunJobTests(TestCase):
             call_command('runjob', 'sample_job', verbosity=2)
             self.assertIn("Executing job: sample_job (app: None)", sys.stdout.getvalue())
             self.assertIn("executing empty sample job", sys.stdout.getvalue())
+
+    def test_should_print_that_job_not_found(self):
+        call_command('runjob', 'test_job', verbosity=2)
+
+        self.assertIn("Error: Job test_job not found", sys.stdout.getvalue())
+
+    def test_should_print_that_applabel_not_found(self):
+        call_command('runjob', 'test_job', 'test_app', verbosity=2)
+
+        self.assertIn("Error: Job test_app for applabel test_job not found", sys.stdout.getvalue())
+
+    def test_should_always_print_list_option_usage_if_job_or_applabel_not_found(self):
+        call_command('runjob', 'test_job', verbosity=2)
+
+        self.assertIn("Use -l option to view all the available jobs", sys.stdout.getvalue())
+
+    @patch('django_extensions.management.commands.runjob.get_job')
+    def test_should_print_traceback(self, m_get_job):
+        m_get_job.return_value.return_value.execute.side_effect = Exception
+
+        call_command('runjob', 'test_job', 'test_app')
+
+        self.assertIn("ERROR OCCURED IN JOB: test_app (APP: test_job)", sys.stdout.getvalue())
+        self.assertIn("START TRACEBACK:", sys.stdout.getvalue())
+        self.assertIn("END TRACEBACK", sys.stdout.getvalue())

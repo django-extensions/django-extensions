@@ -13,5 +13,6 @@ class Command(BaseCommand):
             "Deprecated: "
             "\"show_templatetags\" is depreciated and will be "
             "removed in future releases. Use \"show_template_tags\" instead.",
-            DeprecationWarning)
+            DeprecationWarning,
+        )
         call_command('show_template_tags', **options)

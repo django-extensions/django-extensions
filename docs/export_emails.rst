@@ -78,4 +78,40 @@ vcard
 
 A vCard format which Apple Address Book can parse and import.
 
+
+Settings
+--------
+
+There are a couple of settings keys which can be configured in `settings.py`.
+Below the default values are shown:
+
+```
+EXPORT_EMAILS_ORDER_BY = ['last_name', 'first_name', 'username', 'email']
+EXPORT_EMAILS_FIELDS = ['last_name', 'first_name', 'username', 'email']
+EXPORT_EMAILS_FULL_NAME_FUNC = None
+```
+
+EXPORT_EMAILS_ORDER_BY
+~~~~~~~~~~~~~~~~~~~~~~
+
+Specifies the `order_by(...)` clause on the query being done into the databse to
+retreive the users. This determines the order of the output.
+
+
+EXPORT_EMAILS_FIELDS
+~~~~~~~~~~~~~~~~~~~~
+
+Specifies which fields will be selected from the database. This is most useful in
+combination with `EXPORT_EMAILS_FULL_NAME_FUNC` to select other fields you might
+want to use inside the custom function or when using a custom User model which
+does not have fields like 'first_name' and 'last_name'.
+
+EXPORT_EMAILS_FULL_NAME_FUNC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A function to use to create a full name based on the database fields selected by
+`EXPORT_EMAILS_FULL_NAME_FUNC`. The default implementation can be looked up in
+https://github.com/django-extensions/django-extensions/blob/master/django_extensions/management/commands/export_emails.py#L23
+
+
 .. _`LinkedIn Groups`: http://www.linkedin.com/static?key=groups_info

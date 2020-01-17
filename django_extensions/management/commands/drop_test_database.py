@@ -38,13 +38,7 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        """
-        Drop test database for this project.
-        """
-
-        if args:
-            raise CommandError("reset_db takes no arguments")
-
+        """Drop test database for this project."""
         router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
@@ -96,7 +90,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 if os.path.isfile(database_name):
                     os.unlink(database_name)
             except OSError:
-                pass
+                return
         elif engine in ('mysql',):
             import MySQLdb as Database
             kwargs = {
@@ -138,6 +132,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 cursor.execute(drop_query)
             except Database.ProgrammingError as e:
                 logging.exception("Error: %s" % str(e))
+                return
         else:
             raise CommandError("Unknown database engine %s" % engine)
 

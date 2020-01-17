@@ -1,6 +1,226 @@
 Changelog
 =========
 
+2.2.6
+-----
+
+Changes:
+ - Improvement: travis, update pypy and pypy3 versions
+ - Improvement: shell_plus, ability to print location/traceback besides sql
+ - Improvement: runserver_plus, ability to print location/traceback besides sql
+ - Improvement: UniqueFieldMixin, Support Django 2.2 UniqueConstraint.condition
+ - Improvement: DEFAULT_MYSQL_ENGINES, add mysql.connector.django
+ - Improvement: shell_plus, allow setting SHELL_PLUS="notebook"
+ - Improvement: shell_plus, add -c/--command to shell_plus mirroring django's shell command
+ - Fix: shell_plus, fix postgresql debug wrapper on django 3.0 or higher
+ - Fix: runserver_plus, fix postgresql debug wrapper on django 3.0 or higher
+
+
+2.2.5
+-----
+
+Changes:
+ - Improvement: travis, add Python 3.8
+ - Improvement: setup.py, update classifiers
+
+
+2.2.4
+-----
+
+Changes:
+ - Improvement: RandomCharField, Support unique_together
+ - Improvement: export_emails, add settings for overriding queryset fields, order_by and the full_name function
+
+
+2.2.3
+-----
+
+Changes:
+  - Fix: admin widgets, fix import of static template tag (part 2)
+
+2.2.2
+-----
+
+Changes:
+  - Fix: autoslugfield, find unique method overrideable
+  - Fix: notes, do not replace dot in template dirs
+  - Fix: admin widgets, fix import of static template tag
+  - Improvement: print_user_for_session, use session backend
+  - Improvement: sqlcreate, postgis support
+  - Improvement: graph_models, permit combination of includes and excludes
+  - Improvement: Adds missing GIS engine to DEFAULT_MYSQL_ENGINES
+  - Improvement: sqldiff, use lowercase field names in MySQL
+  - Improvement: sqldiff, mysql code could duplicate AUTO_INCREMENT and UNSIGNED statements
+
+
+2.2.1
+-----
+
+Changes:
+  - Fix: tests, support for newer versions of pytest
+  - Fix: tests, disable test with drf dependency for older python versions
+
+
+2.2.0
+-----
+
+Changes:
+  - Fix: removing wrongly released text_tags template
+  - Fix: graph_models, support for Python <3.6
+  - Improvement: ForeignKeySearchInput, wrap media files in static()
+  - Improvement: UniqField, added tests
+  - Improvement: dumpscript, fix orm_item_locator to use dateutil
+  - Improvement: graph_models, added argument to change arrow_shape
+
+
+2.1.9
+-----
+
+Changes:
+  - Fix: show_urls, fix for traceback on multi language sites
+  - Improvement: reset_db, fix typo's in help test
+
+
+2.1.8
+-----
+
+Changes:
+  - New: HexValidator, validate hex strings
+  - Improvement: reset_db, move settings to `django_settings.settings` which makes it easier to override.
+  - Improvement: AutoSlugField, extend support for custom slugify function
+  - Fix: runprofileserver, fix autoreloader for newer Django versions
+
+
+2.1.7
+-----
+
+Changes:
+  - New: test, many many more tests :-) thanks everybody
+  - New: docs, many documentation updates
+  - New: graph_model, add simple theming support and django2018 theme
+  - Improvement: ModificationDateTimeField, make modificationfield name modifiable
+  - Improvement: graph_model, option to not showrelations labels in the graph
+  - Improvement: reset_db, allow to override list of backends for database engines
+  - Improvement: reset_db, add psqlextra backend
+  - Improvement: runserver_plus, idle support
+  - Improvement: generate_secret_key, removed get_random_string in favour of get_random_secret_key
+  - Improvement: update_permissions, add create-only and update-only flags
+  - Improvement: update_permissions, update changed names of permission to match correct permission name
+  - Improvement: syncdata, add --database option
+  - Improvement: runscript, allow to override RUNSCRIPT_SCRIPT_DIR
+  - Fix: create_command, fix mknod error on macos
+  - Fix: runserver_plus, fix in resolving ssl certificate path
+  - Fix: sqldiff, fix hstorefield
+  - Deprecate: truncate_letters, use Django's truncatechars
+  - Deprecate: passwd, use Django's changepassword
+  - Deprecate: Keyczar encrypted fields, Keyczar is abandonned / deprecated
+
+
+2.1.6
+-----
+
+Changes:
+  - Fix: runserver_plus, auto_reloader fix for compatibility with Django 2.2
+  - New: test, many many more tests :-) thanks @kuter
+
+
+2.1.5
+-----
+
+Changes:
+  - New: ipdb, pdb and wdb filters
+  - Fix: ForeignKeySearchInput, error with widget render(...) parameters on Django 2.1
+  - Fix: pipchecker, unsupported format string passed to NoneType.format error
+  - Tests: bunch of new test cases
+
+
+2.1.4
+-----
+
+Changes:
+  - Fix: null_technical_500_response, handle function-based middleware
+  - Fix: shell_plus, fix #1261 check for --notebook-dir=... argument style
+  - Fix: graph_models, Excluded models displayed as an underscore
+  - Fix: set_fake_password, requires_model_validation has been replaced with requires_system_checks since 1.9
+  - Docs: admin_generator, new documentation and examples
+  - Improvement: JSONField, use new from_db_value syntax on Django 2 and up
+  - Improvement: EncryptedTextField, use new from_db_value syntax on Django 2 and up
+  - Improvement: graph_models, add --dot option
+  - Improvement: graph_models, allow to redirect (text) output to file
+  - Improvement: sqldiff, better support for indexes, index_together and unique_together
+
+
+2.1.3
+-----
+
+Changes:
+  - Fix: Readme, add direct linkt to screencast video
+  - Fix: graph_models, regression under Python 2
+  - Fix: ForeignKeyAutocompleteAdmin, 2.0.8 breaks ForeignKeyAutocompleteAdmin
+  - Fix: AutoSlugField, fix regression when copying an autoslug model require the explicit clearing of the slug if it needs to be recalculated
+  - Fix: technical_response, check for AttributeError
+  - Improvement: graph_models, Add feature disable_abstract_fields
+  - Improvement: AutoSlugField, Add overwrite_on_add
+  - Improvement: runscript, Improve module existence test in runscript
+
+
+2.1.2
+-----
+
+Changes:
+  - Fix: AutoSlugField, fix check on list or tuple type
+
+
+2.1.1
+-----
+
+Removed support for Django versions before 1.11
+
+Changes:
+  - Fix: foreignkey_searchinput, remove unnecessary img tag
+  - Fix: sqldiff, fix deprecated get_indexes call
+  - Fix: AutoSlugField, check that any non-callable value passed to populate_from is a string type
+  - Fix: tests, fix ChangingDirectoryTests: cd back in tearDown
+  - Fix: show_template_tags, should handle AppConfig class in INSTALLED applications
+  - Improvement: runserver_plus, reduce reraise pollution in traceback page
+  - Improvement: dumpscript, prevent many2many field with custom intermediate models to be added directly on the parent model
+  - Docs: fix typos
+
+
+2.1.0
+-----
+
+Changes:
+  - Fix: travis
+
+
+2.0.9
+-----
+
+Changes:
+  - Improvement: use README as project description on PyPI
+
+
+2.0.8
+-----
+
+Please stop using ForeignKeyAutocompleteAdmin edition :-)
+
+Changes:
+  - Fix: special markers in runserver_plus.rst
+  - Fix: shell_plus, refactor reading pythonrc file outside of exec(compile(...))
+  - Fix: reset_db, fix default utf8 support
+  - Fix: autoslugfield, Fix autoslug generation when existing model is copied
+  - Improvement: Cleanup management commands options after argparse migration #916
+  - Improvement: sqldiff, add more tests
+  - Improvement: sqldiff, add DurationField and SearchVectorField
+  - Improvement: shell_plus, add more tests
+  - Improvement: shell_plus, backport macos fix for tab completion
+  - Improvement: clear_cache, add --all option
+  - Improvement: pipchecker, treat dev versions as unstable
+  - Deprecation: ForeignKeyAutocompleteAdmin, Django 2.0 has similar capabilities, which are much better supported.
+
+
 2.0.7
 -----
 

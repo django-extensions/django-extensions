@@ -38,7 +38,8 @@ class SlugField(StringField):
 
 
 class AutoSlugField(SlugField):
-    """ AutoSlugField, adapted for MongoDB
+    """
+    AutoSlugField, adapted for MongoDB
 
     By default, sets editable=False, blank=True.
 
@@ -58,6 +59,7 @@ class AutoSlugField(SlugField):
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -75,7 +77,7 @@ class AutoSlugField(SlugField):
 
     def _slug_strip(self, value):
         """
-        Cleans up a slug by removing slug separator characters that occur at
+        Clean up a slug by removing slug separator characters that occur at
         the beginning or end of a slug.
 
         If an alternate separator is used, it will also replace any instances
@@ -172,7 +174,8 @@ class AutoSlugField(SlugField):
 
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField
+    """
+    CreationDateTimeField
 
     By default, sets editable=False, blank=True, default=datetime.now
     """
@@ -186,7 +189,8 @@ class CreationDateTimeField(DateTimeField):
 
 
 class ModificationDateTimeField(CreationDateTimeField):
-    """ ModificationDateTimeField
+    """
+    ModificationDateTimeField
 
     By default, sets editable=False, blank=True, default=datetime.now
 
@@ -207,7 +211,8 @@ class UUIDVersionError(Exception):
 
 
 class UUIDField(StringField):
-    """ UUIDField
+    """
+    UUIDField
 
     By default uses UUID version 1 (generate from host ID, sequence number and current time)
 

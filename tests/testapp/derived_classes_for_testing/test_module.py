@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from tests.testapp.classes_to_include import (
-    IncludedMixin,
-)
+from tests.testapp.classes_to_include import IncludedMixin
 
 
 class ClassWhichShouldNotBeImported:

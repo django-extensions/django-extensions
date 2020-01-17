@@ -28,7 +28,6 @@ Improvements:
     See TODOs and FIXMEs scattered throughout :-)
 
 """
-
 import datetime
 import sys
 
@@ -42,17 +41,17 @@ from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
 from django.db.models.deletion import Collector
-from django.utils.encoding import smart_text, force_text
+from django.utils import timezone
+from django.utils.encoding import force_text, smart_text
 
 from django_extensions.management.utils import signalcommand
 
 
 def orm_item_locator(orm_obj):
     """
-    This function is called every time an object that will not be exported is required.
+    Is called every time an object that will not be exported is required.
     Where orm_obj is the referred object.
     We postpone the lookup to locate_object() which will be run on the generated script
-
     """
 
     the_class = orm_obj._meta.object_name
@@ -70,13 +69,18 @@ def orm_item_locator(orm_obj):
 
     for key in clean_dict:
         v = clean_dict[key]
-        if v is not None and not isinstance(v, (six.string_types, six.integer_types, float, datetime.datetime)):
-            clean_dict[key] = six.u("%s" % v)
+        if v is not None:
+            if isinstance(v, datetime.datetime):
+                v = timezone.make_aware(v)
+                clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
+            elif not isinstance(v, (six.string_types, six.integer_types, float)):
+                clean_dict[key] = six.u("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class, original_pk_name,
         the_class, pk_name, pk_value, clean_dict
     )
+
     return output
 
 
@@ -116,9 +120,10 @@ class Command(BaseCommand):
 
 
 def get_models(app_labels):
-    """ Gets a list of models for the given app labels, with some exceptions.
-        TODO: If a required model is referenced, it should also be included.
-        Or at least discovered with a get_or_create() call.
+    """
+    Get a list of models for the given app labels, with some exceptions.
+    TODO: If a required model is referenced, it should also be included.
+    Or at least discovered with a get_or_create() call.
     """
 
     # These models are not to be output, e.g. because they can be generated automatically
@@ -149,10 +154,11 @@ def get_models(app_labels):
 
 
 class Code(object):
-    """ A snippet of python script.
-        This keeps track of import statements and can be output to a string.
-        In the future, other features such as custom indentation might be included
-        in this class.
+    """
+    A snippet of python script.
+    This keeps track of import statements and can be output to a string.
+    In the future, other features such as custom indentation might be included
+    in this class.
     """
 
     def __init__(self, indent=-1, stdout=None, stderr=None):
@@ -167,8 +173,7 @@ class Code(object):
         self.stderr = stderr
 
     def __str__(self):
-        """ Returns a string representation of this script.
-        """
+        """ Return a string representation of this script. """
         if self.imports:
             self.stderr.write(repr(self.import_lines))
             return flatten_blocks([""] + self.import_lines + [""] + self.lines, num_indents=self.indent)
@@ -176,8 +181,7 @@ class Code(object):
             return flatten_blocks(self.lines, num_indents=self.indent)
 
     def get_import_lines(self):
-        """ Takes the stored imports and converts them to lines
-        """
+        """ Take the stored imports and converts them to lines """
         if self.imports:
             return ["from %s import %s" % (value, key) for key, value in self.imports.items()]
         else:
@@ -198,15 +202,17 @@ class ModelCode(Code):
         self.instances = []
 
     def get_imports(self):
-        """ Returns a dictionary of import statements, with the variable being
-            defined as the key.
+        """
+        Return a dictionary of import statements, with the variable being
+        defined as the key.
         """
         return {self.model.__name__: smart_text(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
-        """ Returns a list of lists or strings, representing the code body.
-            Each list is a block, each string is a statement.
+        """
+        Return a list of lists or strings, representing the code body.
+        Each list is a block, each string is a statement.
         """
         code = []
 
@@ -250,15 +256,21 @@ class InstanceCode(Code):
 
         self.many_to_many_waiting_list = {}
         for field in self.model._meta.many_to_many:
+            try:
+                if not field.remote_field.through._meta.auto_created:
+                    continue
+            except AttributeError:
+                pass
             self.many_to_many_waiting_list[field] = list(getattr(self.instance, field.name).all())
 
     def get_lines(self, force=False):
-        """ Returns a list of lists or strings, representing the code body.
-            Each list is a block, each string is a statement.
+        """
+        Return a list of lists or strings, representing the code body.
+        Each list is a block, each string is a statement.
 
-            force (True or False): if an attribute object cannot be included,
-            it is usually skipped to be processed later. With 'force' set, there
-            will be no waiting: a get_or_create() call is written instead.
+        force (True or False): if an attribute object cannot be included,
+        it is usually skipped to be processed later. With 'force' set, there
+        will be no waiting: a get_or_create() call is written instead.
         """
         code_lines = []
 
@@ -290,14 +302,14 @@ class InstanceCode(Code):
     lines = property(get_lines)
 
     def skip(self):
-        """ Determine whether or not this object should be skipped.
-            If this model instance is a parent of a single subclassed
-            instance, skip it. The subclassed instance will create this
-            parent instance for us.
-
-            TODO: Allow the user to force its creation?
         """
+        Determine whether or not this object should be skipped.
+        If this model instance is a parent of a single subclassed
+        instance, skip it. The subclassed instance will create this
+        parent instance for us.
 
+        TODO: Allow the user to force its creation?
+        """
         if self.skip_me is not None:
             return self.skip_me
 
@@ -359,7 +371,7 @@ class InstanceCode(Code):
         return code_lines
 
     def get_many_to_many_lines(self, force=False):
-        """ Generates lines that define many to many relations for this instance. """
+        """ Generate lines that define many to many relations for this instance. """
 
         lines = []
 
@@ -402,16 +414,15 @@ class Script(Code):
         self.options = options
 
     def _queue_models(self, models, context):
-        """ Works an an appropriate ordering for the models.
-            This isn't essential, but makes the script look nicer because
-            more instances can be defined on their first try.
         """
-
-        # Max number of cycles allowed before we call it an infinite loop.
-        MAX_CYCLES = 5
-
+        Work an an appropriate ordering for the models.
+        This isn't essential, but makes the script look nicer because
+        more instances can be defined on their first try.
+        """
         model_queue = []
         number_remaining_models = len(models)
+        # Max number of cycles allowed before we call it an infinite loop.
+        MAX_CYCLES = number_remaining_models
         allowed_cycles = MAX_CYCLES
 
         while number_remaining_models > 0:
@@ -448,8 +459,9 @@ class Script(Code):
         return model_queue
 
     def get_lines(self):
-        """ Returns a list of lists or strings, representing the code body.
-            Each list is a block, each string is a statement.
+        """
+        Return a list of lists or strings, representing the code body.
+        Each list is a block, each string is a statement.
         """
         code = [self.FILE_HEADER.strip()]
 
@@ -601,6 +613,7 @@ from django.contrib.contenttypes.models import ContentType
 
 try:
     import dateutil.parser
+    from dateutil.tz import tzoffset
 except ImportError:
     print("Please install python-dateutil")
     sys.exit(os.EX_USAGE)
@@ -619,10 +632,10 @@ def import_data():
 # -------------------------------------------------------------------------------
 
 def flatten_blocks(lines, num_indents=-1):
-    """ Takes a list (block) or string (statement) and flattens it into a string
-        with indentation.
     """
-
+    Take a list (block) or string (statement) and flattens it into a string
+    with indentation.
+    """
     # The standard indent is four spaces
     INDENTATION = " " * 4
 
@@ -638,8 +651,7 @@ def flatten_blocks(lines, num_indents=-1):
 
 
 def get_attribute_value(item, field, context, force=False, skip_autofield=True):
-    """ Gets a string version of the given attribute's value, like repr() might. """
-
+    """ Get a string version of the given attribute's value, like repr() might. """
     # Find the value of the field, catching any database issues
     try:
         value = getattr(item, field.name)
@@ -665,9 +677,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
         # content types in this script, as they can be generated again
         # automatically.
         # NB: Not sure if "is" will always work
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model is ContentType:
+        if field.remote_field.model is ContentType:
             return 'ContentType.objects.get(app_label="%s", model="%s")' % (value.app_label, value.model)
 
         # Generate an identifier (key) for this foreign object
@@ -707,28 +717,23 @@ def make_clean_dict(the_dict):
 
 def check_dependencies(model, model_queue, avaliable_models):
     """ Check that all the depenedencies for this model are already in the queue. """
-
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [model.__name__, 'ContentType']
 
     # For each ForeignKey or ManyToMany field, check that a link is possible
 
     for field in model._meta.fields:
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        if not remote_field:
+        if not field.remote_field:
             continue
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model.__name__ not in allowed_links:
-            if remote_field_model not in avaliable_models:
+        if field.remote_field.model.__name__ not in allowed_links:
+            if field.remote_field.model not in avaliable_models:
                 continue
             return False
 
     for field in model._meta.many_to_many:
-        remote_field = field.remote_field if hasattr(field, 'remote_field') else field.rel  # Remove me after Django 1.8 is unsupported
-        if not remote_field:
+        if not field.remote_field:
             continue
-        remote_field_model = remote_field.model if hasattr(remote_field, 'model') else remote_field.to  # Remove me after Django 1.8 is unsupported
-        if remote_field_model.__name__ not in allowed_links:
+        if field.remote_field.model.__name__ not in allowed_links:
             return False
 
     return True
@@ -743,3 +748,12 @@ class SkipValue(Exception):
 
 class DoLater(Exception):
     """ Value could not be parsed or should simply be skipped. """
+
+
+class StrToCodeChanger:
+
+    def __init__(self, string):
+        self.repr = string
+
+    def __repr__(self):
+        return self.repr

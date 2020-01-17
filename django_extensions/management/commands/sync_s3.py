@@ -66,17 +66,17 @@ from typing import List  # NOQA
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.six import StringIO
+from six import StringIO
 
 from django_extensions.management.utils import signalcommand
 
-# Make sure boto is available
+
 try:
     import boto
-    import boto.exception
-    HAS_BOTO = True
 except ImportError:
     HAS_BOTO = False
+else:
+    HAS_BOTO = True
 
 
 class Command(BaseCommand):
@@ -174,7 +174,7 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         if not HAS_BOTO:
-            raise ImportError("The boto Python library is not installed.")
+            raise CommandError("Please install the 'boto' Python library. ($ pip install boto)")
 
         # Check for AWS keys in settings
         if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
@@ -246,16 +246,12 @@ class Command(BaseCommand):
         print("%d files skipped." % self.skip_count)
 
     def open_cf(self):
-        """
-        Returns an open connection to CloudFront
-        """
+        """Return an open connection to CloudFront"""
         return boto.connect_cloudfront(
             self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
 
     def invalidate_objects_cf(self):
-        """
-        Split the invalidation request in groups of 1000 objects
-        """
+        """Split the invalidation request in groups of 1000 objects"""
         if not self.AWS_CLOUDFRONT_DISTRIBUTION:
             raise CommandError(
                 'An object invalidation was requested but the variable '
@@ -278,9 +274,7 @@ class Command(BaseCommand):
                 self.AWS_CLOUDFRONT_DISTRIBUTION, paths)
 
     def sync_s3(self):
-        """
-        Walks the media/static directories and syncs files to S3
-        """
+        """Walk the media/static directories and syncs files to S3"""
         bucket, key = self.open_s3()
         for directory in self.DIRECTORIES:
             for root, dirs, files in os.walk(directory):
@@ -295,16 +289,14 @@ class Command(BaseCommand):
         return zbuf.getvalue()
 
     def get_s3connection_kwargs(self):
-        """Returns connection kwargs as a dict"""
+        """Return connection kwargs as a dict"""
         kwargs = {}
         if self.s3host:
             kwargs['host'] = self.s3host
         return kwargs
 
     def open_s3(self):
-        """
-        Opens connection to S3 returning bucket and key
-        """
+        """Open connection to S3 returning bucket and key"""
         conn = boto.connect_s3(
             self.AWS_ACCESS_KEY_ID,
             self.AWS_SECRET_ACCESS_KEY,
@@ -316,9 +308,6 @@ class Command(BaseCommand):
         return bucket, boto.s3.key.Key(bucket)
 
     def upload_s3(self, arg, dirname, names, dirs):
-        """
-        This is the callback to os.path.walk and where much of the work happens
-        """
         bucket, key, bucket_name, root_dir = arg
 
         # Skip directories we don't want to sync
@@ -373,7 +362,7 @@ class Command(BaseCommand):
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
             if self.do_gzip:
-                # Gzipping only if file is large enough (>1K is recommended)
+                # Gzip only if file is large enough (>1K is recommended)
                 # and only if file is a common text type (not a binary file)
                 if file_size > 1024 and content_type in self.GZIP_CONTENT_TYPES:
                     filedata = self.compress_string(filedata)

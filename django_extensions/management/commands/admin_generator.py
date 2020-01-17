@@ -16,15 +16,13 @@ https://github.com/WoLpH/django-admin-generator/
 """
 
 import re
-import sys
 
+import six
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import LabelCommand, CommandError
 from django.db import models
-from django.utils import six
 
-from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
 # Configurable constants
@@ -72,8 +70,10 @@ PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
 
 
 class UnicodeMixin(object):
-    """Mixin class to handle defining the proper __str__/__unicode__
-    methods in Python 2 or 3."""
+    """
+    Mixin class to handle defining the proper __str__/__unicode__
+    methods in Python 2 or 3.
+    """
 
     if six.PY3:  # Python 3
         def __str__(self):
@@ -165,10 +165,8 @@ class AdminModel(UnicodeMixin):
     def _process_many_to_many(self, meta):
         raw_id_threshold = self.raw_id_threshold
         for field in meta.local_many_to_many:
-            if hasattr(field, 'remote_field'):  # Django>=1.9
+            if hasattr(field, 'remote_field'):
                 related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
-            elif hasattr(field, 'related'):  # Django<1.9
-                related_model = getattr(field.related, 'related_model', field.related.model)
             else:
                 raise CommandError("Unable to process ManyToMany relation")
             related_objects = related_model.objects.all()
@@ -186,10 +184,8 @@ class AdminModel(UnicodeMixin):
         raw_id_threshold = self.raw_id_threshold
         list_filter_threshold = self.list_filter_threshold
         max_count = max(list_filter_threshold, raw_id_threshold)
-        if hasattr(field, 'remote_field'):  # Django>=1.9
+        if hasattr(field, 'remote_field'):
             related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
-        elif hasattr(field, 'related'):  # Django<1.9
-            related_model = getattr(field.related, 'related_model', field.related.model)
         else:
             raise CommandError("Unable to process ForeignKey relation")
         related_count = related_model.objects.all()
@@ -337,18 +333,17 @@ class Command(LabelCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        self.style = color_style()
-
         app_name = options['app_name']
+
         try:
             app = apps.get_app_config(app_name)
         except LookupError:
-            print(self.style.WARN('This command requires an existing app name as argument'))
-            print(self.style.WARN('Available apps:'))
+            self.stderr.write('This command requires an existing app name as argument')
+            self.stderr.write('Available apps:')
             app_labels = [app.label for app in apps.get_app_configs()]
             for label in sorted(app_labels):
-                print(self.style.WARN('    %s' % label))
-            sys.exit(1)
+                self.stderr.write('    %s' % label)
+            return
 
         model_res = []
         for arg in options['model_name']:

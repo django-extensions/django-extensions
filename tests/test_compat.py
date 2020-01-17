@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.test.utils import override_settings
 
 from django_extensions.compat import get_template_setting
 
 
-class GetTemplateSettingTests(TestCase):
-    @override_settings(TEMPLATES=[{'DIRS': ['asdf']}])
-    def test_new_dir_template(self):
-        setting = get_template_setting('DIRS')
-        self.assertEqual(setting, ['asdf'])
-
-    @override_settings(TEMPLATES=None, TEMPLATES_DIRS=['asdf'])
-    def test_old_dir_template(self):
-        setting = get_template_setting('DIRS')
-        self.assertEqual(setting, ['asdf'])
+class CompatTests(TestCase):
 
     @override_settings(TEMPLATES=None)
-    def test_old_dir_missing(self):
-        setting = get_template_setting('DIRS', 'default')
-        self.assertEqual(setting, 'default')
+    def test_should_return_None_by_default_if_TEMPLATES_setting_is_none(self):
+        self.assertIsNone(get_template_setting('template_key'))
 
-    def test_default_setting(self):
-        setting = get_template_setting('ASDF', 'default')
-        self.assertEqual(setting, 'default')
+    @override_settings(TEMPLATES=None)
+    def test_should_return_default_if_TEMPLATES_setting_is_none(self):
+        self.assertEqual(get_template_setting('template_key', 'test'), 'test')
+
+    @override_settings(TEMPLATES=[
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': ['templates'],
+            'APP_DIRS': True
+        }])
+    def test_should_return_value_for_key(self):
+        self.assertEqual(get_template_setting('BACKEND'),
+                         'django.template.backends.django.DjangoTemplates')

@@ -15,6 +15,7 @@ logger = getLogger(__name__)
 
 class ExtensionDebuggingServer(SMTPServer):
     """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
+
     # Do something with the gathered message
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         """Output will be sent to the module logger at INFO level."""
@@ -50,8 +51,6 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, addrport='', *args, **options):
-        if args:
-            raise CommandError('Usage is mail_debug %s' % self.args)
         if not addrport:
             if options['use_settings']:
                 from django.conf import settings

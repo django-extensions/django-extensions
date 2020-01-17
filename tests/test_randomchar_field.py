@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-import mock
 import string
 import pytest
 
 from django.test import TestCase
 
-from .testapp.models import (
-    RandomCharTestModel,
-    RandomCharTestModelUnique,
-    RandomCharTestModelLowercase,
-    RandomCharTestModelUppercase,
-    RandomCharTestModelAlpha,
-    RandomCharTestModelDigits,
-    RandomCharTestModelPunctuation,
-    RandomCharTestModelLowercaseAlphaDigits,
-    RandomCharTestModelUppercaseAlphaDigits,
-)
+from .testapp.models import RandomCharTestModel, RandomCharTestModelUnique, RandomCharTestModelLowercase
+from .testapp.models import RandomCharTestModelUppercase, RandomCharTestModelAlpha, RandomCharTestModelDigits
+from .testapp.models import RandomCharTestModelPunctuation, RandomCharTestModelLowercaseAlphaDigits, RandomCharTestModelUppercaseAlphaDigits
+from .testapp.models import RandomCharTestModelUniqueTogether
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 class RandomCharFieldTest(TestCase):
@@ -88,5 +85,17 @@ class RandomCharFieldTest(TestCase):
             m.save()
 
             m = RandomCharTestModelUnique()
+            with pytest.raises(RuntimeError):
+                m.save()
+
+    def testRandomCharTestModelUniqueTogether(self):
+        with mock.patch('django_extensions.db.fields.get_random_string') as mock_sample:
+            mock_sample.return_value = 'aaa'
+            m = RandomCharTestModelUniqueTogether()
+            m.common_field = 'bbb'
+            m.save()
+
+            m = RandomCharTestModelUniqueTogether()
+            m.common_field = 'bbb'
             with pytest.raises(RuntimeError):
                 m.save()

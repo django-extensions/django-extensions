@@ -150,9 +150,6 @@ You can set path to .key file using ``--key-file`` option.
 If this option is not set than runserver_plus assumes that,
 this file is in the same directory as file from ``--cert-file`` option.
 
-Certificate file must have .crt extension and key file must have .key extension.
-Otherwise new files will be created.
-
 If you want to create new files,
 than you can pass file name without extension.
 Proper files with this name and .crt and .key extensions will be created.
@@ -192,6 +189,20 @@ to your settings::
           },
       },
   }
+
+Other configuration options and their defaults include:
+
+::
+
+  # Truncate SQL queries to this many characters (None means no truncation)
+  RUNSERVER_PLUS_PRINT_SQL_TRUNCATE = 1000
+
+  # After how many seconds auto-reload should scan for updates in poller-mode
+  RUNSERVERPLUS_POLLER_RELOADER_INTERVAL = 1
+
+  # Werkzeug reloader type [auto, watchdog, or stat]
+  RUNSERVERPLUS_POLLER_RELOADER_TYPE = 'auto'
+
 
 IO Calls and CPU Usage
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -237,6 +248,8 @@ The PIN is generated in a stable way that is specific to the project. In some si
 to generate a stable PIN between restarts in which case an explicit PIN can be provided through the environment
 variable WERKZEUG_DEBUG_PIN. This can be set to a number and will become the PIN. This variable can also be set
 to the value off to disable the PIN check entirely.
+
+The PIN can also be disabled by passing the argument ``--nopin`` when calling the runserver_plus command.
 
 If the PIN is entered too many times incorrectly the server needs to be restarted.
 

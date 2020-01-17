@@ -2,17 +2,16 @@
 import os
 import six
 import sys
-import time
 import traceback
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db.backends import utils
-from django.utils.six import PY3
 from django.utils.datastructures import OrderedSet
+from six import PY3
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
+from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
 
 def use_vi_mode():
@@ -34,6 +33,11 @@ class Command(BaseCommand):
             '--plain', action='store_true', dest='plain',
             default=False,
             help='Tells Django to use plain Python, not BPython nor IPython.'
+        )
+        parser.add_argument(
+            '--idle', action='store_true', dest='idle',
+            default=False,
+            help='Tells Django to use Idle.'
         )
         parser.add_argument(
             '--bpython', action='store_true', dest='bpython',
@@ -85,6 +89,11 @@ class Command(BaseCommand):
             help="Print SQL queries as they're executed"
         )
         parser.add_argument(
+            '--print-sql-location', action='store_true',
+            default=False,
+            help="Show location in code where SQL query generated from"
+        )
+        parser.add_argument(
             '--dont-load', action='append', dest='dont_load', default=[],
             help='Ignore autoloading of some apps/models. Can be used several times.'
         )
@@ -102,6 +111,10 @@ class Command(BaseCommand):
             default=False,
             dest='no_browser',
             help='Don\'t open the notebook in a browser after startup.'
+        )
+        parser.add_argument(
+            '-c', '--command',
+            help='Instead of opening an interactive shell, run a command as Django and exit.',
         )
 
     def run_from_argv(self, argv):
@@ -159,15 +172,20 @@ class Command(BaseCommand):
         return run_kernel
 
     def get_notebook(self, options):
-        from IPython import release
+        try:
+            from IPython import release
+        except ImportError:
+            return traceback.format_exc()
         try:
             from notebook.notebookapp import NotebookApp
         except ImportError:
+            if release.version_info[0] >= 7:
+                return traceback.format_exc()
             try:
                 from IPython.html.notebookapp import NotebookApp
             except ImportError:
                 if release.version_info[0] >= 3:
-                    raise
+                    return traceback.format_exc()
                 try:
                     from IPython.frontend.html.notebook import notebookapp
                     NotebookApp = notebookapp.NotebookApp
@@ -177,7 +195,7 @@ class Command(BaseCommand):
         no_browser = options['no_browser']
 
         def install_kernel_spec(app, display_name, ipython_arguments):
-            """install an IPython >= 3.0 kernelspec that loads django extensions"""
+            """Install an IPython >= 3.0 kernelspec that loads django extensions"""
             ksm = app.kernel_spec_manager
             try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
                 'python3' if PY3 else 'python2',
@@ -225,7 +243,7 @@ class Command(BaseCommand):
             notebook_arguments = self.get_notebook_arguments(options)
             if no_browser and '--no-browser' not in notebook_arguments:
                 notebook_arguments.append('--no-browser')
-            if '--notebook-dir' not in notebook_arguments:
+            if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
                 notebook_arguments.extend(['--notebook-dir', '.'])
 
             # IPython < 3 passes through kernel args from notebook CLI
@@ -366,8 +384,27 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptipython
 
+    def get_idle(self, options):
+        from idlelib.pyshell import main
+
+        def run_idle():
+            sys.argv = [
+                sys.argv[0],
+                '-c',
+                """
+from django_extensions.management import shells
+from django.core.management.color import no_style
+for k, m in shells.import_objects({}, no_style()).items():
+    globals()[k] = m
+""",
+            ]
+            main()
+
+        return run_idle
+
     def set_application_name(self, options):
-        """Set the application_name on PostgreSQL connection
+        """
+        Set the application_name on PostgreSQL connection
 
         Use the fallback_application_name to let the user override
         it with PGAPPNAME env variable
@@ -405,115 +442,76 @@ class Command(BaseCommand):
         use_ipython = options['ipython']
         use_bpython = options['bpython']
         use_plain = options['plain']
+        use_idle = options['idle']
         use_ptpython = options['ptpython']
         use_ptipython = options['ptipython']
         verbosity = options["verbosity"]
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
-        truncate = getattr(settings, 'SHELL_PLUS_PRINT_SQL_TRUNCATE', 1000)
 
-        if options["print_sql"] or print_sql:
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
+            shells = (
+                ('notebook', self.get_notebook),
+                ('ptipython', self.get_ptipython),
+                ('ptpython', self.get_ptpython),
+                ('bpython', self.get_bpython),
+                ('ipython', self.get_ipython),
+                ('plain', self.get_plain),
+                ('idle', self.get_idle),
+            )
+            SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
-            # Code from http://gist.github.com/118990
-            try:
-                import sqlparse
+            shell = None
+            shell_name = "any"
+            self.set_application_name(options)
+            if use_kernel:
+                shell = self.get_kernel(options)
+                shell_name = "IPython Kernel"
+            elif use_notebook:
+                shell = self.get_notebook(options)
+                shell_name = "IPython Notebook"
+            elif use_plain:
+                shell = self.get_plain(options)
+                shell_name = "plain"
+            elif use_ipython:
+                shell = self.get_ipython(options)
+                shell_name = "IPython"
+            elif use_bpython:
+                shell = self.get_bpython(options)
+                shell_name = "BPython"
+            elif use_ptpython:
+                shell = self.get_ptpython(options)
+                shell_name = "ptpython"
+            elif use_ptipython:
+                shell = self.get_ptipython(options)
+                shell_name = "ptipython"
+            elif use_idle:
+                shell = self.get_idle(options)
+                shell_name = "idle"
+            elif SETTINGS_SHELL_PLUS:
+                shell_name = SETTINGS_SHELL_PLUS
+                shell = dict(shells)[shell_name](options)
+            else:
+                for shell_name, func in shells:
+                    if verbosity > 2:
+                        print(self.style.NOTICE("Trying shell: %s" % shell_name))
+                    shell = func(options)
+                    if callable(shell):
+                        if verbosity > 1:
+                            print(self.style.NOTICE("Using shell: %s" % shell_name))
+                        break
 
-                sqlparse_format_kwargs_defaults = dict(
-                    reindent_aligned=True,
-                    truncate_strings=500,
-                )
-                sqlparse_format_kwargs = getattr(settings, 'SHELL_PLUS_SQLPARSE_FORMAT_KWARGS', sqlparse_format_kwargs_defaults)
-            except ImportError:
-                sqlparse = None
+            if not callable(shell):
+                if shell:
+                    print(shell)
+                print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
+                return
 
-            try:
-                import pygments.lexers
-                import pygments.formatters
+            if self.tests_mode:
+                return 130
 
-                pygments_formatter = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER', pygments.formatters.TerminalFormatter)
-                pygments_formatter_kwargs = getattr(settings, 'SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS', {})
-            except ImportError:
-                pygments = None
+            if options['command']:
+                imported_objects = self.get_imported_objects(options)
+                exec(options['command'], {}, imported_objects)
+                return
 
-            class PrintQueryWrapper(utils.CursorDebugWrapper):
-                def execute(self, sql, params=()):
-                    starttime = time.time()
-                    try:
-                        return utils.CursorWrapper.execute(self, sql, params)
-                    finally:
-                        execution_time = time.time() - starttime
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-
-                        if sqlparse:
-                            raw_sql = raw_sql[:truncate]
-                            raw_sql = sqlparse.format(raw_sql, **sqlparse_format_kwargs)
-
-                        if pygments:
-                            raw_sql = pygments.highlight(
-                                raw_sql,
-                                pygments.lexers.get_lexer_by_name("sql"),
-                                pygments_formatter(**pygments_formatter_kwargs),
-                            )
-
-                        print(raw_sql)
-                        print("")
-                        print('Execution time: %.6fs [Database: %s]' % (execution_time, self.db.alias))
-                        print("")
-
-            utils.CursorDebugWrapper = PrintQueryWrapper
-
-        shells = (
-            ('ptipython', self.get_ptipython),
-            ('ptpython', self.get_ptpython),
-            ('bpython', self.get_bpython),
-            ('ipython', self.get_ipython),
-            ('plain', self.get_plain),
-        )
-        SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
-
-        shell = None
-        shell_name = "any"
-        self.set_application_name(options)
-        if use_kernel:
-            shell = self.get_kernel(options)
-            shell_name = "IPython Kernel"
-        elif use_notebook:
-            shell = self.get_notebook(options)
-            shell_name = "IPython Notebook"
-        elif use_plain:
-            shell = self.get_plain(options)
-            shell_name = "plain"
-        elif use_ipython:
-            shell = self.get_ipython(options)
-            shell_name = "IPython"
-        elif use_bpython:
-            shell = self.get_bpython(options)
-            shell_name = "BPython"
-        elif use_ptpython:
-            shell = self.get_ptpython(options)
-            shell_name = "ptpython"
-        elif use_ptipython:
-            shell = self.get_ptipython(options)
-            shell_name = "ptipython"
-        elif SETTINGS_SHELL_PLUS:
-            shell_name = SETTINGS_SHELL_PLUS
-            shell = dict(shells)[shell_name](options)
-        else:
-            for shell_name, func in shells:
-                if verbosity > 2:
-                    print(self.style.NOTICE("Trying shell: %s" % shell_name))
-                shell = func(options)
-                if callable(shell):
-                    if verbosity > 1:
-                        print(self.style.NOTICE("Using shell: %s" % shell_name))
-                    break
-
-        if not callable(shell):
-            if shell:
-                print(shell)
-            print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
-            return
-
-        if self.tests_mode:
-            return 130
-
-        shell()
+            shell()

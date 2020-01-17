@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-extensions\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-09 22:30+0300\n"
+"POT-Creation-Date: 2019-05-30 14:51-0500\n"
 "PO-Revision-Date: 2011-02-02 10:42+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,62 +19,108 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
-#: admin/__init__.py:126
+#: admin/__init__.py:142
 msgid "and"
 msgstr "и"
 
-#: admin/__init__.py:128
+#: admin/__init__.py:144
 #, python-format
 msgid ""
 "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
 msgstr ""
-"Используйте левое поле, чтобы сделать поиск %(model_name)s в полях %(field_list)s."
+"Используйте левое поле, чтобы сделать поиск %(model_name)s в полях "
+"%(field_list)s."
 
-#: db/models.py:22 mongodb/models.py:17
+#: admin/filter.py:24 admin/filter.py:53
+msgid "Yes"
+msgstr "Да"
+
+#: admin/filter.py:25 admin/filter.py:54
+msgid "No"
+msgstr "Нет"
+
+#: admin/filter.py:32
+msgid "All"
+msgstr "Все"
+
+#: db/models.py:18
 msgid "created"
 msgstr "создан"
 
-#: db/models.py:23 mongodb/models.py:18
+#: db/models.py:19
 msgid "modified"
 msgstr "изменён"
 
-#: db/models.py:36 mongodb/models.py:29
+#: db/models.py:38
 msgid "title"
 msgstr "заголовок"
 
-#: db/models.py:37 mongodb/models.py:30
-msgid "slug"
-msgstr "название-метка (Для URL)"
-
-#: db/models.py:38 mongodb/models.py:31
+#: db/models.py:39
 msgid "description"
 msgstr "описание"
 
-#: db/models.py:86 mongodb/models.py:55
+#: db/models.py:60
+msgid "slug"
+msgstr "название-метка (Для URL)"
+
+#: db/models.py:121 mongodb/models.py:76
 msgid "Inactive"
 msgstr "Неактивен"
 
-#: db/models.py:87 mongodb/models.py:56
+#: db/models.py:122 mongodb/models.py:77
 msgid "Active"
 msgstr "Активен"
 
-#: db/models.py:89 mongodb/models.py:58
+#: db/models.py:124
 msgid "status"
 msgstr "статус"
 
-#: db/models.py:90 mongodb/models.py:59
+#: db/models.py:125 mongodb/models.py:80
 msgid "keep empty for an immediate activation"
 msgstr "оставьте пустым для немедленной активации"
 
-#: db/models.py:91 mongodb/models.py:60
+#: db/models.py:126 mongodb/models.py:81
 msgid "keep empty for indefinite activation"
 msgstr "оставьте пустым для бессрочной активности"
 
-#: mongodb/fields/__init__.py:24
+#: mongodb/fields/__init__.py:22
 #, python-format
 msgid "String (up to %(max_length)s)"
 msgstr "Строка (Не длиннее: %(max_length)s)"
 
-#: templates/django_extensions/widgets/foreignkey_searchinput.html:4
-msgid "Lookup"
-msgstr "Поиск"
+#: validators.py:14
+msgid "Control Characters like new lines or tabs are not allowed."
+msgstr ""
+"Управляющие символы, такие как символ новой строки и символ табуляции "
+"недопустимы."
+
+#: validators.py:48
+#, fuzzy
+#| msgid "Leading and Trailing whitespace is not allowed."
+msgid "Leading and Trailing whitespaces are not allowed."
+msgstr "Пробел в начале или в конце недопустим."
+
+#: validators.py:74
+msgid "Only a hex string is allowed."
+msgstr "Допустимо использование только шестнадцатеричных строк."
+
+#: validators.py:75
+#, fuzzy, python-format
+#| msgid "Invalid length must be %(length)d characters."
+msgid "Invalid length. Must be %(length)d characters."
+msgstr "Недопустимая длина, должно быть %(length)d символов."
+
+#: validators.py:76
+#, fuzzy, python-format
+#| msgid "Ensure that there are more then %(min)s characters."
+msgid "Ensure that there are more than %(min)s characters."
+msgstr "Убедитесь, что длина строки больше %(min)s символов."
+
+#: validators.py:77
+#, fuzzy, python-format
+#| msgid "Ensure that there are no more then %(max)s characters."
+msgid "Ensure that there are no more than %(max)s characters."
+msgstr "Убедитесь, что длина строки не больше %(max)s символов."
+
+#~ msgid "Lookup"
+#~ msgstr "Поиск"

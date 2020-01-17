@@ -30,13 +30,13 @@ Getting Started
 The easiest way to figure out what Django Extensions are all about is to watch the
 `excellent screencast by Eric Holscher`__ (`watch the video on vimeo`__). In a couple
 minutes Eric walks you through a half a dozen command extensions. There is also a
-`short screencast on GoDjango`__ to help show you even more.
+`short screencast on GoDjango's Youtube Channel`__ to help show you even more.
 
 
 Requirements
 ============
 
-Django Extensions requires Django 1.8, 1.11 or later.
+Django Extensions requires Django 1.11 or later.
 
 
 Getting It
@@ -123,4 +123,4 @@ between putting food on the table, family, this project and the rest of life :-)
 
 __ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
 __ http://vimeo.com/1720508
-__ https://godjango.com/39-be-more-productive-with-django_extensions/
+__ https://www.youtube.com/watch?v=1F6G3ONhr4k

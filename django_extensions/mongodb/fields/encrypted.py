@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Encrypted fields from Django Extensions, modified for use with mongoDB
-"""
+
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured

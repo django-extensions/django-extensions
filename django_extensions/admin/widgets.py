@@ -5,6 +5,11 @@ from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 try:
+    from django.templatetags.static import static
+except ImportError:
+    # compatibility with django < 2.1
+    from django.contrib.admin.templatetags.admin_static import static
+try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
@@ -15,27 +20,31 @@ from django.utils.text import Truncator
 
 class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     """
-    A Widget for displaying ForeignKeys in an autocomplete search input
+    Widget for displaying ForeignKeys in an autocomplete search input
     instead in a <select> box.
     """
+
     # Set in subclass to render the widget with a different template
     widget_template = None
     # Set this to the patch of the search view
     search_path = None
 
     def _media(self):
-        js_files = ['django_extensions/js/jquery.bgiframe.js',
-                    'django_extensions/js/jquery.ajaxQueue.js',
-                    'django_extensions/js/jquery.autocomplete.js']
+        js_files = [
+            static('django_extensions/js/jquery.bgiframe.js'),
+            static('django_extensions/js/jquery.ajaxQueue.js'),
+            static('django_extensions/js/jquery.autocomplete.js'),
+        ]
 
-        return forms.Media(css={'all': ('django_extensions/css/jquery.autocomplete.css',)},
-                           js=js_files)
-
+        return forms.Media(
+            css={'all': (static('django_extensions/css/jquery.autocomplete.css'), )},
+            js=js_files,
+        )
     media = property(_media)
 
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
-        obj = self.rel.related_model._default_manager.get(**{key: value})
+        obj = self.rel.model._default_manager.get(**{key: value})
 
         return Truncator(obj).words(14, truncate='...')
 
@@ -43,10 +52,10 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         self.search_fields = search_fields
         super(ForeignKeySearchInput, self).__init__(rel, site, attrs)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
-        opts = self.rel.related_model._meta
+        opts = self.rel.model._meta
         app_label = opts.app_label
         model_name = opts.object_name.lower()
         related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))

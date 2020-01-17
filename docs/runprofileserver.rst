@@ -38,14 +38,6 @@ Examples:
   * "{time}-{path}-{duration}ms" - to order profile-data-files by request time
   * "{duration:06d}ms.{path}.{time}" - to order by request duration
 
-gather_profile_stats.py
------------------------
-
-Django comes packed with a tool to aggregate these different prof files into
-one aggregated profile file. This tool is called *gather_profile_stats.py* and
-is located inside the *bin* directory of your Django distribution.
-
-
 Profiler choice
 ---------------
 *runprofileserver* supports two profilers: *hotshot* and *cProfile*. Both come

@@ -6,20 +6,16 @@ Current Command Extensions
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
 
-* *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
+* :doc:`admin_generator` - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
 
 * *clean_pyc* - Remove all python bytecode compiled files from the project
-
-* `create_app`_ - Creates an application directory structure for the specified
-  app name.  This command allows you to specify the --template option where you
-  can indicate a template directory structure to use as your default.
 
 * *create_command* - Creates a command extension directory structure within the
   specified application.  This makes it easy to get started with adding a
   command extension to your application.
 
-* *create_template_tags* - Creates a template tag directory structure within the
+* :doc:`create_template_tags` - Creates a template tag directory structure within the
   specified application.
 
 * *create_jobs* - Creates a Django jobs command directory structure for the
@@ -119,7 +115,7 @@ Current Command Extensions
   Content-Encoding header, and also set a far future expires header for browser
   caching.
 
-* *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
+* :doc:`syncdata` - Makes the current database have the same data as the fixture(s), no more, no less.
 
 * *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
 
@@ -130,7 +126,6 @@ Current Command Extensions
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
 
-.. _`create_app`: create_app.html
 .. _`export_emails`: export_emails.html
 .. _`graph_models`: graph_models.html
 .. _`print_settings`: print_settings.html

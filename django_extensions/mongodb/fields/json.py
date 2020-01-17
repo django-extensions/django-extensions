@@ -10,6 +10,7 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
+
 from __future__ import absolute_import
 
 import datetime
@@ -47,13 +48,16 @@ class JSONDict(dict):
     Hack so repr() called by dumpdata will output JSON instead of
     Python formatted data.  This way fixtures will work!
     """
+
     def __repr__(self):
         return dumps(self)
 
 
 class JSONField(StringField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly.  Main thingy must be a dict object."""
+    """
+    JSONField is a generic textfield that neatly serializes/unserializes
+    JSON objects seamlessly. Main object must be a dict object.
+    """
 
     def __init__(self, *args, **kwargs):
         if 'default' not in kwargs:
@@ -61,7 +65,7 @@ class JSONField(StringField):
         StringField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
-        """Convert our string value to JSON after we load it from the DB"""
+        """ Convert our string value to JSON after we load it from the DB """
         if not value:
             return {}
         elif isinstance(value, six.string_types):
@@ -72,7 +76,7 @@ class JSONField(StringField):
             return value
 
     def get_db_prep_save(self, value):
-        """Convert our JSON object to a string before we save"""
+        """ Convert our JSON object to a string before we save """
         if not value:
             return super(JSONField, self).get_db_prep_save("")
         else:

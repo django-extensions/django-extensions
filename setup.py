@@ -129,13 +129,18 @@ elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
 else:
     extras_require[":python_version<'3.5'"] = ["typing"]
 
+long_description = """django-extensions bundles several useful
+additions for Django projects. See the project page for more information:
+  http://github.com/django-extensions/django-extensions"""
+if os.path.isfile("README.rst"):
+    with open("README.rst") as f:
+        long_description = f.read()
+
 setup(
     name='django-extensions',
     version=version,
     description="Extensions for Django",
-    long_description="""django-extensions bundles several useful
-additions for Django projects. See the project page for more information:
-  http://github.com/django-extensions/django-extensions""",
+    long_description=long_description,
     author='Michael Trier',
     author_email='mtrier@gmail.com',
     maintainer='Bas van Oostveen',
@@ -150,22 +155,25 @@ additions for Django projects. See the project page for more information:
     extras_require=extras_require,
     tests_require=[
         'Django',
-        'shortuuid',
-        'python-dateutil',
-        'pytest',
-        'pytest-django',
-        'pytest-cov',
-        'tox',
+        'Werkzeug',
+        'factory-boy',
         'mock',
-        'vobject'
+        'pytest',
+        'pytest-cov',
+        'pytest-django',
+        'python-dateutil',
+        'shortuuid',
+        'tox',
+        'vobject',
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.11',
-        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
@@ -173,9 +181,10 @@ additions for Django projects. See the project page for more information:
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',

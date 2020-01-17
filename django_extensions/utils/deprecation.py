@@ -5,4 +5,4 @@ from django.utils.deprecation import RemovedInNextVersionWarning
 
 
 class MarkedForDeprecationWarning(RemovedInNextVersionWarning):
-            pass
+    pass
