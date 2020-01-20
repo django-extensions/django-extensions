@@ -23,11 +23,9 @@ except ImportError:  # Django >=2.2
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
         USE_STATICFILES = False
-    elif 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
+    else:
         from django.contrib.staticfiles.handlers import StaticFilesHandler
         USE_STATICFILES = True
-    else:
-        USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
 
