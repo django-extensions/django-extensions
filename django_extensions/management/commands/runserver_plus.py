@@ -26,9 +26,6 @@ try:
     elif 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
         from django.contrib.staticfiles.handlers import StaticFilesHandler
         USE_STATICFILES = True
-    elif 'staticfiles' in settings.INSTALLED_APPS:
-        from staticfiles.handlers import StaticFilesHandler  # noqa
-        USE_STATICFILES = True
     else:
         USE_STATICFILES = False
 except ImportError:
