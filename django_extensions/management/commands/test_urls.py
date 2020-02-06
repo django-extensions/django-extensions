@@ -79,6 +79,14 @@ class Command(BaseCommand):
             "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
             help="Set the settings URL conf variable to use"
         )
+        parser.add_argument(
+            "--base", "-b", dest="base", default="http://127.0.0.1:8000/",
+            help="Set your host url variable to use"
+        )
+        parser.add_argument(
+            "--mockpk", "-p", dest="mock_pk", default="1",
+            help="Set your default value for insert in <placeholders>"
+        )
 
     @signalcommand
     def handle(self, *args, **options):
@@ -94,6 +102,9 @@ class Command(BaseCommand):
         decorator = options['decorator']
         if not decorator:
             decorator = ['login_required']
+
+        host = options['base']
+        mock_pk = options['mock_pk']
 
         format_style = options['format_style']
         if format_style not in FMTR:
@@ -135,8 +146,8 @@ class Command(BaseCommand):
 
             try:
                 p = re.compile(r'<.*?>|\(.*?\)|\[.*?\]')
-                url = p.sub('1', regex)#mock pk 1
-                conn = urllib.request.urlopen("http://127.0.0.1:8000/"+url)
+                url = p.sub(str(mock_pk), regex)#mock pk 1
+                conn = urllib.request.urlopen(host+url)
                 response = conn.getcode()
                 conn.close()
             except urllib.error.HTTPError as e:
