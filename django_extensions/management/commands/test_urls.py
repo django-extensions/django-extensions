@@ -134,6 +134,7 @@ class Command(BaseCommand):
             raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
 
         view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
+        coverage = len(view_functions)
         for (func, regex, url_name) in view_functions:
             if hasattr(func, '__globals__'):
                 func_globals = func.__globals__
@@ -152,10 +153,13 @@ class Command(BaseCommand):
                 conn.close()
             except urllib.error.HTTPError as e:
                 response = str(e.code)
+                coverage -= 1
             except urllib.error.URLError as e:
                 response = e.reason
+                coverage -= 1
             except Exception as e:
                 print(url,e)
+                coverage -= 1
                 response = e
 
             if isinstance(func, functools.partial):
@@ -223,7 +227,7 @@ class Command(BaseCommand):
             return json.dumps(views)
 
 
-        return "\n".join([v for v in views]) + "\n"
+        return "\n".join([v for v in views]) + "\n coverage: " + str(coverage)+" / " + str(len(view_functions))+"\n"
 
     def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
         """
