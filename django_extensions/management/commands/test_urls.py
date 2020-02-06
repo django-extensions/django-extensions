@@ -146,7 +146,7 @@ class Command(BaseCommand):
 
             try:
                 p = re.compile(r'<.*?>|\(.*?\)|\[.*?\]')
-                url = p.sub(str(mock_pk), regex)#mock pk 1
+                url = p.sub(str(mock_pk), regex).replace('^','').replace('\\','')#mock pk 1
                 conn = urllib.request.urlopen(host+url)
                 response = conn.getcode()
                 conn.close()
