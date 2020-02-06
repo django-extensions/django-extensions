@@ -134,6 +134,8 @@ class Command(BaseCommand):
             decorators = [d for d in decorator if d in func_globals]
 
             try:
+                p = re.compile(r'<.*?>')
+                url = p.sub('1', url_name)#mock pk 1
                 conn = urllib.request.urlopen(url)
             except urllib.error.HTTPError as e:
                 response = str(e.code)
