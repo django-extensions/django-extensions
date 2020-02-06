@@ -219,7 +219,8 @@ class Command(BaseCommand):
 
     def inner_run(self, options):
         try:
-            from werkzeug import run_simple, DebuggedApplication
+            from werkzeug import run_simple
+            from werkzeug.debug import DebuggedApplication
             from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
 
             # Set colored output
