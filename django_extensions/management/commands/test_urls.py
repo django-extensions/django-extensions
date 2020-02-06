@@ -45,10 +45,10 @@ else:
         return p.regex.pattern
 
 FMTR = {
-    'dense': "{url}\t{module}\t{url_name}\t{decorator}\t{code}",
-    'table': "{url},{module},{url_name},{decorator},{code}",
-    'aligned': "{url},{module},{url_name},{decorator},{code}",
-    'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n\tCode: {code}\n",
+    'dense': "{code}\t{url}\t{module}\t{url_name}\t{decorator}",
+    'table': "{code},{url},{module},{url_name},{decorator}",
+    'aligned': "{code},{url},{module},{url_name},{decorator},{code}",
+    'verbose': "Code: {code}\n\t{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
     'json': '',
     'pretty-json': ''
 }
@@ -137,14 +137,15 @@ class Command(BaseCommand):
                 p = re.compile(r'<.*?>|\(.*?\)|\[.*?\]')
                 url = p.sub('1', regex)#mock pk 1
                 conn = urllib.request.urlopen("http://127.0.0.1:8000/"+url)
+                response = conn.getcode()
+                conn.close()
             except urllib.error.HTTPError as e:
                 response = str(e.code)
             except urllib.error.URLError as e:
                 response = e.reason
             except Exception as e:
                 print(url,e)
-            else:
-                response = "200"
+                response = e
 
             if isinstance(func, functools.partial):
                 func = func.func
