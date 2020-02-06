@@ -134,13 +134,15 @@ class Command(BaseCommand):
             decorators = [d for d in decorator if d in func_globals]
 
             try:
-                p = re.compile(r'<.*?>')
-                url = p.sub('1', url_name)#mock pk 1
-                conn = urllib.request.urlopen(url)
+                p = re.compile(r'<.*?>|\(.*?\)|\[.*?\]')
+                url = p.sub('1', regex)#mock pk 1
+                conn = urllib.request.urlopen("http://127.0.0.1:8000/"+url)
             except urllib.error.HTTPError as e:
                 response = str(e.code)
             except urllib.error.URLError as e:
                 response = e.reason
+            except Exception as e:
+                print(url,e)
             else:
                 response = "200"
 
