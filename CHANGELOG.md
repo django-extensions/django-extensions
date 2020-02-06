@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.7
+-----
+Changes:
+ - Improvement: added url test
+
 2.2.6
 -----
 

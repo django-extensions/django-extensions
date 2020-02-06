@@ -73,6 +73,13 @@ Generate (and view) a graphviz graph of app models::
 
     $ python manage.py graph_models -a -o myapp_models.png
 
+
+
+Produce a tab-separated list of `(response_code, url_pattern, view_function, name)` tuples for a project <xyz> patterns in urls are set to 1::
+
+    $ python manage.py test_urls
+
+
 Produce a tab-separated list of `(url_pattern, view_function, name)` tuples for a project::
 
     $ python manage.py show_urls
