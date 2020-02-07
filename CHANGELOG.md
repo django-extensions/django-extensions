@@ -1,6 +1,17 @@
 Changelog
 =========
 
+2.2.7
+-----
+
+Changes:
+ - Improvement: shell_plus, #865 always add manage.py basedir to path for notebook kernel
+ - Improvement: docs, add zh-Hans locale
+ - Improvement: runserver_plus, fix broken import for werkzeug v1.0.0
+ - Improvement: runserver_plus, #1461 fix always trying to load StaticFilesHandler
+ - Improvement: pipchecker, #1471 fix import of PipSession
+
+
 2.2.6
 -----
 
