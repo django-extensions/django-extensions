@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.8
+-----
+
+Changes:
+ - Locale: zh_Hans, removed as it generated UnicodeDecodeError errors (#1478)
+
+
 2.2.7
 -----
 
