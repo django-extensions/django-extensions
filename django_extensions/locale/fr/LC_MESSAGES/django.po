@@ -1,19 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 # Translators:
-# mathiasuk, 2014
-# mathiasuk, 2014
-# stevandoh <stevandoh@gmail.com>, 2013
+# trbs <trbs@trbs.net>, 2020
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: django-extensions\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-02 11:42+0100\n"
-"PO-Revision-Date: 2014-01-11 11:14+0000\n"
-"Last-Translator: mathiasuk\n"
-"Language-Team: French (http://www.transifex.com/projects/p/django-extensions/language/fr/)\n"
+"PO-Revision-Date: 2020-02-10 19:27+0000\n"
+"Last-Translator: trbs <trbs@trbs.net>, 2020\n"
+"Language-Team: French (https://www.transifex.com/django-extensions/teams/107245/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -29,7 +30,9 @@ msgstr "et"
 msgid ""
 "Use the left field to do %(model_name)s lookups in the fields "
 "%(field_list)s."
-msgstr "Utilisez le champ de gauche pour faire des recheres de %(model_name)s dans les champs %(field_list)s."
+msgstr ""
+"Utilisez le champ de gauche pour faire des recheres de %(model_name)s dans "
+"les champs %(field_list)s."
 
 #: db/models.py:15
 msgid "created"
