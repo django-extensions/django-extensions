@@ -2,20 +2,24 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
+# Translators:
+# trbs <trbs@trbs.net>, 2020
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: django-extensions\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-02-02 11:42+0100\n"
-"PO-Revision-Date: 2011-02-02 10:38+0000\n"
-"Last-Translator: Jannis <jannis@leidel.info>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2020-02-10 19:27+0000\n"
+"Last-Translator: trbs <trbs@trbs.net>, 2020\n"
+"Language-Team: Greek (https://www.transifex.com/django-extensions/teams/107245/el/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: el\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: admin/__init__.py:121
 msgid "and"
@@ -24,7 +28,8 @@ msgstr "και"
 #: admin/__init__.py:123
 #, python-format
 msgid ""
-"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+"Use the left field to do %(model_name)s lookups in the fields "
+"%(field_list)s."
 msgstr ""
 "Χρησιμοποίησε το αριστερό πεδίο για να κάνεις αναζήτηση του %(model_name)s "
 "με βάσει τα πεδία %(field_list)s."
