@@ -19,7 +19,7 @@ from django.db.models.fields.related import (
 )
 from django.contrib.contenttypes.fields import GenericRelation
 from django.template import Context, Template, loader
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate as activate_language
 
@@ -119,7 +119,7 @@ class ModelGraph(object):
 
     def add_attributes(self, field, abstract_fields):
         if self.verbose_names and field.verbose_name:
-            label = force_text(field.verbose_name)
+            label = force_str(field.verbose_name)
             if label.islower():
                 label = label.capitalize()
         else:
@@ -142,7 +142,7 @@ class ModelGraph(object):
 
     def add_relation(self, field, model, extras=""):
         if self.verbose_names and field.verbose_name:
-            label = force_text(field.verbose_name)
+            label = force_str(field.verbose_name)
             if label.islower():
                 label = label.capitalize()
         else:
@@ -153,7 +153,7 @@ class ModelGraph(object):
             related_query_name = field.related_query_name()
             if self.verbose_names and related_query_name.islower():
                 related_query_name = related_query_name.replace('_', ' ').capitalize()
-            label = u'{} ({})'.format(label, force_text(related_query_name))
+            label = u'{} ({})'.format(label, force_str(related_query_name))
         if self.hide_edge_labels:
             label = ''
 
@@ -219,7 +219,7 @@ class ModelGraph(object):
         }
 
         if self.verbose_names and appmodel._meta.verbose_name:
-            context['label'] = force_text(appmodel._meta.verbose_name)
+            context['label'] = force_str(appmodel._meta.verbose_name)
         else:
             context['label'] = context['name']
 

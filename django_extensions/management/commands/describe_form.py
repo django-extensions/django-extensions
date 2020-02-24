@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.apps import apps
 from django.core.management.base import CommandError, LabelCommand
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 from django_extensions.management.utils import signalcommand
 
@@ -55,7 +55,7 @@ def describe_form(label, fields):
                 if k == 'widget':
                     attrs[k] = v.__class__
                 elif k in ['help_text', 'label']:
-                    attrs[k] = str(force_text(v).strip())
+                    attrs[k] = str(force_str(v).strip())
                 else:
                     attrs[k] = v
 

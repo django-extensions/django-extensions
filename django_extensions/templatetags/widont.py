@@ -3,7 +3,7 @@ from __future__ import print_function
 import re
 
 from django.template import Library
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 register = Library()
@@ -29,9 +29,9 @@ def widont(value, count=1):
     NoEffect
     """
     def replace(matchobj):
-        return force_text('&nbsp;%s' % matchobj.group(1))
+        return force_str('&nbsp;%s' % matchobj.group(1))
     for i in range(count):
-        value = re_widont.sub(replace, force_text(value))
+        value = re_widont.sub(replace, force_str(value))
     return value
 
 
@@ -54,8 +54,8 @@ def widont_html(value):
     leading&nbsp;text  <p>test me&nbsp;out</p>  trailing&nbsp;text
     """
     def replace(matchobj):
-        return force_text('%s&nbsp;%s%s' % matchobj.groups())
-    return re_widont_html.sub(replace, force_text(value))
+        return force_str('%s&nbsp;%s%s' % matchobj.groups())
+    return re_widont_html.sub(replace, force_str(value))
 
 
 if __name__ == "__main__":

@@ -42,7 +42,7 @@ from django.db.models import (
 )
 from django.db.models.deletion import Collector
 from django.utils import timezone
-from django.utils.encoding import force_text, smart_text
+from django.utils.encoding import force_str, smart_text
 
 from django_extensions.management.utils import signalcommand
 
@@ -668,7 +668,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
 
     # Post file-storage-refactor, repr() on File/ImageFields no longer returns the path
     elif isinstance(field, FileField):
-        return repr(force_text(value))
+        return repr(force_str(value))
 
     # ForeignKey fields, link directly using our stored python variable name
     elif isinstance(field, ForeignKey) and value is not None:
