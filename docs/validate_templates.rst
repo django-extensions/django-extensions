@@ -3,6 +3,18 @@ validate_templates
 
 :synopsis: Checks templates on syntax or compile errors.
 
+This will catch any invalid Django template syntax, for example::
+
+    {% foobar %}
+
+    {% comment %}
+    This throws this error:
+    TemplateSyntaxError Invalid block tag on line 1: 'foobar'. Did you forget to register or load this tag?
+    {% endcomment %}
+
+Note that this will not catch invalid HTML, only errors in the Django template
+syntax used.
+
 Options
 -------
 
@@ -56,4 +68,6 @@ check those as well.
 Usage Example
 -------------
 
- ./manage.py validate_templates
+::
+
+    ./manage.py validate_templates
