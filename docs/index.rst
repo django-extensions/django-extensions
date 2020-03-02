@@ -43,8 +43,6 @@ We follow the Django guidelines for supported Python and Django versions. See mo
 
 This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
 
-At this time we test on and thrive to support valid combinations of Python 2.7, 3.5, 3.6, 3.7, pypy and pypy3 with Django versions 1.11 to 2.1.
-
 Contents
 ========
 
