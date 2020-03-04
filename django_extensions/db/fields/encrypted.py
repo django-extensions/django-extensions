@@ -34,6 +34,15 @@ class BaseEncryptedField(models.Field):
             stacklevel=2,
         )
 
+        if not getattr(settings, 'ENCRYPTED_KEYCZAR_THISISUNSAFE', None):
+            raise ImproperlyConfigured(
+                "Please do not use these fields. Since Keyczar is deprecated and authors deleted "
+                "all code we highly recommend to stop using potentially unsafe abandonware directly "
+                "these versions of encrypted fields will be removed soon but it's highly likely their "
+                "names will be reused. Please see github issues/1359 for discussion on possible "
+                "replacement fields",
+            )
+
         if not getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', None):
             raise ImproperlyConfigured('You must set the settings.ENCRYPTED_FIELD_KEYS_DIR '
                                        'setting to your Keyczar keys directory.')
