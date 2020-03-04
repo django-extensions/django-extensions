@@ -72,7 +72,7 @@ msgstr "αφήστε άδειο για αόριστη ενεργοποίηση"
 #: management/commands/show_urls.py:34
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
-msgstr "% s δεν φαίνεται να είναι ένα αντικείμενο urlpattern"
+msgstr "%s δεν φαίνεται να είναι ένα αντικείμενο urlpattern"
 
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
