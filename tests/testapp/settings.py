@@ -68,6 +68,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 STATIC_URL = "/static/"
 
 SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
+    'django_extensions.db.fields.encrypted',
     'django_extensions.mongodb.fields',
     'django_extensions.mongodb.models',
     'tests.testapp.scripts.invalid_import_script',
