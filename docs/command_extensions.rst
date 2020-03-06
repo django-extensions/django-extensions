@@ -121,7 +121,7 @@ Current Command Extensions
 
 * *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
 
-* *validate_templates* - Validate templates on syntax and compile errors.
+* :doc:`validate_templates` - Validate templates on syntax and compile errors.
 
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 
