@@ -80,25 +80,14 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if args:
-            appname, = args
-
-        if options['no_color']:
-            style = no_style()
-        else:
-            style = color_style()
-
-        if getattr(settings, 'ADMIN_FOR', None):
-            settings_modules = [__import__(m, {}, {}, ['']) for m in settings.ADMIN_FOR]
-        else:
-            settings_modules = [settings]
-
-        self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
+        style = no_style() if options['no_color'] else color_style()
 
         language = options['language']
         if language is not None:
             translation.activate(language)
-            self.LANGUAGES = [(code, name) for code, name in self.LANGUAGES if code == language]
+            self.LANGUAGES = [(code, name) for code, name in getattr(settings, 'LANGUAGES', []) if code == language]
+        else:
+            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
 
         decorator = options['decorator']
         if not decorator:
@@ -106,7 +95,12 @@ class Command(BaseCommand):
 
         format_style = options['format_style']
         if format_style not in FMTR:
-            raise CommandError("Format style '%s' does not exist. Options: %s" % (format_style, FMTR.keys()))
+            raise CommandError(
+                "Format style '%s' does not exist. Options: %s" % (
+                    format_style,
+                    ", ".join(sorted(FMTR.keys())),
+                )
+            )
         pretty_json = format_style == 'pretty-json'
         if pretty_json:
             format_style = 'json'
@@ -115,55 +109,53 @@ class Command(BaseCommand):
         urlconf = options['urlconf']
 
         views = []
-        for settings_mod in settings_modules:
-            if not hasattr(settings_mod, urlconf):
-                raise CommandError("Settings module {} does not have the attribute {}.".format(settings_mod, urlconf))
+        if not hasattr(settings, urlconf):
+            raise CommandError("Settings module {} does not have the attribute {}.".format(settings, urlconf))
 
-            try:
-                urlconf = __import__(getattr(settings_mod, urlconf), {}, {}, [''])
-            except Exception as e:
-                if options['traceback']:
-                    import traceback
-                    traceback.print_exc()
-                print(style.ERROR("Error occurred while trying to load %s: %s" % (getattr(settings_mod, urlconf), str(e))))
-                continue
+        try:
+            urlconf = __import__(getattr(settings, urlconf), {}, {}, [''])
+        except Exception as e:
+            if options['traceback']:
+                import traceback
+                traceback.print_exc()
+            raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
 
-            view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
-            for (func, regex, url_name) in view_functions:
-                if hasattr(func, '__globals__'):
-                    func_globals = func.__globals__
-                elif hasattr(func, 'func_globals'):
-                    func_globals = func.func_globals
-                else:
-                    func_globals = {}
+        view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
+        for (func, regex, url_name) in view_functions:
+            if hasattr(func, '__globals__'):
+                func_globals = func.__globals__
+            elif hasattr(func, 'func_globals'):
+                func_globals = func.func_globals
+            else:
+                func_globals = {}
 
-                decorators = [d for d in decorator if d in func_globals]
+            decorators = [d for d in decorator if d in func_globals]
 
-                if isinstance(func, functools.partial):
-                    func = func.func
-                    decorators.insert(0, 'functools.partial')
+            if isinstance(func, functools.partial):
+                func = func.func
+                decorators.insert(0, 'functools.partial')
 
-                if hasattr(func, '__name__'):
-                    func_name = func.__name__
-                elif hasattr(func, '__class__'):
-                    func_name = '%s()' % func.__class__.__name__
-                else:
-                    func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
+            if hasattr(func, '__name__'):
+                func_name = func.__name__
+            elif hasattr(func, '__class__'):
+                func_name = '%s()' % func.__class__.__name__
+            else:
+                func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
-                module = '{0}.{1}'.format(func.__module__, func_name)
-                url_name = url_name or ''
-                url = simplify_regex(regex)
-                decorator = ', '.join(decorators)
+            module = '{0}.{1}'.format(func.__module__, func_name)
+            url_name = url_name or ''
+            url = simplify_regex(regex)
+            decorator = ', '.join(decorators)
 
-                if format_style == 'json':
-                    views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
-                else:
-                    views.append(fmtr.format(
-                        module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
-                        url_name=style.URL_NAME(url_name),
-                        url=style.URL(url),
-                        decorator=decorator,
-                    ).strip())
+            if format_style == 'json':
+                views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
+            else:
+                views.append(fmtr.format(
+                    module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
+                    url_name=style.URL_NAME(url_name),
+                    url=style.URL(url),
+                    decorator=decorator,
+                ).strip())
 
         if not options['unsorted'] and format_style != 'json':
             views = sorted(views)

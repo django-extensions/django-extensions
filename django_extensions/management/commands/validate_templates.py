@@ -69,12 +69,7 @@ class Command(BaseCommand):
                 if os.path.isdir(app_template_dir):
                     template_dirs.add(app_template_dir)
 
-        # This is unsafe:
-        # https://docs.djangoproject.com/en/1.10/topics/settings/#altering-settings-at-runtime
-        if hasattr(settings, 'TEMPLATES'):
-            settings.TEMPLATES[0]['DIRS'] = list(template_dirs)
-        else:
-            settings.TEMPLATE_DIRS = list(template_dirs)
+        settings.TEMPLATES[0]['DIRS'] = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
         verbosity = options["verbosity"]
         errors = 0

@@ -1,0 +1,6 @@
+# These are supported funding model platforms
+
+github: [trbs]
+patreon: djangoextensions
+open_collective: djangoextensions
+custom: ['https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=P57EJJ9QYL232']

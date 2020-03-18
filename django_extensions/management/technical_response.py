@@ -9,10 +9,11 @@ tld.wsgi_tb = None
 
 
 def null_technical_500_response(request, exc_type, exc_value, tb, status_code=500):
-    """Function to override django.views.debug.technical_500_response.
+    """
+    Alternative function for django.views.debug.technical_500_response.
 
     Django's convert_exception_to_response() wrapper is called on each 'Middleware' object to avoid
-    leaking exceptions. If and uncaught exception is raised, the wrapper calls technical_500_response()
+    leaking exceptions. If an uncaught exception is raised, the wrapper calls technical_500_response()
     to create a response for django's debug view.
 
     Runserver_plus overrides the django debug view's technical_500_response() function to allow for
@@ -24,10 +25,9 @@ def null_technical_500_response(request, exc_type, exc_value, tb, status_code=50
     only store the traceback if it is for a WSGIHandler. If an exception is not raised here, Django
     eventually throws an error for not getting a valid response object for its debug view.
     """
-
     try:
         # Store the most recent tb for WSGI requests. The class can be found in the second frame of the tb
-        if isinstance(tb.tb_next.tb_frame.f_locals['self'], WSGIHandler):
+        if isinstance(tb.tb_next.tb_frame.f_locals.get('self'), WSGIHandler):
             tld.wsgi_tb = tb
         elif tld.wsgi_tb:
             tb = tld.wsgi_tb

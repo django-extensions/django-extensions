@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import re
 import tempfile
 from contextlib import contextmanager
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
-from django.utils.six import StringIO
+from six import StringIO
 
 
 def assert_looks_like_dotfile(output):
@@ -108,11 +109,13 @@ class GraphModelsOutputTests(TestCase):
 
 def test_disable_abstract_fields_not_active():
     out = StringIO()
-    call_command('graph_models',
-                 'django_extensions',
-                 include_models=['AbstractInheritanceTestModelChild'],
-                 disable_abstract_fields=False,
-                 stdout=out)
+    call_command(
+        'graph_models',
+        'django_extensions',
+        include_models=['AbstractInheritanceTestModelChild'],
+        disable_abstract_fields=False,
+        stdout=out,
+    )
 
     output = out.getvalue()
     assert 'my_field_that_my_child_will_inherit' in output
@@ -120,11 +123,38 @@ def test_disable_abstract_fields_not_active():
 
 def test_disable_abstract_fields_active():
     out = StringIO()
-    call_command('graph_models',
-                 'django_extensions',
-                 include_models=['AbstractInheritanceTestModelChild'],
-                 disable_abstract_fields=True,
-                 stdout=out)
+    call_command(
+        'graph_models',
+        'django_extensions',
+        include_models=['AbstractInheritanceTestModelChild'],
+        disable_abstract_fields=True,
+        stdout=out,
+    )
 
     output = out.getvalue()
     assert 'my_field_that_my_child_will_inherit' not in output
+
+
+def test_exclude_models_hides_relationships():
+    """ Expose bug #1229 where excluded models appear in relationships.
+
+    They are replaced with an underscore, but the relationship is still there.
+    """
+    out = StringIO()
+    call_command(
+        'graph_models',
+        'django_extensions',
+        exclude_models=['Personality', 'Note'],
+        stdout=out,
+    )
+
+    output = out.getvalue()
+    assert 'tests_testapp_models_Person -> tests_testapp_models_Name' in output
+    assert 'tests_testapp_models_Person -> _' not in output
+
+
+def test_hide_edge_labels():
+    out = StringIO()
+    call_command('graph_models', 'django_extensions', all_applications=True, hide_edge_labels=True, stdout=out)
+    output = out.getvalue()
+    assert not re.search(r'\[label=\"[a-zA-Z]+"\]', output)

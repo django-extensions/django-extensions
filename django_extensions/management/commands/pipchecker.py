@@ -8,7 +8,10 @@ import pip
 from django.core.management.base import BaseCommand, CommandError
 
 try:
-    from pip._internal.download import PipSession
+    try:
+        from pip._internal.network.session import PipSession
+    except ImportError:
+        from pip._internal.download import PipSession
     from pip._internal.req.req_file import parse_requirements
     from pip._internal.utils.misc import get_installed_distributions
 except ImportError:
@@ -71,9 +74,10 @@ class Command(BaseCommand):
         elif os.path.exists("requirements.txt"):
             req_files = ["requirements.txt"]
         elif os.path.exists("requirements"):
-            req_files = ["requirements/{0}".format(f) for f in os.listdir("requirements")
-                         if os.path.isfile(os.path.join("requirements", f)) and
-                         f.lower().endswith(".txt")]
+            req_files = [
+                "requirements/{0}".format(f) for f in os.listdir("requirements")
+                if os.path.isfile(os.path.join("requirements", f)) and f.lower().endswith(".txt")
+            ]
         elif os.path.exists("requirements-dev.txt"):
             req_files = ["requirements-dev.txt"]
         elif os.path.exists("requirements-prod.txt"):
@@ -85,14 +89,15 @@ class Command(BaseCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
+                    name = req.name if req.name else req.link.filename
                     # url attribute changed to link in pip version 6.1.0 and above
                     if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
-                        self.reqs[req.name] = {
+                        self.reqs[name] = {
                             "pip_req": req,
                             "url": req.link,
                         }
                     else:
-                        self.reqs[req.name] = {
+                        self.reqs[name] = {
                             "pip_req": req,
                             "url": req.url,
                         }
@@ -108,7 +113,7 @@ class Command(BaseCommand):
         if HAS_REQUESTS:
             self.check_github()
         else:
-            print(self.style.ERROR("Cannot check github urls. The requests library is not installed. ( pip install requests )"))
+            self.stdout.write(self.style.ERROR("Cannot check github urls. The requests library is not installed. ( pip install requests )"))
         self.check_other()
 
     def _urlopen_as_json(self, url, headers=None):
@@ -128,9 +133,7 @@ class Command(BaseCommand):
         return LooseVersion(available[0]) if available else None
 
     def check_pypi(self):
-        """
-        If the requirement is frozen to pypi, check for a new version.
-        """
+        """If the requirement is frozen to pypi, check for a new version."""
         for dist in get_installed_distributions():
             name = dist.project_name
             if name in self.reqs.keys():
@@ -160,7 +163,7 @@ class Command(BaseCommand):
             else:
                 msg = "not installed"
                 pkg_info = name
-            print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
+            self.stdout.write("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
             del self.reqs[name]
 
     def check_github(self):
@@ -242,20 +245,20 @@ class Command(BaseCommand):
                     self.style.ERROR("\nFailed to parse %r\n" % (req_url, ))
                     continue
             except (ValueError, IndexError) as e:
-                print(self.style.ERROR("\nFailed to parse %r: %s\n" % (req_url, e)))
+                self.stdout.write(self.style.ERROR("\nFailed to parse %r: %s\n" % (req_url, e)))
                 continue
 
             try:
                 test_auth = requests.get("https://api.github.com/django/", headers=headers).json()
             except HTTPError as e:
-                print("\n%s\n" % str(e))
+                self.stdout.write("\n%s\n" % str(e))
                 return
 
             if "message" in test_auth and test_auth["message"] == "Bad credentials":
-                print(self.style.ERROR("\nGithub API: Bad credentials. Aborting!\n"))
+                self.stdout.write(self.style.ERROR("\nGithub API: Bad credentials. Aborting!\n"))
                 return
             elif "message" in test_auth and test_auth["message"].startswith("API Rate Limit Exceeded"):
-                print(self.style.ERROR("\nGithub API: Rate Limit Exceeded. Aborting!\n"))
+                self.stdout.write(self.style.ERROR("\nGithub API: Rate Limit Exceeded. Aborting!\n"))
                 return
 
             frozen_commit_sha = None
@@ -291,7 +294,7 @@ class Command(BaseCommand):
                 pkg_info = name
             else:
                 pkg_info = "{0} {1}".format(name, frozen_commit_sha[:10])
-            print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
+            self.stdout.write("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
             del self.reqs[name]
 
     def check_other(self):
@@ -302,7 +305,7 @@ class Command(BaseCommand):
         support here.
         """
         if self.reqs:
-            print(self.style.ERROR("\nOnly pypi and github based requirements are supported:"))
+            self.stdout.write(self.style.ERROR("\nOnly pypi and github based requirements are supported:"))
             for name, req in self.reqs.items():
                 if "dist" in req:
                     pkg_info = "{dist.project_name} {dist.version}".format(dist=req["dist"])
@@ -310,4 +313,4 @@ class Command(BaseCommand):
                     pkg_info = "{url}".format(url=req["url"])
                 else:
                     pkg_info = "unknown package"
-                print(self.style.BOLD("{pkg_info:40} is not a pypi or github requirement".format(pkg_info=pkg_info)))
+                self.stdout.write(self.style.BOLD("{pkg_info:40} is not a pypi or github requirement".format(pkg_info=pkg_info)))

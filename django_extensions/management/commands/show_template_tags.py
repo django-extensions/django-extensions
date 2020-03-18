@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import inspect
 import os
+import re
+
 
 from django.apps import apps
 from django.core.management import color
@@ -30,15 +32,14 @@ def color_style():
 
 
 def format_block(block, nlspaces=0):
-    """Format the given block of text, trimming leading/trailing
+    """
+    Format the given block of text, trimming leading/trailing
     empty lines and any leading whitespace that is common to all lines.
     The purpose is to let us list a code block as a multiline,
     triple-quoted Python string, taking care of
     indentation concerns.
-    http://code.activestate.com/recipes/145672/"""
-
-    import re
-
+    http://code.activestate.com/recipes/145672/
+    """
     # separate block into lines
     lines = smart_text(block).split('\n')
 
@@ -75,9 +76,6 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if args:
-            appname, = args
-
         if options['no_color']:
             style = no_style()
         else:

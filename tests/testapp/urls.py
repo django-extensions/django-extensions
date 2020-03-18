@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""URL Configuration
+"""
+URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
+
 Examples:
 Function views
     1. Add an import:  from my_app import views

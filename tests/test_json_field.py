@@ -26,8 +26,7 @@ class JsonFieldTest(TestCase):
         self.assertEqual(j.a, 6)
         self.assertEqual(j.j_field, {'foo': 'bar'})
 
-        j, created = JSONFieldTestModel.objects.get_or_create(
-            a=6, j_field=dict(foo='bar'))
+        j, created = JSONFieldTestModel.objects.get_or_create(a=6, j_field=dict(foo='bar'))
 
         self.assertFalse(created)
         self.assertEqual(j.a, 6)
@@ -101,12 +100,12 @@ class JsonFieldTest(TestCase):
 
         self.assertEqual(
             six.u(dumps([{'a': 'a'}])),
-            j_field.get_prep_value(value=[{'a': 'a'}])
+            j_field.get_prep_value(value=[{'a': 'a'}]),
         )
 
         self.assertEqual(
             six.u(dumps([{'a': 'a'}])),
-            j_field.get_prep_value(value='[{"a": "a"}]')
+            j_field.get_prep_value(value='[{"a": "a"}]'),
         )
 
     def test_get_db_prep_save(self):
@@ -114,12 +113,12 @@ class JsonFieldTest(TestCase):
 
         self.assertEqual(
             six.u(dumps([{'a': 'a'}])),
-            j_field.get_db_prep_save(value=[{'a': 'a'}], connection=None)
+            j_field.get_db_prep_save(value=[{'a': 'a'}], connection=None),
         )
 
         self.assertEqual(
             six.u('[{"a": "a"}]'),
-            j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None)
+            j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None),
         )
 
     def test_to_python(self):

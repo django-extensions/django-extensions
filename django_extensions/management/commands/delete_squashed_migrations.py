@@ -3,10 +3,10 @@ import os
 import inspect
 import re
 
+import six
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import AmbiguityError, MigrationLoader
-from django.utils import six
 
 REPLACES_REGEX = re.compile(r'\s+replaces\s*=\s*\[[^\]]+\]\s*')
 PYC = '.pyc'
@@ -17,7 +17,6 @@ def py_from_pyc(pyc_fn):
 
 
 class Command(BaseCommand):
-
     help = "Deletes left over migrations that have been replaced by a "
     "squashed migration and converts squashed migration into a normal "
     "migration. Modifies your source tree! Use with care!"

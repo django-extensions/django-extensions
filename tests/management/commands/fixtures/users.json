@@ -1,0 +1,20 @@
+[
+   {
+      "pk" : 3,
+      "fields" : {
+         "is_superuser" : false,
+         "first_name" : "John",
+         "date_joined" : "2019-01-19T13:37:26",
+         "email" : "john@doe.us",
+         "is_active" : true,
+         "last_login" : null,
+         "username" : "jdoe",
+         "is_staff" : false,
+         "user_permissions" : [],
+         "groups" : [],
+         "last_name" : "Doe",
+         "password" : ""
+      },
+      "model" : "auth.user"
+   }
+]

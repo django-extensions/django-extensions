@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Django Extensions additional model fields
+
+Some fields might require additional dependencies to be installed.
 """
+
 import re
 import six
 import string
@@ -20,7 +23,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import DateTimeField, CharField, SlugField
+from django.db.models import DateTimeField, CharField, SlugField, Q
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
@@ -56,16 +59,29 @@ class UniqueFieldMixin(object):
         if model_instance.pk:
             queryset = queryset.exclude(pk=model_instance.pk)
 
-        # form a kwarg dict used to impliment any unique_together contraints
+        # form a kwarg dict used to implement any unique_together constraints
         kwargs = {}
         for params in model_instance._meta.unique_together:
             if self.attname in params:
                 for param in params:
                     kwargs[param] = getattr(model_instance, param, None)
 
+        # for support django 2.2+
+        query = Q()
+        constraints = getattr(model_instance._meta, 'constraints', None)
+        if constraints:
+            for constraint in constraints:
+                if self.attname in constraint.fields:
+                    condition = {
+                        field: getattr(model_instance, field, None)
+                        for field in constraint.fields
+                        if field != self.attname
+                    }
+                    query &= Q(**condition)
+
         new = six.next(iterator)
         kwargs[self.attname] = new
-        while not new or queryset.filter(**kwargs):
+        while not new or queryset.filter(query, **kwargs):
             new = six.next(iterator)
             kwargs[self.attname] = new
         setattr(model_instance, self.attname, new)
@@ -73,7 +89,8 @@ class UniqueFieldMixin(object):
 
 
 class AutoSlugField(UniqueFieldMixin, SlugField):
-    """ AutoSlugField
+    """
+    AutoSlugField
 
     By default, sets editable=False, blank=True.
 
@@ -95,9 +112,38 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
     overwrite
         If set to True, overwrites the slug on every save (default: False)
 
+    slugify_function
+        Defines the function which will be used to "slugify" a content
+        (default: :py:func:`~django.template.defaultfilters.slugify` )
+
+    It is possible to provide custom "slugify" function with
+    the ``slugify_function`` function in a model class.
+
+    ``slugify_function`` function in a model class takes priority over
+    ``slugify_function`` given as an argument to :py:class:`~AutoSlugField`.
+
+    Example
+
+    .. code-block:: python
+
+        # models.py
+
+        from django.db import models
+
+        from django_extensions.db.fields import AutoSlugField
+
+
+        class MyModel(models.Model):
+            def slugify_function(self, content):
+                return content.replace('_', '-').lower()
+
+            title = models.CharField(max_length=42)
+            slug = AutoSlugField(populate_from='title')
+
     Inspired by SmileyChris' Unique Slugify snippet:
     http://www.djangosnippets.org/snippets/690/
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -128,7 +174,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
     def _slug_strip(self, value):
         """
-        Cleans up a slug by removing slug separator characters that occur at
+        Clean up a slug by removing slug separator characters that occur at
         the beginning or end of a slug.
 
         If an alternate separator is used, it will also replace any instances
@@ -138,9 +184,10 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         value = re.sub('%s+' % re_sep, self.separator, value)
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
-    def slugify_func(self, content):
+    @staticmethod
+    def slugify_func(content, slugify_function):
         if content:
-            return self.slugify_function(content)
+            return slugify_function(content)
         return ''
 
     def slug_generator(self, original_slug, start):
@@ -174,10 +221,15 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         populate_from = self._populate_from
         if not isinstance(populate_from, (list, tuple)):
             populate_from = (populate_from, )
+
         slug_field = model_instance._meta.get_field(self.attname)
+        slugify_function = getattr(model_instance, 'slugify_function', self.slugify_function)
 
         # slugify the original field content and set next step to 2
-        slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
+        slug_for_field = lambda lookup_value: self.slugify_func(
+            self.get_slug_fields(model_instance, lookup_value),
+            slugify_function=slugify_function
+        )
         slug = self.separator.join(map(slug_for_field, populate_from))
         start = 2
 
@@ -193,7 +245,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             setattr(model_instance, self.attname, slug)
             return slug
 
-        return super(AutoSlugField, self).find_unique(
+        return self.find_unique(
             model_instance, slug_field, self.slug_generator(original_slug, start))
 
     def get_slug_fields(self, model_instance, lookup_value):
@@ -236,7 +288,8 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
 
 
 class RandomCharField(UniqueFieldMixin, CharField):
-    """ RandomCharField
+    """
+    RandomCharField
 
     By default, sets editable=False, blank=True, unique=False.
 
@@ -265,6 +318,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
     include_punctuation
         If set to True, include punctuation characters (default: False)
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
         kwargs.setdefault('editable', False)
@@ -299,6 +353,12 @@ class RandomCharField(UniqueFieldMixin, CharField):
             yield ''.join(get_random_string(self.length, chars))
         raise RuntimeError('max random character attempts exceeded (%s)' % self.max_unique_query_attempts)
 
+    def in_unique_together(self, model_instance):
+        for params in model_instance._meta.unique_together:
+            if self.attname in params:
+                return True
+        return False
+
     def pre_save(self, model_instance, add):
         if not add and getattr(model_instance, self.attname) != '':
             return getattr(model_instance, self.attname)
@@ -319,12 +379,12 @@ class RandomCharField(UniqueFieldMixin, CharField):
             population += string.punctuation
 
         random_chars = self.random_char_generator(population)
-        if not self.unique:
+        if not self.unique and not self.in_unique_together(model_instance):
             new = six.next(random_chars)
             setattr(model_instance, self.attname, new)
             return new
 
-        return super(RandomCharField, self).find_unique(
+        return self.find_unique(
             model_instance,
             model_instance._meta.get_field(self.attname),
             random_chars,
@@ -353,7 +413,8 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
 
 class CreationDateTimeField(DateTimeField):
-    """ CreationDateTimeField
+    """
+    CreationDateTimeField
 
     By default, sets editable=False, blank=True, auto_now_add=True
     """
@@ -379,7 +440,8 @@ class CreationDateTimeField(DateTimeField):
 
 
 class ModificationDateTimeField(CreationDateTimeField):
-    """ ModificationDateTimeField
+    """
+    ModificationDateTimeField
 
     By default, sets editable=False, blank=True, auto_now=True
 
@@ -401,7 +463,7 @@ class ModificationDateTimeField(CreationDateTimeField):
 
     def pre_save(self, model_instance, add):
         if not getattr(model_instance, 'update_modified', True):
-            return model_instance.modified
+            return getattr(model_instance, self.attname)
         return super(ModificationDateTimeField, self).pre_save(model_instance, add)
 
 
@@ -410,13 +472,15 @@ class UUIDVersionError(Exception):
 
 
 class UUIDFieldMixin(object):
-    """ UUIDFieldMixin
+    """
+    UUIDFieldMixin
 
     By default uses UUID version 4 (randomly generated UUID).
 
     The field support all uuid versions which are natively supported by the uuid python module, except version 2.
     For more information see: http://docs.python.org/lib/module-uuid.html
     """
+
     DEFAULT_MAX_LENGTH = 36
 
     def __init__(
@@ -498,12 +562,14 @@ class UUIDFieldMixin(object):
 
 
 class ShortUUIDField(UUIDFieldMixin, CharField):
-    """ ShortUUIDFied
+    """
+    ShortUUIDFied
 
     Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
 
     Based on `shortuuid`: https://github.com/stochastic-technologies/shortuuid
     """
+
     DEFAULT_MAX_LENGTH = 22
 
     def __init__(self, *args, **kwargs):

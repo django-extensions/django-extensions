@@ -45,7 +45,7 @@ class ObjectImportError(Exception):
 
 def get_app_name(mod_name):
     """
-    Retrieves application name from models.py module path
+    Retrieve application name from models.py module path
 
     >>> get_app_name('testapp.models.foo')
     'testapp'
@@ -68,8 +68,8 @@ def get_app_name(mod_name):
             # MODELS_MODULE_NAME ('models' string) is not found
             return rparts[1]
     except IndexError:
-            # Some weird model naming scheme like in Sentry.
-            return mod_name
+        # Some weird model naming scheme like in Sentry.
+        return mod_name
 
 
 def import_items(import_directives, style, quiet_load=False):
@@ -139,7 +139,7 @@ def import_items(import_directives, style, quiet_load=False):
                     print(style.ERROR("Unable to import %r" % directive))
             except TypeError:
                 if not quiet_load:
-                    print(style.ERROR("Unable to import %r from %r" % directive))
+                    print(style.ERROR("Unable to import %r from %r" % (directive[1], directive[0])))
 
     return imported_objects
 
@@ -166,7 +166,7 @@ def import_objects(options, style):
 
     def get_dict_from_names_to_possible_models():  # type: () -> Dict[str, List[str]]
         """
-        Collects dictionary from names to possible models. Model is represented as his full path.
+        Collect dictionary from names to possible models. Model is represented as his full path.
         Name of model can be alias if SHELL_PLUS_MODEL_ALIASES or SHELL_PLUS_APP_PREFIXES is specified for this model.
         This dictionary is used by collision resolver.
         At this phase we can't import any models, because collision resolver can change results.
@@ -203,7 +203,7 @@ def import_objects(options, style):
 
     def import_models():
         """
-        Performs collision resolving and imports all models.
+        Perform collision resolving and imports all models.
         When collisions are resolved we can perform imports and print information's, because it is last phase.
         This function updates imported_objects dictionary.
         """
@@ -212,7 +212,7 @@ def import_objects(options, style):
 
     def perform_automatic_imports(modules_to_classes):  # type: (Dict[str, List[Tuple[str, str]]]) -> ()
         """
-        Imports elements from given dictionary.
+        Import elements from given dictionary.
         :param modules_to_classes: dictionary from module name to tuple.
         First element of tuple is model name, second is model alias.
         If both elements are equal than element is imported without alias.

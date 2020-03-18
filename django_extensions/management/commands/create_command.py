@@ -10,8 +10,7 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 
 
 class Command(AppCommand):
-    help = ("Creates a Django management command directory structure for the given app name"
-            " in the app's directory.")
+    help = "Creates a Django management command directory structure for the given app name in the app's directory."
 
     requires_system_checks = False
     # Can't import settings during this command, because they haven't
@@ -42,7 +41,7 @@ class Command(AppCommand):
 
 
 def copy_template(template_name, copy_to, **options):
-    """copies the specified template directory to the copy_to location"""
+    """Copy the specified template directory to the copy_to location"""
     import django_extensions
 
     style = color_style()
@@ -55,7 +54,7 @@ def copy_template(template_name, copy_to, **options):
 
     template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
 
-    # walks the template structure and copies it
+    # walk the template structure and copies it
     for d, subdirs, files in os.walk(template_dir):
         relative_dir = d[len(template_dir) + 1:]
         if relative_dir and not os.path.exists(os.path.join(copy_to, relative_dir)):

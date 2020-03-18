@@ -8,7 +8,8 @@ from django.core.management import BaseCommand
 
 
 class EmailNotificationCommand(BaseCommand):
-    """A BaseCommand subclass which adds sending email fuctionality.
+    """
+    A BaseCommand subclass which adds sending email fuctionality.
 
     Subclasses will have an extra command line option ``--email-notification``
     and will be able to send emails by calling ``send_email_notification()``
@@ -44,7 +45,6 @@ class EmailNotificationCommand(BaseCommand):
         no_traceback:       When True do not include traceback to email body.
         notification_level: 0: send email on fail, 1: send email always.
         fail_silently:      Parameter passed to django's send_mail().
-
     """
 
     def add_arguments(self, parser):
@@ -65,13 +65,13 @@ class EmailNotificationCommand(BaseCommand):
         super(EmailNotificationCommand, self).run_from_argv(argv)
 
     def execute(self, *args, **options):
-        """Overriden in order to send emails on unhandled exception.
+        """
+        Overriden in order to send emails on unhandled exception.
 
         If an unhandled exception in ``def handle(self, *args, **options)``
         occurs and `--email-exception` is set or `self.email_exception` is
         set to True send an email to ADMINS with the traceback and then
         reraise the exception.
-
         """
         try:
             super(EmailNotificationCommand, self).execute(*args, **options)
@@ -80,14 +80,13 @@ class EmailNotificationCommand(BaseCommand):
                 self.send_email_notification(include_traceback=True)
             raise
 
-    def send_email_notification(self, notification_id=None,
-                                include_traceback=False, verbosity=1):
-        """Send email notifications.
+    def send_email_notification(self, notification_id=None, include_traceback=False, verbosity=1):
+        """
+        Send email notifications.
 
         Reads settings from settings.EMAIL_NOTIFICATIONS dict, if available,
         using ``notification_id`` as a key or else provides reasonable
         defaults.
-
         """
         # Load email notification settings if available
         if notification_id is not None:
@@ -105,9 +104,12 @@ class EmailNotificationCommand(BaseCommand):
 
         # Set email fields.
         subject = email_settings.get('subject', "Django extensions email notification.")
+
+        command_name = self.__module__.split('.')[-1]
+
         body = email_settings.get(
             'body',
-            "Reporting execution of command: '%s'" % self.argv_string
+            "Reporting execution of command: '%s'" % command_name
         )
 
         # Include traceback
@@ -126,7 +128,7 @@ class EmailNotificationCommand(BaseCommand):
         recipients = list(email_settings.get('recipients', []))
 
         if not email_settings.get('no_admins', False):
-            recipients.extend([a[1] for a in settings.ADMINS])
+            recipients.extend(settings.ADMINS)
 
         if not recipients:
             if verbosity > 0:

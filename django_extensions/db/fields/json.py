@@ -13,8 +13,9 @@ more information.
 from __future__ import absolute_import
 
 import json
-import six
 
+import django
+import six
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -37,21 +38,26 @@ class JSONDict(dict):
     Hack so repr() called by dumpdata will output JSON instead of
     Python formatted data.  This way fixtures will work!
     """
+
     def __repr__(self):
         return dumps(self)
 
 
 class JSONList(list):
     """
-    As above
+    Hack so repr() called by dumpdata will output JSON instead of
+    Python formatted data.  This way fixtures will work!
     """
+
     def __repr__(self):
         return dumps(self)
 
 
 class JSONField(models.TextField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly.  Main thingy must be a dict object."""
+    """
+    JSONField is a generic textfield that neatly serializes/unserializes
+    JSON objects seamlessly.  Main thingy must be a dict object.
+    """
 
     def __init__(self, *args, **kwargs):
         kwargs['default'] = kwargs.get('default', dict)
@@ -89,8 +95,12 @@ class JSONField(models.TextField):
             return dumps(value)
         return super(models.TextField, self).get_prep_value(value)
 
-    def from_db_value(self, value, expression, connection, context):
-        return self.to_python(value)
+    if django.VERSION < (2, ):
+        def from_db_value(self, value, expression, connection, context):
+            return self.to_python(value)
+    else:
+        def from_db_value(self, value, expression, connection):  # type: ignore
+            return self.to_python(value)
 
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""

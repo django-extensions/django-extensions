@@ -4,6 +4,7 @@ Recreates the public schema for current database (PostgreSQL only).
 Useful for Docker environments where you need to reset database
 schema while there are active connections.
 """
+
 from django.core.management import BaseCommand, CommandError
 from django.db import connections
 from django.conf import settings
@@ -11,9 +12,8 @@ from six.moves import input
 
 
 class Command(BaseCommand):
-    """
-    `reset_schema` command implementation.
-    """
+    """`reset_schema` command implementation."""
+
     help = "Recreates the public schema for this project."
 
     def add_arguments(self, parser):

@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-import pytest
 import django
+import pytest
+import six
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
-from django.utils import six
 from django.utils.encoding import force_bytes
 
 import django_extensions  # noqa
 from django_extensions.db.fields import AutoSlugField
 
-from .testapp.models import ChildSluggedTestModel, SluggedTestModel, \
-    SluggedTestNoOverwriteOnAddModel, FKSluggedTestModel, \
-    FKSluggedTestModelCallable, FunctionSluggedTestModel, \
-    ModelMethodSluggedTestModel
+from .testapp.models import (
+    ChildSluggedTestModel, CustomFuncPrecedenceSluggedTestModel, CustomFuncSluggedTestModel,
+    FKSluggedTestModel, FKSluggedTestModelCallable, FunctionSluggedTestModel,
+    ModelMethodSluggedTestModel, SluggedTestModel, SluggedTestNoOverwriteOnAddModel,
+    OverridedFindUniqueModel, SluggedWithConstraintsTestModel,
+    SluggedWithUniqueTogetherTestModel,
+)
 
 
 @pytest.mark.usefixtures("admin_user")
@@ -22,6 +25,8 @@ class AutoSlugFieldTest(TestCase):
         super(AutoSlugFieldTest, self).tearDown()
 
         SluggedTestModel.objects.all().delete()
+        CustomFuncSluggedTestModel.objects.all().delete()
+        CustomFuncPrecedenceSluggedTestModel.objects.all().delete()
 
     def test_auto_create_slug(self):
         m = SluggedTestModel(title='foo')
@@ -186,6 +191,71 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         self.assertEqual(m.slug, 'slug')
 
+    def test_overrided_find_unique_autoslug_field(self):
+        m = OverridedFindUniqueModel(title='foo')
+        slug_field = m._meta.fields[2]
+        self.assertFalse(hasattr(slug_field, 'overrided'))
+        m.save()
+        slug_field = m._meta.fields[2]
+        self.assertTrue(slug_field.overrided)
+
+    def test_slugify_func(self):
+        to_upper = lambda c: c.upper()
+        to_lower = lambda c: c.lower()
+
+        content_n_func_n_expected = (
+            ('test', to_upper, 'TEST'),
+            ('', to_upper, ''),
+            ('TEST', to_lower, 'test'),
+        )
+
+        for content, slugify_function, expected in content_n_func_n_expected:
+            self.assertEqual(
+                AutoSlugField.slugify_func(content, slugify_function),
+                expected
+            )
+
+    def test_use_custom_slug_function(self):
+        m = CustomFuncSluggedTestModel(title='test')
+        m.save()
+        self.assertEqual(m.slug, 'TEST')
+
+    def test_precedence_custom_slug_function(self):
+        m = CustomFuncPrecedenceSluggedTestModel(title='test')
+        m.save()
+        self.assertEqual(m.slug, 'TEST')
+        self.assertTrue(hasattr(m._meta.get_field('slug'), 'slugify_function'))
+        self.assertEqual(m._meta.get_field('slug').slugify_function('TEST'), 'test')
+
+    def test_auto_create_slug_with_unique_together(self):
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='self-introduction')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        # check if satisfy database integrity
+        m = SluggedWithUniqueTogetherTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
+    @pytest.mark.skipif(django.VERSION < (2, 2), reason="This test works only on Django greater than 2.2.0")
+    def test_auto_create_slug_with_constraints(self):
+        m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        m = SluggedWithConstraintsTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo')
+
+        # check if satisfy database integrity
+        m = SluggedWithConstraintsTestModel(title='foo', category='review')
+        m.save()
+        self.assertEqual(m.slug, 'foo-2')
+
 
 class MigrationTest(TestCase):
     def safe_exec(self, string, value=None):
@@ -210,9 +280,12 @@ class MigrationTest(TestCase):
 
         migration = type(str("Migration"), (migrations.Migration,), {
             "operations": [
-                migrations.CreateModel("MyModel", tuple(fields.items()),
-                                       {'populate_from': 'otherfield'},
-                                       (models.Model,)),
+                migrations.CreateModel(
+                    "MyModel",
+                    tuple(fields.items()),
+                    {'populate_from': 'otherfield'},
+                    (models.Model,)
+                ),
             ],
         })
         writer = MigrationWriter(migration)

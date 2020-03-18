@@ -31,6 +31,9 @@ If you want to install it from source, grab the git repository and run setup.py:
  $ cd django-extensions
  $ python setup.py install
 
+Then you will need to add the *django_extensions* application to the
+``INSTALLED_APPS`` setting of your Django project *settings.py* file.
+
 For more detailed instructions check out our :doc:`installation_instructions`. Enjoy.
 
 Compatibility with versions of Python and Django
@@ -39,8 +42,6 @@ Compatibility with versions of Python and Django
 We follow the Django guidelines for supported Python and Django versions. See more at `Django Supported Versions <https://docs.djangoproject.com/en/dev/internals/release-process/#supported-versions>`_
 
 This might mean the django-extensions may work with older or unsupported versions but we do not guarantee it and most likely will not fix bugs related to incompatibilities with older versions.
-
-At this time we test on and thrive to support valid combinations of Python 2.7, 3.4, 3.5, 3.6, 3.7, pypy and pypy3 with Django versions 1.11 to 2.1.
 
 Contents
 ========
@@ -54,6 +55,8 @@ Contents
    command_signals
    admin_extensions
    shell_plus
+   debugger_tags
+   create_template_tags
    delete_squashed_migrations
    dumpscript
    runscript
@@ -69,10 +72,13 @@ Contents
    runprofileserver
    runserver_plus
    sync_s3
+   syncdata
    sqldiff
    sqlcreate
    sqldsn
    validate_templates
+   validators
+   admin_generator
 
 
 Indices and tables

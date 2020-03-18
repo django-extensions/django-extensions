@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """
+reset_db command
+
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
+import os
 import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from six.moves import input
 
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
 
@@ -29,23 +33,23 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in settings.py'
+            help='Use another user for the database than defined in settings.py'
         )
         parser.add_argument(
             '-O', '--owner', action='store', dest='owner', default=None,
-            help='Use another owner for creating the database then the user defined in settings or via --user'
+            help='Use another owner for creating the database than the user defined in settings or via --user'
         )
         parser.add_argument(
             '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in settings.py'
+            help='Use another password for the database than defined in settings.py'
         )
         parser.add_argument(
             '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py'
+            help='Use another database name than defined in settings.py'
         )
         parser.add_argument(
             '-R', '--router', action='store', dest='router', default='default',
-            help='Use this router-database other then defined in settings.py'
+            help='Use this router-database other than defined in settings.py'
         )
         parser.add_argument(
             '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
@@ -55,21 +59,17 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         """
-        Resets the database for this project.
+        Reset the database for this project.
 
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-
-        if args:
-            raise CommandError("reset_db takes no arguments")
-
         router = options['router']
         dbinfo = settings.DATABASES.get(router)
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
 
-        engine = dbinfo.get('ENGINE').split('.')[-1]
+        engine = dbinfo.get('ENGINE')
 
         user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
@@ -102,15 +102,14 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             print("Reset cancelled.")
             return
 
-        if engine in ('sqlite3', 'spatialite'):
-            import os
+        if engine in SQLITE_ENGINES:
             try:
-                logging.info("Unlinking %s database" % engine)
+                logging.info("Unlinking %s database", engine)
                 os.unlink(database_name)
             except OSError:
                 pass
 
-        elif engine in ('mysql',):
+        elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
             kwargs = {
                 'user': user,
@@ -128,12 +127,12 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
             utf8_support = '' if options['no_utf8_support'] else 'CHARACTER SET utf8'
             create_query = 'CREATE DATABASE `%s` %s' % (database_name, utf8_support)
-            logging.info('Executing... "' + drop_query + '"')
+            logging.info('Executing... "%s"', drop_query)
             connection.query(drop_query)
-            logging.info('Executing... "' + create_query + '"')
-            connection.query(create_query)
+            logging.info('Executing... "%s"', create_query)
+            connection.query(create_query.strip())
 
-        elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
+        elif engine in POSTGRESQL_ENGINES:
             import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
@@ -156,18 +155,18 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                     FROM pg_stat_activity
                     WHERE pg_stat_activity.datname = '%s';
                 """ % database_name
-                logging.info('Executing... "' + close_sessions_query.strip() + '"')
+                logging.info('Executing... "%s"', close_sessions_query.strip())
                 try:
                     cursor.execute(close_sessions_query)
                 except Database.ProgrammingError as e:
-                    logging.exception("Error: %s" % str(e))
+                    logging.exception("Error: %s", str(e))
 
             drop_query = "DROP DATABASE \"%s\";" % database_name
-            logging.info('Executing... "' + drop_query + '"')
+            logging.info('Executing... "%s"', drop_query)
             try:
                 cursor.execute(drop_query)
             except Database.ProgrammingError as e:
-                logging.exception("Error: %s" % str(e))
+                logging.exception("Error: %s", str(e))
 
             create_query = "CREATE DATABASE \"%s\"" % database_name
             if owner:
@@ -179,7 +178,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             else:
                 create_query += ';'
 
-            logging.info('Executing... "' + create_query + '"')
+            logging.info('Executing... "%s"', create_query)
             cursor.execute(create_query)
 
         else:

@@ -33,15 +33,19 @@ Create a job
 ------------
 
 A job is a Python script with a mandatory ``BaseJob`` class which extends from
-``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
+``MinutelyJob``, ``QuarterHourlyJob``, ``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
 It has one method that must be implemented called ``execute``,
 which is called when the job is run.
 The directories ``hourly``, ``daily``, ``monthly``, ``weekly`` and ``yearly``
 are used only to for organisation purpose.
 
+Note: If you want to use ``QuarterHourlyJob`` or ``Minutely`` job, create python package with name ``quarter_hourly`` or ``minutely`` respectively (similar to ``hourly`` or ``daily`` package).
+
 To create your first job you can start copying ``sample.py``.
-Remember to replace ``BaseJob`` with ``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
+Remember to replace ``BaseJob`` with ``MinutelyJob``, ``QuarterHourlyJob``, ``HourlyJob``, ``DailyJob``, ``WeeklyJob``, ``MonthlyJob`` or ``Yearly``.
 Some simple examples are provided by the `django_extensions.jobs package <https://github.com/django-extensions/django-extensions/tree/master/django_extensions/jobs>`_.
+
+Note that each job should be in a new python script (within respective directory) and the class implementing the cron should be named ``Job``. Also, ``__init__.py`` file is not used for identifying jobs.
 
 Run a job
 ---------

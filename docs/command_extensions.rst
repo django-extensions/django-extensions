@@ -6,7 +6,7 @@ Current Command Extensions
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
 
-* *admin_generator* - Generate automatic Django Admin classes by providing an app name. Outputs
+* :doc:`admin_generator` - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
 
 * *clean_pyc* - Remove all python bytecode compiled files from the project
@@ -15,7 +15,7 @@ Current Command Extensions
   specified application.  This makes it easy to get started with adding a
   command extension to your application.
 
-* *create_template_tags* - Creates a template tag directory structure within the
+* :doc:`create_template_tags` - Creates a template tag directory structure within the
   specified application.
 
 * *create_jobs* - Creates a Django jobs command directory structure for the
@@ -118,13 +118,13 @@ Current Command Extensions
   Content-Encoding header, and also set a far future expires header for browser
   caching.
 
-* *syncdata* - Makes the current database have the same data as the fixture(s), no more, no less.
+* :doc:`syncdata` - Makes the current database have the same data as the fixture(s), no more, no less.
 
 * *unreferenced_files* - Prints a list of all files in MEDIA_ROOT that are not referenced in the database.
 
 * *update_permissions* - Reloads permissions for specified apps, or all apps if no args are specified.
 
-* *validate_templates* - Validate templates on syntax and compile errors.
+* :doc:`validate_templates` - Validate templates on syntax and compile errors.
 
 * *set_default_site* - Set parameters of the default `django.contrib.sites` Site using `name` and `domain` or `system-fqdn`.
 

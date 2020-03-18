@@ -1,12 +1,37 @@
 # -*- coding: utf-8 -*-
 import os
+import re
+import six
+import django
+import pytest
 import inspect
 
+from django.core.management import call_command
 from django.db.models import Model
 from django.test import override_settings
 
 from django_extensions.management.commands import shell_plus
 from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
+
+
+@pytest.mark.skipif(django.VERSION < (2, 0), reason="This test works only on Django greater than 2.0.0")
+@pytest.mark.django_db()
+@override_settings(SHELL_PLUS_SQLPARSE_ENABLED=False, SHELL_PLUS_PYGMENTS_ENABLED=False)
+def test_shell_plus_print_sql(capsys):
+    out = six.StringIO()
+    try:
+        from django.db import connection
+        from django.db.backends import utils
+        CursorDebugWrapper = utils.CursorDebugWrapper
+        force_debug_cursor = True if connection.force_debug_cursor else False
+        call_command("shell_plus", plain=True, print_sql=True, command="User.objects.all().exists()")
+    finally:
+        utils.CursorDebugWrapper = CursorDebugWrapper
+        connection.force_debug_cursor = force_debug_cursor
+
+    out, err = capsys.readouterr()
+
+    assert re.search(r"SELECT\s+.+\s+FROM\s+.auth_user.\s+LIMIT\s+1", out)
 
 
 def test_shell_plus_plain_startup():

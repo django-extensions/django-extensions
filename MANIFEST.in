@@ -1,8 +1,10 @@
 recursive-include django_extensions/conf *.tmpl
-recursive-include django_extensions/templates *
+recursive-include django_extensions/templates *.dot *.html
 recursive-include django_extensions/static *
-recursive-include django_extensions/locale *
+recursive-include django_extensions/locale *.po *.mo
 recursive-include docs *
 include LICENSE
 include README.rst
-include tox.ini
+include CHANGELOG.md
+include tox.ini manage.py Makefile
+recursive-include tests *.py

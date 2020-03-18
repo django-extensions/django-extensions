@@ -2,10 +2,12 @@
 import sys
 import json
 import os
+import tempfile
 
 import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.template import loader
 
 from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
@@ -32,7 +34,8 @@ class Command(BaseCommand):
     can_import_settings = True
 
     def __init__(self, *args, **kwargs):
-        """Allow defaults for arguments to be set in settings.GRAPH_MODELS.
+        """
+        Allow defaults for arguments to be set in settings.GRAPH_MODELS.
 
         Each argument in self.arguments is a dict where the key is the
         space-separated args and the value is our kwarg dict.
@@ -101,6 +104,12 @@ class Command(BaseCommand):
                 'default': 'dot',
                 'help': 'Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi',
             },
+            '--theme -t': {
+                'action': 'store',
+                'dest': 'theme',
+                'default': 'django2018',
+                'help': 'Theme to use. Supplied are \'original\' and \'django2018\'. You can create your own by creating dot templates in \'django_extentions/graph_models/themename/\' template directory.',
+            },
             '--verbose-names -n': {
                 'action': 'store_true',
                 'default': False,
@@ -115,8 +124,7 @@ class Command(BaseCommand):
             '--exclude-columns -x': {
                 'action': 'store',
                 'dest': 'exclude_columns',
-                'help': 'Exclude specific column(s) from the graph. '
-                'Can also load exclude list from file.',
+                'help': 'Exclude specific column(s) from the graph. Can also load exclude list from file.',
             },
             '--exclude-models -X': {
                 'action': 'store',
@@ -152,6 +160,19 @@ class Command(BaseCommand):
                 'dest': 'sort_fields',
                 'help': 'Do not sort fields',
             },
+            '--hide-edge-labels': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'hide_edge_labels',
+                'help': 'Do not showrelations labels in the graph.',
+            },
+            '--arrow-shape': {
+                'action': 'store',
+                'default': 'dot',
+                'dest': 'arrow_shape',
+                'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
+                'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
+            }
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -169,17 +190,16 @@ class Command(BaseCommand):
         """Unpack self.arguments for parser.add_arguments."""
         parser.add_argument('app_label', nargs='*')
         for argument in self.arguments:
-            parser.add_argument(*argument.split(' '),
-                                **self.arguments[argument])
+            parser.add_argument(*argument.split(' '), **self.arguments[argument])
 
     @signalcommand
     def handle(self, *args, **options):
         args = options['app_label']
-        if len(args) < 1 and not options['all_applications']:
+        if not args and not options['all_applications']:
             raise CommandError("need one or more arguments for appname")
 
-        # determine output format based on options, file extension, and library
-        # availability
+        # Determine output format based on options, file extension, and library
+        # availability.
         outputfile = options.get("outputfile") or ""
         _, outputfile_ext = os.path.splitext(outputfile)
         outputfile_ext = outputfile_ext.lower()
@@ -187,9 +207,9 @@ class Command(BaseCommand):
         output_opts = {k: v for k, v in options.items() if k in output_opts_names}
         output_opts_count = sum(output_opts.values())
         if output_opts_count > 1:
-            raise CommandError(
-                "Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
-        elif output_opts_count == 1:
+            raise CommandError("Only one of %s can be set." % ", ".join(["--%s" % opt for opt in output_opts_names]))
+
+        if output_opts_count == 1:
             output = next(key for key, val in output_opts.items() if val)
         elif not outputfile:
             # When neither outputfile nor a output format option are set,
@@ -210,7 +230,7 @@ class Command(BaseCommand):
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
         # to printind .dot format to stdout.
-        if output in ["pydot", "pygraphiviz"] and not outputfile:
+        if output in ["pydot", "pygraphviz"] and not outputfile:
             raise CommandError("An output file (--output) must be specified when --pydot or --pygraphviz are set.")
 
         cli_options = ' '.join(sys.argv[2:])
@@ -222,7 +242,12 @@ class Command(BaseCommand):
             return self.render_output_json(graph_data, outputfile)
 
         graph_data = graph_models.get_graph_data(as_json=False)
-        dotdata = generate_dot(graph_data)
+
+        theme = options['theme']
+        template_name = os.path.join('django_extensions', 'graph_models', theme, 'digraph.dot')
+        template = loader.get_template(template_name)
+
+        dotdata = generate_dot(graph_data, template=template)
         if not six.PY3:
             dotdata = dotdata.encode("utf-8")
 
@@ -230,11 +255,10 @@ class Command(BaseCommand):
             return self.render_output_pygraphviz(dotdata, **options)
         if output == "pydot":
             return self.render_output_pydot(dotdata, **options)
-        else:
-            self.print_output(dotdata, outputfile)
+        self.print_output(dotdata, outputfile)
 
     def print_output(self, dotdata, output_file=None):
-        """Writes model data to file or stdout in DOT (text) format."""
+        """Write model data to file or stdout in DOT (text) format."""
         if six.PY3 and isinstance(dotdata, six.binary_type):
             dotdata = dotdata.decode()
 
@@ -245,7 +269,7 @@ class Command(BaseCommand):
             self.stdout.write(dotdata)
 
     def render_output_json(self, graph_data, output_file=None):
-        """Writes model data to file or stdout in JSON format."""
+        """Write model data to file or stdout in JSON format."""
         if output_file:
             with open(output_file, 'wt') as json_output_f:
                 json.dump(graph_data, json_output_f)
@@ -253,7 +277,7 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(graph_data))
 
     def render_output_pygraphviz(self, dotdata, **kwargs):
-        """Renders model data as image using pygraphviz"""
+        """Render model data as image using pygraphviz."""
         if not HAS_PYGRAPHVIZ:
             raise CommandError("You need to install pygraphviz python module")
 
@@ -261,7 +285,6 @@ class Command(BaseCommand):
         try:
             if tuple(int(v) for v in version.split('.')) < (0, 36):
                 # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
-                import tempfile
                 tmpfile = tempfile.NamedTemporaryFile()
                 tmpfile.write(dotdata)
                 tmpfile.seek(0)
@@ -274,7 +297,7 @@ class Command(BaseCommand):
         graph.draw(kwargs['outputfile'])
 
     def render_output_pydot(self, dotdata, **kwargs):
-        """Renders model data as image using pydot"""
+        """Render model data as image using pydot."""
         if not HAS_PYDOT:
             raise CommandError("You need to install pydot python module")
 
@@ -287,11 +310,13 @@ class Command(BaseCommand):
             graph = graph[0]
 
         output_file = kwargs['outputfile']
-        formats = ['bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
-                   'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
-                   'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
-                   'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
-                   'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot']
+        formats = [
+            'bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
+            'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
+            'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
+            'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
+            'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot',
+        ]
         ext = output_file[output_file.rfind('.') + 1:]
-        format = ext if ext in formats else 'raw'
-        graph.write(output_file, format=format)
+        format_ = ext if ext in formats else 'raw'
+        graph.write(output_file, format=format_)

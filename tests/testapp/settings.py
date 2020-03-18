@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.messages',
+    'django.contrib.sites',
     'tests.collisions',
     'tests.testapp',
     'tests.testapp_with_no_models_file',
@@ -29,10 +30,12 @@ MIDDLEWARE = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        'ENGINE': os.environ.get('DJANGO_EXTENSIONS_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DJANGO_EXTENSIONS_DATABASE_NAME', ':memory:'),
     }
 }
+
+SITE_ID = 1
 
 MEDIA_ROOT = '/tmp/django_extensions_test_media/'
 
@@ -68,16 +71,15 @@ SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
     'django_extensions.db.fields.encrypted',
     'django_extensions.mongodb.fields',
     'django_extensions.mongodb.models',
-    'tests.test_encrypted_fields',
     'tests.testapp.scripts.invalid_import_script',
     'setup',
 ]
 
 CACHES = {
     'default': {
-        'BACKEND': 'tests.test_clear_caches.DefaultCacheMock',
+        'BACKEND': 'tests.management.commands.test_clear_cache.DefaultCacheMock',
     },
     'other': {
-        'BACKEND': 'tests.test_clear_caches.OtherCacheMock',
+        'BACKEND': 'tests.management.commands.test_clear_cache.OtherCacheMock',
     },
 }

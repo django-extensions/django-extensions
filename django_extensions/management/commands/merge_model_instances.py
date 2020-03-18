@@ -13,9 +13,7 @@ def get_model_to_deduplicate():
     for model in models:
         print("%s. %s" % (iterator, model.__name__))
         iterator += 1
-    model_choice = int(input("""
-        Enter the number of the model you would like to de-duplicate:
-        """))
+    model_choice = int(input("Enter the number of the model you would like to de-duplicate:"))
     model_to_deduplicate = models[model_choice - 1]
     return model_to_deduplicate
 
@@ -28,9 +26,7 @@ def get_field_names(model):
         iterator += 1
     validated = False
     while not validated:
-        first_field = int(input("""
-            Enter the number of the (first) field you would like to de-duplicate.
-            """))
+        first_field = int(input("Enter the number of the (first) field you would like to de-duplicate."))
         if first_field in range(1, iterator):
             validated = True
         else:
@@ -56,7 +52,7 @@ def get_field_names(model):
             additional_field = input("""
                 Enter the number of the field you would like to de-duplicate.
                 If you have entered all fields, enter C to continue.
-                """)
+            """)
             if additional_field == "C":
                 done = True
                 validated = True
@@ -101,7 +97,7 @@ class Command(BaseCommand):
         https://djangosnippets.org/snippets/2283/
         https://stackoverflow.com/a/41291137/2532070
         https://gist.github.com/edelvalle/01886b6f79ba0c4dce66
-        """
+    """
 
     @signalcommand
     def handle(self, *args, **options):
@@ -120,13 +116,13 @@ class Command(BaseCommand):
                 model.objects.get(**kwargs)
             except model.MultipleObjectsReturned:
                 instances = model.objects.filter(**kwargs)
-
                 if first_or_last == "first":
-                    primary_object = instances[0]
-                    alias_objects = instances[1:]
+                    primary_object = instances.first()
+                    alias_objects = instances.exclude(pk=primary_object.pk)
                 elif first_or_last == "last":
-                    primary_object = instances[len(instances) - 1]
-                    alias_objects = instances[:len(instances) - 1]
+                    primary_object = instances.last()
+                    alias_objects = instances.exclude(pk=primary_object.pk)
+
                 primary_object, deleted_objects, deleted_objects_count = self.merge_model_instances(primary_object, alias_objects)
                 total_deleted_objects_count += deleted_objects_count
 
@@ -134,7 +130,8 @@ class Command(BaseCommand):
 
     @transaction.atomic()
     def merge_model_instances(self, primary_object, alias_objects):
-        """Merge several model instances into one, the `primary_object`.
+        """
+        Merge several model instances into one, the `primary_object`.
         Use this function to merge model objects and migrate all of the related
         fields from the alias objects the primary object.
         """

@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from typing import (  # NOQA
-    Dict,
-    Set,
-    Type,
-)
+from typing import Dict, Set, Type  # noqa
 
 import six
 from django.test import TestCase

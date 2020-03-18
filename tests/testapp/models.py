@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-from django.db import models
+import django
 
-from django_extensions.db.fields import (
-    AutoSlugField,
-    RandomCharField,
-    ShortUUIDField,
-)
+from django.db import models
+from django.contrib.auth import get_user_model
+
+from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
+
+from .fields import UniqField
+
+if django.VERSION >= (2, 2):
+    from django.db.models import UniqueConstraint
 
 
 class Secret(models.Model):
@@ -25,19 +29,21 @@ class Name(models.Model):
         app_label = 'django_extensions'
 
 
-class Note(models.Model):
-    note = models.TextField()
-
-    class Meta:
-        app_label = 'django_extensions'
-
-
 class Personality(models.Model):
     description = models.CharField(max_length=50)
 
 
 class Club(models.Model):
     name = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now=True)
+
+
+class Note(models.Model):
+    note = models.TextField()
+    club = models.ForeignKey(Club, null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'
 
 
 class Person(models.Model):
@@ -74,6 +80,57 @@ class PostWithTitleOrdering(Post):
         ordering = ['title']
 
 
+class DummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class SecondDummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class ThirdDummyRelationModel(models.Model):
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class PostWithUniqField(models.Model):
+
+    uniq_field = UniqField(
+        max_length=255,
+        boolean_attr=True,
+        non_boolean_attr='non_boolean_attr'
+    )
+    common_field = models.CharField(max_length=10)
+    another_common_field = models.CharField(max_length=10)
+    many_to_one_field = models.ForeignKey(DummyRelationModel, on_delete=models.CASCADE)
+    one_to_one_field = models.OneToOneField(SecondDummyRelationModel, on_delete=models.CASCADE)
+    many_to_many_field = models.ManyToManyField(ThirdDummyRelationModel, related_name='posts_with_uniq')
+
+    class Meta:
+        app_label = 'django_extensions'
+        unique_together = ('common_field', 'uniq_field',)
+
+
+class ReverseModel(models.Model):
+    post_field = models.ForeignKey(
+        PostWithUniqField, related_name='reverse_models', on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class InheritedFromPostWithUniqField(PostWithUniqField):
+    new_field = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class AbstractInheritanceTestModelParent(models.Model):
     my_field_that_my_child_will_inherit = models.BooleanField()
 
@@ -90,6 +147,71 @@ class AbstractInheritanceTestModelChild(AbstractInheritanceTestModelParent):
 class SluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
     slug = AutoSlugField(populate_from='title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class SluggedWithConstraintsTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title')
+    category = models.CharField(max_length=20, null=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        if django.VERSION >= (2, 2):
+            constraints = [
+                UniqueConstraint(
+                    fields=['slug', 'category'],
+                    name="unique_slug_and_category",
+                ),
+            ]
+
+
+class SluggedWithUniqueTogetherTestModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title')
+    category = models.CharField(max_length=20, null=True)
+
+    class Meta:
+        app_label = 'django_extensions'
+        unique_together = ['slug', 'category']
+
+
+class OverridedFindUniqueAutoSlugField(AutoSlugField):
+    def find_unique(self, model_instance, field, iterator, *args):
+        self.overrided = True
+        return super(OverridedFindUniqueAutoSlugField, self).find_unique(model_instance, field, iterator, *args)
+
+
+class OverridedFindUniqueModel(models.Model):
+    title = models.CharField(max_length=42)
+    slug = OverridedFindUniqueAutoSlugField(populate_from='title')
+
+
+class CustomFuncSluggedTestModel(models.Model):
+
+    def slugify_function(self, content):
+        return content.upper()
+
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title')
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class CustomFuncPrecedenceSluggedTestModel(models.Model):
+    def custom_slug_one(self, content):
+        return content.upper()
+
+    def custom_slug_two(content):
+        return content.lower()
+
+    slugify_function = custom_slug_one
+
+    title = models.CharField(max_length=42)
+    slug = AutoSlugField(populate_from='title', slugify_function=custom_slug_two)
 
     class Meta:
         app_label = 'django_extensions'
@@ -261,6 +383,15 @@ class RandomCharTestModelPunctuation(models.Model):
         app_label = 'django_extensions'
 
 
+class RandomCharTestModelUniqueTogether(models.Model):
+    random_char_field = RandomCharField(length=8)
+    common_field = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = 'django_extensions'
+        unique_together = ('random_char_field', 'common_field')
+
+
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = 'django_extensions'
@@ -297,3 +428,41 @@ class SqlDiffUniqueTogether(models.Model):
 
     class Meta:
         unique_together = ['aaa', 'bbb']
+
+
+class Photo(models.Model):
+    photo = models.FileField()
+
+
+class CustomModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    custom_modified = ModificationDateTimeField()
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class ModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    modified = ModificationDateTimeField()
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class DisabledUpdateModelModificationDateTimeField(models.Model):
+    field_to_update = models.BooleanField(default=True)
+    modified = ModificationDateTimeField()
+
+    update_modified = False
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class HasOwnerModel(models.Model):
+    content = models.TextField(default="")
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'

@@ -21,7 +21,7 @@ Change version numbers in django_extensions/__init__.py and docs/conf.py::
 
   $ vi django_extensions/__init__.py              (1 occurance)
   $ vi docs/conf.py                              (2 occurances)
-  $ git commit -a -m v0.4.1
+  $ git commit -m v0.4.1 django_extensions/__init__.py docs/conf.py
 
 Tag it::
 
@@ -42,7 +42,7 @@ Upload release to pypi::
 Bumb version number to new in-development pre version::
 
   $ vi django_extensions/__init__.py
-  $ git commit -a -m 'bumped version number'
+  $ git commit -m 'bumped version number' django_extensions/__init__.py
 
 Push changes back to github::
 

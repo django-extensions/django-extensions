@@ -6,35 +6,33 @@ import os
 import re
 import socket
 import sys
-import time
 
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
-from django.db.backends import utils
-from django.utils.autoreload import gen_filenames
+try:
+    from django.utils.autoreload import gen_filenames
+except ImportError:  # Django >=2.2
+    from django.utils.autoreload import get_reloader
 
-from django_extensions.management.technical_response import \
-    null_technical_500_response
-from django_extensions.management.utils import (
-    RedirectHandler, has_ipdb, setup_logger, signalcommand,
-)
+    def gen_filenames():
+        return get_reloader().watched_files()
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
         USE_STATICFILES = False
-    elif 'django.contrib.staticfiles' in settings.INSTALLED_APPS:
+    else:
         from django.contrib.staticfiles.handlers import StaticFilesHandler
         USE_STATICFILES = True
-    elif 'staticfiles' in settings.INSTALLED_APPS:
-        from staticfiles.handlers import StaticFilesHandler  # noqa
-        USE_STATICFILES = True
-    else:
-        USE_STATICFILES = False
 except ImportError:
     USE_STATICFILES = False
+
+from django_extensions.management.technical_response import null_technical_500_response
+from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
+from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
+
 
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
@@ -54,6 +52,8 @@ class Command(BaseCommand):
 
     # Validation is called explicitly each time the server is reloaded.
     requires_system_checks = False
+    DEFAULT_CRT_EXTENSION = ".crt"
+    DEFAULT_KEY_EXTENSION = ".key"
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -73,11 +73,13 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
+        parser.add_argument('--print-sql-location', action='store_true', default=False,
+                            help="Show location in code where SQL query generated from")
         cert_group = parser.add_mutually_exclusive_group()
         cert_group.add_argument('--cert', dest='cert_path', action="store", type=str,
                                 help='Deprecated alias for --cert-file option.')
         cert_group.add_argument('--cert-file', dest='cert_path', action="store", type=str,
-                                help='SSL .cert file path. If not provided path from --key-file will be selected. '
+                                help='SSL .crt file path. If not provided path from --key-file will be selected. '
                                      'Either --cert-file or --key-file must be provided to use SSL.')
         parser.add_argument('--key-file', dest='key_file_path', action="store", type=str,
                             help='SSL .key file path. If not provided path from --cert-file will be selected. '
@@ -136,47 +138,6 @@ class Command(BaseCommand):
         werklogger.setLevel(logging.INFO)
         werklogger.addHandler(logredirect)
         werklogger.propagate = False
-
-        if options["print_sql"]:
-            try:
-                import sqlparse
-            except ImportError:
-                sqlparse = None  # noqa
-
-            try:
-                import pygments.lexers
-                import pygments.formatters
-            except ImportError:
-                pygments = None
-
-            truncate = getattr(settings, 'RUNSERVER_PLUS_PRINT_SQL_TRUNCATE', 1000)
-
-            class PrintQueryWrapper(utils.CursorDebugWrapper):
-                def execute(self, sql, params=()):
-                    starttime = time.time()
-                    try:
-                        return utils.CursorWrapper.execute(self, sql, params)
-                    finally:
-                        execution_time = time.time() - starttime
-                        raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-
-                        if sqlparse:
-                            raw_sql = raw_sql[:truncate]
-                            raw_sql = sqlparse.format(raw_sql, reindent_aligned=True, truncate_strings=500)
-
-                        if pygments:
-                            raw_sql = pygments.highlight(
-                                raw_sql,
-                                pygments.lexers.get_lexer_by_name("sql"),
-                                pygments.formatters.TerminalFormatter()
-                            )
-
-                        logger.info(raw_sql)
-                        logger.info("")
-                        logger.info('[Execution time: %.6fs] [Database: %s]' % (execution_time, self.db.alias))
-                        logger.info("")
-
-            utils.CursorDebugWrapper = PrintQueryWrapper
 
         pdb_option = options['pdb']
         ipdb_option = options['ipdb']
@@ -253,11 +214,13 @@ class Command(BaseCommand):
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
             self._raw_ipv6 = True
 
-        self.inner_run(options)
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], logger=logger.info, confprefix="RUNSERVER_PLUS"):
+            self.inner_run(options)
 
     def inner_run(self, options):
         try:
-            from werkzeug import run_simple, DebuggedApplication
+            from werkzeug import run_simple
+            from werkzeug.debug import DebuggedApplication
             from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
 
             # Set colored output
@@ -353,7 +316,7 @@ class Command(BaseCommand):
             webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
-            extra_files.extend(filter(lambda filename: filename.endswith('.mo'), gen_filenames()))
+            extra_files.extend(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
@@ -383,41 +346,39 @@ class Command(BaseCommand):
         )
 
     @classmethod
-    def _create_path_with_extension_from(cls, file_path, extension):
-        dir_path, cert_file = os.path.split(file_path)
-        if not dir_path:
-            dir_path = os.getcwd()
-        file_name, _ = os.path.splitext(cert_file)
-        return os.path.join(dir_path, file_name + "." + extension)
-
-    @classmethod
-    def _determine_path_for_file(cls, current_file, other_file, extension):
-        """ Determine path with proper extension. If path is absent then use path from alternative file.
-        If path is relative than use current working directory.
-        :param current_file: path for current file
-        :param other_file: path for alternative file
-        :param extension: expected extension
-        :return: path of this file.
-        """
-        if current_file is None:
-            return cls._create_path_with_extension_from(other_file, extension)
-        directory, file = os.path.split(current_file)
-        file_name, _ = os.path.splitext(file)
-        if not directory:
-            return cls._create_path_with_extension_from(current_file, extension)
-        else:
-            return os.path.join(directory, file_name + "." + extension)
-
-    @classmethod
     def determine_ssl_files_paths(cls, options):
-        cert_file = cls._determine_path_for_file(options['cert_path'], options['key_file_path'], "crt")
-        key_file = cls._determine_path_for_file(options['key_file_path'], options['cert_path'], "key")
+        key_file_path = options.get('key_file_path') or ""
+        cert_path = options.get('cert_path') or ""
+        cert_file = cls._determine_path_for_file(cert_path, key_file_path, cls.DEFAULT_CRT_EXTENSION)
+        key_file = cls._determine_path_for_file(key_file_path, cert_path, cls.DEFAULT_KEY_EXTENSION)
         return cert_file, key_file
+
+    @classmethod
+    def _determine_path_for_file(cls, current_file_path, other_file_path, expected_extension):
+        directory = cls._get_directory_basing_on_file_paths(current_file_path, other_file_path)
+        file_name = cls._get_file_name(current_file_path) or cls._get_file_name(other_file_path)
+        extension = cls._get_extension(current_file_path) or expected_extension
+        return os.path.join(directory, file_name + extension)
+
+    @classmethod
+    def _get_directory_basing_on_file_paths(cls, current_file_path, other_file_path):
+        return cls._get_directory(current_file_path) or cls._get_directory(other_file_path) or os.getcwd()
+
+    @classmethod
+    def _get_directory(cls, file_path):
+        return os.path.split(file_path)[0]
+
+    @classmethod
+    def _get_file_name(cls, file_path):
+        return os.path.splitext(os.path.split(file_path)[1])[0]
+
+    @classmethod
+    def _get_extension(cls, file_path):
+        return os.path.splitext(file_path)[1]
 
 
 def set_werkzeug_log_color():
-    """Try to set color to the werkzeug log.
-    """
+    """Try to set color to the werkzeug log."""
     from django.core.management.color import color_style
     from werkzeug.serving import WSGIRequestHandler
     from werkzeug._internal import _log

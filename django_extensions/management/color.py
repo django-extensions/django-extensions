@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Sets up the terminal color scheme.
-"""
 
 from django.core.management import color
 from django.utils import termcolors
