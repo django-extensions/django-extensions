@@ -50,12 +50,12 @@ Current Command Extensions
   to send this output to a file yourself.  Great for graphing your models. Pass
   multiple application names to combine all the models into a single dot file.
 
-* *mail_debug* - Starts a mail server which echos out the contents of the email
-  instead of sending it.
-
 * *list_model_info* - Lists out all fields and non-private non-internal methods for models in all installed apps. 
   This is helpful when you don't remember how to refer to a related field or want to quickly identify the fields 
   and methods available in a particular model.
+
+* *mail_debug* - Starts a mail server which echos out the contents of the email
+  instead of sending it.
 
 * :doc:`merge_model_instances` - Merges duplicate model instances by
   reassigning related model references to a chosen primary model instance.
