@@ -450,12 +450,12 @@ for k, m in shells.import_objects({}, no_style()).items():
 
         with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
             shells = (
-                ('notebook', self.get_notebook),
                 ('ptipython', self.get_ptipython),
                 ('ptpython', self.get_ptpython),
                 ('bpython', self.get_bpython),
                 ('ipython', self.get_ipython),
                 ('plain', self.get_plain),
+                ('notebook', self.get_notebook),
                 ('idle', self.get_idle),
             )
             SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
