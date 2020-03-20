@@ -22,6 +22,12 @@ def use_vi_mode():
     return editor.startswith('vi') or editor.endswith('vim')
 
 
+def get_venv_prefix():
+    if (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix) or hasattr(sys, 'real_prefix'):
+        return sys.prefix
+    return None
+
+
 class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
     extra_args = None
@@ -68,6 +74,11 @@ class Command(BaseCommand):
             '--kernel', action='store_true', dest='kernel',
             default=False,
             help='Tells Django to start an IPython Kernel.'
+        )
+        parser.add_argument(
+            '--use-venv-kernel-spec-dir', action='store_true', dest='use_venv_kernel_spec_dir',
+            default=False,
+            help="Use kernelspec directory from virtualenv if available.",
         )
         parser.add_argument(
             '--connection-file', action='store', dest='connection_file',
@@ -225,9 +236,20 @@ class Command(BaseCommand):
 
                 ks.env['PYTHONPATH'] = os.pathsep.join(filter(None, pythonpath))
 
-            kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
+            user_kernel_dir = ksm.user_kernel_dir
+            if getattr(settings, 'SHELL_PLUS_USE_VENV_KERNEL_SPEC_DIR', options['use_venv_kernel_spec_dir']):
+                venv_prefix = get_venv_prefix()
+                if venv_prefix:
+                    for kd in ksm.kernel_dirs:
+                        if kd.startswith(venv_prefix):
+                            user_kernel_dir = kd
+                            break
+
+            kernel_dir = os.path.join(user_kernel_dir, 'django_extensions')
+
             if not os.path.exists(kernel_dir):
                 os.makedirs(kernel_dir)
+
             with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
                 f.write(ks.to_json())
 
