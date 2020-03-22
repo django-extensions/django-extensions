@@ -439,8 +439,10 @@ class SQLDiff(object):
 
             columns = constraint['columns']
             if len(columns) == 1:
-                field = fields[columns[0]]
-                if field.unique:
+                field = fields.get(columns[0])
+                if field is None:
+                    pass
+                elif field.unique:
                     continue
             else:
                 if tuple(columns) in unique_together:
@@ -487,11 +489,11 @@ class SQLDiff(object):
                 continue
 
             columns = constraint['columns']
-            if constraint['unique'] and constraint['index']:
+            field = fields.get(columns[0])
+            if (constraint['unique'] and constraint['index']) or field is None:
                 # unique indexes do not exist in django ? only unique constraints
                 pass
             elif len(columns) == 1:
-                field = fields[columns[0]]
                 if constraint['primary_key'] and field.primary_key:
                     continue
                 if constraint['foreign_key'] and isinstance(field, models.ForeignKey) and field.db_constraint:
