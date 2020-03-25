@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 # Author: OmenApps. http://www.omenapps.com
-import ast
+import inspect
 
 from django.apps import apps as django_apps
+from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import connection
+from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
+
+TAB = "        "
+HALFTAB = "    "
 
 
 class Command(BaseCommand):
@@ -12,29 +18,125 @@ class Command(BaseCommand):
 
     help = "List out the fields and methods for each model"
 
-    def list_model_info(self):
-        model_list = sorted(
-            django_apps.get_models(), key=lambda x: (x._meta.app_label, x._meta.object_name), reverse=False
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--field-class',
+            action='store_true', default=None,
+            help='show class name of field.'
         )
+        parser.add_argument(
+            '--db-type',
+            action='store_true', default=None,
+            help='show database column type of field.'
+        )
+        parser.add_argument(
+            '--signature',
+            action='store_true', default=None,
+            help='show the signature of method.'
+        )
+        parser.add_argument(
+            '--all-methods',
+            action='store_true', default=None,
+            help='list all methods, including private and default.'
+        )
+        parser.add_argument(
+            '--model',
+            nargs="?", type=str, default=None,
+            help='list the details for a single model. Input should be in the form appname.Modelname')
+
+    def list_model_info(self, options):
+
+        style = color_style()
+        INFO = getattr(style, 'INFO', lambda x: x)
+        WARN = getattr(style, 'WARN', lambda x: x)
+        BOLD = getattr(style, 'BOLD', lambda x: x)
+
+        FIELD_CLASS = True if options.get("field_class", None) is not None else getattr(settings, "MODEL_INFO_FIELD_CLASS", False)
+        DB_TYPE = True if options.get("db_type", None) is not None else getattr(settings, "MODEL_INFO_DB_TYPE", False)
+        SIGNATURE = True if options.get("signature", None) is not None else getattr(settings, "MODEL_INFO_SIGNATURE", False)
+        ALL_METHODS = True if options.get("all_methods", None) is not None else getattr(settings, "MODEL_INFO_ALL_METHODS", False)
+        MODEL = options.get("model") if options.get("model", None) is not None else getattr(settings, "MODEL_INFO_MODEL", False)
+
+        default_methods = [
+            "check",
+            "clean",
+            "clean_fields",
+            "date_error_message",
+            "delete",
+            "from_db",
+            "full_clean",
+            "get_absolute_url",
+            "get_deferred_fields",
+            "prepare_database_save",
+            "refresh_from_db",
+            "save",
+            "save_base",
+            "serializable_value",
+            "unique_error_message",
+            "validate_unique",
+        ]
+
+        if MODEL:
+            model_list = [django_apps.get_model(MODEL)]
+        else:
+            model_list = sorted(
+                django_apps.get_models(), key=lambda x: (x._meta.app_label, x._meta.object_name), reverse=False
+            )
         for model in model_list:
-            print("\n\nFields in", model._meta.app_label + "." + model._meta.object_name)
+            self.stdout.write(INFO(model._meta.app_label + "." + model._meta.object_name))
+            self.stdout.write(BOLD(HALFTAB + "Fields:"))
 
-            fields = str([f.name for f in model._meta.get_fields()])
-            field_list = ast.literal_eval(fields)
-            for field in field_list:
-                print("\t", field)
+            for field in model._meta.get_fields():
 
-            print("\nMethods (non-private/internal) in", model._meta.app_label + "." + model._meta.object_name)
+                if FIELD_CLASS:
+                    try:
+                        self.stdout.write(TAB + field.name + " - " + field.__class__.__name__)
+                    except TypeError:
+                        self.stdout.write(WARN(TAB + field.name + " - " + "TypeError (field_class)"))
+                    except AttributeError:
+                        self.stdout.write(WARN(TAB + field.name + " - " + "AttributeError (field_class)"))
+                elif DB_TYPE:
+                    try:
+                        self.stdout.write(TAB + field.name + " - " + field.db_type(connection=connection))
+                    except TypeError:
+                        self.stdout.write(WARN(TAB + field.name + " - " + "TypeError (db_type)"))
+                    except AttributeError:
+                        self.stdout.write(WARN(TAB + field.name + " - " + "AttributeError (db_type)"))
+                else:
+                    self.stdout.write(TAB + field.name)
 
-            for method in dir(model):
+            if ALL_METHODS:
+                self.stdout.write(BOLD(HALFTAB + "Methods (all):"))
+            else:
+                self.stdout.write(BOLD(HALFTAB + "Methods (non-private/internal):"))
+
+            for method_name in dir(model):
                 try:
-                    if callable(getattr(model, method)) and not method.startswith("_") and not method[0].isupper():
-                        print("\t", method + "()")
+                    method = getattr(model, method_name)
+                    if ALL_METHODS:
+                        if callable(method) and not method_name[0].isupper():
+                            if SIGNATURE:
+                                signature = inspect.signature(method)
+                            else:
+                                signature = "()"
+                            self.stdout.write(TAB + method_name + str(signature))
+                    else:
+                        if callable(method) and not method_name.startswith("_") and not method_name in default_methods and not method_name[0].isupper():
+                            if SIGNATURE:
+                                signature = inspect.signature(method)
+                            else:
+                                signature = "()"
+                            self.stdout.write(TAB + method_name + str(signature))
                 except AttributeError:
-                    pass
+                    self.stdout.write(WARN(TAB + method_name + " - AttributeError"))
+                except ValueError:
+                    self.stdout.write(WARN(TAB + method_name + " - ValueError (could not identify signature)"))
 
-        print("\n\nTotal Models in Project: ", len(model_list), "\n")
+            self.stdout.write("\n")
+
+        self.stdout.write(INFO("Total Models Listed: %d" % len(model_list)))
 
     @signalcommand
-    def handle(self, *args, **kwargs):
-        self.list_model_info()
+    def handle(self, *args, **options):
+        self.list_model_info(options)
