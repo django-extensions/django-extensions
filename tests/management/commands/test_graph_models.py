@@ -28,7 +28,7 @@ def assert_looks_like_jsonfile(output):
 
 @contextmanager
 def temp_output_file(extension=""):
-    """Create writeable tempfile in filesystem and ensure it gets deleted"""
+    """Create writable tempfile in filesystem and ensure it gets deleted"""
     tmpfile = tempfile.NamedTemporaryFile(suffix=extension, delete=False)
     tmpfile.close()
     yield tmpfile.name
