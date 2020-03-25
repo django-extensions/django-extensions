@@ -8,7 +8,7 @@ from django_extensions.management.signals import post_command, pre_command
 
 def _make_writeable(filename):
     """
-    Make sure that the file is writeable. Useful if our source is
+    Make sure that the file is writable. Useful if our source is
     read-only.
     """
     import stat
