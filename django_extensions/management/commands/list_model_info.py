@@ -87,23 +87,26 @@ class Command(BaseCommand):
             self.stdout.write(BOLD(HALFTAB + "Fields:"))
 
             for field in model._meta.get_fields():
+                field_info = TAB + field.name + " - "
 
                 if FIELD_CLASS:
                     try:
-                        self.stdout.write(TAB + field.name + " - " + field.__class__.__name__)
+                        field_info += " " + field.__class__.__name__
                     except TypeError:
-                        self.stdout.write(WARN(TAB + field.name + " - " + "TypeError (field_class)"))
+                        field_info += (WARN(" TypeError (field_class)"))
                     except AttributeError:
-                        self.stdout.write(WARN(TAB + field.name + " - " + "AttributeError (field_class)"))
-                elif DB_TYPE:
+                        field_info += (WARN(" AttributeError (field_class)"))
+                if FIELD_CLASS and DB_TYPE:
+                    field_info += ","
+                if DB_TYPE:
                     try:
-                        self.stdout.write(TAB + field.name + " - " + field.db_type(connection=connection))
+                        field_info += " " + field.db_type(connection=connection)
                     except TypeError:
-                        self.stdout.write(WARN(TAB + field.name + " - " + "TypeError (db_type)"))
+                        field_info += (WARN(" TypeError (db_type)"))
                     except AttributeError:
-                        self.stdout.write(WARN(TAB + field.name + " - " + "AttributeError (db_type)"))
-                else:
-                    self.stdout.write(TAB + field.name)
+                        field_info += (WARN(" AttributeError (db_type)"))
+
+                self.stdout.write(field_info)
 
             if ALL_METHODS:
                 self.stdout.write(BOLD(HALFTAB + "Methods (all):"))
@@ -133,9 +136,9 @@ class Command(BaseCommand):
                                 signature = "()"
                             self.stdout.write(TAB + method_name + str(signature))
                 except AttributeError:
-                    self.stdout.write(WARN(TAB + method_name + " - AttributeError"))
+                    self.stdout.write(TAB + method_name + WARN(" - AttributeError"))
                 except ValueError:
-                    self.stdout.write(WARN(TAB + method_name + " - ValueError (could not identify signature)"))
+                    self.stdout.write(TAB + method_name + WARN(" - ValueError (could not identify signature)"))
 
             self.stdout.write("\n")
 

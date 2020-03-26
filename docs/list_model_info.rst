@@ -32,11 +32,6 @@ You can configure the output in a number of ways.
   $ ./manage.py list_model_info --db-type
 
 
-.. tip::
-   Only the field class or the db type can be displayed in the output. If you have selected both options, the field type will be displayed.
-   This applies to any combinations of the associated commandline arguments and settings.
-
-
 ::
 
   # Show each method's signature
