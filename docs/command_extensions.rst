@@ -51,7 +51,7 @@ Current Command Extensions
   multiple application names to combine all the models into a single dot file.
 
 * `list_model_info`_ - Lists out all the fields and methods for models in installed apps.
-  This is helpful when you don't remember how to refer to a related field or want to quickly identify 
+  This is helpful when you don't remember how to refer to a related field or want to quickly identify
   the fields and methods available in a particular model.
 
 * *mail_debug* - Starts a mail server which echos out the contents of the email

@@ -1,5 +1,5 @@
 list_model_info
-=======
+===============
 
 :synopsis: Lists out all the fields and methods for models in installed apps.
 
@@ -7,7 +7,7 @@ Introduction
 ------------
 
 When working with large projects or when returning to a code base after some time away, it can be challenging to remember all of the
-fields and methods associated with your models. This command makes it easy to see 
+fields and methods associated with your models. This command makes it easy to see:
 
  * what fields are available
  * how they are refered to in queries
