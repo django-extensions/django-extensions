@@ -20,43 +20,42 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+        parser.add_argument("--field-class", action="store_true", default=None, help="show class name of field.")
+        parser.add_argument("--db-type", action="store_true", default=None, help="show database column type of field.")
+        parser.add_argument("--signature", action="store_true", default=None, help="show the signature of method.")
         parser.add_argument(
-            '--field-class',
-            action='store_true', default=None,
-            help='show class name of field.'
+            "--all-methods", action="store_true", default=None, help="list all methods, including private and default."
         )
         parser.add_argument(
-            '--db-type',
-            action='store_true', default=None,
-            help='show database column type of field.'
+            "--model",
+            nargs="?",
+            type=str,
+            default=None,
+            help="list the details for a single model. Input should be in the form appname.Modelname",
         )
-        parser.add_argument(
-            '--signature',
-            action='store_true', default=None,
-            help='show the signature of method.'
-        )
-        parser.add_argument(
-            '--all-methods',
-            action='store_true', default=None,
-            help='list all methods, including private and default.'
-        )
-        parser.add_argument(
-            '--model',
-            nargs="?", type=str, default=None,
-            help='list the details for a single model. Input should be in the form appname.Modelname')
 
     def list_model_info(self, options):
 
         style = color_style()
-        INFO = getattr(style, 'INFO', lambda x: x)
-        WARN = getattr(style, 'WARN', lambda x: x)
-        BOLD = getattr(style, 'BOLD', lambda x: x)
+        INFO = getattr(style, "INFO", lambda x: x)
+        WARN = getattr(style, "WARN", lambda x: x)
+        BOLD = getattr(style, "BOLD", lambda x: x)
 
-        FIELD_CLASS = True if options.get("field_class", None) is not None else getattr(settings, "MODEL_INFO_FIELD_CLASS", False)
+        FIELD_CLASS = (
+            True if options.get("field_class", None) is not None else getattr(settings, "MODEL_INFO_FIELD_CLASS", False)
+        )
         DB_TYPE = True if options.get("db_type", None) is not None else getattr(settings, "MODEL_INFO_DB_TYPE", False)
-        SIGNATURE = True if options.get("signature", None) is not None else getattr(settings, "MODEL_INFO_SIGNATURE", False)
-        ALL_METHODS = True if options.get("all_methods", None) is not None else getattr(settings, "MODEL_INFO_ALL_METHODS", False)
-        MODEL = options.get("model") if options.get("model", None) is not None else getattr(settings, "MODEL_INFO_MODEL", False)
+        SIGNATURE = (
+            True if options.get("signature", None) is not None else getattr(settings, "MODEL_INFO_SIGNATURE", False)
+        )
+        ALL_METHODS = (
+            True if options.get("all_methods", None) is not None else getattr(settings, "MODEL_INFO_ALL_METHODS", False)
+        )
+        MODEL = (
+            options.get("model")
+            if options.get("model", None) is not None
+            else getattr(settings, "MODEL_INFO_MODEL", False)
+        )
 
         default_methods = [
             "check",
@@ -122,7 +121,12 @@ class Command(BaseCommand):
                                 signature = "()"
                             self.stdout.write(TAB + method_name + str(signature))
                     else:
-                        if callable(method) and not method_name.startswith("_") and not method_name in default_methods and not method_name[0].isupper():
+                        if (
+                            callable(method)
+                            and not method_name.startswith("_")
+                            and method_name not in default_methods
+                            and not method_name[0].isupper()
+                        ):
                             if SIGNATURE:
                                 signature = inspect.signature(method)
                             else:
