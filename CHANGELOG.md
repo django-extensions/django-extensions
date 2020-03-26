@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.2.9
+-----
+
+Changes:
+ - Fix: shell_plus, move notebook down the list of prefered shells
+ - Fix: sqldiff, fix KeyError when detecting missing (unique) indexes
+ - Improvement: encrypted fields, make it harder to use deprecated keyczar fields
+ - Locale: Removed empty localizations
+
+
 2.2.8
 -----
 
