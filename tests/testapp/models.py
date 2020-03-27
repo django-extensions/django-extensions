@@ -483,8 +483,8 @@ class MultipleFieldsAndMethods(models.Model):
         pass
 
     def has_args_kwargs(self, *args, **kwargs):
-        pass    
-    
+        pass
+
     def has_defaults(self, one=1, two='Two', true=True, false=False, none=None):
         pass
 
