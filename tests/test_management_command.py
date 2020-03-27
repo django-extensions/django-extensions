@@ -304,7 +304,7 @@ class ListModelInfoTests(TestCase):
         out = StringIO()
         call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--db-type', stdout=out)
         self.output = out.getvalue()
-        self.assertIn('id - integer', self.output)
+        self.assertIn('id - serial', self.output)
         self.assertIn('char_field - varchar(10)', self.output)
         self.assertIn('integer_field - integer', self.output)
         self.assertIn('foreign_key_field - integer', self.output)
