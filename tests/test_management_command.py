@@ -262,6 +262,63 @@ class ShowUrlsTests(TestCase):
             self.assertNotIn('\x1b', self.output)
 
 
+class ListModelInfoTests(TestCase):
+    """
+    Tests for the `list_model_info` management command.
+    """
+    def test_plain(self):
+        out = StringIO()
+        call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', stdout=out)
+        self.output = out.getvalue()
+        self.assertIn('id', self.output)
+        self.assertIn('char_field', self.output)
+        self.assertIn('integer_field', self.output)
+        self.assertIn('foreign_key_field', self.output)
+        self.assertIn('has_self_only()', self.output)
+        self.assertIn('has_one_extra_argument()', self.output)
+        self.assertIn('has_two_extra_arguments()', self.output)
+        self.assertIn('has_args_kwargs()', self.output)
+        self.assertIn('has_defaults()', self.output)
+        self.assertNotIn('__class__()', self.output)
+        self.assertNotIn('validate_unique()', self.output)
+
+    def test_all(self):
+        out = StringIO()
+        call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--all', stdout=out)
+        self.output = out.getvalue()
+        self.assertIn('id', self.output)
+        self.assertIn('__class__()', self.output)
+        self.assertIn('validate_unique()', self.output)
+
+    def test_signature(self):
+        out = StringIO()
+        call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--signature', stdout=out)
+        self.output = out.getvalue()
+        self.assertIn('has_self_only(self)', self.output)
+        self.assertIn('has_one_extra_argument(self, arg_one)', self.output)
+        self.assertIn('has_two_extra_arguments(self, arg_one, arg_two)', self.output)
+        self.assertIn('has_args_kwargs(self, *args, **kwargs)', self.output)
+        self.assertIn("has_defaults(self, one=1, two='Two', true=True, false=False, none=None)", self.output)
+
+    def test_db_type(self):
+        out = StringIO()
+        call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--db-type', stdout=out)
+        self.output = out.getvalue()
+        self.assertIn('id - integer', self.output)
+        self.assertIn('char_field - varchar(10)', self.output)
+        self.assertIn('integer_field - integer', self.output)
+        self.assertIn('foreign_key_field - integer', self.output)
+
+    def test_field_class(self):
+        out = StringIO()
+        call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--field-class', stdout=out)
+        self.output = out.getvalue()
+        self.assertIn('id - AutoField', self.output)
+        self.assertIn('char_field - CharField', self.output)
+        self.assertIn('integer_field - IntegerField', self.output)
+        self.assertIn('foreign_key_field - ForeignKey', self.output)
+
+
 class MergeModelInstancesTests(TestCase):
     """
     Tests for the `merge_model_instances` management command.

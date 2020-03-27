@@ -87,7 +87,7 @@ class Command(BaseCommand):
             self.stdout.write(BOLD(HALFTAB + "Fields:"))
 
             for field in model._meta.get_fields():
-                field_info = TAB + field.name + " - "
+                field_info = TAB + field.name + " -"
 
                 if FIELD_CLASS:
                     try:

@@ -466,3 +466,27 @@ class HasOwnerModel(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class MultipleFieldsAndMethods(models.Model):
+    char_field = models.CharField(max_length=10)
+    integer_field = models.IntegerField()
+    foreign_key_field = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    def has_self_only(self):
+        pass
+
+    def has_one_extra_argument(self, arg_one):
+        pass
+
+    def has_two_extra_arguments(self, arg_one, arg_two):
+        pass
+
+    def has_args_kwargs(self, *args, **kwargs):
+        pass    
+    
+    def has_defaults(self, one=1, two='Two', true=True, false=False, none=None):
+        pass
+
+    class Meta:
+        app_label = 'django_extensions'
