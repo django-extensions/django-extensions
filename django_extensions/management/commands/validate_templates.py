@@ -54,7 +54,7 @@ class Command(BaseCommand):
             self.ignores = getattr(settings, 'VALIDATE_TEMPLATES_IGNORES')
 
         style = color_style()
-        template_dirs = set(get_template_setting('DIRS'))
+        template_dirs = set(get_template_setting('DIRS', []))
         template_dirs |= set(options['includes'])
         template_dirs |= set(getattr(settings, 'VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS', []))
 
