@@ -109,6 +109,6 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
         if postgresql_base:
             postgresql_base.CursorDebugWrapper = _PostgreSQLCursorDebugWrapper
 
-        if connection:
+        if connections:
             for connection_name in connections:
                 connections[connection_name].force_debug_cursor = _force_debug_cursor[connection_name]
