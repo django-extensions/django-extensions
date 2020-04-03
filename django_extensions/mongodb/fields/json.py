@@ -38,7 +38,10 @@ def dumps(value):
 
 
 def loads(txt):
-    value = json.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
+    if six.PY2:
+        value = json.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
+    else:
+        value = json.loads(txt, parse_float=Decimal)
     assert isinstance(value, dict)
     return value
 

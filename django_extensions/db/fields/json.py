@@ -26,11 +26,10 @@ def dumps(value):
 
 
 def loads(txt):
-    value = json.loads(
-        txt,
-        encoding=settings.DEFAULT_CHARSET
-    )
-    return value
+    if six.PY2:
+        return json.loads(txt, encoding=settings.DEFAULT_CHARSET)
+    else:
+        return json.loads(txt)
 
 
 class JSONDict(dict):
