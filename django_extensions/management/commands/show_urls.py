@@ -2,6 +2,7 @@
 import functools
 import json
 import re
+import sys
 
 import django
 from django.conf import settings
@@ -16,14 +17,18 @@ from django_extensions.management.utils import signalcommand
 if django.VERSION >= (2, 0):
     from django.urls import URLPattern, URLResolver  # type: ignore
 
+
     class RegexURLPattern:  # type: ignore
         pass
+
 
     class RegexURLResolver:  # type: ignore
         pass
 
+
     class LocaleRegexURLResolver:  # type: ignore
         pass
+
 
     def describe_pattern(p):
         return str(p.pattern)
@@ -33,11 +38,14 @@ else:
     except ImportError:
         from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
 
+
     class URLPattern:  # type: ignore
         pass
 
+
     class URLResolver:  # type: ignore
         pass
+
 
     def describe_pattern(p):
         return p.regex.pattern
@@ -57,6 +65,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+
+        parser.add_argument("app_label", nargs='?', type=str,
+                            help="App label of an application to display the urls")
+
         parser.add_argument(
             "--unsorted", "-u", action="store_true", dest="unsorted",
             help="Show urls unsorted but same order as found in url patterns"
@@ -87,11 +99,19 @@ class Command(BaseCommand):
             translation.activate(language)
             self.LANGUAGES = [(code, name) for code, name in getattr(settings, 'LANGUAGES', []) if code == language]
         else:
-            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
+            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None),))
 
         decorator = options['decorator']
         if not decorator:
             decorator = ['login_required']
+
+        if options['app_label'] and options['app_label'] not in settings.INSTALLED_APPS:
+            raise CommandError(
+                "App label '%s' does not exist. Options: %s" % (
+                    options['app_label'],
+                    ", ".join(settings.INSTALLED_APPS)
+                )
+            )
 
         format_style = options['format_style']
         if format_style not in FMTR:
@@ -122,6 +142,9 @@ class Command(BaseCommand):
 
         view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
         for (func, regex, url_name) in view_functions:
+            if options['app_label'] and sys.modules[func.__module__].__package__ != options['app_label']:
+                continue
+
             if hasattr(func, '__globals__'):
                 func_globals = func.__globals__
             elif hasattr(func, 'func_globals'):
@@ -174,7 +197,8 @@ class Command(BaseCommand):
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             table_views = []
 
-            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
+            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'),
+                      style.MODULE_NAME('Decorator'))
             table_views.append(
                 ' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header))
             )
@@ -228,7 +252,8 @@ class Command(BaseCommand):
                 if isinstance(p, LocaleRegexURLResolver):
                     for language in self.LANGUAGES:
                         with translation.override(language[0]):
-                            views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
+                            views.extend(self.extract_views_from_urlpatterns(
+                                patterns, base + pattern, namespace=_namespace))
                 else:
                     views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
             elif hasattr(p, '_get_callback'):
@@ -241,7 +266,8 @@ class Command(BaseCommand):
                     patterns = p.url_patterns
                 except ImportError:
                     continue
-                views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
+                views.extend(self.extract_views_from_urlpatterns(
+                    patterns, base + describe_pattern(p), namespace=namespace))
             else:
                 raise TypeError("%s does not appear to be a urlpattern object" % p)
         return views

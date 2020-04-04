@@ -49,6 +49,16 @@ class ShowUrlsExceptionsTests(TestCase):
 
         self.assertTrue(m_traceback.print_exc.called)
 
+    def test_should_raise_CommandError_when_invalid_app_label_passed(self):
+        err_msg = "App label 'random_app' does not exist."
+        "Options: django.contrib.auth, django.contrib.contenttypes, django.contrib.admin, django.contrib.sessions,"
+        "django.contrib.staticfiles, django.contrib.messages, django.contrib.sites, tests.collisions, tests.testapp,"
+        "tests.testapp_with_no_models_file, tests.testapp_with_appconfig.apps.TestappWithAppConfigConfig,"
+        "django_extensions"
+
+        with six.assertRaisesRegex(self, CommandError, err_msg):
+            call_command('show_urls', 'random_app')
+
 
 @override_settings(ROOT_URLCONF='tests.management.commands.test_show_urls')
 class ShowUrlsTests(TestCase):
@@ -59,7 +69,9 @@ class ShowUrlsTests(TestCase):
 
         lines = m_stdout.getvalue().splitlines()
         self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[0])
-        self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
+        self.assertIn(
+            '/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view',
+            lines[1])
         self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[2])
 
     @patch('sys.stdout', new_callable=StringIO)
@@ -118,3 +130,16 @@ class ShowUrlsTests(TestCase):
         self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
         self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
         self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])
+
+
+@override_settings(ROOT_URLCONF='tests.testapp.urls')
+class ShowUrlsAppTests(TestCase):
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_show_only_specific_app_urls(self, m_stdout):
+        call_command('show_urls', 'django.contrib.auth')
+
+        lines = m_stdout.getvalue().splitlines()
+        self.assertEqual('/admin/auth/user/<id>/password/\tdjango.contrib.auth.admin.user_change_password\tadmin:auth_user_password_change', lines[0])
+        self.assertEqual('/admin/auth/user/add/\tdjango.contrib.auth.admin.add_view\tadmin:auth_user_add', lines[1])
+        self.assertEqual('/login/\tdjango.contrib.auth.views.LoginView\tlogin', lines[2])
