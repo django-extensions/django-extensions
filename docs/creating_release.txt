@@ -37,7 +37,7 @@ Prepare the release tarball::
 
 Upload release to pypi::
 
-  $ twine upload -s dist/*
+  $ twine upload -i key-identity -s dist/*
 
 Bumb version number to new in-development pre version::
 
