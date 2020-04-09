@@ -130,8 +130,6 @@ class Command(BaseCommand):
         return super(Command, self).run_from_argv(argv)
 
     def get_ipython_arguments(self, options):
-        if self.extra_args:
-            return self.extra_args
         ipython_args = 'IPYTHON_ARGUMENTS'
         arguments = getattr(settings, ipython_args, [])
         if not arguments:
@@ -139,8 +137,6 @@ class Command(BaseCommand):
         return arguments
 
     def get_notebook_arguments(self, options):
-        if self.extra_args:
-            return self.extra_args
         notebook_args = 'NOTEBOOK_ARGUMENTS'
         arguments = getattr(settings, notebook_args, [])
         if not arguments:
@@ -219,13 +215,25 @@ class Command(BaseCommand):
     def run_notebookapp(self, app, options, use_kernel_specs=True):
         no_browser = options['no_browser']
 
+        if self.extra_args:
+            # if another '--' is found split the arguments notebook, ipython
+            if '--' in self.extra_args:
+                idx = self.extra_args.index('--')
+                notebook_arguments = self.extra_args[:idx]
+                ipython_arguments = self.extra_args[idx + 1:]
+            # otherwise pass the arguments to the notebook
+            else:
+                notebook_arguments = self.extra_args
+                ipython_arguments = []
+        else:
+            notebook_arguments = self.get_notebook_arguments(options)
+            ipython_arguments = self.get_ipython_arguments(options)
+
         # Treat IPYTHON_ARGUMENTS from settings
-        ipython_arguments = self.get_ipython_arguments(options)
         if 'django_extensions.management.notebook_extension' not in ipython_arguments:
             ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
 
         # Treat NOTEBOOK_ARGUMENTS from settings
-        notebook_arguments = self.get_notebook_arguments(options)
         if no_browser and '--no-browser' not in notebook_arguments:
             notebook_arguments.append('--no-browser')
         if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
@@ -371,7 +379,7 @@ class Command(BaseCommand):
 
             def run_ipython():
                 imported_objects = self.get_imported_objects(options)
-                ipython_arguments = self.get_ipython_arguments(options)
+                ipython_arguments = self.extra_args or self.get_ipython_arguments(options)
                 start_ipython(argv=ipython_arguments, user_ns=imported_objects)
             return run_ipython
         except ImportError:
