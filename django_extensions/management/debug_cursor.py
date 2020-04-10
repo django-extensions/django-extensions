@@ -75,10 +75,12 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
             pass
 
         try:
-            from django.db import connection
-            _force_debug_cursor = connection.force_debug_cursor
+            from django.db import connections
+            _force_debug_cursor = {}
+            for connection_name in connections:
+                _force_debug_cursor[connection_name] = connections[connection_name].force_debug_cursor
         except Exception:
-            connection = None
+            connections = None
 
         utils.CursorDebugWrapper = PrintCursorQueryWrapper
 
@@ -96,8 +98,9 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
         if postgresql_base:
             postgresql_base.CursorDebugWrapper = PostgreSQLPrintCursorDebugWrapper
 
-        if connection:
-            connection.force_debug_cursor = True
+        if connections:
+            for connection_name in connections:
+                connections[connection_name].force_debug_cursor = True
 
         yield
 
@@ -106,5 +109,6 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
         if postgresql_base:
             postgresql_base.CursorDebugWrapper = _PostgreSQLCursorDebugWrapper
 
-        if connection:
-            connection.force_debug_cursor = _force_debug_cursor
+        if connections:
+            for connection_name in connections:
+                connections[connection_name].force_debug_cursor = _force_debug_cursor[connection_name]
