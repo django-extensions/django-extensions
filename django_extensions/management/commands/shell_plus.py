@@ -65,6 +65,11 @@ class Command(BaseCommand):
             help='Tells Django to use IPython Notebook.'
         )
         parser.add_argument(
+            '--lab', action='store_true', dest='lab',
+            default=False,
+            help='Tells Django to use JupyterLab Notebook.'
+        )
+        parser.add_argument(
             '--kernel', action='store_true', dest='kernel',
             default=False,
             help='Tells Django to start an IPython Kernel.'
@@ -211,6 +216,52 @@ class Command(BaseCommand):
 
         return {'django_extensions': ks}
 
+    def run_notebookapp(self, app, options, use_kernel_specs=True):
+        no_browser = options['no_browser']
+
+        # Treat IPYTHON_ARGUMENTS from settings
+        ipython_arguments = self.get_ipython_arguments(options)
+        if 'django_extensions.management.notebook_extension' not in ipython_arguments:
+            ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
+
+        # Treat NOTEBOOK_ARGUMENTS from settings
+        notebook_arguments = self.get_notebook_arguments(options)
+        if no_browser and '--no-browser' not in notebook_arguments:
+            notebook_arguments.append('--no-browser')
+        if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
+            notebook_arguments.extend(['--notebook-dir', '.'])
+
+        # IPython < 3 passes through kernel args from notebook CLI
+        if not use_kernel_specs:
+            notebook_arguments.extend(ipython_arguments)
+
+        app.initialize(notebook_arguments)
+
+        # IPython >= 3 uses kernelspecs to specify kernel CLI args
+        if use_kernel_specs:
+            ksm = app.kernel_spec_manager
+            for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
+                roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
+                success = False
+                for root in roots:
+                    kernel_dir = os.path.join(root, kid)
+                    try:
+                        if not os.path.exists(kernel_dir):
+                            os.makedirs(kernel_dir)
+
+                        with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
+                            f.write(ks.to_json())
+
+                        success = True
+                        break
+                    except OSError:
+                        continue
+
+                if not success:
+                    raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
+
+        app.start()
+
     def get_notebook(self, options):
         try:
             from IPython import release
@@ -232,54 +283,25 @@ class Command(BaseCommand):
                 except ImportError:
                     return traceback.format_exc()
 
-        no_browser = options['no_browser']
+        use_kernel_specs = release.version_info[0] >= 3
 
         def run_notebook():
             app = NotebookApp.instance()
+            self.run_notebookapp(app, options, use_kernel_specs)
 
-            # Treat IPYTHON_ARGUMENTS from settings
-            ipython_arguments = self.get_ipython_arguments(options)
-            if 'django_extensions.management.notebook_extension' not in ipython_arguments:
-                ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
-
-            # Treat NOTEBOOK_ARGUMENTS from settings
-            notebook_arguments = self.get_notebook_arguments(options)
-            if no_browser and '--no-browser' not in notebook_arguments:
-                notebook_arguments.append('--no-browser')
-            if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
-                notebook_arguments.extend(['--notebook-dir', '.'])
-
-            # IPython < 3 passes through kernel args from notebook CLI
-            if release.version_info[0] < 3:
-                notebook_arguments.extend(ipython_arguments)
-
-            app.initialize(notebook_arguments)
-
-            # IPython >= 3 uses kernelspecs to specify kernel CLI args
-            if release.version_info[0] >= 3:
-                ksm = app.kernel_spec_manager
-                for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
-                    roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-                    success = False
-                    for root in roots:
-                        kernel_dir = os.path.join(root, kid)
-                        try:
-                            if not os.path.exists(kernel_dir):
-                                os.makedirs(kernel_dir)
-
-                            with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
-                                f.write(ks.to_json())
-
-                            success = True
-                            break
-                        except OSError:
-                            continue
-
-                    if not success:
-                        raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
-
-            app.start()
         return run_notebook
+
+    def get_jupyterlab(self, options):
+        try:
+            from jupyterlab.labapp import LabApp
+        except ImportError:
+            return traceback.format_exc()
+
+        def run_jupyterlab():
+            app = LabApp.instance()
+            self.run_notebookapp(app, options)
+
+        return run_jupyterlab
 
     def get_plain(self, options):
         # Using normal Python shell
@@ -460,6 +482,7 @@ for k, m in shells.import_objects({}, no_style()).items():
     def handle(self, *args, **options):
         use_kernel = options['kernel']
         use_notebook = options['notebook']
+        use_jupyterlab = options['lab']
         use_ipython = options['ipython']
         use_bpython = options['bpython']
         use_plain = options['plain']
@@ -477,6 +500,7 @@ for k, m in shells.import_objects({}, no_style()).items():
                 ('ipython', self.get_ipython),
                 ('plain', self.get_plain),
                 ('notebook', self.get_notebook),
+                ('lab', self.get_jupyterlab),
                 ('idle', self.get_idle),
             )
             SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
@@ -490,6 +514,9 @@ for k, m in shells.import_objects({}, no_style()).items():
             elif use_notebook:
                 shell = self.get_notebook(options)
                 shell_name = "IPython Notebook"
+            elif use_jupyterlab:
+                shell = self.get_jupyterlab(options)
+                shell_name = "JupyterLab Notebook"
             elif use_plain:
                 shell = self.get_plain(options)
                 shell_name = "plain"
