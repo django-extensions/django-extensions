@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 import os
 import six
 import sys
@@ -22,53 +23,48 @@ def use_vi_mode():
     return editor.startswith('vi') or editor.endswith('vim')
 
 
+def runner(flags, name, help=None):
+    """
+    Decorates methods with information about the application they are starting
+
+    :param flags: The flags used to start this runner via the ArgumentParser.
+    :param name: The name of this runner for the help text for the ArgumentParser.
+    :param help: The optional help for the ArgumentParser if the dynamically generated help is not sufficient.
+    """
+
+    def decorator(fn):
+        fn.runner_flags = flags
+        fn.runner_name = name
+        fn.runner_help = help
+
+        return fn
+
+    return decorator
+
+
 class Command(BaseCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
     extra_args = None
     tests_mode = False
 
+    def __init__(self):
+        super(Command, self).__init__()
+        self.runners = [member for name, member in inspect.getmembers(self)
+                        if hasattr(member, 'runner_flags')]
+
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
-        parser.add_argument(
-            '--plain', action='store_true', dest='plain',
-            default=False,
-            help='Tells Django to use plain Python, not BPython nor IPython.'
-        )
-        parser.add_argument(
-            '--idle', action='store_true', dest='idle',
-            default=False,
-            help='Tells Django to use Idle.'
-        )
-        parser.add_argument(
-            '--bpython', action='store_true', dest='bpython',
-            default=False,
-            help='Tells Django to use BPython, not IPython.'
-        )
-        parser.add_argument(
-            '--ptpython', action='store_true', dest='ptpython',
-            default=False,
-            help='Tells Django to use PTPython, not IPython.'
-        )
-        parser.add_argument(
-            '--ptipython', action='store_true', dest='ptipython',
-            default=False,
-            help='Tells Django to use PT-IPython, not IPython.'
-        )
-        parser.add_argument(
-            '--ipython', action='store_true', dest='ipython',
-            default=False,
-            help='Tells Django to use IPython, not BPython.'
-        )
-        parser.add_argument(
-            '--notebook', action='store_true', dest='notebook',
-            default=False,
-            help='Tells Django to use IPython Notebook.'
-        )
-        parser.add_argument(
-            '--kernel', action='store_true', dest='kernel',
-            default=False,
-            help='Tells Django to start an IPython Kernel.'
-        )
+
+        group = parser.add_mutually_exclusive_group()
+        for runner in self.runners:
+            if runner.runner_help:
+                help = runner.runner_help
+            else:
+                help = 'Tells Django to use %s.' % runner.runner_name
+
+            group.add_argument(
+                *runner.runner_flags, action='store_const', dest='runner', const=runner, help=help)
+
         parser.add_argument(
             '--connection-file', action='store', dest='connection_file',
             help='Specifies the connection file to use if using the --kernel option'
@@ -149,6 +145,7 @@ class Command(BaseCommand):
             self.tests_imported_objects = imported_objects
         return imported_objects
 
+    @runner(flags=['--kernel'], name='IPython Kernel')
     def get_kernel(self, options):
         try:
             from IPython import release
@@ -211,6 +208,53 @@ class Command(BaseCommand):
 
         return {'django_extensions': ks}
 
+    def run_notebookapp(self, app, options, use_kernel_specs=True):
+        no_browser = options['no_browser']
+
+        # Treat IPYTHON_ARGUMENTS from settings
+        ipython_arguments = self.get_ipython_arguments(options)
+        if 'django_extensions.management.notebook_extension' not in ipython_arguments:
+            ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
+
+        # Treat NOTEBOOK_ARGUMENTS from settings
+        notebook_arguments = self.get_notebook_arguments(options)
+        if no_browser and '--no-browser' not in notebook_arguments:
+            notebook_arguments.append('--no-browser')
+        if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
+            notebook_arguments.extend(['--notebook-dir', '.'])
+
+        # IPython < 3 passes through kernel args from notebook CLI
+        if not use_kernel_specs:
+            notebook_arguments.extend(ipython_arguments)
+
+        app.initialize(notebook_arguments)
+
+        # IPython >= 3 uses kernelspecs to specify kernel CLI args
+        if use_kernel_specs:
+            ksm = app.kernel_spec_manager
+            for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
+                roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
+                success = False
+                for root in roots:
+                    kernel_dir = os.path.join(root, kid)
+                    try:
+                        if not os.path.exists(kernel_dir):
+                            os.makedirs(kernel_dir)
+
+                        with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
+                            f.write(ks.to_json())
+
+                        success = True
+                        break
+                    except OSError:
+                        continue
+
+                if not success:
+                    raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
+
+        app.start()
+
+    @runner(flags=['--notebook'], name='IPython Notebook')
     def get_notebook(self, options):
         try:
             from IPython import release
@@ -232,55 +276,28 @@ class Command(BaseCommand):
                 except ImportError:
                     return traceback.format_exc()
 
-        no_browser = options['no_browser']
+        use_kernel_specs = release.version_info[0] >= 3
 
         def run_notebook():
             app = NotebookApp.instance()
+            self.run_notebookapp(app, options, use_kernel_specs)
 
-            # Treat IPYTHON_ARGUMENTS from settings
-            ipython_arguments = self.get_ipython_arguments(options)
-            if 'django_extensions.management.notebook_extension' not in ipython_arguments:
-                ipython_arguments.extend(['--ext', 'django_extensions.management.notebook_extension'])
-
-            # Treat NOTEBOOK_ARGUMENTS from settings
-            notebook_arguments = self.get_notebook_arguments(options)
-            if no_browser and '--no-browser' not in notebook_arguments:
-                notebook_arguments.append('--no-browser')
-            if '--notebook-dir' not in notebook_arguments and not any(e.startswith('--notebook-dir=') for e in notebook_arguments):
-                notebook_arguments.extend(['--notebook-dir', '.'])
-
-            # IPython < 3 passes through kernel args from notebook CLI
-            if release.version_info[0] < 3:
-                notebook_arguments.extend(ipython_arguments)
-
-            app.initialize(notebook_arguments)
-
-            # IPython >= 3 uses kernelspecs to specify kernel CLI args
-            if release.version_info[0] >= 3:
-                ksm = app.kernel_spec_manager
-                for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
-                    roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-                    success = False
-                    for root in roots:
-                        kernel_dir = os.path.join(root, kid)
-                        try:
-                            if not os.path.exists(kernel_dir):
-                                os.makedirs(kernel_dir)
-
-                            with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
-                                f.write(ks.to_json())
-
-                            success = True
-                            break
-                        except OSError:
-                            continue
-
-                    if not success:
-                        raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
-
-            app.start()
         return run_notebook
 
+    @runner(flags=['--lab'], name='JupyterLab Notebook')
+    def get_jupyterlab(self, options):
+        try:
+            from jupyterlab.labapp import LabApp
+        except ImportError:
+            return traceback.format_exc()
+
+        def run_jupyterlab():
+            app = LabApp.instance()
+            self.run_notebookapp(app, options)
+
+        return run_jupyterlab
+
+    @runner(flags=['--plain'], name='plain Python')
     def get_plain(self, options):
         # Using normal Python shell
         import code
@@ -329,6 +346,7 @@ class Command(BaseCommand):
             code.interact(local=imported_objects)
         return run_plain
 
+    @runner(flags=['--bpython'], name='BPython')
     def get_bpython(self, options):
         try:
             from bpython import embed
@@ -343,6 +361,7 @@ class Command(BaseCommand):
             embed(imported_objects, **kwargs)
         return run_bpython
 
+    @runner(flags=['--ipython'], name='IPython')
     def get_ipython(self, options):
         try:
             from IPython import start_ipython
@@ -369,6 +388,7 @@ class Command(BaseCommand):
                 shell.mainloop()
             return run_ipython
 
+    @runner(flags=['--ptpython'], name='PTPython')
     def get_ptpython(self, options):
         try:
             from ptpython.repl import embed, run_config
@@ -386,6 +406,7 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptpython
 
+    @runner(flags=['--ptipython'], name='PT-IPython')
     def get_ptipython(self, options):
         try:
             from ptpython.repl import run_config
@@ -405,6 +426,7 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptipython
 
+    @runner(flags=['--idle'], name='Idle')
     def get_idle(self, options):
         from idlelib.pyshell import main
 
@@ -458,74 +480,66 @@ for k, m in shells.import_objects({}, no_style()).items():
 
     @signalcommand
     def handle(self, *args, **options):
-        use_kernel = options['kernel']
-        use_notebook = options['notebook']
-        use_ipython = options['ipython']
-        use_bpython = options['bpython']
-        use_plain = options['plain']
-        use_idle = options['idle']
-        use_ptpython = options['ptpython']
-        use_ptipython = options['ptipython']
         verbosity = options["verbosity"]
+        get_runner = options['runner']
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
 
         with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
-            shells = (
-                ('ptipython', self.get_ptipython),
-                ('ptpython', self.get_ptpython),
-                ('bpython', self.get_bpython),
-                ('ipython', self.get_ipython),
-                ('plain', self.get_plain),
-                ('notebook', self.get_notebook),
-                ('idle', self.get_idle),
-            )
             SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
-            shell = None
-            shell_name = "any"
+            def get_runner_by_flag(flag):
+                for runner in self.runners:
+                    if flag in runner.runner_flags:
+                        return runner
+
             self.set_application_name(options)
-            if use_kernel:
-                shell = self.get_kernel(options)
-                shell_name = "IPython Kernel"
-            elif use_notebook:
-                shell = self.get_notebook(options)
-                shell_name = "IPython Notebook"
-            elif use_plain:
-                shell = self.get_plain(options)
-                shell_name = "plain"
-            elif use_ipython:
-                shell = self.get_ipython(options)
-                shell_name = "IPython"
-            elif use_bpython:
-                shell = self.get_bpython(options)
-                shell_name = "BPython"
-            elif use_ptpython:
-                shell = self.get_ptpython(options)
-                shell_name = "ptpython"
-            elif use_ptipython:
-                shell = self.get_ptipython(options)
-                shell_name = "ptipython"
-            elif use_idle:
-                shell = self.get_idle(options)
-                shell_name = "idle"
-            elif SETTINGS_SHELL_PLUS:
-                shell_name = SETTINGS_SHELL_PLUS
-                shell = dict(shells)[shell_name](options)
+
+            # use SETTINGS_SHELL_PLUS if the command line argument is missing
+            if not get_runner and SETTINGS_SHELL_PLUS:
+                get_runner = get_runner_by_flag('--%s' % SETTINGS_SHELL_PLUS)
+
+            if get_runner:
+                runner = get_runner(options)
+                runner_name = get_runner.runner_name
+
             else:
-                for shell_name, func in shells:
+                def try_runner(get_runner):
+                    runner_name = get_runner.runner_name
                     if verbosity > 2:
-                        print(self.style.NOTICE("Trying shell: %s" % shell_name))
-                    shell = func(options)
-                    if callable(shell):
+                        print(self.style.NOTICE("Trying: %s" % runner_name))
+
+                    runner = get_runner(options)
+                    if callable(runner):
                         if verbosity > 1:
-                            print(self.style.NOTICE("Using shell: %s" % shell_name))
+                            print(self.style.NOTICE("Using: %s" % runner_name))
+                            return runner
+
+                runner = None
+                tried_runners = set()
+
+                # try the runners that are least unexpected (normal shell runners)
+                preferred_runners = ['ptipython', 'ptpython', 'bpython', 'ipython', 'plain']
+                for flag_suffix in preferred_runners:
+                    get_runner = get_runner_by_flag('--%s' % flag_suffix)
+                    tried_runners.add(get_runner)
+                    runner = try_runner(get_runner)
+                    if runner:
+                        runner_name = get_runner.runner_name
                         break
 
-            if not callable(shell):
-                if shell:
-                    print(shell)
-                print(self.style.ERROR("Could not load %s interactive Python environment." % shell_name))
-                return
+                # try any remaining runners if needed
+                if not runner:
+                    for get_runner in self.runners:
+                        if get_runner not in tried_runners:
+                            runner = try_runner(get_runner)
+                            if runner:
+                                runner_name = get_runner.runner_name
+                                break
+
+            if not callable(runner):
+                if runner:
+                    print(runner)
+                raise CommandError("Could not load %s." % runner_name)
 
             if self.tests_mode:
                 return 130
@@ -535,4 +549,4 @@ for k, m in shells.import_objects({}, no_style()).items():
                 exec(options['command'], {}, imported_objects)
                 return
 
-            shell()
+            runner()
