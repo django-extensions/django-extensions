@@ -9,8 +9,8 @@ Introduction
 
 Django command similar to 'loaddata' but also deletes.
 After 'syncdata' has run, the database will have the same data as the fixture - anything
-missing will of been added, anything different will of been updated,
-and anything extra will of been deleted.
+missing will be added, anything different will be updated,
+and anything extra will be deleted.
 
 Usage
 -----
