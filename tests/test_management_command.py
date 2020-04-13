@@ -4,7 +4,10 @@ import six
 import mock
 import logging
 import importlib
+import pytest
+import sys
 
+from django.conf import settings
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
 from six import StringIO
@@ -290,6 +293,7 @@ class ListModelInfoTests(TestCase):
         self.assertIn('__class__()', self.output)
         self.assertIn('validate_unique()', self.output)
 
+    @pytest.mark.skipif(sys.version_info < (3, 3), reason="inspect.Signature requires python3.3 or higher")
     def test_signature(self):
         out = StringIO()
         call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--signature', stdout=out)
@@ -301,10 +305,15 @@ class ListModelInfoTests(TestCase):
         self.assertIn("has_defaults(self, one=1, two='Two', true=True, false=False, none=None)", self.output)
 
     def test_db_type(self):
+        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+            id_type = 'serial'
+        else:
+            id_type = 'integer'
+
         out = StringIO()
         call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--db-type', stdout=out)
         self.output = out.getvalue()
-        self.assertIn('id - serial', self.output)
+        self.assertIn('id - %s' % id_type, self.output)
         self.assertIn('char_field - varchar(10)', self.output)
         self.assertIn('integer_field - integer', self.output)
         self.assertIn('foreign_key_field - integer', self.output)
