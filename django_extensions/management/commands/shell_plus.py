@@ -171,6 +171,46 @@ class Command(BaseCommand):
             start_kernel(**kwargs)
         return run_kernel
 
+    def load_base_kernel_spec(self, app):
+        """Finds and returns the base Python kernelspec to extend from."""
+        ksm = app.kernel_spec_manager
+        try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
+            'python3' if PY3 else 'python2',
+            'python',
+        ])
+
+        if isinstance(try_spec_names, six.string_types):
+            try_spec_names = [try_spec_names]
+
+        ks = None
+        for spec_name in try_spec_names:
+            try:
+                ks = ksm.get_kernel_spec(spec_name)
+                break
+            except Exception:
+                continue
+        if not ks:
+            raise CommandError("No notebook (Python) kernel specs found. Tried %r" % try_spec_names)
+
+        return ks
+
+    def generate_kernel_specs(self, app, ipython_arguments):
+        """Generate an IPython >= 3.0 kernelspec that loads django extensions"""
+        ks = self.load_base_kernel_spec(app)
+        ks.argv.extend(ipython_arguments)
+        ks.display_name = getattr(settings, 'IPYTHON_KERNEL_DISPLAY_NAME', "Django Shell-Plus")
+
+        manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
+        if manage_py == 'manage.py' and os.path.isdir(manage_py_dir):
+            pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
+            pythonpath = pythonpath.split(os.pathsep)
+            if manage_py_dir not in pythonpath:
+                pythonpath.append(manage_py_dir)
+
+            ks.env['PYTHONPATH'] = os.pathsep.join(filter(None, pythonpath))
+
+        return {'django_extensions': ks}
+
     def get_notebook(self, options):
         try:
             from IPython import release
@@ -193,43 +233,6 @@ class Command(BaseCommand):
                     return traceback.format_exc()
 
         no_browser = options['no_browser']
-
-        def install_kernel_spec(app, display_name, ipython_arguments):
-            """Install an IPython >= 3.0 kernelspec that loads django extensions"""
-            ksm = app.kernel_spec_manager
-            try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
-                'python3' if PY3 else 'python2',
-                'python',
-            ])
-            if isinstance(try_spec_names, six.string_types):
-                try_spec_names = [try_spec_names]
-            ks = None
-            for spec_name in try_spec_names:
-                try:
-                    ks = ksm.get_kernel_spec(spec_name)
-                    break
-                except Exception:
-                    continue
-            if not ks:
-                raise CommandError("No notebook (Python) kernel specs found")
-            ks.argv.extend(ipython_arguments)
-            ks.display_name = display_name
-
-            manage_py_dir, manage_py = os.path.split(os.path.realpath(sys.argv[0]))
-
-            if manage_py == 'manage.py' and os.path.isdir(manage_py_dir):
-                pythonpath = ks.env.get('PYTHONPATH', os.environ.get('PYTHONPATH', ''))
-                pythonpath = pythonpath.split(os.pathsep)
-                if manage_py_dir not in pythonpath:
-                    pythonpath.append(manage_py_dir)
-
-                ks.env['PYTHONPATH'] = os.pathsep.join(filter(None, pythonpath))
-
-            kernel_dir = os.path.join(ksm.user_kernel_dir, 'django_extensions')
-            if not os.path.exists(kernel_dir):
-                os.makedirs(kernel_dir)
-            with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
-                f.write(ks.to_json())
 
         def run_notebook():
             app = NotebookApp.instance()
@@ -254,8 +257,26 @@ class Command(BaseCommand):
 
             # IPython >= 3 uses kernelspecs to specify kernel CLI args
             if release.version_info[0] >= 3:
-                display_name = getattr(settings, 'IPYTHON_KERNEL_DISPLAY_NAME', "Django Shell-Plus")
-                install_kernel_spec(app, display_name, ipython_arguments)
+                ksm = app.kernel_spec_manager
+                for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
+                    roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
+                    success = False
+                    for root in roots:
+                        kernel_dir = os.path.join(root, kid)
+                        try:
+                            if not os.path.exists(kernel_dir):
+                                os.makedirs(kernel_dir)
+
+                            with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
+                                f.write(ks.to_json())
+
+                            success = True
+                            break
+                        except OSError:
+                            continue
+
+                    if not success:
+                        raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
 
             app.start()
         return run_notebook
