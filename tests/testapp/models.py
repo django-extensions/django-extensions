@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
+from django_extensions.db.fields.encrypted import EncryptedCharField, EncryptedTextField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
@@ -487,6 +488,14 @@ class MultipleFieldsAndMethods(models.Model):
 
     def has_defaults(self, one=1, two='Two', true=True, false=False, none=None):
         pass
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class EncryptedFieldsModel(models.Model):
+    secret_message = EncryptedCharField(max_length=10)
+    secret_text = EncryptedTextField()
 
     class Meta:
         app_label = 'django_extensions'

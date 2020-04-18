@@ -83,3 +83,6 @@ CACHES = {
         'BACKEND': 'tests.management.commands.test_clear_cache.OtherCacheMock',
     },
 }
+
+CRYPTOGRAPHY_ENCRYPT_ALGORITHM = 'AES'
+CRYPTOGRAPHY_ENCRYPT_KEY = os.urandom(16)
