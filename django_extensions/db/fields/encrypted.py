@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import base64
+import os
 import warnings
 
 import django
@@ -7,13 +9,15 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-from django.utils.deprecation import RemovedInNextVersionWarning
 
 try:
-    from keyczar import keyczar
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import padding
+    from cryptography.hazmat.primitives.ciphers import algorithms, modes
+    from cryptography.hazmat.primitives.ciphers.base import Cipher
 except ImportError:
-    raise ImportError('Using an encrypted field requires the Keyczar module. '
-                      'You can obtain Keyczar from http://www.keyczar.org/.')
+    raise ImportError('Using an encrypted field requires the cryptography module. '
+                      'You can obtain cryptography from https://cryptography.io/.')
 
 
 class EncryptionWarning(RuntimeWarning):
@@ -24,30 +28,19 @@ class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "Please do not use these fields. Since Keyczar is deprecated and authors deleted "
-            "all code we highly recommend to stop using potentially unsafe abandonware directly "
-            "these versions of encrypted fields will be removed soon but it's highly likely their "
-            "names will be reused. Please see github issues/1359 for discussion on possible "
-            "replacement fields",
-            RemovedInNextVersionWarning,
-            stacklevel=2,
-        )
+        if not getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_ALGORITHM', None):
+            raise ImproperlyConfigured('You must set the settings.CRYPTOGRAPHY_ENCRYPT_ALGORITHM '
+                                       'setting to your cryptography keys directory.')
 
-        if not getattr(settings, 'ENCRYPTED_KEYCZAR_THISISUNSAFE', None):
-            raise ImproperlyConfigured(
-                "Please do not use these fields. Since Keyczar is deprecated and authors deleted "
-                "all code we highly recommend to stop using potentially unsafe abandonware directly "
-                "these versions of encrypted fields will be removed soon but it's highly likely their "
-                "names will be reused. Please see github issues/1359 for discussion on possible "
-                "replacement fields",
-            )
+        if not getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_KEY', None):
+            raise ImproperlyConfigured('You must set the settings.CRYPTOGRAPHY_ENCRYPT_KEY '
+                                       'setting to your cryptography keys directory.')
 
-        if not getattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR', None):
-            raise ImproperlyConfigured('You must set the settings.ENCRYPTED_FIELD_KEYS_DIR '
-                                       'setting to your Keyczar keys directory.')
         crypt_class = self.get_crypt_class()
-        self.crypt = crypt_class.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
+        self.key = getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_KEY')
+        self.backend = default_backend()
+        self.algorithm = crypt_class(self.key)
+        self.block_size = self.algorithm.block_size
 
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
@@ -61,43 +54,37 @@ class BaseEncryptedField(models.Field):
         # max-length for unicode strings that have non-ascii characters in them.
         # For PostGreSQL we might as well always use textfield since there is little
         # difference (except for length checking) between varchar and text in PG.
-        return len(self.prefix) + len(self.crypt.Encrypt('x' * unencrypted_length))
+        iv = os.urandom(self.block_size // 8)
+        cipher = Cipher(self.algorithm, modes.CBC(os.urandom(self.block_size // 8)), backend=self.backend)
+        encryptor = cipher.encryptor()
+        padder = padding.PKCS7(self.block_size).padder()
+
+        test_bytes = ('x' * unencrypted_length).encode()
+        padded_data = padder.update(test_bytes) + padder.finalize()
+        encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+        encrypted_data_with_iv = (
+            self.prefix
+            + base64.urlsafe_b64encode(encrypted_data).decode()
+            + ''.join(chr(x) for x in bytearray(iv))
+        )
+        return len(encrypted_data_with_iv)
 
     def get_crypt_class(self):
-        """
-        Get the Keyczar class to use.
-
-        The class can be customized with the ENCRYPTED_FIELD_MODE setting. By default,
-        this setting is DECRYPT_AND_ENCRYPT. Set this to ENCRYPT to disable decryption.
-        This is necessary if you are only providing public keys to Keyczar.
-
-        Returns:
-            keyczar.Encrypter if ENCRYPTED_FIELD_MODE is ENCRYPT.
-            keyczar.Crypter if ENCRYPTED_FIELD_MODE is DECRYPT_AND_ENCRYPT.
-
-        Override this method to customize the type of Keyczar class returned.
-        """
-        crypt_type = getattr(settings, 'ENCRYPTED_FIELD_MODE', 'DECRYPT_AND_ENCRYPT')
-        if crypt_type == 'ENCRYPT':
-            crypt_class_name = 'Encrypter'
-        elif crypt_type == 'DECRYPT_AND_ENCRYPT':
-            crypt_class_name = 'Crypter'
-        else:
-            raise ImproperlyConfigured(
-                'ENCRYPTED_FIELD_MODE must be either DECRYPT_AND_ENCRYPT '
-                'or ENCRYPT, not %s.' % crypt_type)
-        return getattr(keyczar, crypt_class_name)
+        """Get the cryptography algorithms class to use."""
+        cryptography_encrypt_algorithm = getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_ALGORITHM')
+        return getattr(algorithms, cryptography_encrypt_algorithm)
 
     def to_python(self, value):
-        if isinstance(self.crypt.primary_key, keyczar.keys.RsaPublicKey):
-            retval = value
-        elif value and (value.startswith(self.prefix)):
-            if hasattr(self.crypt, 'Decrypt'):
-                retval = self.crypt.Decrypt(value[len(self.prefix):])
-                if six.PY2 and retval:
-                    retval = retval.decode('utf-8')
-            else:
-                retval = value
+        if value and (value.startswith(self.prefix)):
+            iv = b''.join(bytes([ord(x[0])]) for x in value[-(self.block_size // 8):])
+            cipher = Cipher(self.algorithm, modes.CBC(iv), backend=self.backend)
+            decryptor = cipher.decryptor()
+            padder = padding.PKCS7(self.block_size).unpadder()
+
+            decrypted_text = decryptor.update(base64.urlsafe_b64decode(
+                value[len(self.prefix):-self.block_size // 8])) + decryptor.finalize()
+            unpadded_text = (padder.update(decrypted_text) + padder.finalize()).decode()
+            retval = unpadded_text
         else:
             retval = value
         return retval
@@ -111,8 +98,6 @@ class BaseEncryptedField(models.Field):
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
-            # We need to encode a unicode string into a byte string, first.
-            # keyczar expects a bytestring, not a unicode string.
             if six.PY2:
                 if type(value) == six.types.UnicodeType:
                     value = value.encode('utf-8')
@@ -125,7 +110,18 @@ class BaseEncryptedField(models.Field):
                 )
                 value = value[:max_length]
 
-            value = self.prefix + self.crypt.Encrypt(value)
+            iv = os.urandom(self.block_size // 8)
+            cipher = Cipher(self.algorithm, modes.CBC(iv), backend=self.backend)
+            encryptor = cipher.encryptor()
+            padder = padding.PKCS7(self.block_size).padder()
+
+            padded_data = padder.update(value.encode()) + padder.finalize()
+            encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+            value = (
+                self.prefix
+                + base64.urlsafe_b64encode(encrypted_data).decode()
+                + ''.join(chr(x) for x in bytearray(iv))
+            )
         return value
 
     def deconstruct(self):
