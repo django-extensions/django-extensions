@@ -22,7 +22,7 @@ from .testapp.models import (
 @pytest.mark.usefixtures("admin_user")
 class AutoSlugFieldTest(TestCase):
     def tearDown(self):
-        super(AutoSlugFieldTest, self).tearDown()
+        super().tearDown()
 
         SluggedTestModel.objects.all().delete()
         CustomFuncSluggedTestModel.objects.all().delete()

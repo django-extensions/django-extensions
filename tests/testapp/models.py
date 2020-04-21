@@ -54,7 +54,8 @@ class Person(models.Model):
     personality = models.OneToOneField(
         Personality,
         null=True,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+    )
     clubs = models.ManyToManyField(Club, through='testapp.Membership')
 
     class Meta:
@@ -99,7 +100,6 @@ class ThirdDummyRelationModel(models.Model):
 
 
 class PostWithUniqField(models.Model):
-
     uniq_field = UniqField(
         max_length=255,
         boolean_attr=True,
@@ -117,8 +117,7 @@ class PostWithUniqField(models.Model):
 
 
 class ReverseModel(models.Model):
-    post_field = models.ForeignKey(
-        PostWithUniqField, related_name='reverse_models', on_delete=models.CASCADE)
+    post_field = models.ForeignKey(PostWithUniqField, related_name='reverse_models', on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'django_extensions'
@@ -181,7 +180,7 @@ class SluggedWithUniqueTogetherTestModel(models.Model):
 class OverridedFindUniqueAutoSlugField(AutoSlugField):
     def find_unique(self, model_instance, field, iterator, *args):
         self.overrided = True
-        return super(OverridedFindUniqueAutoSlugField, self).find_unique(model_instance, field, iterator, *args)
+        return super().find_unique(model_instance, field, iterator, *args)
 
 
 class OverridedFindUniqueModel(models.Model):
@@ -399,9 +398,12 @@ class TimestampedTestModel(TimeStampedModel):
 
 class UnicodeVerboseNameModel(models.Model):
     cafe = models.IntegerField(verbose_name=u'café')
-    parent_cafe = models.ForeignKey('self', related_name='children',
-                                    on_delete=models.CASCADE,
-                                    verbose_name='café latte')
+    parent_cafe = models.ForeignKey(
+        'self',
+        related_name='children',
+        on_delete=models.CASCADE,
+        verbose_name='café latte',
+    )
 
     class Meta:
         app_label = 'django_extensions'

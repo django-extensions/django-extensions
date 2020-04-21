@@ -6,8 +6,6 @@ matrix:
   fast_finish: true
   include:
     # Misc
-    - python: 2.7
-      env: TOXENV=py27-flake8
     - python: 3.8
       env: TOXENV=py38-flake8
     - python: 3.8
@@ -18,17 +16,6 @@ matrix:
       env: TOXENV=mypy
     - python: 3.8
       env: TOXENV=compile-catalog
-    # Django 1.11: Python 2.7, 3.5, 3.6 or 3.7 / PyPy 2.x or 3.x
-    - python: 2.7
-      env: TOXENV=py27-dj111
-    - python: 3.5
-      env: TOXENV=py35-dj111
-    - python: 3.6
-      env: TOXENV=py36-dj111
-    - python: pypy
-      env: TOXENV=pypy-dj111
-    - python: pypy3
-      env: TOXENV=pypy3-dj111
     # Django 2.2: Python 3.5, 3.6, 3.7 or 3.8 / PyPy 3.x
     - python: 3.5
       env: TOXENV=py35-dj22
@@ -112,8 +99,6 @@ matrix:
       env: TOXENV=py38-djmaster-postgres
     - python: pypy3
       env: TOXENV=pypy3-djmaster
-    - python: pypy
-      env: TOXENV=pypy-dj111
 
 install:
   - pip install virtualenv tox coveralls

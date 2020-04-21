@@ -12,7 +12,7 @@ import datetime
 from django import forms
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from mongoengine.fields import StringField, DateTimeField
 
 import uuid
@@ -26,7 +26,7 @@ class SlugField(StringField):
         # Set db_index=True unless it's been set manually.
         if 'db_index' not in kwargs:
             kwargs['db_index'] = True
-        super(SlugField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_internal_type(self):
         return "SlugField"
@@ -34,7 +34,7 @@ class SlugField(StringField):
     def formfield(self, **kwargs):
         defaults = {'form_class': forms.SlugField}
         defaults.update(kwargs)
-        return super(SlugField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
 
 class AutoSlugField(SlugField):
@@ -73,7 +73,7 @@ class AutoSlugField(SlugField):
         self.slugify_function = kwargs.pop('slugify_function', slugify)
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
-        super(AutoSlugField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
         """
@@ -236,11 +236,11 @@ class UUIDField(StringField):
     def contribute_to_class(self, cls, name):
         if self.primary_key:
             assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (self, cls, name, cls._meta.auto_field)
-            super(UUIDField, self).contribute_to_class(cls, name)
+            super().contribute_to_class(cls, name)
             cls._meta.has_auto_field = True
             cls._meta.auto_field = self
         else:
-            super(UUIDField, self).contribute_to_class(cls, name)
+            super().contribute_to_class(cls, name)
 
     def create_uuid(self):
         if not self.version or self.version == 4:
@@ -262,7 +262,7 @@ class UUIDField(StringField):
             setattr(model_instance, self.attname, value)
             return value
         else:
-            value = super(UUIDField, self).pre_save(model_instance, add)
+            value = super().pre_save(model_instance, add)
             if self.auto and not value:
                 value = six.u(self.create_uuid())
                 setattr(model_instance, self.attname, value)

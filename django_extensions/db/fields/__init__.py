@@ -170,7 +170,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
         self.check_is_bool('allow_duplicates')
         self.max_unique_query_attempts = kwargs.pop('max_unique_query_attempts', MAX_UNIQUE_QUERY_ATTEMPTS)
-        super(AutoSlugField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
         """
@@ -276,7 +276,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         return "SlugField"
 
     def deconstruct(self):
-        name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         kwargs['populate_from'] = self._populate_from
         if not self.separator == six.u('-'):
             kwargs['separator'] = self.separator
@@ -346,7 +346,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         if 'unique' not in kwargs:
             kwargs['unique'] = False
 
-        super(RandomCharField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def random_char_generator(self, chars):
         for i in range(self.max_unique_query_attempts):
@@ -394,7 +394,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         return "CharField"
 
     def deconstruct(self):
-        name, path, args, kwargs = super(RandomCharField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         kwargs['length'] = self.length
         del kwargs['max_length']
         if self.lowercase is True:
@@ -429,7 +429,7 @@ class CreationDateTimeField(DateTimeField):
         return "DateTimeField"
 
     def deconstruct(self):
-        name, path, args, kwargs = super(CreationDateTimeField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         if self.editable is not False:
             kwargs['editable'] = True
         if self.blank is not True:
@@ -456,7 +456,7 @@ class ModificationDateTimeField(CreationDateTimeField):
         return "DateTimeField"
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ModificationDateTimeField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         if self.auto_now is not False:
             kwargs['auto_now'] = True
         return name, path, args, kwargs
@@ -464,7 +464,7 @@ class ModificationDateTimeField(CreationDateTimeField):
     def pre_save(self, model_instance, add):
         if not getattr(model_instance, 'update_modified', True):
             return getattr(model_instance, self.attname)
-        return super(ModificationDateTimeField, self).pre_save(model_instance, add)
+        return super().pre_save(model_instance, add)
 
 
 class UUIDVersionError(Exception):
@@ -483,10 +483,9 @@ class UUIDFieldMixin(object):
 
     DEFAULT_MAX_LENGTH = 36
 
-    def __init__(
-            self, verbose_name=None, name=None, auto=True, version=4,
-            node=None, clock_seq=None, namespace=None, uuid_name=None, *args,
-            **kwargs):
+    def __init__(self, verbose_name=None, name=None, auto=True, version=4,
+                 node=None, clock_seq=None, namespace=None, uuid_name=None, *args,
+                 **kwargs):
         if not HAS_UUID:
             raise ImproperlyConfigured("'uuid' module is required for UUIDField. (Do you have Python 2.5 or higher installed ?)")
 
@@ -504,8 +503,7 @@ class UUIDFieldMixin(object):
         self.namespace = namespace
         self.uuid_name = uuid_name or name
 
-        super(UUIDFieldMixin, self).__init__(
-            verbose_name=verbose_name, *args, **kwargs)
+        super().__init__(verbose_name=verbose_name, *args, **kwargs)
 
     def create_uuid(self):
         if not self.version or self.version == 4:
@@ -522,7 +520,7 @@ class UUIDFieldMixin(object):
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
 
     def pre_save(self, model_instance, add):
-        value = super(UUIDFieldMixin, self).pre_save(model_instance, add)
+        value = super().pre_save(model_instance, add)
 
         if self.auto and add and value is None:
             value = force_text(self.create_uuid())
@@ -538,10 +536,10 @@ class UUIDFieldMixin(object):
     def formfield(self, **kwargs):
         if self.auto:
             return None
-        return super(UUIDFieldMixin, self).formfield(**kwargs)
+        return super().formfield(**kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(UUIDFieldMixin, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
 
         if kwargs.get('max_length', None) == self.DEFAULT_MAX_LENGTH:
             del kwargs['max_length']
@@ -573,7 +571,7 @@ class ShortUUIDField(UUIDFieldMixin, CharField):
     DEFAULT_MAX_LENGTH = 22
 
     def __init__(self, *args, **kwargs):
-        super(ShortUUIDField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not HAS_SHORT_UUID:
             raise ImproperlyConfigured("'shortuuid' module is required for ShortUUIDField. (Do you have Python 2.5 or higher installed ?)")
         kwargs.setdefault('max_length', self.DEFAULT_MAX_LENGTH)

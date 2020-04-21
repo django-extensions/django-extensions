@@ -62,7 +62,7 @@ class EmailNotificationCommand(BaseCommand):
     def run_from_argv(self, argv):
         """Overriden in order to access the command line arguments."""
         self.argv_string = ' '.join(argv)
-        super(EmailNotificationCommand, self).run_from_argv(argv)
+        super().run_from_argv(argv)
 
     def execute(self, *args, **options):
         """
@@ -74,7 +74,7 @@ class EmailNotificationCommand(BaseCommand):
         reraise the exception.
         """
         try:
-            super(EmailNotificationCommand, self).execute(*args, **options)
+            super().execute(*args, **options)
         except Exception:
             if options['email_exception'] or getattr(self, 'email_exception', False):
                 self.send_email_notification(include_traceback=True)

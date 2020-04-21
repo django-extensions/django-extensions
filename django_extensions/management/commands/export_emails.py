@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
 import sys
+import csv
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 
-from django_extensions.compat import csv_writer as writer
 from django_extensions.management.utils import signalcommand
 
 
@@ -50,11 +50,11 @@ class Command(BaseCommand):
     encoding = 'utf-8'  # RED_FLAG: add as an option -DougN
 
     def __init__(self, *args, **kwargs):
-        super(Command, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.UserModel = get_user_model()
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--group', '-g', action='store', dest='group', default=None,
             help='Limit to users which are part of the supplied group name',
@@ -106,7 +106,7 @@ class Command(BaseCommand):
 
     def google(self, qs):
         """CSV format suitable for importing into google GMail"""
-        csvf = writer(sys.stdout)
+        csvf = csv.writer(sys.stdout)
         csvf.writerow(['Name', 'Email'])
         for ent in qs:
             csvf.writerow([self.full_name(**ent), ent.get('email', '')])
@@ -116,14 +116,14 @@ class Command(BaseCommand):
         CSV format suitable for importing into linkedin Groups.
         perfect for pre-approving members of a linkedin group.
         """
-        csvf = writer(sys.stdout)
+        csvf = csv.writer(sys.stdout)
         csvf.writerow(['First Name', 'Last Name', 'Email'])
         for ent in qs:
             csvf.writerow([ent.get('first_name', ''), ent.get('last_name', ''), ent.get('email', '')])
 
     def outlook(self, qs):
         """CSV format suitable for importing into outlook"""
-        csvf = writer(sys.stdout)
+        csvf = csv.writer(sys.stdout)
         columns = ['Name', 'E-mail Address', 'Notes', 'E-mail 2 Address', 'E-mail 3 Address',
                    'Mobile Phone', 'Pager', 'Company', 'Job Title', 'Home Phone', 'Home Phone 2',
                    'Home Fax', 'Home Address', 'Business Phone', 'Business Phone 2',

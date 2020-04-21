@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = "Set parameters of the default django.contrib.sites Site"
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--name', dest='site_name', default=None,
             help='Use this as site name.'

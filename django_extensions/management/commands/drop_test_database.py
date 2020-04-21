@@ -14,7 +14,7 @@ class Command(BaseCommand):
     help = "Drops test database for this project."
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--noinput', action='store_false', dest='interactive',
             default=True, help='Tells Django to NOT prompt the user for input of any kind.'

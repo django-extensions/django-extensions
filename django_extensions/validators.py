@@ -6,11 +6,11 @@ import binascii
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 @deconstructible
-class NoControlCharactersValidator(object):
+class NoControlCharactersValidator:
     message = _("Control Characters like new lines or tabs are not allowed.")
     code = "no_control_characters"
     whitelist = None
@@ -44,7 +44,7 @@ class NoControlCharactersValidator(object):
 
 
 @deconstructible
-class NoWhitespaceValidator(object):
+class NoWhitespaceValidator:
     message = _("Leading and Trailing whitespaces are not allowed.")
     code = "no_whitespace"
 
@@ -69,7 +69,7 @@ class NoWhitespaceValidator(object):
 
 
 @deconstructible
-class HexValidator(object):
+class HexValidator:
     messages = {
         'invalid': _("Only a hex string is allowed."),
         'length': _("Invalid length. Must be %(length)d characters."),

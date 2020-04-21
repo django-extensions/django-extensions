@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.utils.timezone import now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from django_extensions.db.fields import AutoSlugField, CreationDateTimeField, ModificationDateTimeField
 
@@ -20,7 +20,7 @@ class TimeStampedModel(models.Model):
 
     def save(self, **kwargs):
         self.update_modified = kwargs.pop('update_modified', getattr(self, 'update_modified', True))
-        super(TimeStampedModel, self).save(**kwargs)
+        super().save(**kwargs)
 
     class Meta:
         get_latest_by = 'modified'
@@ -133,4 +133,4 @@ class ActivatorModel(models.Model):
     def save(self, *args, **kwargs):
         if not self.activate_date:
             self.activate_date = now()
-        super(ActivatorModel, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

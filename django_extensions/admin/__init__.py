@@ -14,14 +14,14 @@ from django.conf import settings
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.utils.text import get_text_list
 from django.contrib import admin
 
 from django_extensions.admin.widgets import ForeignKeySearchInput
 
 
-class ForeignKeyAutocompleteAdminMixin(object):
+class ForeignKeyAutocompleteAdminMixin:
     """
     Admin class for models using the autocomplete feature.
 
@@ -62,7 +62,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
         return [
             url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
                 name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
-        ] + super(ForeignKeyAutocompleteAdminMixin, self).get_urls()
+        ] + super().get_urls()
 
     def foreignkey_autocomplete(self, request):
         """
@@ -78,10 +78,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
         try:
             to_string_function = self.related_string_functions[model_name]
         except KeyError:
-            if six.PY3:
-                to_string_function = lambda x: x.__str__()
-            else:
-                to_string_function = lambda x: x.__unicode__()
+            to_string_function = lambda x: x.__str__()
 
         if search_fields and app_label and model_name and (query or object_pk):
             def construct_search(field_name):
@@ -155,7 +152,7 @@ class ForeignKeyAutocompleteAdminMixin(object):
                 help_text = six.u('%s %s' % (kwargs['help_text'], help_text))
             kwargs['widget'] = ForeignKeySearchInput(db_field.remote_field, self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
-        return super(ForeignKeyAutocompleteAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 
 class ForeignKeyAutocompleteAdmin(ForeignKeyAutocompleteAdminMixin, admin.ModelAdmin):

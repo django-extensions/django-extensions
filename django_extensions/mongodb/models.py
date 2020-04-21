@@ -2,7 +2,7 @@
 
 import datetime
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from mongoengine.document import Document
 from mongoengine.fields import DateTimeField, IntField, StringField
 from mongoengine.queryset import QuerySetManager
@@ -54,7 +54,7 @@ class ActivatorModelManager(QuerySetManager):
 
         SomeModel.objects.active()
         """
-        return super(ActivatorModelManager, self).get_queryset().filter(status=1)
+        return super().get_queryset().filter(status=1)
 
     def inactive(self):
         """
@@ -62,7 +62,7 @@ class ActivatorModelManager(QuerySetManager):
 
         SomeModel.objects.inactive()
         """
-        return super(ActivatorModelManager, self).get_queryset().filter(status=0)
+        return super().get_queryset().filter(status=0)
 
 
 class ActivatorModel(Document):
@@ -87,4 +87,4 @@ class ActivatorModel(Document):
     def save(self, *args, **kwargs):
         if not self.activate_date:
             self.activate_date = datetime.datetime.now()
-        super(ActivatorModel, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)

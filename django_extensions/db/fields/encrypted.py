@@ -2,7 +2,6 @@
 import warnings
 
 import django
-import six
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -54,7 +53,7 @@ class BaseEncryptedField(models.Field):
         if max_length:
             kwargs['max_length'] = self.calculate_crypt_max_length(max_length)
 
-        super(BaseEncryptedField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def calculate_crypt_max_length(self, unencrypted_length):
         # TODO: Re-examine if this logic will actually make a large-enough
@@ -94,8 +93,6 @@ class BaseEncryptedField(models.Field):
         elif value and (value.startswith(self.prefix)):
             if hasattr(self.crypt, 'Decrypt'):
                 retval = self.crypt.Decrypt(value[len(self.prefix):])
-                if six.PY2 and retval:
-                    retval = retval.decode('utf-8')
             else:
                 retval = value
         else:
@@ -111,11 +108,6 @@ class BaseEncryptedField(models.Field):
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if value and not value.startswith(self.prefix):
-            # We need to encode a unicode string into a byte string, first.
-            # keyczar expects a bytestring, not a unicode string.
-            if six.PY2:
-                if type(value) == six.types.UnicodeType:
-                    value = value.encode('utf-8')
             # Truncated encrypted content is unreadable,
             # so truncate before encryption
             max_length = self.unencrypted_length
@@ -129,7 +121,7 @@ class BaseEncryptedField(models.Field):
         return value
 
     def deconstruct(self):
-        name, path, args, kwargs = super(BaseEncryptedField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         kwargs['max_length'] = self.unencrypted_length
         return name, path, args, kwargs
 
@@ -141,12 +133,12 @@ class EncryptedTextField(BaseEncryptedField):
     def formfield(self, **kwargs):
         defaults = {'widget': forms.Textarea}
         defaults.update(kwargs)
-        return super(EncryptedTextField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
 
 class EncryptedCharField(BaseEncryptedField):
     def __init__(self, *args, **kwargs):
-        super(EncryptedCharField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_internal_type(self):
         return "CharField"
@@ -154,4 +146,4 @@ class EncryptedCharField(BaseEncryptedField):
     def formfield(self, **kwargs):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
-        return super(EncryptedCharField, self).formfield(**defaults)
+        return super().formfield(**defaults)

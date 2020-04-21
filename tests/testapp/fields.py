@@ -9,4 +9,4 @@ class UniqField(UniqueFieldMixin, models.CharField):
         self.boolean_attr = kwargs.pop('boolean_attr', False)
         self.non_boolean_attr = kwargs.pop('non_boolean_attr', 'non_boolean_attr')
 
-        super(UniqField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)

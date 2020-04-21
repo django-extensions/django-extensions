@@ -88,7 +88,7 @@ class Command(BaseCommand):
     help = 'Dumps the data as a customised python script.'
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('appname', nargs='+')
         parser.add_argument(
             '--autofield', action='store_false', dest='skip_autofield',
@@ -193,7 +193,7 @@ class ModelCode(Code):
     """ Produces a python script that can recreate data for a given model class. """
 
     def __init__(self, model, context=None, stdout=None, stderr=None, options=None):
-        super(ModelCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
+        super().__init__(indent=0, stdout=stdout, stderr=stderr)
         self.model = model
         if context is None:
             context = {}
@@ -239,7 +239,7 @@ class InstanceCode(Code):
     def __init__(self, instance, id, context=None, stdout=None, stderr=None, options=None):
         """ We need the instance in question and an id """
 
-        super(InstanceCode, self).__init__(indent=0, stdout=stdout, stderr=stderr)
+        super().__init__(indent=0, stdout=stdout, stderr=stderr)
         self.imports = {}
 
         self.options = options
@@ -400,7 +400,7 @@ class Script(Code):
     """ Produces a complete python script that can recreate data for the given apps. """
 
     def __init__(self, models, context=None, stdout=None, stderr=None, options=None):
-        super(Script, self).__init__(stdout=stdout, stderr=stderr)
+        super().__init__(stdout=stdout, stderr=stderr)
         self.imports = {}
 
         self.models = models

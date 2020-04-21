@@ -3,7 +3,6 @@ from __future__ import with_statement
 
 import os
 import re
-import six
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -20,7 +19,7 @@ class Command(BaseCommand):
     label = 'annotation tag (TODO, FIXME, BUG, HACK, WARNING, NOTE, XXX)'
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--tag',
             dest='tag',
@@ -61,6 +60,5 @@ class Command(BaseCommand):
                             if annotation_lines:
                                 self.stdout.write("%s:" % fpath)
                                 for annotation in annotation_lines:
-                                    annotation = annotation.decode('utf-8') if six.PY2 else annotation
                                     self.stdout.write("  * %s" % annotation)
                                 self.stdout.write("")

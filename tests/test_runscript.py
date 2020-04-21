@@ -102,12 +102,12 @@ project_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 class ChangingDirectoryTests(RunScriptTests):
     def setUp(self):
-        super(ChangingDirectoryTests, self).setUp()
+        super().setUp()
         self.curwd = os.getcwd()
         os.chdir(project_path)
 
     def tearDown(self):
-        super(ChangingDirectoryTests, self).setUp()
+        super().setUp()
         os.chdir(self.curwd)
 
     def _execute_script_with_chdir(self, dir_policy, start_path, expected_path, chdir=None):

@@ -7,7 +7,6 @@ import traceback
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.datastructures import OrderedSet
-from six import PY3
 
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
@@ -28,7 +27,7 @@ class Command(BaseCommand):
     tests_mode = False
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--plain', action='store_true', dest='plain',
             default=False,
@@ -122,7 +121,7 @@ class Command(BaseCommand):
             idx = argv.index('--')
             self.extra_args = argv[idx + 1:]
             argv = argv[:idx]
-        return super(Command, self).run_from_argv(argv)
+        return super().run_from_argv(argv)
 
     def get_ipython_arguments(self, options):
         if self.extra_args:
@@ -175,7 +174,7 @@ class Command(BaseCommand):
         """Finds and returns the base Python kernelspec to extend from."""
         ksm = app.kernel_spec_manager
         try_spec_names = getattr(settings, 'NOTEBOOK_KERNEL_SPEC_NAMES', [
-            'python3' if PY3 else 'python2',
+            'python3',
             'python',
         ])
 

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.0.0
+-----
+
+Changes:
+ - Removal of Python 2 support
+
 2.2.9
 -----
 

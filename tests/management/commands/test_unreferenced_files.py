@@ -31,7 +31,7 @@ class UnreferencedFilesTests(TestCase):
         self.media_root_dir = mkdtemp()
 
     def tearDown(self):
-        super(UnreferencedFilesTests, self).tearDown()
+        super().tearDown()
         shutil.rmtree(self.media_root_dir)
 
     @patch('sys.stdout', new_callable=StringIO)

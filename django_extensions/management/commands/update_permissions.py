@@ -13,7 +13,7 @@ class Command(BaseCommand):
     help = 'reloads permissions for specified apps, or all apps if no args are specified'
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('--apps', dest='apps', help='Reload permissions only for apps (comma separated)')
         parser.add_argument('--create-only', action='store_true', default=False, help='Only create missing permissions')
         parser.add_argument('--update-only', action='store_true', default=False, help='Only update permissions')
