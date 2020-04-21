@@ -16,3 +16,5 @@ def get_version(version):
 
 
 __version__ = get_version(VERSION)
+
+default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
