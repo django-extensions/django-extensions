@@ -6,6 +6,8 @@ Changelog
 
 Changes:
  - Removal of Python 2 support
+ - New: shell_plus, JupyterLab support
+ - Improvement: shell_plus, use -- to directly pass additional arguments to Jupyter
 
 2.2.9
 -----
