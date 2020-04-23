@@ -27,7 +27,7 @@ from django.db.models import DateTimeField, CharField, SlugField, Q
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 MAX_UNIQUE_QUERY_ATTEMPTS = getattr(settings, 'EXTENSIONS_MAX_UNIQUE_QUERY_ATTEMPTS', 100)
@@ -269,7 +269,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
         return attr
 
     def pre_save(self, model_instance, add):
-        value = force_text(self.create_slug(model_instance, add))
+        value = force_str(self.create_slug(model_instance, add))
         return value
 
     def get_internal_type(self):
@@ -523,12 +523,12 @@ class UUIDFieldMixin(object):
         value = super().pre_save(model_instance, add)
 
         if self.auto and add and value is None:
-            value = force_text(self.create_uuid())
+            value = force_str(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:
             if self.auto and not value:
-                value = force_text(self.create_uuid())
+                value = force_str(self.create_uuid())
                 setattr(model_instance, self.attname, value)
 
         return value

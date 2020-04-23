@@ -5,7 +5,7 @@ import binascii
 
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
 
@@ -24,7 +24,7 @@ class NoControlCharactersValidator:
             self.whitelist = whitelist
 
     def __call__(self, value):
-        value = force_text(value)
+        value = force_str(value)
         whitelist = self.whitelist
         category = unicodedata.category
         for character in value:
@@ -55,7 +55,7 @@ class NoWhitespaceValidator:
             self.code = code
 
     def __call__(self, value):
-        value = force_text(value)
+        value = force_str(value)
         if value != value.strip():
             params = {'value': value}
             raise ValidationError(self.message, code=self.code, params=params)
@@ -88,7 +88,7 @@ class HexValidator:
             self.code = code
 
     def __call__(self, value):
-        value = force_text(value)
+        value = force_str(value)
         if self.length and len(value) != self.length:
             raise ValidationError(self.messages['length'], code='hex_only_length', params={'length': self.length})
         if self.min_length and len(value) < self.min_length:
