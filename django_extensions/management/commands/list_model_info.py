@@ -19,7 +19,7 @@ class Command(BaseCommand):
     help = "List out the fields and methods for each model"
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument("--field-class", action="store_true", default=None, help="show class name of field.")
         parser.add_argument("--db-type", action="store_true", default=None, help="show database column type of field.")
         parser.add_argument("--signature", action="store_true", default=None, help="show the signature of method.")

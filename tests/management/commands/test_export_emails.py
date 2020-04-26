@@ -98,7 +98,6 @@ def test_do_export_emails_format_outlook(capsys):
     assert 'frederic_mistral@gmail.com' in out
 
 
-@pytest.mark.skipif("sys.version_info < (3, 0)", reason='issues with vobject library on PY2x')
 @pytest.mark.django_db()
 def test_do_export_emails_format_vcard_start(capsys):
     """Testing python manage.py export_emails -f vcard"""

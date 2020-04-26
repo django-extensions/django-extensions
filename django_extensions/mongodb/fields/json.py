@@ -38,10 +38,7 @@ def dumps(value):
 
 
 def loads(txt):
-    if six.PY2:
-        value = json.loads(txt, parse_float=Decimal, encoding=settings.DEFAULT_CHARSET)
-    else:
-        value = json.loads(txt, parse_float=Decimal)
+    value = json.loads(txt, parse_float=Decimal)
     assert isinstance(value, dict)
     return value
 
@@ -81,6 +78,6 @@ class JSONField(StringField):
     def get_db_prep_save(self, value):
         """ Convert our JSON object to a string before we save """
         if not value:
-            return super(JSONField, self).get_db_prep_save("")
+            return super().get_db_prep_save("")
         else:
-            return super(JSONField, self).get_db_prep_save(dumps(value))
+            return super().get_db_prep_save(dumps(value))

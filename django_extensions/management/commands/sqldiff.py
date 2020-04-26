@@ -767,7 +767,7 @@ class MySQLDiff(SQLDiff):
     unsigned_suffix = 'UNSIGNED'
 
     def load(self):
-        super(MySQLDiff, self).load()
+        super().load()
         self.auto_increment = set()
         self.load_auto_increment()
 
@@ -816,7 +816,7 @@ class MySQLDiff(SQLDiff):
     # that this is way unreliable for MySQL atm.
     def get_field_db_type(self, description, field=None, table_name=None):
         from MySQLdb.constants import FIELD_TYPE
-        db_type = super(MySQLDiff, self).get_field_db_type(description, field, table_name)
+        db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
@@ -874,7 +874,7 @@ class SqliteSQLDiff(SQLDiff):
             if unique_columns in db_unique_columns:
                 skip_list.append(unique_columns)
 
-        super(SqliteSQLDiff, self).find_unique_missing_in_db(meta, table_indexes, table_constraints, table_name, skip_list=skip_list)
+        super().find_unique_missing_in_db(meta, table_indexes, table_constraints, table_name, skip_list=skip_list)
 
     # Finding Indexes by using the get_indexes dictionary doesn't seem to work
     # for sqlite.
@@ -885,7 +885,7 @@ class SqliteSQLDiff(SQLDiff):
         pass
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(SqliteSQLDiff, self).get_field_db_type(description, field, table_name)
+        db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
             return None
         if field:
@@ -927,7 +927,7 @@ class PostgresqlSQLDiff(SQLDiff):
     SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (style.SQL_KEYWORD('ALTER TABLE'), style.SQL_TABLE(qn(args[0])), style.SQL_KEYWORD('ALTER COLUMN'), style.SQL_FIELD(qn(args[1])), style.SQL_KEYWORD(args[2]), style.SQL_KEYWORD('NOT NULL'))
 
     def load(self):
-        super(PostgresqlSQLDiff, self).load()
+        super().load()
         self.check_constraints = {}
         self.load_constraints()
 
@@ -1097,7 +1097,7 @@ class PostgresqlSQLDiff(SQLDiff):
     #     return kwargs
 
     def get_field_db_type(self, description, field=None, table_name=None):
-        db_type = super(PostgresqlSQLDiff, self).get_field_db_type(description, field, table_name)
+        db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
             return
         if field:
@@ -1157,7 +1157,7 @@ class PostgresqlSQLDiff(SQLDiff):
             if field.primary_key and db_type=='integer':
                 db_type = 'serial'
             return model_type, db_type
-        super(PostgresqlSQLDiff, self).find_field_type_differ(meta, table_description, table_name, callback)
+        super().find_field_type_differ(meta, table_description, table_name, callback)
     """
 
 
@@ -1182,7 +1182,7 @@ to check/debug ur models compared to the real database tables and columns."""
     output_transaction = False
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('app_label', nargs='*')
         parser.add_argument(
             '--all-applications', '-a', action='store_true',
@@ -1223,7 +1223,7 @@ to check/debug ur models compared to the real database tables and columns."""
         )
 
     def __init__(self, *args, **kwargs):
-        super(Command, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.exit_code = 1
 
     @signalcommand
@@ -1282,7 +1282,7 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
 
     def execute(self, *args, **options):
         try:
-            super(Command, self).execute(*args, **options)
+            super().execute(*args, **options)
         except CommandError as e:
             if options['traceback']:
                 raise
@@ -1295,5 +1295,5 @@ Edit your settings file and change DATABASE_ENGINE to something like 'postgresql
             sys.exit(2)
 
     def run_from_argv(self, argv):
-        super(Command, self).run_from_argv(argv)
+        super().run_from_argv(argv)
         sys.exit(self.exit_code)

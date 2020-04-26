@@ -50,7 +50,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
 
     def __init__(self, rel, search_fields, attrs=None):
         self.search_fields = search_fields
-        super(ForeignKeySearchInput, self).__init__(rel, site, attrs)
+        super().__init__(rel, site, attrs)
 
     def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:

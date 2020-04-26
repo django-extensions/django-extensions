@@ -14,9 +14,8 @@ from __future__ import absolute_import
 
 import json
 
-import django
 import six
-from django.conf import settings
+import django
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
@@ -26,10 +25,7 @@ def dumps(value):
 
 
 def loads(txt):
-    if six.PY2:
-        return json.loads(txt, encoding=settings.DEFAULT_CHARSET)
-    else:
-        return json.loads(txt)
+    return json.loads(txt)
 
 
 class JSONDict(dict):
@@ -70,7 +66,7 @@ class JSONField(models.TextField):
                 default = default()
 
             return self.to_python(default)
-        return super(JSONField, self).get_default()
+        return super().get_default()
 
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
@@ -113,7 +109,7 @@ class JSONField(models.TextField):
         return value
 
     def deconstruct(self):
-        name, path, args, kwargs = super(JSONField, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         if self.default == '{}':
             del kwargs['default']
         return name, path, args, kwargs

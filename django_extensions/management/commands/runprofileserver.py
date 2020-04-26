@@ -93,7 +93,7 @@ class Command(BaseCommand):
     args = '[optional port number, or ipaddr:port]'
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             'addrport', nargs='?',
             help='Optional port number, or ipaddr:port'

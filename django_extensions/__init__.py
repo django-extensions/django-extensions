@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-VERSION = (2, 3, 0, 'DEV')
+VERSION = (3, 0, 0, 'DEV')
 
 
 def get_version(version):
@@ -16,3 +16,5 @@ def get_version(version):
 
 
 __version__ = get_version(VERSION)
+
+default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'

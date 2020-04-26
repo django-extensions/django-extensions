@@ -18,10 +18,10 @@ JOBS_DIR = os.path.join(testapp_with_no_models_file.__path__[0], 'jobs')
 TIME_PERIODS = ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
 
 
-class CreateJobsTestsMixin(object):
+class CreateJobsTestsMixin:
 
     def tearDown(self):
-        super(CreateJobsTestsMixin, self).tearDown()
+        super().tearDown()
         try:
             shutil.rmtree(JOBS_DIR)
         except OSError:

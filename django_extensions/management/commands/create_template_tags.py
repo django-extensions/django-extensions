@@ -11,7 +11,7 @@ class Command(AppCommand):
     help = "Creates a Django template tags directory structure for the given app name in the apps's directory"
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--name',
             '-n',

@@ -48,7 +48,7 @@ class Command(BaseCommand):
     help = "Scan pip requirement files for out-of-date packages."
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             "-t", "--github-api-token", action="store",
             dest="github_api_token", help="A github api authentication token."

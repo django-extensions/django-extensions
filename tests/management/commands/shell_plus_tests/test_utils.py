@@ -10,7 +10,7 @@ from django_extensions.management.commands import shell_plus
 
 class AutomaticShellPlusImportsTestCase(TestCase):
     def setUp(self):
-        super(AutomaticShellPlusImportsTestCase, self).setUp()
+        super().setUp()
         sys.stdout = six.StringIO()
         sys.stderr = six.StringIO()
         self.imported_objects = {}  # type: Dict[str, Type]

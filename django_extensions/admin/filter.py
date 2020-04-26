@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 
 from django.contrib.admin import FieldListFilter
 from django.contrib.admin.utils import prepare_lookup_value
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class NullFieldListFilter(FieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.lookup_kwarg = '{0}__isnull'.format(field_path)
-        super(NullFieldListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
         lookup_choices = self.lookups(request, model_admin)
         self.lookup_choices = () if lookup_choices is None else list(lookup_choices)
 

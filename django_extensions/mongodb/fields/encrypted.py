@@ -18,7 +18,7 @@ class BaseEncryptedField(BaseField):
         if not hasattr(settings, 'ENCRYPTED_FIELD_KEYS_DIR'):
             raise ImproperlyConfigured('You must set settings.ENCRYPTED_FIELD_KEYS_DIR to your Keyczar keys directory.')
         self.crypt = keyczar.Crypter.Read(settings.ENCRYPTED_FIELD_KEYS_DIR)
-        super(BaseEncryptedField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def to_python(self, value):
         if value.startswith(self.prefix):
@@ -41,7 +41,7 @@ class EncryptedTextField(BaseEncryptedField):
     def formfield(self, **kwargs):
         defaults = {'widget': forms.Textarea}
         defaults.update(kwargs)
-        return super(EncryptedTextField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
 
 class EncryptedCharField(BaseEncryptedField):
@@ -49,7 +49,7 @@ class EncryptedCharField(BaseEncryptedField):
         if max_length:
             max_length += len(self.prefix)
 
-        super(EncryptedCharField, self).__init__(max_length=max_length, *args, **kwargs)
+        super().__init__(max_length=max_length, *args, **kwargs)
 
     def get_internal_type(self):
         return "StringField"
@@ -57,4 +57,4 @@ class EncryptedCharField(BaseEncryptedField):
     def formfield(self, **kwargs):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
-        return super(EncryptedCharField, self).formfield(**defaults)
+        return super().formfield(**defaults)

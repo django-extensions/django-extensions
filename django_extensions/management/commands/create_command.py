@@ -18,7 +18,7 @@ class Command(AppCommand):
     can_import_settings = True
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             '--name', '-n', action='store', dest='command_name',
             default='sample',

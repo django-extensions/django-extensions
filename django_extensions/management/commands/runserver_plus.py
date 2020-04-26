@@ -56,7 +56,7 @@ class Command(BaseCommand):
     DEFAULT_KEY_EXTENSION = ".key"
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('addrport', nargs='?',
                             help='Optional port number, or ipaddr:port')
         parser.add_argument('--ipv6', '-6', action='store_true', dest='use_ipv6', default=False,
@@ -237,7 +237,7 @@ class Command(BaseCommand):
 
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
-                environ = super(WSGIRequestHandler, self).make_environ()
+                environ = super().make_environ()
                 if not options['keep_meta_shutdown_func']:
                     del environ['werkzeug.server.shutdown']
                 return environ

@@ -12,7 +12,7 @@ class Command(BaseCommand):
     when_options = ['minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument(
             'when', nargs='?',
             help="options: %s" % ', '.join(self.when_options)

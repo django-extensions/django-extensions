@@ -184,7 +184,7 @@ class Command(BaseCommand):
                 if setting_opt in defaults:
                     self.arguments[argument]['default'] = defaults[setting_opt]
 
-        super(Command, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def add_arguments(self, parser):
         """Unpack self.arguments for parser.add_arguments."""
@@ -248,8 +248,6 @@ class Command(BaseCommand):
         template = loader.get_template(template_name)
 
         dotdata = generate_dot(graph_data, template=template)
-        if not six.PY3:
-            dotdata = dotdata.encode("utf-8")
 
         if output == "pygraphviz":
             return self.render_output_pygraphviz(dotdata, **options)
@@ -259,7 +257,7 @@ class Command(BaseCommand):
 
     def print_output(self, dotdata, output_file=None):
         """Write model data to file or stdout in DOT (text) format."""
-        if six.PY3 and isinstance(dotdata, six.binary_type):
+        if isinstance(dotdata, six.binary_type):
             dotdata = dotdata.decode()
 
         if output_file:

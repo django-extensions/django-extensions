@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from io import BytesIO
 
 import csv
-import six
 import codecs
 import importlib
 
@@ -68,12 +67,3 @@ class UnicodeWriter:
     def writerows(self, rows):
         for row in rows:
             self.writerow(row)
-
-
-from csv import writer  # noqa
-
-# Default csv.writer for PY3 versions
-csv_writer = writer
-if six.PY2:
-    # unicode CSVWriter for PY2
-    csv_writer = UnicodeWriter  # noqa
