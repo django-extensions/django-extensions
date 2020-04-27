@@ -1,8 +1,7 @@
 language: python
+os: linux
 
-sudo: false
-
-matrix:
+jobs:
   fast_finish: true
   include:
     # Misc
