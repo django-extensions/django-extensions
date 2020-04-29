@@ -11,7 +11,6 @@ from django.db.models import Model
 from django.test import override_settings
 
 from django_extensions.management.commands import shell_plus
-from django_extensions.management.shells import SHELL_PLUS_DJANGO_IMPORTS
 
 
 @pytest.mark.skipif(django.VERSION < (2, 0), reason="This test works only on Django greater than 2.0.0")
@@ -100,14 +99,6 @@ def test_shell_plus_plain_loading_django_extensions_modules(monkeypatch):
     assert 'Club' in imported_objects
     assert 'UniqueTestAppModel' in imported_objects
     assert 'RandomCharTestModel' in imported_objects
-
-
-def test_shell_plus_get_imported_objects():
-    command = shell_plus.Command()
-    objs = command.get_imported_objects({})
-    for items in SHELL_PLUS_DJANGO_IMPORTS.values():
-        for item in items:
-            assert item in objs, "%s not loaded by get_imported_objects()" % item
 
 
 def assert_should_models_be_imported(should_be, cli_arguments=None):
