@@ -21,7 +21,7 @@ def use_vi_mode():
     return editor.startswith('vi') or editor.endswith('vim')
 
 
-def runner(flags, name, help=None):
+def shell_runner(flags, name, help=None):
     """
     Decorates methods with information about the application they are starting
 
@@ -139,7 +139,7 @@ class Command(BaseCommand):
             self.tests_imported_objects = imported_objects
         return imported_objects
 
-    @runner(flags=['--kernel'], name='IPython Kernel')
+    @shell_runner(flags=['--kernel'], name='IPython Kernel')
     def get_kernel(self, options):
         try:
             from IPython import release
@@ -260,7 +260,7 @@ class Command(BaseCommand):
 
         app.start()
 
-    @runner(flags=['--notebook'], name='IPython Notebook')
+    @shell_runner(flags=['--notebook'], name='IPython Notebook')
     def get_notebook(self, options):
         try:
             from IPython import release
@@ -290,7 +290,7 @@ class Command(BaseCommand):
 
         return run_notebook
 
-    @runner(flags=['--lab'], name='JupyterLab Notebook')
+    @shell_runner(flags=['--lab'], name='JupyterLab Notebook')
     def get_jupyterlab(self, options):
         try:
             from jupyterlab.labapp import LabApp
@@ -303,7 +303,7 @@ class Command(BaseCommand):
 
         return run_jupyterlab
 
-    @runner(flags=['--plain'], name='plain Python')
+    @shell_runner(flags=['--plain'], name='plain Python')
     def get_plain(self, options):
         # Using normal Python shell
         import code
@@ -352,7 +352,7 @@ class Command(BaseCommand):
             code.interact(local=imported_objects)
         return run_plain
 
-    @runner(flags=['--bpython'], name='BPython')
+    @shell_runner(flags=['--bpython'], name='BPython')
     def get_bpython(self, options):
         try:
             from bpython import embed
@@ -367,7 +367,7 @@ class Command(BaseCommand):
             embed(imported_objects, **kwargs)
         return run_bpython
 
-    @runner(flags=['--ipython'], name='IPython')
+    @shell_runner(flags=['--ipython'], name='IPython')
     def get_ipython(self, options):
         try:
             from IPython import start_ipython
@@ -394,7 +394,7 @@ class Command(BaseCommand):
                 shell.mainloop()
             return run_ipython
 
-    @runner(flags=['--ptpython'], name='PTPython')
+    @shell_runner(flags=['--ptpython'], name='PTPython')
     def get_ptpython(self, options):
         try:
             from ptpython.repl import embed, run_config
@@ -412,7 +412,7 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptpython
 
-    @runner(flags=['--ptipython'], name='PT-IPython')
+    @shell_runner(flags=['--ptipython'], name='PT-IPython')
     def get_ptipython(self, options):
         try:
             from ptpython.repl import run_config
@@ -432,7 +432,7 @@ class Command(BaseCommand):
                   vi_mode=options['vi_mode'], configure=run_config)
         return run_ptipython
 
-    @runner(flags=['--idle'], name='Idle')
+    @shell_runner(flags=['--idle'], name='Idle')
     def get_idle(self, options):
         from idlelib.pyshell import main
 
@@ -489,6 +489,8 @@ for k, m in shells.import_objects({}, no_style()).items():
         verbosity = options["verbosity"]
         get_runner = options['runner']
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
+        runner = None
+        runner_name = None
 
         with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
             SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
@@ -497,19 +499,18 @@ for k, m in shells.import_objects({}, no_style()).items():
                 for runner in self.runners:
                     if flag in runner.runner_flags:
                         return runner
+                return None
 
             self.set_application_name(options)
 
             if get_runner:
                 runner = get_runner(options)
                 runner_name = get_runner.runner_name
-
             elif SETTINGS_SHELL_PLUS:
                 get_runner = get_runner_by_flag('--%s' % SETTINGS_SHELL_PLUS)
                 if not get_runner:
                     runner = None
                     runner_name = SETTINGS_SHELL_PLUS
-
             else:
                 def try_runner(get_runner):
                     runner_name = get_runner.runner_name
@@ -520,9 +521,9 @@ for k, m in shells.import_objects({}, no_style()).items():
                     if callable(runner):
                         if verbosity > 1:
                             print(self.style.NOTICE("Using: %s" % runner_name))
-                            return runner
+                        return runner
+                    return None
 
-                runner = None
                 tried_runners = set()
 
                 # try the runners that are least unexpected (normal shell runners)
@@ -547,7 +548,9 @@ for k, m in shells.import_objects({}, no_style()).items():
             if not callable(runner):
                 if runner:
                     print(runner)
-                raise CommandError("Could not load %s." % runner_name)
+                if not runner_name:
+                    raise CommandError("No shell runner could be found.")
+                raise CommandError("Could not load shell runner: '%s'." % runner_name)
 
             if self.tests_mode:
                 return 130
