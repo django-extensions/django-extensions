@@ -65,9 +65,11 @@ Contents
    generate_password
    graph_models
    jobs_scheduling
+   list_model_info
    merge_model_instances
    model_extensions
    namespace_proposal
+   permissions
    print_settings
    runprofileserver
    runserver_plus
