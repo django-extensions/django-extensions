@@ -6,7 +6,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-from django.utils.deprecation import RemovedInNextVersionWarning
+from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 try:
     from keyczar import keyczar
