@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.core.management.base import BaseCommand
 
 from django_extensions.management.jobs import get_job, print_jobs
-from django_extensions.management.utils import signalcommand
+from django_extensions.management.utils import setup_logger, signalcommand
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -21,24 +25,20 @@ class Command(BaseCommand):
     def runjob(self, app_name, job_name, options):
         verbosity = options["verbosity"]
         if verbosity > 1:
-            print("Executing job: %s (app: %s)" % (job_name, app_name))
+            logger.info("Executing job: %s (app: %s)", job_name, app_name)
         try:
             job = get_job(app_name, job_name)
         except KeyError:
             if app_name:
-                print("Error: Job %s for applabel %s not found" % (job_name, app_name))
+                logger.error("Error: Job %s for applabel %s not found", job_name, app_name)
             else:
-                print("Error: Job %s not found" % job_name)
-            print("Use -l option to view all the available jobs")
+                logger.error("Error: Job %s not found", job_name)
+            logger.info("Use -l option to view all the available jobs")
             return
         try:
             job().execute()
         except Exception:
-            import traceback
-            print("ERROR OCCURED IN JOB: %s (APP: %s)" % (job_name, app_name))
-            print("START TRACEBACK:")
-            traceback.print_exc()
-            print("END TRACEBACK\n")
+            logger.exception("ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name)
 
     @signalcommand
     def handle(self, *args, **options):
@@ -49,6 +49,8 @@ class Command(BaseCommand):
         if app_name and not job_name:
             job_name = app_name
             app_name = None
+
+        setup_logger(logger, self.stdout)
 
         if options['list_jobs']:
             print_jobs(only_scheduled=False, show_when=True, show_appname=True)

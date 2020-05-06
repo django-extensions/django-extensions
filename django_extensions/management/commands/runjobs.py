@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from django.apps import apps
 from django.core.management.base import BaseCommand
 
 from django_extensions.management.jobs import get_jobs, print_jobs
-from django_extensions.management.utils import signalcommand
+from django_extensions.management.utils import setup_logger, signalcommand
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -31,15 +35,11 @@ class Command(BaseCommand):
         for app_name, job_name in sorted(jobs.keys()):
             job = jobs[(app_name, job_name)]
             if verbosity > 1:
-                print("Executing %s job: %s (app: %s)" % (when, job_name, app_name))
+                logger.info("Executing %s job: %s (app: %s)", when, job_name, app_name)
             try:
                 job().execute()
             except Exception:
-                import traceback
-                print("ERROR OCCURED IN %s JOB: %s (APP: %s)" % (when.upper(), job_name, app_name))
-                print("START TRACEBACK:")
-                traceback.print_exc()
-                print("END TRACEBACK\n")
+                logger.exception("ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name)
 
     def runjobs_by_signals(self, when, options):
         """ Run jobs from the signals """
@@ -76,6 +76,8 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         when = options['when']
+
+        setup_logger(logger, self.stdout)
 
         if options['list_jobs']:
             print_jobs(when, only_scheduled=True, show_when=True, show_appname=True)
