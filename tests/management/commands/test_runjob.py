@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import sys
 import six
 
@@ -16,6 +17,11 @@ class RunJobTests(TestCase):
     def setUp(self):
         sys.stdout = six.StringIO()
         sys.stderr = six.StringIO()
+
+        # Remove old loggers, since utils.setup_logger does not clean up after itself
+        logger = logging.getLogger("django_extensions.management.commands.runjob")
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
 
     def test_runs(self):
         # lame test...does it run?
@@ -70,5 +76,4 @@ class RunJobTests(TestCase):
         call_command('runjob', 'test_job', 'test_app')
 
         self.assertIn("ERROR OCCURED IN JOB: test_app (APP: test_job)", sys.stdout.getvalue())
-        self.assertIn("START TRACEBACK:", sys.stdout.getvalue())
-        self.assertIn("END TRACEBACK", sys.stdout.getvalue())
+        self.assertIn("Traceback (most recent call last):", sys.stdout.getvalue())
