@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import base64
-import os
 import warnings
 
 import django
@@ -10,10 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 
 try:
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import padding
-    from cryptography.hazmat.primitives.ciphers import algorithms, modes
-    from cryptography.hazmat.primitives.ciphers.base import Cipher
+    from cryptography.fernet import Fernet
 except ImportError:
     raise ImportError('Using an encrypted field requires the cryptography module. '
                       'You can obtain cryptography from https://cryptography.io/.')
@@ -27,19 +23,11 @@ class BaseEncryptedField(models.Field):
     prefix = 'enc_str:::'
 
     def __init__(self, *args, **kwargs):
-        if not getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_ALGORITHM', None):
-            raise ImproperlyConfigured('You must set the settings.CRYPTOGRAPHY_ENCRYPT_ALGORITHM '
-                                       'setting to your cryptography keys directory.')
+        if not getattr(settings, 'DJANGO_EXTENSIONS_ENCRYPTION_FIELDS_KEY', None):
+            raise ImproperlyConfigured('You must set the settings.DJANGO_EXTENSIONS_ENCRYPTION_FIELDS_KEY.')
 
-        if not getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_KEY', None):
-            raise ImproperlyConfigured('You must set the settings.CRYPTOGRAPHY_ENCRYPT_KEY '
-                                       'setting to your cryptography keys directory.')
-
-        crypt_class = self.get_crypt_class()
-        self.key = getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_KEY')
-        self.backend = default_backend()
-        self.algorithm = crypt_class(self.key)
-        self.block_size = self.algorithm.block_size
+        self.key = getattr(settings, 'DJANGO_EXTENSIONS_ENCRYPTION_FIELDS_KEY')
+        self.fernet = Fernet(self.key)
 
         # Encrypted size is larger than unencrypted
         self.unencrypted_length = max_length = kwargs.get('max_length', None)
@@ -53,37 +41,16 @@ class BaseEncryptedField(models.Field):
         # max-length for unicode strings that have non-ascii characters in them.
         # For PostGreSQL we might as well always use textfield since there is little
         # difference (except for length checking) between varchar and text in PG.
-        iv = os.urandom(self.block_size // 8)
-        cipher = Cipher(self.algorithm, modes.CBC(os.urandom(self.block_size // 8)), backend=self.backend)
-        encryptor = cipher.encryptor()
-        padder = padding.PKCS7(self.block_size).padder()
-
         test_bytes = ('x' * unencrypted_length).encode()
-        padded_data = padder.update(test_bytes) + padder.finalize()
-        encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
-        encrypted_data_with_iv = (
-            self.prefix
-            + base64.urlsafe_b64encode(encrypted_data).decode()
-            + ''.join(chr(x) for x in bytearray(iv))
-        )
-        return len(encrypted_data_with_iv)
-
-    def get_crypt_class(self):
-        """Get the cryptography algorithms class to use."""
-        cryptography_encrypt_algorithm = getattr(settings, 'CRYPTOGRAPHY_ENCRYPT_ALGORITHM')
-        return getattr(algorithms, cryptography_encrypt_algorithm)
+        encrypted_data = self.prefix + base64.urlsafe_b64encode(self.fernet.encrypt(test_bytes)).decode()
+        return len(encrypted_data)
 
     def to_python(self, value):
         if value and (value.startswith(self.prefix)):
-            iv = b''.join(bytes([ord(x[0])]) for x in value[-(self.block_size // 8):])
-            cipher = Cipher(self.algorithm, modes.CBC(iv), backend=self.backend)
-            decryptor = cipher.decryptor()
-            padder = padding.PKCS7(self.block_size).unpadder()
-
-            decrypted_text = decryptor.update(base64.urlsafe_b64decode(
-                value[len(self.prefix):-self.block_size // 8])) + decryptor.finalize()
-            unpadded_text = (padder.update(decrypted_text) + padder.finalize()).decode()
-            retval = unpadded_text
+            decrypted_text = self.fernet.decrypt(
+                base64.urlsafe_b64decode(value[len(self.prefix):])
+            )
+            retval = decrypted_text.decode()
         else:
             retval = value
         return retval
@@ -106,18 +73,9 @@ class BaseEncryptedField(models.Field):
                 )
                 value = value[:max_length]
 
-            iv = os.urandom(self.block_size // 8)
-            cipher = Cipher(self.algorithm, modes.CBC(iv), backend=self.backend)
-            encryptor = cipher.encryptor()
-            padder = padding.PKCS7(self.block_size).padder()
+            encrypted_data = self.fernet.encrypt(value.encode())
+            value = self.prefix + base64.urlsafe_b64encode(encrypted_data).decode()
 
-            padded_data = padder.update(value.encode()) + padder.finalize()
-            encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
-            value = (
-                self.prefix
-                + base64.urlsafe_b64encode(encrypted_data).decode()
-                + ''.join(chr(x) for x in bytearray(iv))
-            )
         return value
 
     def deconstruct(self):
