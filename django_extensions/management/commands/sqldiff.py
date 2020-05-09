@@ -815,7 +815,6 @@ class MySQLDiff(SQLDiff):
     # Fixing one bug in MySQL creates another issue. So just keep in mind
     # that this is way unreliable for MySQL atm.
     def get_field_db_type(self, description, field=None, table_name=None):
-        from MySQLdb.constants import FIELD_TYPE
         db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
             return
@@ -837,13 +836,11 @@ class MySQLDiff(SQLDiff):
                 db_type += ' AUTO_INCREMENT'
         return db_type
 
-
     def find_index_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         fields = dict([(field.column, field) for field in all_local_fields(meta)])
         meta_index_names = [idx.name for idx in meta.indexes]
         index_together = self.expand_together(meta.index_together, meta)
         unique_together = self.expand_together(meta.unique_together, meta)
-
 
         for constraint_name, constraint in six.iteritems(table_constraints):
             if constraint_name in meta_index_names:
@@ -880,7 +877,6 @@ class MySQLDiff(SQLDiff):
                     continue
 
             self.add_difference('index-missing-in-model', table_name, constraint_name)
-
 
     def find_unique_missing_in_db(self, meta, table_indexes, table_constraints, table_name, skip_list=None):
 
@@ -919,10 +915,6 @@ class MySQLDiff(SQLDiff):
 
             index_name = schema_editor._create_index_name(table_name, unique_columns)
             self.add_difference('unique-missing-in-db', table_name, unique_columns, index_name + "_uniq")
-
-
-
-
 
 
 class SqliteSQLDiff(SQLDiff):
