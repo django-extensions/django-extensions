@@ -4,10 +4,10 @@
 
 import gc
 import inspect
-import ctypes
 import weakref
 from collections import defaultdict
 
+from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db.models.signals import (
     ModelSignal, pre_init, post_init, pre_save, post_save, pre_delete,
@@ -35,6 +35,9 @@ class Command(BaseCommand):
     help = 'List all signals by model and signal type'
 
     def handle(self, *args, **options):
+        all_models = apps.get_models(include_auto_created=True, include_swapped=True)
+        model_lookup = {id(m): m for m in all_models}
+
         signals = [obj for obj in gc.get_objects() if isinstance(obj, ModelSignal)]
         models = defaultdict(lambda: defaultdict(list))
 
@@ -48,7 +51,7 @@ class Command(BaseCommand):
                     continue
                 receiver_id, sender_id = lookup
 
-                model = ctypes.cast(sender_id, ctypes.py_object).value
+                model = model_lookup.get(sender_id, '_unknown_')
                 if model:
                     models[model][signal_name].append(MSG.format(
                         name=receiver.__name__,
