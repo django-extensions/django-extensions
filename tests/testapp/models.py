@@ -3,6 +3,7 @@ import django
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models.signals import pre_save
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
@@ -492,3 +493,10 @@ class MultipleFieldsAndMethods(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+def dummy_handler(sender, instance, **kwargs):
+    pass
+
+
+pre_save.connect(dummy_handler, sender=HasOwnerModel)
