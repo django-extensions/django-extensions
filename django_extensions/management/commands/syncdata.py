@@ -179,7 +179,8 @@ class Command(BaseCommand):
                             except Exception:
                                 import traceback
                                 fixture.close()
-                                transaction.rollback()
+                                if transaction.get_rollback(self.using):
+                                    transaction.rollback(self.using)
                                 if show_traceback:
                                     traceback.print_exc()
                                 raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
