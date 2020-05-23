@@ -40,6 +40,10 @@ class Command(BaseCommand):
             help='Avoid remove any object from db',
         )
         parser.add_argument(
+            '--remove-before', action='store_true', dest='remove_before', default=False,
+            help='Remove existing objects before inserting and updating new ones',
+        )
+        parser.add_argument(
             '--database', default=DEFAULT_DB_ALIAS,
             help='Nominates a specific database to load fixtures into. Defaults to the "default" database.',
         )
@@ -157,20 +161,23 @@ class Command(BaseCommand):
                                 print("Installing %s fixture '%s' from %s." % (format, fixture_name, humanize(fixture_dir)))
                             try:
                                 objects_to_keep = {}
-                                objects = serializers.deserialize(format, fixture)
+                                objects = list(serializers.deserialize(format, fixture))
                                 for obj in objects:
-                                    object_count += 1
-                                    objects_per_fixture[-1] += 1
-
                                     class_ = obj.object.__class__
                                     if class_ not in objects_to_keep:
                                         objects_to_keep[class_] = set()
                                     objects_to_keep[class_].add(obj.object)
 
-                                    models.add(class_)
+                                if options['remove'] and options['remove_before']:
+                                    self.remove_objects_not_in(objects_to_keep, verbosity)
+
+                                for obj in objects:
+                                    object_count += 1
+                                    objects_per_fixture[-1] += 1
+                                    models.add(obj.object.__class__)
                                     obj.save()
 
-                                if options['remove']:
+                                if options['remove'] and not options['remove_before']:
                                     self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True
