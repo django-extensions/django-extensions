@@ -91,10 +91,10 @@ def dia2django(archivo):
                         myname = "\nclass %s(models.Model) :\n" % actclas
                         clases[actclas] = [[], myid, myname, 0]
                     if j.getAttribute("name") == "attributes":
-                        for l in j.getElementsByTagName("dia:composite"):
-                            if l.getAttribute("type") == "umlattribute":
+                        for ll in j.getElementsByTagName("dia:composite"):
+                            if ll.getAttribute("type") == "umlattribute":
                                 # Look for the attribute name and type
-                                for k in l.getElementsByTagName("dia:attribute"):
+                                for k in ll.getElementsByTagName("dia:attribute"):
                                     if k.getAttribute("name") == "name":
                                         nc = k.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
                                     elif k.getAttribute("name") == "type":
