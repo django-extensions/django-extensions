@@ -42,14 +42,14 @@ tsd = {
 v2c = re.compile(r'varchar\((\d+)\)')
 
 
-def index(fks, id):
+def find_index(fks, id_):
     """
     Look for the id on fks, fks is an array of arrays, each array has on [1]
     the id of the class in a dia diagram.  When not present returns None, else
     it returns the position of the class with id on fks
     """
-    for i, j in fks.items():
-        if fks[i][1] == id:
+    for i, _ in fks.items():
+        if fks[i][1] == id_:
             return i
     return None
 
@@ -62,8 +62,8 @@ def addparentstofks(rels, fks):
     put the class parent name.
     """
     for j in rels:
-        son = index(fks, j[1])
-        parent = index(fks, j[0])
+        son = find_index(fks, j[1])
+        parent = find_index(fks, j[0])
         fks[son][2] = fks[son][2].replace("models.Model", parent)
         if parent not in fks[son][0]:
             fks[son][0].append(parent)
