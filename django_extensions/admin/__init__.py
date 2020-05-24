@@ -52,7 +52,7 @@ class ForeignKeyAutocompleteAdminMixin:
     autocomplete_limit = getattr(settings, 'FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):
-        from django.conf.urls import url
+        from django.urls import path
 
         def wrap(view):
             def wrapper(*args, **kwargs):
@@ -60,7 +60,7 @@ class ForeignKeyAutocompleteAdminMixin:
             return update_wrapper(wrapper, view)
 
         return [
-            url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
+            path('foreignkey_autocomplete/', wrap(self.foreignkey_autocomplete),
                 name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
         ] + super().get_urls()
 
