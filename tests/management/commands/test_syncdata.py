@@ -32,6 +32,12 @@ class SyncDataExceptionsTests(TestCase):
         call_command('syncdata', 'invalid_fixture.xml', verbosity=2)
         self.assertIn("No fixture data found for 'invalid_fixture'. (File format may be invalid.)\n", m_stdout.getvalue())
 
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_return_SyncDataError_when_file_has_non_existent_field_in_fixture_data(self, m_stdout):
+        call_command('syncdata', 'fixture_with_nonexistent_field.json', verbosity=1)
+        self.assertIn("Problem installing fixture", m_stdout.getvalue())
+        self.assertIn("django.core.exceptions.FieldDoesNotExist: User has no field named 'non_existent_field'\n", m_stdout.getvalue())
+
     @pytest.mark.skipif(
         LooseVersion(get_version()) < LooseVersion('2.0.0'),
         reason="This test works only on Django greater than 2.x",
