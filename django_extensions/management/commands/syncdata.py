@@ -186,7 +186,6 @@ class Command(BaseCommand):
                             except Exception:
                                 import traceback
                                 fixture.close()
-                                transaction.rollback()
                                 if show_traceback:
                                     traceback.print_exc()
                                 raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
