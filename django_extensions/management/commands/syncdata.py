@@ -125,9 +125,9 @@ class Command(BaseCommand):
                 fixture_name = fixture_label
                 formats = serializers.get_public_serializer_formats()
             else:
-                fixture_name, format = '.'.join(parts[:-1]), parts[-1]
-                if format in serializers.get_public_serializer_formats():
-                    formats = [format]
+                fixture_name, format_ = '.'.join(parts[:-1]), parts[-1]
+                if format_ in serializers.get_public_serializer_formats():
+                    formats = [format_]
                 else:
                     formats = []
 
@@ -135,7 +135,7 @@ class Command(BaseCommand):
                 if verbosity > 1:
                     print("Loading '%s' fixtures..." % fixture_name)
             else:
-                raise SyncDataError("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format))
+                raise SyncDataError("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format_))
 
             if os.path.isabs(fixture_name):
                 fixture_dirs = [fixture_name]
@@ -147,11 +147,11 @@ class Command(BaseCommand):
                     print("Checking %s for fixtures..." % humanize(fixture_dir))
 
                 label_found = False
-                for format in formats:
+                for format_ in formats:
                     if verbosity > 1:
-                        print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format, fixture_name))
+                        print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format_, fixture_name))
                     try:
-                        full_path = os.path.join(fixture_dir, '.'.join([fixture_name, format]))
+                        full_path = os.path.join(fixture_dir, '.'.join([fixture_name, format_]))
                         fixture = open(full_path, 'r')
                         if label_found:
                             fixture.close()
@@ -160,10 +160,10 @@ class Command(BaseCommand):
                             fixture_count += 1
                             objects_per_fixture.append(0)
                             if verbosity > 0:
-                                print("Installing %s fixture '%s' from %s." % (format, fixture_name, humanize(fixture_dir)))
+                                print("Installing %s fixture '%s' from %s." % (format_, fixture_name, humanize(fixture_dir)))
                             try:
                                 objects_to_keep = {}
-                                objects = list(serializers.deserialize(format, fixture))
+                                objects = list(serializers.deserialize(format_, fixture))
                                 for obj in objects:
                                     class_ = obj.object.__class__
                                     if class_ not in objects_to_keep:
@@ -197,7 +197,7 @@ class Command(BaseCommand):
                         raise e
                     except Exception:
                         if verbosity > 1:
-                            print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
+                            print("No %s fixture '%s' in %s." % (format_, fixture_name, humanize(fixture_dir)))
 
         # If any of the fixtures we loaded contain 0 objects, assume that an
         # error was encountered during fixture loading.
