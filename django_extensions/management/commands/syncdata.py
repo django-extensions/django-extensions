@@ -23,6 +23,10 @@ from django.template.defaultfilters import pluralize
 from django_extensions.management.utils import signalcommand
 
 
+def humanize(dirname):
+    return "'%s'" % dirname if dirname else 'absolute path'
+
+
 class SyncDataError(Exception):
     pass
 
@@ -107,8 +111,6 @@ class Command(BaseCommand):
         object_count = 0
         objects_per_fixture = []
         models = set()
-
-        humanize = lambda dirname: dirname and "'%s'" % dirname or 'absolute path'
 
         # Get a cursor (even though we don't need one yet). This has
         # the side effect of initializing the test database (if
