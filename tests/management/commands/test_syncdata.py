@@ -5,7 +5,7 @@ from distutils.version import LooseVersion
 import pytest
 from django import get_version
 from django.contrib.auth.models import User
-from django.core.management import call_command
+from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
 from six import StringIO
@@ -22,30 +22,27 @@ TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 class SyncDataExceptionsTests(TestCase):
     """Tests for SyncData command exceptions."""
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_should_return_SyncDataError_when_unknown_fixture_format(self, m_stdout):
-        call_command('syncdata', 'foo.jpeg', verbosity=2)
-        self.assertEqual("Problem installing fixture 'foo': jpeg is not a known serialization format.\n", m_stdout.getvalue())
+    def test_should_return_SyncDataError_when_unknown_fixture_format(self):
+        with pytest.raises(CommandError, match="Problem installing fixture 'foo': jpeg is not a known serialization format."):
+            call_command('syncdata', 'foo.jpeg', verbosity=2)
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_should_return_SyncDataError_when_file_not_contains_valid_fixture_data(self, m_stdout):
-        call_command('syncdata', 'invalid_fixture.xml', verbosity=2)
-        self.assertIn("No fixture data found for 'invalid_fixture'. (File format may be invalid.)\n", m_stdout.getvalue())
+    def test_should_return_SyncDataError_when_file_not_contains_valid_fixture_data(self):
+        with pytest.raises(CommandError, match=r"No fixture data found for 'invalid_fixture'. \(File format may be invalid.\)"):
+            call_command('syncdata', 'invalid_fixture.xml', verbosity=2)
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_should_return_SyncDataError_when_file_has_non_existent_field_in_fixture_data(self, m_stdout):
-        call_command('syncdata', 'fixture_with_nonexistent_field.json', verbosity=1)
-        self.assertIn("Problem installing fixture", m_stdout.getvalue())
-        self.assertIn("django.core.exceptions.FieldDoesNotExist: User has no field named 'non_existent_field'\n", m_stdout.getvalue())
+    def test_should_return_SyncDataError_when_file_has_non_existent_field_in_fixture_data(self):
+        with pytest.raises(CommandError, match=r"Problem installing fixture '.+fixture_with_nonexistent_field.json'"):
+            call_command('syncdata', 'fixture_with_nonexistent_field.json', verbosity=1)
+        with pytest.raises(CommandError, match="django.core.exceptions.FieldDoesNotExist: User has no field named 'non_existent_field'"):
+            call_command('syncdata', 'fixture_with_nonexistent_field.json', verbosity=1)
 
     @pytest.mark.skipif(
         LooseVersion(get_version()) < LooseVersion('2.0.0'),
         reason="This test works only on Django greater than 2.x",
     )
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_should_return_SyncDataError_when_multiple_fixtures(self, m_stdout):
-        call_command('syncdata', 'users', verbosity=2)
-        self.assertIn("Multiple fixtures named 'users' in '{}'. Aborting.\n".format(TEST_FIXTURE_DIR), m_stdout.getvalue())
+    def test_should_return_SyncDataError_when_multiple_fixtures(self):
+        with pytest.raises(CommandError, match="Multiple fixtures named 'users' in '{}'. Aborting.".format(TEST_FIXTURE_DIR)):
+            call_command('syncdata', 'users', verbosity=2)
 
 
 @override_settings(FIXTURE_DIRS=[TEST_FIXTURE_DIR])

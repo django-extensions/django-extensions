@@ -15,7 +15,7 @@ import six
 from django.apps import apps
 from django.conf import settings
 from django.core import serializers
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.template.defaultfilters import pluralize
@@ -93,14 +93,14 @@ class Command(BaseCommand):
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
         except SyncDataError as exc:
-            print(self.style.ERROR(exc))
-
-        # Close the DB connection -- unless we're still in a transaction. This
-        # is required as a workaround for an edge case in MySQL: if the same
-        # connection is used to create tables, load data, and query, the query
-        # can return incorrect results. See Django #7572, MySQL #37735.
-        if transaction.get_autocommit(self.using):
-            connections[self.using].close()
+            raise CommandError(exc)
+        finally:
+            # Close the DB connection -- unless we're still in a transaction. This
+            # is required as a workaround for an edge case in MySQL: if the same
+            # connection is used to create tables, load data, and query, the query
+            # can return incorrect results. See Django #7572, MySQL #37735.
+            if transaction.get_autocommit(self.using):
+                connections[self.using].close()
 
     def syncdata(self, fixture_labels, options):
         verbosity = options['verbosity']
