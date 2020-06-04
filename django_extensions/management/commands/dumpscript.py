@@ -153,7 +153,7 @@ def get_models(app_labels):
     return models
 
 
-class Code(object):
+class Code:
     """
     A snippet of python script.
     This keeps track of import statements and can be output to a string.
@@ -525,7 +525,7 @@ class Script(Code):
 import os, sys
 from django.db import transaction
 
-class BasicImportHelper(object):
+class BasicImportHelper:
 
     def pre_import(self):
         pass

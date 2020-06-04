@@ -69,7 +69,7 @@ def all_local_fields(meta):
     return all_fields
 
 
-class SQLDiff(object):
+class SQLDiff:
     DATA_TYPES_REVERSE_OVERRIDE = {}  # type: Dict[int, Union[str, Callable]]
 
     IGNORE_MISSING_TABLES = [

@@ -55,7 +55,7 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
-class ModelGraph(object):
+class ModelGraph:
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
         self.cli_options = kwargs.get('cli_options', None)
