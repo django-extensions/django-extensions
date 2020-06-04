@@ -4,6 +4,10 @@ Changelog
 3.0.0
 -----
 
+This is the first Django Extensions release which only targets DJango 2.2 and above.
+It drops official support for Python 2.7.
+
+
 Changes:
  - Removal of Python 2 support
  - TimeStampedModel; Removed default ordering on abstract model
