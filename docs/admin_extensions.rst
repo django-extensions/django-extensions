@@ -16,9 +16,9 @@ Current Admin Extensions
 Depreciation
 ------------
 
-Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefor we are deprecated this extension and high encourage everybody to update to it.
+Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefore we are deprecating this extension and highly encouraging everyone to update to it.
 
-This code will be removed in the near feature when support for Django older then 2.0 is dropped.
+This code will be removed in the near future when support for Django older then 2.0 is dropped.
 
 For more information see: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
 
