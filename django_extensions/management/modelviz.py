@@ -212,6 +212,7 @@ class ModelGraph:
 
     def get_appmodel_context(self, appmodel, appmodel_abstracts):
         context = {
+            'model': appmodel,
             'app_name': appmodel.__module__.replace(".", "_"),
             'name': appmodel.__name__,
             'abstracts': appmodel_abstracts,
