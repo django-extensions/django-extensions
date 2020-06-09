@@ -131,6 +131,7 @@ class ModelGraph:
         # TODO: ManyToManyField, GenericRelation
 
         return {
+            'field': field,
             'name': field.name,
             'label': label,
             'type': t,
