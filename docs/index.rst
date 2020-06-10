@@ -51,7 +51,6 @@ Contents
 
    installation_instructions
    command_extensions
-   command_extension_ideas
    command_signals
    admin_extensions
    shell_plus
