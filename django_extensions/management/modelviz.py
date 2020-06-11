@@ -111,7 +111,14 @@ class ModelGraph:
         }
 
         if as_json:
-            graph_data['graphs'] = [context.flatten() for context in self.graphs]
+            # We need to remove the model and field class because it is not JSON serializable
+            graphs = [context.flatten() for context in self.graphs]
+            for context in graphs:
+                for model_data in context['models']:
+                    model_data.pop('model')
+                    for field_data in model_data['fields']:
+                        field_data.pop('field')
+            graph_data['graphs'] = graphs
         else:
             graph_data['graphs'] = self.graphs
 
