@@ -66,6 +66,7 @@ Contents
    jobs_scheduling
    list_model_info
    merge_model_instances
+   migrationstate
    model_extensions
    namespace_proposal
    permissions
