@@ -20,7 +20,6 @@ class EncryptionWarning(RuntimeWarning):
 
 
 class BaseEncryptedField(models.Field):
-    prefix = 'enc_str:::'
 
     def __init__(self, *args, **kwargs):
         if not getattr(settings, 'DJANGO_EXTENSIONS_ENCRYPTION_FIELDS_KEY', None):
@@ -42,13 +41,13 @@ class BaseEncryptedField(models.Field):
         # For PostGreSQL we might as well always use textfield since there is little
         # difference (except for length checking) between varchar and text in PG.
         test_bytes = ('x' * unencrypted_length).encode()
-        encrypted_data = self.prefix + base64.urlsafe_b64encode(self.fernet.encrypt(test_bytes)).decode()
+        encrypted_data = base64.urlsafe_b64encode(self.fernet.encrypt(test_bytes)).decode()
         return len(encrypted_data)
 
     def to_python(self, value):
-        if value and (value.startswith(self.prefix)):
+        if value:
             decrypted_text = self.fernet.decrypt(
-                base64.urlsafe_b64decode(value[len(self.prefix):])
+                base64.urlsafe_b64decode(value)
             )
             retval = decrypted_text.decode()
         else:
@@ -63,18 +62,17 @@ class BaseEncryptedField(models.Field):
             return self.to_python(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
-        if value and not value.startswith(self.prefix):
-            # Truncated encrypted content is unreadable,
-            # so truncate before encryption
-            max_length = self.unencrypted_length
-            if max_length and len(value) > max_length:
-                warnings.warn("Truncating field %s from %d to %d bytes" % (
-                    self.name, len(value), max_length), EncryptionWarning
-                )
-                value = value[:max_length]
+        # Truncated encrypted content is unreadable,
+        # so truncate before encryption
+        max_length = self.unencrypted_length
+        if max_length and len(value) > max_length:
+            warnings.warn("Truncating field %s from %d to %d bytes" % (
+                self.name, len(value), max_length), EncryptionWarning
+            )
+            value = value[:max_length]
 
-            encrypted_data = self.fernet.encrypt(value.encode())
-            value = self.prefix + base64.urlsafe_b64encode(encrypted_data).decode()
+        encrypted_data = self.fernet.encrypt(value.encode())
+        value = base64.urlsafe_b64encode(encrypted_data).decode()
 
         return value
 
