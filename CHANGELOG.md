@@ -4,7 +4,7 @@ Changelog
 3.0.0
 -----
 
-This is the first Django Extensions release which only targets DJango 2.2 and above.
+This is the first Django Extensions release which only targets Django 2.2 and above.
 It drops official support for Python 2.7.
 
 
@@ -19,7 +19,7 @@ Changes:
 -----
 
 Changes:
- - Fix: shell_plus, move notebook down the list of prefered shells
+ - Fix: shell_plus, move notebook down the list of preferred shells
  - Fix: sqldiff, fix KeyError when detecting missing (unique) indexes
  - Improvement: encrypted fields, make it harder to use deprecated keyczar fields
  - Locale: Removed empty localizations
@@ -155,7 +155,7 @@ Changes:
   - Fix: sqldiff, fix hstorefield
   - Deprecate: truncate_letters, use Django's truncatechars
   - Deprecate: passwd, use Django's changepassword
-  - Deprecate: Keyczar encrypted fields, Keyczar is abandonned / deprecated
+  - Deprecate: Keyczar encrypted fields, Keyczar is abandoned / deprecated
 
 
 2.1.6
@@ -196,7 +196,7 @@ Changes:
 -----
 
 Changes:
-  - Fix: Readme, add direct linkt to screencast video
+  - Fix: Readme, add direct link to screencast video
   - Fix: graph_models, regression under Python 2
   - Fix: ForeignKeyAutocompleteAdmin, 2.0.8 breaks ForeignKeyAutocompleteAdmin
   - Fix: AutoSlugField, fix regression when copying an autoslug model require the explicit clearing of the slug if it needs to be recalculated
@@ -342,7 +342,7 @@ Changes:
 Changes:
   - Fix: runserver_plus, fix for Django 2.0 middleware handling
   - Fix: shell_plus, fixed app_name resolving
-  - Fix: AutoSlugfield, deconstruct did not match construction values
+  - Fix: AutoSlugField, deconstruct did not match construction values
   - Fix: runjob, not compatible with apps that use AppConfig in INSTALLED_APPS
   - Improvement: runserver_plus, added configuring paths to certificates
   - Improvement: sample.py template, add newline to avoid linter warnings
@@ -480,8 +480,8 @@ Changes:
  - Improvement: shell_plus, fix SHELL_PLUS_PRE_IMPORTS example
  - Improvement: setup.py, fix and unify running tests
  - Improvement: runserver_plus, add RUNSERVERPLUS_POLLER_RELOADER_TYPE setting
- - Improvement: generate_secret_key, use algoritme from django
- - Docs: fix grammer and spelling mistakes
+ - Improvement: generate_secret_key, use algorithm from django
+ - Docs: fix grammar and spelling mistakes
 
 
 
@@ -503,7 +503,7 @@ Changes:
 -----
 
 Changes:
- - Improvement: admin_generator, use decorator style for registring ModelAdmins.
+ - Improvement: admin_generator, use decorator style for registering ModelAdmins.
  - Improvement: sqldiff, quote tablename for PRAGMA in sqlite
  - Fix: graph_models, Fix `attributes` referenced before assignment
  - Fix: pipchecker, Fix AttributeError caused by missing method
@@ -651,7 +651,7 @@ Changes:
 1.6.3
 -----
 
-Bumped version number for incomplete PyPi uplaod
+Bumped version number for incomplete PyPi upload
 
 1.6.2
 -----
@@ -706,7 +706,7 @@ Changes:
  - Fix: Django 1.9 compatibility
  - New: runserver_plus, add --startup-messages to control when to show them
  - New: added support for Python 3.5
- - Improvement: show_template_tags, renamed from show_templatetags for consistancy
+ - Improvement: show_template_tags, renamed from show_templatetags for consistency
  - Removed: jquery library (after dropping support for Django 1.5)
 
 
@@ -726,7 +726,7 @@ Changes:
  - Fix: runserver_plus, fix signature of null_technical_500_response for Django 1.8+
  - Fix: graph_models, use force_bytes instead of .decode('utf8')
  - Improvement: print_settings, add format option to only print values
- - Improvement: print_esttings, add format option for simple key = value text output
+ - Improvement: print_settings, add format option for simple key = value text output
  - Improvement: email_export, documentation updates
  - Improvement: shell_plus, auto load conditional db expressions Case and When
 
@@ -739,7 +739,7 @@ Changes:
  - Fix: ModificationDateTimeField, migration error
  - Fix: shell_plus, options is not always in db config dictionary
  - Fix: admin filters, contrib.admin.util fallback code
- - Fix: graph_models, currectly support parsing lists for cli options
+ - Fix: graph_models, correctly support parsing lists for cli options
  - Improvement: sqldsn, support postfix
  - Improvement: utils, remove get_project_root function
 
@@ -833,7 +833,7 @@ Changes:
  - Improvement: tox.ini, refactored to be more DRY
  - Improvement: runserver_plus, also reload on changes to translation files
  - Improvement: runserver_plus, add reloader_interval support
- - Improvement: create_template_tags, removed unusued command line option
+ - Improvement: create_template_tags, removed unused command line option
  - Docs: print_user_for_session, add note about SESSION_ENGINE
  - Docs: runserver_plus, added section about IO calls and CPU usage
 
@@ -892,7 +892,7 @@ Changes:
 
 Changes:
  - Improvement: sqldiff, fix for dbcolumn not used in few places when generating the sqldiff
- - Fix: sqldiff, backwards compatiblity fix for Django 1.4
+ - Fix: sqldiff, backwards compatibility fix for Django 1.4
  - Fix: ForeignKey Field, handling of __str__ instead of __unicode__ in python3
 
 
@@ -975,7 +975,7 @@ Changes:
 
 Changes:
  - Feature: shell_plus, add --kernel option to start as standalone IPython kernel
- - Feature: reset_db, Programatically determine PostGIS template
+ - Feature: reset_db, Programmatically determine PostGIS template
  - Feature: sqldiff, add support for PointField and MultiPolygonField
  - Test: renamed test app
  - Fix: runserver_plus, --print-sql for Django 1.7
@@ -1048,7 +1048,7 @@ Changes:
  - Feature: print_settings, allow to specify the settings you want to see
  - Improvement: graph_models, use '//' instead of '#' as comment character in dot files
  - Improvement: graph_models, added error message for abstract models without explicit relations
- - Improvement: JSONField, use python's buildin json support by default with fallback on django.utils.simplejson
+ - Improvement: JSONField, use python's built-in json support by default with fallback on django.utils.simplejson
  - Improvement: PostgreSQLUUIDField, parse value into UUID type before sending it to the database
  - Improvement: Use django.JQuery in autocomplete.js if available
  - Improvement: use "a not in b" instead of "not a in b" in the entire codebase
