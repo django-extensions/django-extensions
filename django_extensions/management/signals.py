@@ -10,5 +10,5 @@ run_weekly_jobs = Signal()
 run_monthly_jobs = Signal()
 run_yearly_jobs = Signal()
 
-pre_command = Signal(providing_args=["args", "kwargs"])
-post_command = Signal(providing_args=["args", "kwargs", "outcome"])
+pre_command = Signal()
+post_command = Signal()

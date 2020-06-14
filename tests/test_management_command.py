@@ -336,7 +336,7 @@ class MergeModelInstancesTests(TestCase):
     @mock.patch('django_extensions.management.commands.merge_model_instances.apps.get_models')
     @mock.patch('django_extensions.management.commands.merge_model_instances.input')
     def test_get_model_to_merge(self, test_input, get_models):
-        class Model(object):
+        class Model:
             __name__ = ""
 
         return_value = []
@@ -352,13 +352,13 @@ class MergeModelInstancesTests(TestCase):
     @mock.patch('django_extensions.management.commands.merge_model_instances.input')
     def test_get_field_names(self, test_input):
 
-        class Field(object):
+        class Field:
             name = ""
 
             def __init__(self, name):
                 self.name = name
 
-        class Model(object):
+        class Model:
             __name__ = ""
             one = Field(name="one")
             two = Field(name="two")

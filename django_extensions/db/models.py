@@ -24,7 +24,6 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         get_latest_by = 'modified'
-        ordering = ('-modified', '-created',)
         abstract = True
 
 

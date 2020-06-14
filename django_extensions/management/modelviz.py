@@ -55,7 +55,7 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
-class ModelGraph(object):
+class ModelGraph:
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
         self.cli_options = kwargs.get('cli_options', None)
@@ -111,7 +111,14 @@ class ModelGraph(object):
         }
 
         if as_json:
-            graph_data['graphs'] = [context.flatten() for context in self.graphs]
+            # We need to remove the model and field class because it is not JSON serializable
+            graphs = [context.flatten() for context in self.graphs]
+            for context in graphs:
+                for model_data in context['models']:
+                    model_data.pop('model')
+                    for field_data in model_data['fields']:
+                        field_data.pop('field')
+            graph_data['graphs'] = graphs
         else:
             graph_data['graphs'] = self.graphs
 
@@ -131,6 +138,7 @@ class ModelGraph(object):
         # TODO: ManyToManyField, GenericRelation
 
         return {
+            'field': field,
             'name': field.name,
             'label': label,
             'type': t,
@@ -211,6 +219,7 @@ class ModelGraph(object):
 
     def get_appmodel_context(self, appmodel, appmodel_abstracts):
         context = {
+            'model': appmodel,
             'app_name': appmodel.__module__.replace(".", "_"),
             'name': appmodel.__name__,
             'abstracts': appmodel_abstracts,

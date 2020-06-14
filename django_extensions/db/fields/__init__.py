@@ -33,7 +33,7 @@ from django.utils.encoding import force_str
 MAX_UNIQUE_QUERY_ATTEMPTS = getattr(settings, 'EXTENSIONS_MAX_UNIQUE_QUERY_ATTEMPTS', 100)
 
 
-class UniqueFieldMixin(object):
+class UniqueFieldMixin:
 
     def check_is_bool(self, attrname):
         if not isinstance(getattr(self, attrname), bool):
@@ -471,7 +471,7 @@ class UUIDVersionError(Exception):
     pass
 
 
-class UUIDFieldMixin(object):
+class UUIDFieldMixin:
     """
     UUIDFieldMixin
 

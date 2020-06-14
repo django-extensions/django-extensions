@@ -390,28 +390,28 @@ Additional Imports
 ------------------
 
 In addition to importing the models you can specify other items to import by default.
-These are specified in SHELL_PLUS_PRE_IMPORTS and SHELL_PLUS_POST_IMPORTS. The former is imported
-before any other imports (such as the default models import) and the latter is imported after any
-other imports. Both have similar syntax. So in your settings.py file:
+These can be specified with the settings ``SHELL_PLUS_IMPORTS``, ``SHELL_PLUS_PRE_IMPORTS`` and ``SHELL_PLUS_POST_IMPORTS``.
+
+The other of import loading is as follows:
+
+ - ``SHELL_PLUS_PRE_IMPORTS``
+ - Subclasses (if enabled)
+ - Models (if not disabled)
+ - Default Django imports (if not disabled)
+ - ``SHELL_PLUS_IMPORTS``
+ - ``SHELL_PLUS_POST_IMPORTS``
+
+Example for in your ``settings.py`` file:
 
 ::
 
-    SHELL_PLUS_PRE_IMPORTS = [
-        ('module.submodule1', ('class1', 'function2')),
-        ('module.submodule2', 'function3'),
-        ('module.submodule3', '*'),
-        'module.submodule4'
+    SHELL_PLUS_IMPORTS = [
+        'from module.submodule1 import class1, function2',
+        'from module.submodule2 import function3 as another1',
+        'from module.submodule3 import *',
+        'import module.submodule4',
     ]
 
-The above example would directly translate to the following python code which would be executed before
-the automatic imports:
-
-::
-
-    from module.submodule1 import class1, function2
-    from module.submodule2 import function3
-    from module.submodule3 import *
-    import module.submodule4
 
 These symbols will be available as soon as the shell starts.
 

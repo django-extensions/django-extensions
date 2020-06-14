@@ -17,7 +17,7 @@ class JobError(Exception):
     pass
 
 
-class BaseJob(object):
+class BaseJob:
     help = "undefined job description."
     when = None  # type: Optional[str]
 

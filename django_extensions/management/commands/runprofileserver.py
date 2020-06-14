@@ -23,7 +23,7 @@ from django_extensions.management.utils import signalcommand
 USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 
 
-class KCacheGrind(object):
+class KCacheGrind:
     def __init__(self, profiler):
         self.data = profiler.getstats()
         self.out_file = None

@@ -84,4 +84,17 @@ CACHES = {
     },
 }
 
+SHELL_PLUS_PRE_IMPORTS = [
+    'import sys, os',
+]
+SHELL_PLUS_IMPORTS = [
+    'from django_extensions import settings as django_extensions_settings',
+]
+SHELL_PLUS_POST_IMPORTS = [
+    'import traceback',
+    'import pprint',
+    'import os as test_os',
+    'from django_extensions.utils import *',
+]
+
 DJANGO_EXTENSIONS_ENCRYPTION_FIELDS_KEY = b'ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg='
