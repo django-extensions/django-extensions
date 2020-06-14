@@ -26,16 +26,10 @@ except ImportError:
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
-try:
-    from urllib.parse import urlparse
-    from urllib.error import HTTPError
-    from urllib.request import Request, urlopen
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    # Python 2
-    from urlparse import urlparse  # type: ignore
-    from urllib2 import HTTPError, Request, urlopen  # type: ignore
-    from xmlrpclib import ServerProxy  # type: ignore
+from urllib.parse import urlparse
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+from xmlrpc.client import ServerProxy
 
 try:
     import requests
