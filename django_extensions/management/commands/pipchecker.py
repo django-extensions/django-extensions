@@ -6,6 +6,7 @@ from distutils.version import LooseVersion
 
 import pip
 from django.core.management.base import BaseCommand, CommandError
+from pip._internal.req.constructors import install_req_from_line
 
 try:
     try:
@@ -89,6 +90,8 @@ class Command(BaseCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
+                    if LooseVersion(pip.__version__) >= LooseVersion('20.1'):
+                        req = install_req_from_line(req.requirement)
                     name = req.name if req.name else req.link.filename
                     # url attribute changed to link in pip version 6.1.0 and above
                     if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
