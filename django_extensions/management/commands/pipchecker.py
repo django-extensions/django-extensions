@@ -7,7 +7,9 @@ from distutils.version import LooseVersion
 import pip
 from django.core.management.base import BaseCommand, CommandError
 from pip._internal.req import InstallRequirement
-from pip._internal.req.constructors import install_req_from_line
+
+if LooseVersion(pip.__version__) >= LooseVersion('19.0'):
+    from pip._internal.req.constructors import install_req_from_line  # noqa
 
 try:
     try:
