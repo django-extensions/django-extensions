@@ -6,6 +6,10 @@ from distutils.version import LooseVersion
 
 import pip
 from django.core.management.base import BaseCommand, CommandError
+from pip._internal.req import InstallRequirement
+
+if LooseVersion(pip.__version__) >= LooseVersion('19.0'):
+    from pip._internal.req.constructors import install_req_from_line  # noqa
 
 try:
     try:
@@ -26,16 +30,10 @@ except ImportError:
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
-try:
-    from urllib.parse import urlparse
-    from urllib.error import HTTPError
-    from urllib.request import Request, urlopen
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    # Python 2
-    from urlparse import urlparse  # type: ignore
-    from urllib2 import HTTPError, Request, urlopen  # type: ignore
-    from xmlrpclib import ServerProxy  # type: ignore
+from urllib.parse import urlparse
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+from xmlrpc.client import ServerProxy
 
 try:
     import requests
@@ -89,7 +87,10 @@ class Command(BaseCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
+                    if not isinstance(req, InstallRequirement):
+                        req = install_req_from_line(req.requirement)
                     name = req.name if req.name else req.link.filename
+
                     # url attribute changed to link in pip version 6.1.0 and above
                     if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
                         self.reqs[name] = {
