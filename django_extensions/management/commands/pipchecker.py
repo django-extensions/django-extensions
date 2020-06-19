@@ -90,11 +90,13 @@ class Command(BaseCommand):
         with PipSession() as session:
             for filename in req_files:
                 for req in parse_requirements(filename, session=session):
-                    if LooseVersion(pip.__version__) >= LooseVersion('20.1'):
+                    pip_version = LooseVersion(pip.__version__)
+                    if pip_version >= LooseVersion('20.1'):
                         req = install_req_from_line(req.requirement)
                     name = req.name if req.name else req.link.filename
+
                     # url attribute changed to link in pip version 6.1.0 and above
-                    if LooseVersion(pip.__version__) > LooseVersion('6.0.8'):
+                    if pip_version > LooseVersion('6.0.8'):
                         self.reqs[name] = {
                             "pip_req": req,
                             "url": req.link,
