@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import pip
+import pkg_resources
 import pytest
 from django.core.management import call_command
 from django.test import TestCase
@@ -92,3 +93,25 @@ class PipCheckerTests(TestCase):
         os.remove(requirements_path)
 
         self.assertTrue(value.endswith('repo is not frozen\n'))
+
+    def test_pipchecker_with_outdated_requirement_on_pip20_1(self):
+        subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', 'pip==20.1'])
+        importlib.reload(pip)
+
+        requirements_path = './requirements.txt'
+        out = StringIO()
+
+        f = open(requirements_path, 'wt')
+        f.write('djangorestframework==3.0.0')
+        f.close()
+
+        subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+        importlib.reload(pkg_resources)
+        call_command('pipchecker', '-r', requirements_path, stdout=out)
+
+        value = out.getvalue()
+
+        subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
+        os.remove(requirements_path)
+
+        self.assertTrue(value.endswith('available\n'))
