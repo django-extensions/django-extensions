@@ -16,7 +16,7 @@ Current Database Model Extensions
 * *ActivatorModel* - Abstract Base Class that provides a ``status``,
   ``activate_date``, and ``deactivate_date`` fields.
 
-The ``status`` field is an ``IntegerField`` whose value is choosen from a tuple
+The ``status`` field is an ``IntegerField`` whose value is chosen from a tuple
 of choices - active and inactive - defaulting to active. This model also
 exposes a custom manager, allowing the user to easily query for active or
 inactive objects.
