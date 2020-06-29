@@ -24,7 +24,7 @@ Django-extensions is hosted on github::
 Source code can be accessed by performing a Git clone.
 
 Tracking the development version of *django command extensions* should be
-pretty stable and will keep you up-to-date with the latests fixes.
+pretty stable and will keep you up-to-date with the latest fixes.
 
   $ pip install -e git+https://github.com/django-extensions/django-extensions.git#egg=django-extensions
 

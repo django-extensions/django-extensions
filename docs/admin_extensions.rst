@@ -11,7 +11,7 @@ Current Admin Extensions
 
 * *ForeignKeyAutocompleteStackedInline*, *ForeignKeyAutocompleteTabularInline* -
   in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
-  enable a search input field for ForeginKey fields in AdminInline classes.
+  enable a search input field for ForeignKey fields in AdminInline classes.
 
 Depreciation
 ------------

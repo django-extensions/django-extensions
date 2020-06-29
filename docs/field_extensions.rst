@@ -7,7 +7,7 @@ Field Extensions
 Current Database Model Field Extensions
 ---------------------------------------
 
-* *AutoSlugField* - AutoSlugfield will automatically create a unique slug
+* *AutoSlugField* - AutoSlugField will automatically create a unique slug
   incrementing an appended number on the slug until it is unique. Inspired by
   SmileyChris' Unique Slugify snippet.
 
@@ -75,7 +75,7 @@ Current Database Model Field Extensions
 * *RandomCharField* - AutoRandomCharField will automatically create a
   unique random character field with the specified length. By default
   upper/lower case and digits are included as possible characters. Given
-  a length of 8 thats yields 3.4 million possible combinations. A 12
+  a length of 8 that yields 3.4 million possible combinations. A 12
   character field would yield about 2 billion. Below are some examples::
 
     >>> RandomCharField(length=8, unique=True)

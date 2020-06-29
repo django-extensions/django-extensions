@@ -12,13 +12,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
-try:
-    from django.utils.autoreload import gen_filenames
-except ImportError:  # Django >=2.2
-    from django.utils.autoreload import get_reloader
-
-    def gen_filenames():
-        return get_reloader().watched_files()
+from django.utils.autoreload import get_reloader
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -32,6 +26,10 @@ except ImportError:
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
+
+
+def gen_filenames():
+    return get_reloader().watched_files()
 
 
 naiveip_re = re.compile(r"""^(?:
