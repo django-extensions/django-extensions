@@ -3,9 +3,15 @@ import json
 import os
 import re
 from distutils.version import LooseVersion
+from urllib.parse import urlparse
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+from xmlrpc.client import ServerProxy
 
 import pip
 from django.core.management.base import BaseCommand, CommandError
+from django_extensions.management.color import color_style
+from django_extensions.management.utils import signalcommand
 from pip._internal.req import InstallRequirement
 
 if LooseVersion(pip.__version__) >= LooseVersion('19.0'):
@@ -26,14 +32,6 @@ except ImportError:
         from pip.req import parse_requirements
     except ImportError:
         raise CommandError("Pip version 6 or higher is required")
-
-from django_extensions.management.color import color_style
-from django_extensions.management.utils import signalcommand
-
-from urllib.parse import urlparse
-from urllib.error import HTTPError
-from urllib.request import Request, urlopen
-from xmlrpc.client import ServerProxy
 
 try:
     import requests
