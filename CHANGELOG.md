@@ -1,6 +1,13 @@
 Changelog
 =========
 
+3.0.1
+-----
+
+Changes:
+ - Fix: setup.py, add python_requires and remove legacy trove classifiers
+
+
 3.0.0
 -----
 
@@ -24,7 +31,6 @@ Changes:
  - Improvement: graph_models, add field and model to template context
  - Fix: syncdata, fix non existent field in fixture data
  - Fix: pipchecker, compatibility with pip 20.1
-
 
 
 2.2.9
