@@ -11,9 +11,20 @@ It drops official support for Python 2.7.
 Changes:
  - Removal of Python 2 support
  - Removal of deprecated keyczar encrypted fields EncryptedTextField and EncryptedCharField
- - TimeStampedModel; Removed default ordering on abstract model
+ - Removal of deprecated passwd command
+ - Removal of truncate_letters filter
+ - Change: TimeStampedModel; Removed default ordering on abstract model
+ - New: DjangoExtensionsConfig AppConfig
  - New: shell_plus, JupyterLab support
+ - New: list_signals, List all signals by model and signal type
  - Improvement: shell_plus, use -- to directly pass additional arguments to Jupyter
+ - Improvement: shell_plus, improvements to MySQL support
+ - Improvement: jobs, use logging to record errors
+ - Improvement: syncdata, added --remove-before flag
+ - Improvement: graph_models, add field and model to template context
+ - Fix: syncdata, fix non existent field in fixture data
+ - Fix: pipchecker, compatibility with pip 20.1
+
 
 
 2.2.9
