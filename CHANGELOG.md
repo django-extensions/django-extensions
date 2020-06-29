@@ -10,6 +10,7 @@ It drops official support for Python 2.7.
 
 Changes:
  - Removal of Python 2 support
+ - Removal of deprecated keyczar encrypted fields EncryptedTextField and EncryptedCharField
  - TimeStampedModel; Removed default ordering on abstract model
  - New: shell_plus, JupyterLab support
  - Improvement: shell_plus, use -- to directly pass additional arguments to Jupyter
