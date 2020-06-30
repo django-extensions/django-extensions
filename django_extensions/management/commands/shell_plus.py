@@ -503,14 +503,15 @@ for k, m in shells.import_objects({}, no_style()).items():
 
             self.set_application_name(options)
 
-            if get_runner:
-                runner = get_runner(options)
-                runner_name = get_runner.runner_name
-            elif SETTINGS_SHELL_PLUS:
+            if not get_runner and SETTINGS_SHELL_PLUS:
                 get_runner = get_runner_by_flag('--%s' % SETTINGS_SHELL_PLUS)
                 if not get_runner:
                     runner = None
                     runner_name = SETTINGS_SHELL_PLUS
+
+            if get_runner:
+                runner = get_runner(options)
+                runner_name = get_runner.runner_name
             else:
                 def try_runner(get_runner):
                     runner_name = get_runner.runner_name
