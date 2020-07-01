@@ -1,6 +1,13 @@
 Changelog
 =========
 
+3.0.2
+-----
+
+Changes:
+ - Fix: shell_plus, fix honouring SHELL_PLUS in settings.py
+
+
 3.0.1
 -----
 
