@@ -4,7 +4,10 @@ from distutils.version import LooseVersion
 
 import pytest
 from django import get_version
-from django.contrib.auth.models import User
+from django.contrib.auth.models import (
+    User,
+    Group,
+)
 from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -84,3 +87,9 @@ class SyncDataTests(TestCase):
         self.assertTrue(User.objects.filter(username='jdoe').exists())
         self.assertEqual(User.objects.count(), 1)
         self.assertIn('Installed 1 object from 1 fixture', m_stdout.getvalue())
+
+    def test_should_handle_natural_keys_in_fixtures(self):
+        call_command('syncdata', 'fixture_with_natural_key.json')
+
+        self.assertTrue(Group.objects.filter(name='teachers').exists())
+        self.assertTrue(User.objects.filter(username='staff').exists())
