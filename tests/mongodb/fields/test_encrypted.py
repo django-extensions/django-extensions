@@ -6,7 +6,7 @@ from django.conf import settings
 from tests.testapp.models import EncryptedFieldsNoSQLModel
 
 
-@pytest.mark.skipif(settings.DJANGO_EXTENSIONS_MONGODB_DATABASE_NAME is not None, reason="Test can only run on mongodb")
+@pytest.mark.skipif(settings.DJANGO_EXTENSIONS_MONGODB_DATABASE_NAME is None, reason="Test can only run on mongodb")
 class EncryptedFieldsNoSQLModelTestCase(TestCase):
 
     def test_save_to_encrypted_charfield(self):
