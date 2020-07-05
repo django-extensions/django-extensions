@@ -4,11 +4,16 @@ import django
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models.signals import pre_save
+from mongoengine import Document
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.encrypted import EncryptedCharField, EncryptedTextField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
+from django_extensions.mongodb.fields.encrypted import (
+    EncryptedCharField as NoSQLEncryptedCharField,
+    EncryptedTextField as NoSQLEncryptedTextField,
+)
 
 from .fields import UniqField
 
@@ -499,6 +504,14 @@ class MultipleFieldsAndMethods(models.Model):
 class EncryptedFieldsModel(models.Model):
     secret_message = EncryptedCharField(max_length=10)
     secret_text = EncryptedTextField()
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class EncryptedFieldsNoSQLModel(Document):
+    secret_message = NoSQLEncryptedCharField()
+    secret_text = NoSQLEncryptedTextField()
 
     class Meta:
         app_label = 'django_extensions'
