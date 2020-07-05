@@ -94,8 +94,8 @@ EXPORT_EMAILS_FULL_NAME_FUNC = None
 EXPORT_EMAILS_ORDER_BY
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Specifies the `order_by(...)` clause on the query being done into the databse to
-retreive the users. This determines the order of the output.
+Specifies the `order_by(...)` clause on the query being done into the database to
+retrieve the users. This determines the order of the output.
 
 
 EXPORT_EMAILS_FIELDS

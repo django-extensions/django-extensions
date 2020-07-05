@@ -4,16 +4,9 @@ from six.moves import urllib
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-try:
-    from django.templatetags.static import static
-except ImportError:
-    # compatibility with django < 2.1
-    from django.contrib.admin.templatetags.admin_static import static
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
+from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 
