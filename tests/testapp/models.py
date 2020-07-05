@@ -513,9 +513,6 @@ class EncryptedFieldsNoSQLModel(Document):
     secret_message = NoSQLEncryptedCharField()
     secret_text = NoSQLEncryptedTextField()
 
-    class Meta:
-        app_label = 'django_extensions'
-
 
 def dummy_handler(sender, instance, **kwargs):
     pass
