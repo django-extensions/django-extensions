@@ -13,6 +13,8 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from six import StringIO
 
+from tests.testapp.models import UniqueTestAppModel
+
 try:
     from unittest.mock import patch
 except ImportError:
@@ -93,3 +95,9 @@ class SyncDataTests(TestCase):
 
         self.assertTrue(Group.objects.filter(name='teachers').exists())
         self.assertTrue(User.objects.filter(username='staff').exists())
+
+    def test_should_resolve_transient_constraint_conflicts_in_fixtures(self):
+        UniqueTestAppModel.objects.create(pk=1, global_id="must be unique")
+        # This fixture creates a second instance with a different pk but the same global_id
+        call_command('syncdata', 'fixture_with_constraint.json')
+        self.assertEqual(UniqueTestAppModel.objects.count(), 1)
