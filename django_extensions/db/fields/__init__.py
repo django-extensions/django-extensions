@@ -23,7 +23,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import DateTimeField, CharField, SlugField, Q
+from django.db.models import DateTimeField, CharField, SlugField, Q, UniqueConstraint
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
@@ -70,11 +70,14 @@ class UniqueFieldMixin:
         query = Q()
         constraints = getattr(model_instance._meta, 'constraints', None)
         if constraints:
-            for constraint in constraints:
-                if self.attname in constraint.fields:
+            unique_constraints = filter(
+                lambda c: isinstance(c, UniqueConstraint), constraints
+            )
+            for unique_constraint in unique_constraints:
+                if self.attname in unique_constraint.fields:
                     condition = {
                         field: getattr(model_instance, field, None)
-                        for field in constraint.fields
+                        for field in unique_constraint.fields
                         if field != self.attname
                     }
                     query &= Q(**condition)
