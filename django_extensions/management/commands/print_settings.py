@@ -8,9 +8,11 @@ Django command similar to 'diffsettings' but shows all active Django settings.
 
 import json
 
+from django.conf import settings as default_settings
 from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import signalcommand
+from django.views.debug import SafeExceptionReporterFilter
 
 DEFAULT_FORMAT = 'simple'
 DEFAULT_INDENT = 4
@@ -55,6 +57,16 @@ class Command(BaseCommand):
 
         a_dict = {}
 
+        if show_secrets:
+            for attr in dir(default_settings):
+                if self.include_attr(attr, options['setting']):
+                    value = getattr(default_settings, attr)
+                    a_dict[attr] = value
+        else:
+            settings = SafeExceptionReporterFilter().get_safe_settings()
+            for key in settings.keys():
+                if key in options['setting'] or not options['setting']:
+                    a_dict[key] = settings.get(key)
 
         for setting in args:
             if setting not in a_dict:

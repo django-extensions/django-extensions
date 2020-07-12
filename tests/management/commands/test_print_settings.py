@@ -26,6 +26,7 @@ def test_with_multiple_setting_args(capsys):
         'SECRET_KEY',
         'DATABASES',
         'INSTALLED_APPS',
+        '--show-secrets=True'
     )
 
     out, err = capsys.readouterr()
@@ -33,6 +34,16 @@ def test_with_multiple_setting_args(capsys):
     assert 'SECRET_KEY' in out
     assert 'DATABASES' in out
     assert 'INSTALLED_APPS' in out
+
+def test_with_not_show_secrets(capsys):
+    call_command(
+        'print_settings',
+        'SECRET_KEY',
+    )
+
+    out, err = capsys.readouterr()
+
+    assert '*******' in out
 
 
 def test_format(capsys):
