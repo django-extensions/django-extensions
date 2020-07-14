@@ -6,6 +6,8 @@ Changelog
 
 Changes:
  - New: InternalIPS, allows to specify CIDRs for INTERNAL_IPS
+ - Docs: restructure toctree
+
 
 3.0.2
 -----
