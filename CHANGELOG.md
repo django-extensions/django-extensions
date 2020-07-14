@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.0.3
+-----
+
+Changes:
+ - New: InternalIPS, allows to specify CIDRs for INTERNAL_IPS
+
 3.0.2
 -----
 
