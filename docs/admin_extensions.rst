@@ -1,7 +1,7 @@
-Current Admin Extensions
-========================
+Admin Extensions
+================
 
-:synopsis: Current Field Extensions
+:synopsis: Admin Extensions
 
 
 * *ForeignKeyAutocompleteAdmin* - ForeignKeyAutocompleteAdmin will enable the

@@ -47,39 +47,19 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    installation_instructions
+   admin_extensions
    command_extensions
    command_signals
-   admin_extensions
-   shell_plus
    debugger_tags
-   create_template_tags
-   delete_squashed_migrations
-   dumpscript
-   runscript
-   export_emails
    field_extensions
-   generate_password
-   graph_models
    jobs_scheduling
-   list_model_info
-   merge_model_instances
    model_extensions
-   namespace_proposal
    permissions
-   print_settings
-   runprofileserver
-   runserver_plus
-   sync_s3
-   syncdata
-   sqldiff
-   sqlcreate
-   sqldsn
-   validate_templates
+   utilities
    validators
-   admin_generator
 
 
 Indices and tables

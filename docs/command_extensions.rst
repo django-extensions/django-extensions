@@ -1,7 +1,33 @@
-Current Command Extensions
-==========================
+Command Extensions
+==================
 
-:synopsis: Current Command Extensions
+:synopsis: Command Extensions
+
+.. toctree::
+   :maxdepth: 3
+
+   shell_plus
+   create_template_tags
+   delete_squashed_migrations
+   dumpscript
+   runscript
+   export_emails
+   generate_password
+   graph_models
+   list_model_info
+   list_signals
+   merge_model_instances
+   print_settings
+   runprofileserver
+   runserver_plus
+   sync_s3
+   syncdata
+   sqldiff
+   sqlcreate
+   sqldsn
+   validate_templates
+   admin_generator
+
 
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.

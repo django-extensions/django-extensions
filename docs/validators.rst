@@ -1,4 +1,4 @@
-validators
+Validators
 ==========
 
 :synopsis: Validator extensions
