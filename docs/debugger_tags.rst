@@ -1,4 +1,4 @@
-Debugger tags
+Debugger Tags
 =============
 
 :synopsis: Allows you to use debugger breakpoints on Django templates.
