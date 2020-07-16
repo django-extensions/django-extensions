@@ -64,7 +64,9 @@ class Command(BaseCommand):
         if dbinfo is None:
             raise CommandError("Unknown database router %s" % router)
 
-        engine = dbinfo.get('ENGINE').split('.')[-1]
+        engine = engine = dbinfo.get('ENGINE')
+        if 'psqlextra' not in engine:
+            engine = engine.split('.')[-1]
         dbuser = dbinfo.get('USER')
         dbpass = dbinfo.get('PASSWORD')
         dbname = dbinfo.get('NAME')
@@ -75,7 +77,7 @@ class Command(BaseCommand):
 
         if engine == 'mysql':
             dsn.append(self._mysql(dbhost, dbport, dbname, dbuser, dbpass))
-        elif engine in ['postgresql', 'postgresql_psycopg2', 'postgis']:
+        elif engine in ['postgresql', 'postgresql_psycopg2', 'postgis', 'psqlextra.backend']:
             dsn.extend(self._postgresql(
                 dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style))
         elif engine == 'sqlite3':
