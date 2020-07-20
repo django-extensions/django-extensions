@@ -5,10 +5,7 @@ from django.test import TestCase
 
 from django_extensions.templatetags.widont import widont, widont_html
 
-try:
-    from unittest.mock import MagicMock
-except ImportError:
-    from mock import MagicMock
+from unittest.mock import MagicMock
 
 
 # TODO: these tests are far from having decent test coverage

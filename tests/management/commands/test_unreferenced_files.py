@@ -11,10 +11,7 @@ from six import StringIO
 
 from ...testapp.models import Photo
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 class UnreferencedFilesExceptionsTests(TestCase):

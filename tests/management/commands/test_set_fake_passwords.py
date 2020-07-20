@@ -8,10 +8,7 @@ from six import StringIO
 
 from django_extensions.management.commands.set_fake_passwords import DEFAULT_FAKE_PASSWORD
 
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 @pytest.fixture(scope='module')

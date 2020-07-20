@@ -10,10 +10,8 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from six import StringIO
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
+
 
 TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 

@@ -8,10 +8,7 @@ from django.test.utils import override_settings
 from django.views.generic.base import View
 from six import StringIO
 
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 def function_based_view(request):

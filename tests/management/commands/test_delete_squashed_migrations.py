@@ -4,6 +4,8 @@ import six
 from distutils.version import LooseVersion
 
 import pytest
+from unittest.mock import patch
+
 from django import get_version
 from django.core.management import CommandError, call_command
 from django.db import models
@@ -11,11 +13,6 @@ from django.test import TestCase, override_settings
 from tests import testapp_with_appconfig
 
 MIGRATIONS_DIR = os.path.join(testapp_with_appconfig.__path__[0], 'migrations')
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
 
 
 @override_settings(MIGRATION_MODULES={'testapp_with_appconfig': 'tests.testapp_with_appconfig.migrations'})

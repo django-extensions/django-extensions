@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import mock
 import six
 import pytest
+from unittest import mock
+
 from django.conf import settings
 from django.apps import apps
 from django.test import TestCase

@@ -9,10 +9,7 @@ from .testapp.models import RandomCharTestModelUppercase, RandomCharTestModelAlp
 from .testapp.models import RandomCharTestModelPunctuation, RandomCharTestModelLowercaseAlphaDigits, RandomCharTestModelUppercaseAlphaDigits
 from .testapp.models import RandomCharTestModelUniqueTogether
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class RandomCharFieldTest(TestCase):

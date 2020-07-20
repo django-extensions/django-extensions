@@ -2,10 +2,7 @@
 import pytest
 from django.core.management import call_command
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 @pytest.mark.django_db
