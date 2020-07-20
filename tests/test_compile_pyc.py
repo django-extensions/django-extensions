@@ -2,7 +2,7 @@
 import fnmatch
 import os
 
-import six
+from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -37,7 +37,7 @@ class CompilePycTests(TestCase):
             call_command('clean_pyc')
 
     def test_takes_path(self):
-        out = six.StringIO()
+        out = StringIO()
         with self.settings(BASE_DIR=""):
             call_command('clean_pyc', path=self.project_root)
         pyc_glob = self._find_pyc(self.project_root)

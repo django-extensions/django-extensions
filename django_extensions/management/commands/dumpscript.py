@@ -31,7 +31,6 @@ Improvements:
 import datetime
 import sys
 
-import six
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -73,8 +72,8 @@ def orm_item_locator(orm_obj):
             if isinstance(v, datetime.datetime):
                 v = timezone.make_aware(v)
                 clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
-            elif not isinstance(v, (six.string_types, six.integer_types, float)):
-                clean_dict[key] = six.u("%s" % v)
+            elif not isinstance(v, (str, int, float)):
+                clean_dict[key] = str("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class, original_pk_name,
@@ -496,7 +495,7 @@ class Script(Code):
     FILE_HEADER = """
 
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 # This file has been automatically generated.
 # Instead of changing it, create a file called import_helper.py
@@ -643,7 +642,7 @@ def flatten_blocks(lines, num_indents=-1):
         return ""
 
     # If this is a string, add the indentation and finish here
-    if isinstance(lines, six.string_types):
+    if isinstance(lines, str):
         return INDENTATION * num_indents + lines
 
     # If this is not a string, join the lines and recurse

@@ -12,7 +12,6 @@ import datetime
 import os
 import re
 
-import six
 from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
@@ -166,7 +165,7 @@ class ModelGraph:
             label = ''
 
         # handle self-relationships and lazy-relationships
-        if isinstance(field.remote_field.model, six.string_types):
+        if isinstance(field.remote_field.model, str):
             if field.remote_field.model == 'self':
                 target_model = field.model
             else:
@@ -416,7 +415,7 @@ class ModelGraph:
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    if isinstance(template, six.string_types):
+    if isinstance(template, str):
         template = loader.get_template(template)
 
     if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):

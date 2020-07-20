@@ -4,7 +4,6 @@ import json
 import os
 import tempfile
 
-import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import loader
@@ -257,7 +256,7 @@ class Command(BaseCommand):
 
     def print_output(self, dotdata, output_file=None):
         """Write model data to file or stdout in DOT (text) format."""
-        if isinstance(dotdata, six.binary_type):
+        if isinstance(dotdata, bytes):
             dotdata = dotdata.decode()
 
         if output_file:

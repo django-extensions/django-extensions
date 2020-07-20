@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 from django.test import TestCase
 
 from .testapp.models import JSONFieldTestModel
@@ -99,12 +98,12 @@ class JsonFieldTest(TestCase):
         j_field = JSONField()
 
         self.assertEqual(
-            six.u(dumps([{'a': 'a'}])),
+            str(dumps([{'a': 'a'}])),
             j_field.get_prep_value(value=[{'a': 'a'}]),
         )
 
         self.assertEqual(
-            six.u(dumps([{'a': 'a'}])),
+            str(dumps([{'a': 'a'}])),
             j_field.get_prep_value(value='[{"a": "a"}]'),
         )
 
@@ -112,12 +111,12 @@ class JsonFieldTest(TestCase):
         j_field = JSONField()
 
         self.assertEqual(
-            six.u(dumps([{'a': 'a'}])),
+            str(dumps([{'a': 'a'}])),
             j_field.get_db_prep_save(value=[{'a': 'a'}], connection=None),
         )
 
         self.assertEqual(
-            six.u('[{"a": "a"}]'),
+            str('[{"a": "a"}]'),
             j_field.get_db_prep_save(value='[{"a": "a"}]', connection=None),
         )
 

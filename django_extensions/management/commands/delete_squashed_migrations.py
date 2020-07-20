@@ -3,7 +3,6 @@ import os
 import inspect
 import re
 
-import six
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import AmbiguityError, MigrationLoader
@@ -155,7 +154,7 @@ class Command(BaseCommand):
         if self.interactive:
             answer = None
             while not answer or answer not in "yn":
-                answer = six.moves.input("Do you wish to proceed? [yN] ")
+                answer = input("Do you wish to proceed? [yN] ")
                 if not answer:
                     answer = "n"
                     break

@@ -17,7 +17,6 @@ https://github.com/WoLpH/django-admin-generator/
 
 import re
 
-import six
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import LabelCommand, CommandError
@@ -200,7 +199,7 @@ class AdminModel(UnicodeMixin):
         if field in parent_fields:
             return
 
-        field_name = six.text_type(field.name)
+        field_name = str(field.name)
         self.list_display.append(field_name)
         if isinstance(field, LIST_FILTER):
             if isinstance(field, models.ForeignKey):

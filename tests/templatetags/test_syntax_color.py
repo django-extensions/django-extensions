@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+from html.parser import HTMLParser
 from tempfile import mkdtemp
 
 from django.template import Context, Template
 from django.test import TestCase
-from six.moves.html_parser import HTMLParser
 
 from django_extensions.templatetags.syntax_color import generate_pygments_css
 

@@ -10,11 +10,9 @@ from typing import (  # NOQA
 )
 
 from django.utils.module_loading import import_string
-from six import add_metaclass
 
 
-@add_metaclass(ABCMeta)
-class BaseCR:
+class BaseCR(metaclass=ABCMeta):
     """
     Abstract base collision resolver. All collision resolvers needs to inherit from this class.
     To write custom collision resolver you need to overwrite resolve_collisions function.
@@ -43,8 +41,7 @@ class LegacyCR(BaseCR):
         return result
 
 
-@add_metaclass(ABCMeta)
-class AppsOrderCR(LegacyCR):
+class AppsOrderCR(LegacyCR, metaclass=ABCMeta):
     APP_PRIORITIES = None  # type: List[str]
 
     def resolve_collisions(self, namespace):
@@ -82,8 +79,7 @@ class InstalledAppsOrderCR(AppsOrderCR):
         return getattr(settings, 'INSTALLED_APPS', [])
 
 
-@add_metaclass(ABCMeta)
-class PathBasedCR(LegacyCR):
+class PathBasedCR(LegacyCR, metaclass=ABCMeta):
     """
     Abstract resolver which transforms full model name into alias.
     To use him you need to overwrite transform_import function
@@ -120,8 +116,7 @@ class FullPathCR(PathBasedCR):
         return module_path.replace('.', '_')
 
 
-@add_metaclass(ABCMeta)
-class AppNameCR(PathBasedCR):
+class AppNameCR(PathBasedCR, metaclass=ABCMeta):
     """
     Abstract collision resolver which transform pair (app name, model_name) to alias by changing dots to underscores.
     You must define MODIFICATION_STRING which should be string to format with two keyword arguments:
@@ -184,8 +179,7 @@ class FullPathCustomOrderCR(FullPathCR, InstalledAppsOrderCR):
     pass
 
 
-@add_metaclass(ABCMeta)
-class AppLabelCR(PathBasedCR):
+class AppLabelCR(PathBasedCR, metaclass=ABCMeta):
     """
     Abstract collision resolver which transform pair (app_label, model_name) to alias.
     You must define MODIFICATION_STRING which should be string to format with two keyword arguments:

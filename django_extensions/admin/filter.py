@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.contrib.admin import FieldListFilter
 from django.contrib.admin.utils import prepare_lookup_value
 from django.utils.translation import gettext_lazy as _
