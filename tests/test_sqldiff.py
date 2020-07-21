@@ -50,7 +50,7 @@ class SqlDiffTests(TestCase):
             stderr=self.tmp_err,
         )
         expected_field_name = ['name', 'email', 'address']
-        self.assertEquals(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
+        self.assertEqual(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
 
     @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
     def test_mysql_to_dict(self):
@@ -61,7 +61,7 @@ class SqlDiffTests(TestCase):
             stderr=self.tmp_err,
         )
         mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        self.assertEquals(mysql_dict, [{'bar': 2, 'foo': 1}])
+        self.assertEqual(mysql_dict, [{'bar': 2, 'foo': 1}])
 
     @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
     @mock.patch('django_extensions.management.commands.sqldiff.MySQLDiff.format_field_names')
@@ -86,7 +86,7 @@ class SqlDiffTests(TestCase):
         )
 
         sqlite_dict = sqlite_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        self.assertEquals(sqlite_dict, [{'BAR': 2, 'foo': 1}])
+        self.assertEqual(sqlite_dict, [{'BAR': 2, 'foo': 1}])
 
     @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql', reason="Test can only run on postgresql")
     def test_postgresql_to_dict(self):
@@ -98,7 +98,7 @@ class SqlDiffTests(TestCase):
         )
 
         postgresql_dict = postgresql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
-        self.assertEquals(postgresql_dict, [{'BAR': 2, 'foo': 1}])
+        self.assertEqual(postgresql_dict, [{'BAR': 2, 'foo': 1}])
 
     # def test_sql_diff_run(self):
     #     tmp_out = six.StringIO()
