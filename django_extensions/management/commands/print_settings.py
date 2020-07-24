@@ -45,7 +45,7 @@ class Command(BaseCommand):
             default=DEFAULT_SECRETS,
             dest="show secrets",
             type=bool,
-            help="Specifies if should be reveald the value of secrets",
+            help="Specifies if should be revealed the value of secrets",
         )
 
     @signalcommand
