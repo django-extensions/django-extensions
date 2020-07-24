@@ -47,11 +47,17 @@ class Command(BaseCommand):
             type=bool,
             help="Specifies if should be revealed the value of secrets",
         )
+        parser.add_argument(
+            "--database",
+            dest="show database",
+            action="store_true",
+            help="Shows the current database engine",
+        )
 
     @signalcommand
     def handle(self, *args, **options):
 
-        show_secrets, output_format, indent = self.get_defaults(options)
+        show_secrets, output_format, indent, show_database = self.get_defaults(options)
 
         a_dict = {}
 
@@ -65,6 +71,12 @@ class Command(BaseCommand):
             for key in settings.keys():
                 if key in options["setting"] or not options["setting"]:
                     a_dict[key] = settings.get(key)
+
+        if show_database:
+            database = self.safe_settings().get('DATABASES', None)
+            if database:
+                engine = database['default']['ENGINE']
+                a_dict['DATABASE_ENGINE'] = self.get_database(engine)
 
         for setting in args:
             if setting not in a_dict:
@@ -95,6 +107,7 @@ class Command(BaseCommand):
             options.get("show secrets", DEFAULT_SECRETS),
             options.get("format", DEFAULT_FORMAT),
             options.get("indent", DEFAULT_INDENT),
+            options.get("show database", None)
         ]
         return a_options
 
@@ -121,3 +134,13 @@ class Command(BaseCommand):
             # We have to make a different import
             from django.views.debug import get_safe_settings
             return get_safe_settings()
+
+    @staticmethod
+    def get_database(engine):
+        db_backend_options = {
+            'django.db.backends.postgresql': 'PostgreSQL',
+            'django.db.backends.sqlite3': 'SQLite',
+            'django.db.backends.oracle': 'Oracle',
+            'django.db.backends.mysql': 'MySQL/MariaDB',
+        }
+        return db_backend_options.get(engine, 'UNKNOWN')

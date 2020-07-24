@@ -10,6 +10,7 @@ def test_without_args(capsys):
     out, err = capsys.readouterr()
     assert "DEBUG" in out
     assert "INSTALLED_APPS" in out
+    assert "DATABASE_ENGINE" not in out
 
 
 def test_with_setting_args(capsys):
@@ -64,3 +65,12 @@ def test_format_json_without_indent(capsys):
     expected = '{\n"DEBUG": false\n}\n'
     out, err = capsys.readouterr()
     assert expected == out
+
+
+def test_show_database_option(capsys):
+    call_command(
+        "print_settings", "--database",
+    )
+
+    out, err = capsys.readouterr()
+    assert "DATABASE_ENGINE" in out
