@@ -61,7 +61,7 @@ class Command(BaseCommand):
                     value = getattr(default_settings, attr)
                     a_dict[attr] = value
         else:
-            settings = SafeExceptionReporterFilter().get_safe_settings()
+            settings = self.safe_settings()
             for key in settings.keys():
                 if key in options["setting"] or not options["setting"]:
                     a_dict[key] = settings.get(key)
@@ -111,3 +111,13 @@ class Command(BaseCommand):
     def print_simple(a_dict):
         for key, value in a_dict.items():
             print("%-40s = %r" % (key, value))
+
+    @staticmethod
+    def safe_settings():
+        try:
+            return SafeExceptionReporterFilter().get_safe_settings()
+        except AttributeError:
+            # In django < 3.0 does not have this class
+            # We have to make a different import
+            from django.views.debug import get_safe_settings
+            return get_safe_settings()
