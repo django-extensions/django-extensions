@@ -67,6 +67,11 @@ msgstr "pozostaw puste, by aktywować od razu"
 msgid "keep empty for indefinite activation"
 msgstr "pozostaw puste, by nie definiować daty deaktywacji"
 
+#: mongodb/fields/__init__.py:22
+#, python-format
+msgid "String (up to %(max_length)s)"
+msgstr "String (do %(max_length)s znaków)"
+
 #: management/commands/show_urls.py:34
 #, python-format
 msgid "%s does not appear to be a urlpattern object"
@@ -75,3 +80,30 @@ msgstr "%s nie jest obiektem typu urlpattern"
 #: templates/django_extensions/widgets/foreignkey_searchinput.html:4
 msgid "Lookup"
 msgstr "Szukaj"
+
+#: validators.py:14
+msgid "Control Characters like new lines or tabs are not allowed."
+msgstr "Znaki nowej linii i tabulatory nie są dozwolone."
+
+#: validators.py:48
+msgid "Leading and Trailing whitespaces are not allowed."
+msgstr "Białe znaki na początku i końcu wiersza nie są dozwolone."
+
+#: validators.py:74
+msgid "Only a hex string is allowed."
+msgstr "Tylko wartość hex jest dozwolona."
+
+#: validators.py:75
+#, python-format
+msgid "Invalid length. Must be %(length)d characters."
+msgstr "Niewłaściwa długość. Musi być %(length)d znaków."
+
+#: validators.py:76
+#, python-format
+msgid "Ensure that there are more than %(min)s characters."
+msgstr "Upewnij się, że jest więcej niż %(min)s znaków."
+
+#: validators.py:77
+#, python-format
+msgid "Ensure that there are no more than %(max)s characters."
+msgstr "Upewnij się, że nie ma więcej niż %(max)s znaków."
