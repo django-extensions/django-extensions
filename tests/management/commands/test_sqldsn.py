@@ -5,10 +5,8 @@ from django.test.utils import override_settings
 from six import StringIO
 
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
+
 
 MYSQL_DATABASE_SETTINGS = {
     'ENGINE': 'django.db.backends.mysql',

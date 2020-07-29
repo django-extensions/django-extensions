@@ -7,10 +7,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from six import StringIO
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class ResetDbExceptionsTests(TestCase):

@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.management import call_command
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 def test_initialize_mail_server():

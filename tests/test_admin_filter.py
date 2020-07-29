@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
+from unittest.mock import Mock
 
 from django.test import RequestFactory, TestCase
 from factory import Iterator

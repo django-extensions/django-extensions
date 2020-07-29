@@ -5,10 +5,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from six import StringIO
 
-try:
-    from unittest.mock import MagicMock, Mock, patch
-except ImportError:
-    from mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 
 class DropTestDatabaseExceptionsTests(TestCase):

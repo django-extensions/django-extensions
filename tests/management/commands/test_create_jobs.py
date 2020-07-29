@@ -8,10 +8,7 @@ from django.test import TestCase
 from six import StringIO
 from tests import testapp_with_no_models_file
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 JOBS_DIR = os.path.join(testapp_with_no_models_file.__path__[0], 'jobs')
