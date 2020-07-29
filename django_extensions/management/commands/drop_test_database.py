@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
+import warnings
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import DEFAULT_DB_ALIAS
 from django.db.backends.base.creation import TEST_DATABASE_PREFIX
 from six.moves import input
 
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
+from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
 class Command(BaseCommand):
@@ -32,17 +36,25 @@ class Command(BaseCommand):
             help='Use another database name then defined in settings.py'
         )
         parser.add_argument(
-            '-R', '--router', action='store', dest='router', default='default',
+            '-R', '--router', action='store', dest='router', default=DEFAULT_DB_ALIAS,
             help='Use this router-database other then defined in settings.py'
+        )
+        parser.add_argument(
+            '--database', default=DEFAULT_DB_ALIAS,
+            help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
         )
 
     @signalcommand
     def handle(self, *args, **options):
         """Drop test database for this project."""
-        router = options['router']
-        dbinfo = settings.DATABASES.get(router)
+        database = options['database']
+        if options['router'] != DEFAULT_DB_ALIAS:
+            warnings.warn("--router is deprecated. You should use --database.", RemovedInNextVersionWarning, stacklevel=2)
+            database = options['router']
+
+        dbinfo = settings.DATABASES.get(database)
         if dbinfo is None:
-            raise CommandError("Unknown database router %s" % router)
+            raise CommandError("Unknown database %s" % database)
 
         engine = dbinfo.get('ENGINE').split('.')[-1]
 
@@ -84,7 +96,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             return
 
         if engine in ('sqlite3', 'spatialite'):
-            import os
             try:
                 logging.info("Unlinking %s database" % engine)
                 if os.path.isfile(database_name):

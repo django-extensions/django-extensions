@@ -39,9 +39,9 @@ POSTGRESQL_DATABASE_SETTINGS = {
 class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
 
-    def test_should_raise_CommandError_if_router_is_unknown(self):
-        with six.assertRaisesRegex(self, CommandError, "Unknown database router unknown"):
-            call_command('sqlcreate', '--router=unknown')
+    def test_should_raise_CommandError_if_database_is_unknown(self):
+        with six.assertRaisesRegex(self, CommandError, "Unknown database unknown"):
+            call_command('sqlcreate', '--database=unknown')
 
 
 class SqlCreateTests(TestCase):
@@ -115,7 +115,7 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
 GRANT ALL PRIVILEGES ON DATABASE database to foo;
 """
 
-        call_command('sqlcreate', '--router=unknown')
+        call_command('sqlcreate', '--database=unknown')
 
         self.assertEqual(expected_error, m_stderr.getvalue())
         self.assertEqual(expected_statement, m_stdout.getvalue())

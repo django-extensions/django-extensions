@@ -14,9 +14,9 @@ except ImportError:
 class DropTestDatabaseExceptionsTests(TestCase):
     """Test for drop_test_database command."""
 
-    def test_should_raise_CommandError_if_router_is_unknown(self):
-        with six.assertRaisesRegex(self, CommandError, "Unknown database router unknown"):
-            call_command('drop_test_database', '--router=unknown')
+    def test_should_raise_CommandError_if_database_is_unknown(self):
+        with six.assertRaisesRegex(self, CommandError, "Unknown database unknown"):
+            call_command('drop_test_database', '--database=unknown')
 
     @override_settings(DATABASES={
         'default': {
@@ -49,7 +49,7 @@ class DropTestDatabaseTests(TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     @patch('django_extensions.management.commands.drop_test_database.input')
-    def test_should_raise_CommandError_if_router_is_unknown(self, m_input, m_stdout):
+    def test_should_raise_CommandError_if_database_is_unknown(self, m_input, m_stdout):
         m_input.return_value = 'no'
 
         call_command('drop_test_database')

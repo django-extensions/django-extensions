@@ -16,9 +16,9 @@ except ImportError:
 class ResetDbExceptionsTests(TestCase):
     """Tests if reset_db command raises exceptions."""
 
-    def test_should_raise_CommandError_when_router_does_not_exist(self):
-        with six.assertRaisesRegex(self, CommandError, 'Unknown database router non-existing_router'):
-            call_command('reset_db', '--router=non-existing_router')
+    def test_should_raise_CommandError_when_database_does_not_exist(self):
+        with six.assertRaisesRegex(self, CommandError, 'Unknown database database non-existing_database'):
+            call_command('reset_db', '--database=non-existing_database')
 
     @override_settings(DATABASES={
         'default': {

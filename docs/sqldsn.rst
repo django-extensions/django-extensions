@@ -38,7 +38,7 @@ Example Usage
 ::
 
   # Print the DSN for database named 'slave'
-  $ ./manage.py sqldsn --router=slave
+  $ ./manage.py sqldsn --database=slave
 
 ::
 
