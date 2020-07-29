@@ -1,0 +1,98 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: django-extensions\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-07-27 22:25+0700\n"
+"PO-Revision-Date: 2020-07-28 10:48+0700\n"
+"Last-Translator: Sutrisno Efendi <kangfend@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: admin/__init__.py:139
+msgid "and"
+msgstr "dan"
+
+#: admin/__init__.py:141
+#, python-format
+msgid ""
+"Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr ""
+"Gunakan bidang sebelah kiri untuk pencarian %(model_name)s pada bidang %(field_list)s."
+
+#: admin/filter.py:24 admin/filter.py:53
+msgid "Yes"
+msgstr "Ya"
+
+#: admin/filter.py:25 admin/filter.py:54
+msgid "No"
+msgstr "Tidak"
+
+#: admin/filter.py:32
+msgid "All"
+msgstr "Semua"
+
+#: db/models.py:18
+msgid "created"
+msgstr "dibuat"
+
+#: db/models.py:19
+msgid "modified"
+msgstr "diubah"
+
+#: db/models.py:37
+msgid "title"
+msgstr "judul"
+
+#: db/models.py:38
+msgid "description"
+msgstr "deskripsi"
+
+#: db/models.py:59
+msgid "slug"
+msgstr "slug"
+
+#: db/models.py:120 mongodb/models.py:76
+msgid "Inactive"
+msgstr "Nonaktif"
+
+#: db/models.py:121 mongodb/models.py:77
+msgid "Active"
+msgstr "Aktif"
+
+#: db/models.py:123
+msgid "status"
+msgstr "status"
+
+#: mongodb/fields/__init__.py:22
+#, python-format
+msgid "String (up to %(max_length)s)"
+msgstr "String (hingga %(max_length)s)"
+
+#: validators.py:74
+msgid "Only a hex string is allowed."
+msgstr "Hanya string hex yang diizinkan."
+
+#: validators.py:75
+#, python-format
+msgid "Invalid length. Must be %(length)d characters."
+msgstr "Panjang tidak valid. Harus %(length)d karakter."
+
+#: validators.py:76
+#, python-format
+msgid "Ensure that there are more than %(min)s characters."
+msgstr "Pastikan lebih dari %(min)s karakter."
+
+#: validators.py:77
+#, python-format
+msgid "Ensure that there are no more than %(max)s characters."
+msgstr "Pastikan tidak lebih dari %(max)s karakter."
