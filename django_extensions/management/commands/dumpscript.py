@@ -506,7 +506,7 @@ class Script(Code):
 # it will actually extend the class BasicImportHelper()
 #
 # That means you just have to overload the methods you want to
-# change, leaving the other ones inteact.
+# change, leaving the other ones intact.
 #
 # Something that you might want to do is use transactions, for example.
 #
