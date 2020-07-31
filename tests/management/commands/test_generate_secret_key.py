@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from distutils.version import LooseVersion
+from io import StringIO
 
 import pytest
 from django import get_version
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
 
 from unittest.mock import patch
 

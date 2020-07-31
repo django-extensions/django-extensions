@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from django.dispatch import Signal
 
 run_minutely_jobs = Signal()

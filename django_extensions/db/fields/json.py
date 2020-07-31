@@ -10,12 +10,8 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
-from __future__ import absolute_import
-
 import json
 
-import six
-import django
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
@@ -73,7 +69,7 @@ class JSONField(models.TextField):
         if value is None or value == '':
             return {}
 
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             res = loads(value)
         else:
             res = value
@@ -86,16 +82,12 @@ class JSONField(models.TextField):
         return res
 
     def get_prep_value(self, value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             return dumps(value)
         return super(models.TextField, self).get_prep_value(value)
 
-    if django.VERSION < (2, ):
-        def from_db_value(self, value, expression, connection, context):
-            return self.to_python(value)
-    else:
-        def from_db_value(self, value, expression, connection):  # type: ignore
-            return self.to_python(value)
+    def from_db_value(self, value, expression, connection):  # type: ignore
+        return self.to_python(value)
 
     def get_db_prep_save(self, value, connection, **kwargs):
         """Convert our JSON object to a string before we save"""
@@ -103,7 +95,7 @@ class JSONField(models.TextField):
             return None
         # default values come in as strings; only non-strings should be
         # run through `dumps`
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             value = dumps(value)
 
         return value

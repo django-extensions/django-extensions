@@ -5,7 +5,7 @@ import shutil
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 
 from unittest.mock import patch
 

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import shutil
 
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 from tests import testapp_with_no_models_file
 
 from unittest.mock import patch
@@ -32,8 +31,7 @@ class CreateJobsExceptionsTests(CreateJobsTestsMixin, TestCase):
     def test_should_print_error_notice_on_OSError(self, m__make_writeable, m_stderr):
         call_command('create_jobs', 'testapp_with_no_models_file')
 
-        six.assertRegex(
-            self,
+        self.assertRegex(
             m_stderr.getvalue(),
             r"Notice: Couldn't set permission bits on \S+ You're probably using an uncommon filesystem setup. No problem.",
         )

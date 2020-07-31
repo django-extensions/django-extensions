@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import shutil
+from io import StringIO
 from tempfile import mkdtemp
 
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
 from ...testapp.models import Photo
 
@@ -18,7 +17,7 @@ class UnreferencedFilesExceptionsTests(TestCase):
 
     @override_settings(MEDIA_ROOT=None)
     def test_should_raise_ComandError_if_MEDIA_ROOT_is_not_set(self):
-        with six.assertRaisesRegex(self, CommandError, 'MEDIA_ROOT is not set, nothing to do'):
+        with self.assertRaisesRegex(CommandError, 'MEDIA_ROOT is not set, nothing to do'):
             call_command('unreferenced_files')
 
 

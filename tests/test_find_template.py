@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 
 from unittest.mock import patch
 

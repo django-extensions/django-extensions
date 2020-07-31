@@ -23,7 +23,6 @@ KNOWN ISSUES:
 
 import importlib
 import sys
-import six
 import argparse
 from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
@@ -399,7 +398,7 @@ class SQLDiff:
                 attname = field.db_column or field.attname
                 db_field_unique = table_indexes.get(attname, {}).get('unique')
                 if not db_field_unique and table_constraints:
-                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if [attname] == constraint['columns'])
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in table_constraints.items() if [attname] == constraint['columns'])
                 if attname in table_indexes and db_field_unique:
                     continue
 
@@ -413,7 +412,7 @@ class SQLDiff:
                     self.add_difference('index-missing-in-db', table_name, [attname], index_name + '_like', ' text_pattern_ops')
 
         unique_together = self.expand_together(meta.unique_together, meta)
-        db_unique_columns = normalize_together([v['columns'] for v in six.itervalues(table_constraints) if v['unique'] and not v['index']])
+        db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique'] and not v['index']])
 
         for unique_columns in unique_together:
             if unique_columns in db_unique_columns:
@@ -430,7 +429,7 @@ class SQLDiff:
         fields = dict([(field.column, field) for field in all_local_fields(meta)])
         unique_together = self.expand_together(meta.unique_together, meta)
 
-        for constraint_name, constraint in six.iteritems(table_constraints):
+        for constraint_name, constraint in table_constraints.items():
             if not constraint['unique']:
                 continue
             if constraint['index']:
@@ -465,7 +464,7 @@ class SQLDiff:
                         self.add_difference('index-missing-in-db', table_name, [attname], index_name + '_like', ' text_pattern_ops')
 
         index_together = self.expand_together(meta.index_together, meta)
-        db_index_together = normalize_together([v['columns'] for v in six.itervalues(table_constraints) if v['index'] and not v['unique']])
+        db_index_together = normalize_together([v['columns'] for v in table_constraints.values() if v['index'] and not v['unique']])
         for columns in index_together:
             if columns in db_index_together:
                 continue
@@ -481,7 +480,7 @@ class SQLDiff:
         meta_index_names = [idx.name for idx in meta.indexes]
         index_together = self.expand_together(meta.index_together, meta)
 
-        for constraint_name, constraint in six.iteritems(table_constraints):
+        for constraint_name, constraint in table_constraints.items():
             if constraint_name in meta_index_names:
                 continue
             if constraint['unique'] and not constraint['index']:
@@ -523,7 +522,7 @@ class SQLDiff:
 
     def find_field_missing_in_db(self, fieldmap, table_description, table_name):
         db_fields = [row[0] for row in table_description]
-        for field_name, field in six.iteritems(fieldmap):
+        for field_name, field in fieldmap.items():
             if field_name not in db_fields:
                 field_output = []
 
@@ -842,7 +841,7 @@ class MySQLDiff(SQLDiff):
         index_together = self.expand_together(meta.index_together, meta)
         unique_together = self.expand_together(meta.unique_together, meta)
 
-        for constraint_name, constraint in six.iteritems(table_constraints):
+        for constraint_name, constraint in table_constraints.items():
             if constraint_name in meta_index_names:
                 continue
             if constraint['unique'] and not constraint['index']:
@@ -888,7 +887,7 @@ class MySQLDiff(SQLDiff):
                 attname = field.db_column or field.attname
                 db_field_unique = table_indexes.get(attname, {}).get('unique')
                 if not db_field_unique and table_constraints:
-                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in six.iteritems(table_constraints) if [attname] == constraint['columns'])
+                    db_field_unique = any(constraint['unique'] for contraint_name, constraint in table_constraints.items() if [attname] == constraint['columns'])
                 if attname in table_indexes and db_field_unique:
                     continue
 
@@ -904,7 +903,7 @@ class MySQLDiff(SQLDiff):
         unique_together = self.expand_together(meta.unique_together, meta)
 
         # This comparison changed from superclass - otherwise function is the same
-        db_unique_columns = normalize_together([v['columns'] for v in six.itervalues(table_constraints) if v['unique']])
+        db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique']])
 
         for unique_columns in unique_together:
             if unique_columns in db_unique_columns:
@@ -943,7 +942,7 @@ class SqliteSQLDiff(SQLDiff):
 
         unique_columns = [field.db_column or field.attname for field in all_local_fields(meta) if field.unique]
 
-        for constraint in six.itervalues(table_constraints):
+        for constraint in table_constraints.values():
             columns = constraint['columns']
             if len(columns) == 1:
                 column = columns[0]
@@ -951,7 +950,7 @@ class SqliteSQLDiff(SQLDiff):
                     skip_list.append(column)
 
         unique_together = self.expand_together(meta.unique_together, meta)
-        db_unique_columns = normalize_together([v['columns'] for v in six.itervalues(table_constraints) if v['unique']])
+        db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique']])
 
         for unique_columns in unique_together:
             if unique_columns in db_unique_columns:

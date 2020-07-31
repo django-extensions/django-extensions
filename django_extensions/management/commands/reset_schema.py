@@ -11,7 +11,6 @@ from django.core.management import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.db import connections
 from django.conf import settings
-from six.moves import input
 
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 

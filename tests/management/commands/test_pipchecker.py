@@ -9,7 +9,7 @@ import pkg_resources
 import pytest
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 from pip._internal.exceptions import InstallationError
 
 

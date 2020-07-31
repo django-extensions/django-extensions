@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import django
-
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import UniqueConstraint
 from django.db.models.signals import pre_save
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
@@ -10,9 +9,6 @@ from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 from .fields import UniqField
-
-if django.VERSION >= (2, 2):
-    from django.db.models import UniqueConstraint
 
 
 class Secret(models.Model):
@@ -198,13 +194,12 @@ class SluggedWithConstraintsTestModel(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
-        if django.VERSION >= (2, 2):
-            constraints = [
-                UniqueConstraint(
-                    fields=['slug', 'category'],
-                    name="unique_slug_and_category",
-                ),
-            ]
+        constraints = [
+            UniqueConstraint(
+                fields=['slug', 'category'],
+                name="unique_slug_and_category",
+            ),
+        ]
 
 
 class SluggedWithUniqueTogetherTestModel(models.Model):

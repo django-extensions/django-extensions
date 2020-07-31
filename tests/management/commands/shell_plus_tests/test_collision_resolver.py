@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 from django.contrib.auth.models import Group, Permission
 from django.test import override_settings
 
@@ -151,7 +150,7 @@ class CRTestCase(AutomaticShellPlusImportsTestCase):
         SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.TestAppsOrderCR',
     )
     def test_installed_bad_order_collision_resolver(self):
-        with six.assertRaisesRegex(self, AssertionError, "You must define APP_PRIORITIES in your resolver class!"):
+        with self.assertRaisesRegex(AssertionError, "You must define APP_PRIORITIES in your resolver class!"):
             self._assert_models_present_under_names(
                 set(), set(), set(), set(), set(), set(), set(), set(), set(), set(), set(),
             )
@@ -160,13 +159,13 @@ class CRTestCase(AutomaticShellPlusImportsTestCase):
         SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.TestAppNameCR',
     )
     def test_installed_apps_bad_name_collision_resolver(self):
-        with six.assertRaisesRegex(self, AssertionError, "You must define MODIFICATION_STRING in your resolver class!"):
+        with self.assertRaisesRegex(AssertionError, "You must define MODIFICATION_STRING in your resolver class!"):
             self._assert_models_present_under_names(
                 set(), set(), set(), set(), set(), set(), set(), set(), set(), set(), set(),
             )
 
     def _assert_bad_resolver(self, message):
-        with six.assertRaisesRegex(self, AssertionError, message):
+        with self.assertRaisesRegex(AssertionError, message):
             self._assert_models_present_under_names(
                 set(), set(), set(), set(), set(), set(), set(), set(), set(), set(), set(),
             )
@@ -187,8 +186,8 @@ class CRTestCase(AutomaticShellPlusImportsTestCase):
         SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRNoFunction',
     )
     def test_installed_apps_no_resolve_conflicts_function(self):
-        with six.assertRaisesRegex(
-            self, TypeError, "Can't instantiate abstract class CRNoFunction with abstract methods resolve_collisions"
+        with self.assertRaisesRegex(
+            TypeError, "Can't instantiate abstract class CRNoFunction with abstract methods resolve_collisions"
         ):
             self._assert_models_present_under_names(
                 set(), set(), set(), set(), set(), set(), set(), set(), set(), set(), set(),

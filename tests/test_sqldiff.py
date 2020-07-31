@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import six
+import mock
 import pytest
-from unittest import mock
+from io import StringIO
 
 from django.conf import settings
 from django.apps import apps
@@ -17,8 +17,8 @@ class SqlDiffTests(TestCase):
         self.parser = Command().create_parser("test", "sqldiff")
         self.args = ["-a"]
         self.options = self.parser.parse_args(args=self.args)
-        self.tmp_out = six.StringIO()
-        self.tmp_err = six.StringIO()
+        self.tmp_out = StringIO()
+        self.tmp_err = StringIO()
 
     def _include_proxy_models_testing(self, should_include_proxy_models):  # type: (bool) -> ()
         if should_include_proxy_models:
@@ -102,7 +102,7 @@ class SqlDiffTests(TestCase):
         self.assertEqual(postgresql_dict, [{'BAR': 2, 'foo': 1}])
 
     # def test_sql_diff_run(self):
-    #     tmp_out = six.StringIO()
+    #     tmp_out = StringIO()
     #     call_command("sqldiff", all_applications=True, migrate_for_tests=True, stdout=tmp_out)
     #     self.assertEqual('-- No differences', tmp_out.getvalue())
     #     tmp_out.close()

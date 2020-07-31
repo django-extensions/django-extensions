@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 from importlib import import_module
 from io import StringIO
 
@@ -15,7 +14,7 @@ class PrintUserForSessionExceptionsTests(TestCase):
     """Test if print_user_for_session command raises exception."""
 
     def test_should_raise_CommandError_if_session_key_contains_exclamination_mark(self):
-        with six.assertRaisesRegex(self, CommandError, 'malformed session key'):
+        with self.assertRaisesRegex(CommandError, 'malformed session key'):
             call_command('print_user_for_session', 'l6hxnwblpvrfu8bohelmqjj4soyo2r!?')
 
 

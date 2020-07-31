@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import six
+from io import StringIO
 
 from django.test import TestCase
 from django.db import models
@@ -10,7 +10,7 @@ class DescribeFormExceptionsTests(TestCase):
     """Tests for describe_form command exceptions."""
 
     def test_should_raise_CommandError_if_invalid_arg(self):
-        with six.assertRaisesRegex(self, CommandError, "Need application and model name in the form: appname.model"):
+        with self.assertRaisesRegex(CommandError, "Need application and model name in the form: appname.model"):
             call_command('describe_form', 'testapp')
 
 
@@ -18,7 +18,7 @@ class DescribeFormTests(TestCase):
     """Tests for describe_form command."""
 
     def setUp(self):
-        self.out = six.StringIO()
+        self.out = StringIO()
 
         class BaseModel(models.Model):
             title = models.CharField(max_length=50)

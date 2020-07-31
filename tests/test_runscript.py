@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import sys
 import importlib
 
+from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -13,8 +13,8 @@ from django_extensions.management.commands.runscript import BadCustomDirectoryEx
 class RunScriptTests(TestCase):
 
     def setUp(self):
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
 
     def test_runs(self):
         # lame test...does it run?
@@ -55,14 +55,14 @@ class InvalidImportScriptsTests(RunScriptTests):
     def test_prints_import_error_on_script_with_invalid_imports_by_default(self):
         call_command('runscript', 'invalid_import_script')
         self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-        six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+        self.assertRegex(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
 
     def test_prints_import_error_on_script_with_invalid_imports_reliably(self):
         if hasattr(importlib, 'util') and hasattr(importlib.util, 'find_spec'):
             with self.settings(BASE_DIR=os.path.dirname(os.path.abspath(__file__))):
                 call_command('runscript', 'invalid_import_script')
                 self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-                six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+                self.assertRegex(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
 
 
 class InvalidScriptsTests(RunScriptTests):
@@ -167,8 +167,7 @@ class ChangingDirectoryTests(RunScriptTests):
 
     @override_settings(RUNSCRIPT_CHDIR='bad path')
     def test_custom_policy_django_settings_bad_path(self):
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             BadCustomDirectoryException,
             'bad path is not a directory! If --dir-policy is custom than you must set '
             'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'

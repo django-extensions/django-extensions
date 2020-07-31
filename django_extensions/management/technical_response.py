@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
 
-import six
 from django.core.handlers.wsgi import WSGIHandler
 
 tld = threading.local()
@@ -34,4 +33,4 @@ def null_technical_500_response(request, exc_type, exc_value, tb, status_code=50
     except AttributeError:
         pass
 
-    six.reraise(exc_type, exc_value, tb)
+    raise(exc_type, exc_value, tb)

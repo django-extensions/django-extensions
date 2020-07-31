@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
 
-import six
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
 from unittest.mock import patch
 
@@ -37,7 +36,7 @@ class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
 
     def test_should_raise_CommandError_if_database_is_unknown(self):
-        with six.assertRaisesRegex(self, CommandError, "Unknown database unknown"):
+        with self.assertRaisesRegex(CommandError, "Unknown database unknown"):
             call_command('sqlcreate', '--database=unknown')
 
 

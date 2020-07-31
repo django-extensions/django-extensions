@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import mock
 import logging
 import importlib
-import pytest
-import sys
 
 from django.conf import settings
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
 from django_extensions.management.commands.merge_model_instances import get_model_to_deduplicate, get_field_names, keep_first_or_last_instance
@@ -74,11 +71,11 @@ class DescribeFormTests(TestCase):
         call_command('describe_form', 'django_extensions.Secret', stdout=out)
         output = out.getvalue()
         self.assertIn("class SecretForm(forms.Form):", output)
-        six.assertRegex(self, output, r"name = forms.CharField\(.*max_length=255")
-        six.assertRegex(self, output, r"name = forms.CharField\(.*required=False")
-        six.assertRegex(self, output, r"name = forms.CharField\(.*label=u?'Name'")
-        six.assertRegex(self, output, r"text = forms.CharField\(.*required=False")
-        six.assertRegex(self, output, r"text = forms.CharField\(.*label=u?'Text'")
+        self.assertRegex(output, r"name = forms.CharField\(.*max_length=255")
+        self.assertRegex(output, r"name = forms.CharField\(.*required=False")
+        self.assertRegex(output, r"name = forms.CharField\(.*label=u?'Name'")
+        self.assertRegex(output, r"text = forms.CharField\(.*required=False")
+        self.assertRegex(output, r"text = forms.CharField\(.*label=u?'Text'")
 
 
 class CommandSignalTests(TestCase):
@@ -293,7 +290,6 @@ class ListModelInfoTests(TestCase):
         self.assertIn('__class__()', self.output)
         self.assertIn('validate_unique()', self.output)
 
-    @pytest.mark.skipif(sys.version_info < (3, 3), reason="inspect.Signature requires python3.3 or higher")
     def test_signature(self):
         out = StringIO()
         call_command('list_model_info', '--model', 'django_extensions.MultipleFieldsAndMethods', '--signature', stdout=out)

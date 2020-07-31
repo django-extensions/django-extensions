@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 import time
 import traceback
 from contextlib import contextmanager
@@ -11,7 +10,7 @@ from django.db.backends import utils
 
 
 @contextmanager
-def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, truncate=None, logger=six.print_, confprefix="DJANGO_EXTENSIONS"):
+def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, truncate=None, logger=print, confprefix="DJANGO_EXTENSIONS"):
     if not print_sql:
         yield
     else:
