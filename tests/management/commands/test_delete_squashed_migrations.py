@@ -100,6 +100,10 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
             call_command('delete_squashed_migrations', 'testapp_with_appconfig',
                          '0002')
 
+    def test_should_raise_CommandError_when_database_does_not_exist(self):
+        with self.assertRaisesRegex(CommandError, 'Unknown database non-existing_database'):
+            call_command('delete_squashed_migrations', '--database=non-existing_database')
+
 
 @pytest.mark.xfail
 @pytest.mark.skipif(
