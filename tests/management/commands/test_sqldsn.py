@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
+
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
+from unittest.mock import patch
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
 
 MYSQL_DATABASE_SETTINGS = {
     'ENGINE': 'django.db.backends.mysql',

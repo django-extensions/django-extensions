@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import six
-import django
 import pytest
 import inspect
 
+from io import StringIO
 from django.core.management import call_command
 from django.db.models import Model
 from django.test import override_settings
@@ -13,11 +12,10 @@ from django.test import override_settings
 from django_extensions.management.commands import shell_plus
 
 
-@pytest.mark.skipif(django.VERSION < (2, 0), reason="This test works only on Django greater than 2.0.0")
 @pytest.mark.django_db()
 @override_settings(SHELL_PLUS_SQLPARSE_ENABLED=False, SHELL_PLUS_PYGMENTS_ENABLED=False)
 def test_shell_plus_print_sql(capsys):
-    out = six.StringIO()
+    out = StringIO()
     try:
         from django.db import connection
         from django.db.backends import utils

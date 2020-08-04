@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-import six
+from io import StringIO
+
 from django.conf.urls import url
 from django.core.management import CommandError, call_command
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.views.generic.base import View
-from six import StringIO
 
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 
 def function_based_view(request):
@@ -33,17 +30,17 @@ class ShowUrlsExceptionsTests(TestCase):
     """Tests if show_urls command raises exceptions."""
 
     def test_should_raise_CommandError_when_format_style_does_not_exists(self):
-        with six.assertRaisesRegex(self, CommandError, "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, verbose"):
+        with self.assertRaisesRegex(CommandError, "Format style 'invalid_format' does not exist. Options: aligned, dense, json, pretty-json, table, verbose"):
             call_command('show_urls', '--format=invalid_format')
 
     def test_should_raise_CommandError_when_doesnt_have_urlconf_attr(self):
-        with six.assertRaisesRegex(self, CommandError, "Settings module <Settings \"tests.testapp.settings\"> does not have the attribute INVALID_URLCONF."):
+        with self.assertRaisesRegex(CommandError, "Settings module <Settings \"tests.testapp.settings\"> does not have the attribute INVALID_URLCONF."):
             call_command('show_urls', '--urlconf=INVALID_URLCONF')
 
     @override_settings(INVALID_URLCONF='')
     def test_should_raise_CommandError_when_doesnt_have_urlconf_attr_print_exc(self):
         m_traceback = Mock()
-        with six.assertRaisesRegex(self, CommandError, 'Error occurred while trying to load : Empty module name'):
+        with self.assertRaisesRegex(CommandError, 'Error occurred while trying to load : Empty module name'):
             with patch.dict('sys.modules', traceback=m_traceback):
                 call_command('show_urls', '--urlconf=INVALID_URLCONF', '--traceback')
 

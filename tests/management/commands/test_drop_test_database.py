@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-import six
+from io import StringIO
+
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
-try:
-    from unittest.mock import MagicMock, Mock, patch
-except ImportError:
-    from mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 
 class DropTestDatabaseExceptionsTests(TestCase):
     """Test for drop_test_database command."""
 
     def test_should_raise_CommandError_if_database_is_unknown(self):
-        with six.assertRaisesRegex(self, CommandError, "Unknown database unknown"):
+        with self.assertRaisesRegex(CommandError, "Unknown database unknown"):
             call_command('drop_test_database', '--database=unknown')
 
     @override_settings(DATABASES={
@@ -27,7 +24,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
     @patch('django_extensions.management.commands.drop_test_database.input')
     def test_should_raise_CommandError_if_unknown_database_engine(self, m_input):
         m_input.return_value = 'yes'
-        with six.assertRaisesRegex(self, CommandError, "Unknown database engine unknown"):
+        with self.assertRaisesRegex(CommandError, "Unknown database engine unknown"):
             call_command('drop_test_database')
 
     @override_settings(DATABASES={
@@ -40,7 +37,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
         }
     })
     def test_shoul_raise_CommandError_if_test_database_name_is_empty(self):
-        with six.assertRaisesRegex(self, CommandError, "You need to specify DATABASE_NAME in your Django settings file."):
+        with self.assertRaisesRegex(CommandError, "You need to specify DATABASE_NAME in your Django settings file."):
             call_command('drop_test_database')
 
 

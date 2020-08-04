@@ -117,13 +117,11 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 
 version = __import__('django_extensions').__version__
 
-install_requires = ['six>=1.2']
+install_requires = []
 extras_require = {}
 
 if int(setuptools.__version__.split(".", 1)[0]) < 18:
     assert "bdist_wheel" not in sys.argv, "setuptools 18 or later is required for wheels."
-    if sys.version_info[:2] < (3, 5):
-        install_requires.append('typing')
 elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
     install_requires.append('typing;python_version<"3.5"')
 else:

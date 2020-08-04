@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
+
 from django.core.management import call_command
 from django.db import models
 from django.test import TestCase
-from six import PY3, StringIO
 
 
 class AdminGeneratorTests(TestCase):
@@ -16,12 +17,8 @@ class AdminGeneratorTests(TestCase):
         output = self.out.getvalue()
         self.assertIn("@admin.register(Secret)", output)
         self.assertIn("class SecretAdmin(admin.ModelAdmin):", output)
-        if PY3:
-            self.assertIn("list_display = ('id', 'name', 'text')", output)
-            self.assertIn("search_fields = ('name',)", output)
-        else:
-            self.assertIn("list_display = (u'id', u'name', u'text')", output)
-            self.assertIn("search_fields = (u'name',)", output)
+        self.assertIn("list_display = ('id', 'name', 'text')", output)
+        self.assertIn("search_fields = ('name',)", output)
 
     def test_should_print_warning_if_given_app_is_not_installed(self):
         expected_output = '''This command requires an existing app name as argument

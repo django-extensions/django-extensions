@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-import six
+from io import StringIO
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 class SetDefaultSiteTests(TestCase):
@@ -19,24 +16,24 @@ class SetDefaultSiteTests(TestCase):
 
     @override_settings(SITE_ID=321)
     def test_should_raise_CommandError_when_Site_object_does_not_exist(self):
-        with six.assertRaisesRegex(self, CommandError, "Default site with pk=321 does not exist"):
+        with self.assertRaisesRegex(CommandError, "Default site with pk=321 does not exist"):
             call_command('set_default_site')
 
     @patch('django_extensions.management.commands.set_default_site.socket')
     def test_should_raise_CommandError_if_system_fqdn_return_None(self, m_socket):
         m_socket.getfqdn.return_value = None
-        with six.assertRaisesRegex(self, CommandError, "Cannot find systems FQDN"):
+        with self.assertRaisesRegex(CommandError, "Cannot find systems FQDN"):
             call_command('set_default_site', '--system-fqdn')
 
     def test_should_raise_CommandError_if_both_domain_and_set_as_system_fqdn_are_present(self):
-        with six.assertRaisesRegex(self, CommandError, "The set_as_system_fqdn cannot be used with domain option."):
+        with self.assertRaisesRegex(CommandError, "The set_as_system_fqdn cannot be used with domain option."):
             call_command('set_default_site', '--domain=foo', '--system-fqdn')
 
     @override_settings(INSTALLED_APPS=[
         app for app in settings.INSTALLED_APPS
         if app != 'django.contrib.sites'])
     def test_should_raise_CommandError_Sites_framework_not_installed(self):
-        with six.assertRaisesRegex(self, CommandError, "The sites framework is not installed."):
+        with self.assertRaisesRegex(CommandError, "The sites framework is not installed."):
             call_command('set_default_site', '--domain=foo', '--system-fqdn')
 
     @patch('sys.stdout', new_callable=StringIO)

@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
-import six
+from io import StringIO
 
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class ResetDbExceptionsTests(TestCase):
     """Tests if reset_db command raises exceptions."""
 
     def test_should_raise_CommandError_when_database_does_not_exist(self):
-        with six.assertRaisesRegex(self, CommandError, 'Unknown database non-existing_database'):
+        with self.assertRaisesRegex(CommandError, 'Unknown database non-existing_database'):
             call_command('reset_db', '--database=non-existing_database')
 
     @override_settings(DATABASES={
@@ -27,7 +23,7 @@ class ResetDbExceptionsTests(TestCase):
         }
     })
     def test_should_raise_CommandError_when_unknown_database_engine(self):
-        with six.assertRaisesRegex(self, CommandError, 'Unknown database engine django.db.backends.UNKNOWN'):
+        with self.assertRaisesRegex(CommandError, 'Unknown database engine django.db.backends.UNKNOWN'):
             call_command('reset_db', '--noinput')
 
     @override_settings(DATABASES={
@@ -36,7 +32,7 @@ class ResetDbExceptionsTests(TestCase):
         }
     })
     def test_should_raise_CommandError_when_no_db_name_provided(self):
-        with six.assertRaisesRegex(self, CommandError, 'You need to specify DATABASE_NAME in your Django settings file.'):
+        with self.assertRaisesRegex(CommandError, 'You need to specify DATABASE_NAME in your Django settings file.'):
             call_command('reset_db', '--noinput')
 
 

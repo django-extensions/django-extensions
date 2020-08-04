@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import django
 import pytest
-import six
+
 from django.db import migrations, models
 from django.db.migrations.writer import MigrationWriter
 from django.test import TestCase
@@ -169,12 +168,11 @@ class AutoSlugFieldTest(TestCase):
         self.assertEqual(m.slug, 'foo-2')
 
     def test_populate_from_does_not_allow_bytes(self):
-        if six.PY3:
-            with pytest.raises(TypeError):
-                AutoSlugField(populate_from=b'bytes')
+        with pytest.raises(TypeError):
+            AutoSlugField(populate_from=b'bytes')
 
-            with pytest.raises(TypeError):
-                AutoSlugField(populate_from=[b'bytes'])
+        with pytest.raises(TypeError):
+            AutoSlugField(populate_from=[b'bytes'])
 
     def test_populate_from_must_allow_string_or_list_str_or_tuple_str(self):
         AutoSlugField(populate_from='str')
@@ -241,7 +239,6 @@ class AutoSlugFieldTest(TestCase):
         m.save()
         self.assertEqual(m.slug, 'foo-2')
 
-    @pytest.mark.skipif(django.VERSION < (2, 2), reason="This test works only on Django greater than 2.2.0")
     def test_auto_create_slug_with_constraints(self):
         m = SluggedWithConstraintsTestModel(title='foo', category='self-introduction')
         m.save()
@@ -290,12 +287,9 @@ class MigrationTest(TestCase):
         })
         writer = MigrationWriter(migration)
         output = writer.as_string()
-        # It should NOT be unicode.
-        if django.VERSION < (1, 11):
-            self.assertIsInstance(output, six.binary_type, "Migration as_string returned unicode")
-        else:
-            # As of Django 1.11 MigrationWriter.as_string returns unicode not bytes
-            self.assertIsInstance(output, six.text_type, "Migration as_string returned bytes")
+
+        self.assertIsInstance(output, str, "Migration as_string returned bytes")
+
         # We don't test the output formatting - that's too fragile.
         # Just make sure it runs for now, and that things look alright.
         result = self.safe_exec(output)

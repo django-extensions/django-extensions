@@ -5,10 +5,7 @@ from os.path import join
 
 from django_extensions.management.commands.runserver_plus import Command as RunServerCommand
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 location = join('some', 'strange', 'path')

@@ -11,7 +11,6 @@ and anything extra will of been deleted.
 
 import os
 
-import six
 from django.apps import apps
 from django.conf import settings
 from django.core import serializers
@@ -73,14 +72,14 @@ class Command(BaseCommand):
                     if obj.pk in remove_these_ones:
                         obj.delete()
                         if verbosity >= 2:
-                            print("Deleted object: %s" % six.u(obj))
+                            print("Deleted object: %s" % str(obj))
 
             if verbosity > 0 and remove_these_ones:
                 num_deleted = len(remove_these_ones)
                 if num_deleted > 1:
-                    type_deleted = six.u(class_._meta.verbose_name_plural)
+                    type_deleted = str(class_._meta.verbose_name_plural)
                 else:
-                    type_deleted = six.u(class_._meta.verbose_name)
+                    type_deleted = str(class_._meta.verbose_name)
 
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 

@@ -8,12 +8,10 @@ from django.contrib.auth.models import User
 from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
+from io import StringIO
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
+
 
 TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
+
 from django.core.management import call_command
-from six import StringIO
 
 
 def test_show_template_tags():
