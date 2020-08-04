@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.core.management import call_command
+import pytest
+from django.core.management import CommandError, call_command
 
 
 def test_without_args(capsys):
@@ -18,6 +19,20 @@ def test_with_setting_args(capsys):
     out, err = capsys.readouterr()
     assert 'DEBUG' in out
     assert 'INSTALLED_APPS' not in out
+
+
+def test_with_setting_wildcard(capsys):
+    call_command('print_settings', '*_DIRS')
+
+    out, err = capsys.readouterr()
+    assert 'FIXTURE_DIRS' in out
+    assert 'STATICFILES_DIRS' in out
+    assert 'INSTALLED_APPS' not in out
+
+
+def test_with_setting_fail(capsys):
+    with pytest.raises(CommandError, match='INSTALLED_APPZ not found in settings.'):
+        call_command('print_settings', '-f', 'INSTALLED_APPZ')
 
 
 def test_with_multiple_setting_args(capsys):

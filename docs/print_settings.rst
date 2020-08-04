@@ -38,26 +38,43 @@ Show just selected settings::
     $ python manage.py print_settings DEBUG INSTALLED_APPS --format=pprint
     $ python manage.py print_settings INSTALLED_APPS --format=value
 
+It is also possible to use shell-style wildcards::
+
+    $ python manage.py print_settings TIME*
+    $ python manage.py print_settings *_DIRS STATIC*
+    $ python manage.py print_settings INSTALLED_????
+
+Yielding an error when a settings does not exist::
+
+    $ ./manage.py print_settings -f INSTALLED_APPZ
+    CommandError: INSTALLED_APPZ not found in settings.
+
 For more info, take a look at the built-in help::
 
     $ python manage.py print_settings --help
-    Usage: manage.py print_settings [options]
+    usage: manage.py print_settings [-h] [-f] [--format FORMAT] [--indent INDENT] [--version] [-v {0,1,2,3}]
+                                    [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color]
+                                    [--force-color] [--skip-checks]
+                                    [setting [setting ...]]
 
     Print the active Django settings.
 
-    Options:
-      -v VERBOSITY, --verbosity=VERBOSITY
-                            Verbosity level; 0=minimal output, 1=normal output,
-                            2=verbose output, 3=very verbose output
-      --settings=SETTINGS   The Python path to a settings module, e.g.
-                            "myproject.settings.main". If this isn't provided, the
-                            DJANGO_SETTINGS_MODULE environment variable will be
-                            used.
-      --pythonpath=PYTHONPATH
-                            A directory to add to the Python path, e.g.
-                            "/home/djangoprojects/myproject".
-      --traceback           Print traceback on exception
-      --format=FORMAT       Specifies output format.
-      --indent=INDENT       Specifies indent level for JSON and YAML
-      --version             show program's version number and exit
+    positional arguments:
+      setting               Specifies setting to be printed.
+
+    optional arguments:
       -h, --help            show this help message and exit
+      -f, --fail            Fail if invalid setting name is given.
+      --format FORMAT       Specifies output format.
+      --indent INDENT       Specifies indent level for JSON and YAML
+      --version             show program's version number and exit
+      -v {0,1,2,3}, --verbosity {0,1,2,3}
+                            Verbosity level; 0=minimal output, 1=normal output, 2=verbose output, 3=very verbose output
+      --settings SETTINGS   The Python path to a settings module, e.g. "myproject.settings.main". If this isn't provided,
+                            the DJANGO_SETTINGS_MODULE environment variable will be used.
+      --pythonpath PYTHONPATH
+                            A directory to add to the Python path, e.g. "/home/djangoprojects/myproject".
+      --traceback           Raise on CommandError exceptions
+      --no-color            Don't colorize the command output.
+      --force-color         Force colorization of the command output.
+      --skip-checks         Skip system checks.
