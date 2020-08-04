@@ -67,6 +67,31 @@ jobs:
         - mysql
     - python: pypy3
       env: TOXENV=pypy3-dj30
+    # Django 3.1: Python 3.6, 3.7 or 3.8 / PyPy 3.x
+    - python: 3.6
+      env: TOXENV=py36-dj31
+    - python: 3.7
+      env: TOXENV=py37-dj31
+    - python: 3.7
+      env: TOXENV=py37-dj31-postgres
+      services:
+        - postgresql
+    - python: 3.7
+      env: TOXENV=py37-dj31-mysql
+      services:
+        - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj31
+    - python: 3.8
+      env: TOXENV=py38-dj31-postgres
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj31-mysql
+      services:
+        - mysql
+    - python: pypy3
+      env: TOXENV=pypy3-dj31
     # Django master: Python 3.6, 3.7 or 3.8 / PyPy 3.x
     - python: 3.6
       env: TOXENV=py36-djmaster
