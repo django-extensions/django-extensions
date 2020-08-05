@@ -1,6 +1,21 @@
 Changelog
 =========
 
+3.0.4
+-----
+
+Changes:
+ - Various cleanups
+ - Deprecated using `--router` instead use `--database`
+ - Locales: Indonesian and Polish, updated
+ - Improvement: show_dsn, fix crash with django-postgres-extra
+ - Improvement: print_settings, added wildcard support
+ - Improvement: print_settings, added --fail option
+ - Improvement: delete_squashed_migrations, add --database option
+ - Improvement: runserver_plus, added RUNSERVER_PLUS_EXTRA_FILES setting
+ - Improvement: runserver_plus, added runserver_plus_started signal
+
+
 3.0.3
 -----
 
