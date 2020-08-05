@@ -203,6 +203,9 @@ Other configuration options and their defaults include:
   # Werkzeug reloader type [auto, watchdog, or stat]
   RUNSERVERPLUS_POLLER_RELOADER_TYPE = 'auto'
 
+  # Add extra files to watch
+  RUNSERVER_PLUS_EXTRA_FILES = []
+
 
 IO Calls and CPU Usage
 ^^^^^^^^^^^^^^^^^^^^^^

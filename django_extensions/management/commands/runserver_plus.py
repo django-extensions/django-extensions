@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
+from django.dispatch import Signal
 from django.utils.autoreload import get_reloader
 
 try:
@@ -25,11 +26,7 @@ from django_extensions.management.technical_response import null_technical_500_r
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
-
-def gen_filenames():
-    return get_reloader().watched_files()
-
-
+runserver_plus_started = Signal()
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
     (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
@@ -41,6 +38,10 @@ DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOA
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
+
+
+def gen_filenames():
+    return get_reloader().watched_files()
 
 
 class Command(BaseCommand):
@@ -242,9 +243,9 @@ class Command(BaseCommand):
         use_reloader = options['use_reloader']
         open_browser = options['open_browser']
         quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-        extra_files = options['extra_files']
         reloader_interval = options['reloader_interval']
         reloader_type = options['reloader_type']
+        self.extra_files = set(options['extra_files'])
 
         self.nopin = options['nopin']
 
@@ -258,12 +259,15 @@ class Command(BaseCommand):
             self.check_migrations()
         except ImproperlyConfigured:
             pass
+
         handler = get_internal_wsgi_application()
+
         if USE_STATICFILES:
             use_static_handler = options['use_static_handler']
             insecure_serving = options['insecure_serving']
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
+
         if options["cert_path"] or options["key_file_path"]:
             """
             OpenSSL is needed for SSL support.
@@ -294,7 +298,6 @@ class Command(BaseCommand):
                 if self.show_startup_messages:
                     print("Werkzeug version is less than 0.9, trying adhoc certificate.")
                 ssl_context = "adhoc"
-
         else:
             ssl_context = None
 
@@ -312,7 +315,10 @@ class Command(BaseCommand):
             webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
-            extra_files.extend(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
+            self.extra_files |= set(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
+
+        if getattr(settings, 'RUNSERVER_PLUS_EXTRA_FILES', []):
+            self.extra_files |= set(settings['RUNSERVER_PLUS_EXTRA_FILES'])
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
@@ -327,13 +333,14 @@ class Command(BaseCommand):
                 os.environ['WERKZEUG_DEBUG_PIN'] = 'off'
             handler = DebuggedApplication(handler, True)
 
+        runserver_plus_started.send(sender=self)
         run_simple(
             self.addr,
             int(self.port),
             handler,
             use_reloader=use_reloader,
             use_debugger=True,
-            extra_files=extra_files,
+            extra_files=self.extra_files,
             reloader_interval=reloader_interval,
             reloader_type=reloader_type,
             threaded=threaded,
