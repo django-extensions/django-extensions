@@ -1,6 +1,13 @@
 Changelog
 =========
 
+3.0.5
+-----
+
+Changes:
+ - Fix: runserver_plus, exceptions must derive from BaseException error
+
+
 3.0.4
 -----
 
