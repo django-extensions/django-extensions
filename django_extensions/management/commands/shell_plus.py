@@ -4,6 +4,7 @@ import os
 import sys
 import traceback
 
+from django.db import connections
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.datastructures import OrderedSet
@@ -460,29 +461,20 @@ for k, m in shells.import_objects({}, no_style()).items():
 
         http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
         """
-        supported_backends = ['django.db.backends.postgresql',
-                              'django.db.backends.postgresql_psycopg2']
+        supported_backends = (
+            'django.db.backends.postgresql',
+            'django.db.backends.postgresql_psycopg2',
+        )
         opt_name = 'fallback_application_name'
         default_app_name = 'django_shell'
-        app_name = default_app_name
         dbs = getattr(settings, 'DATABASES', [])
 
-        # lookup over all the databases entry
-        for db in dbs.keys():
-            if dbs[db]['ENGINE'] in supported_backends:
-                try:
-                    options = dbs[db]['OPTIONS']
-                except KeyError:
-                    options = {}
-
-                # dot not override a defined value
-                if opt_name in options.keys():
-                    app_name = dbs[db]['OPTIONS'][opt_name]
-                else:
-                    dbs[db].setdefault('OPTIONS', {}).update({opt_name: default_app_name})
-                    app_name = default_app_name
-
-        return app_name
+        for connection in connections.all():
+            alias = connection.alias
+            mro = inspect.getmro(connection.__class__)
+            if any(klass.__module__.startswith(supported_backends) for klass in mro):
+                if 'OPTIONS' not in dbs[alias] or opt_name not in dbs[alias]['OPTIONS']:
+                    dbs[alias].setdefault('OPTIONS', {}).update({opt_name: default_app_name})
 
     @signalcommand
     def handle(self, *args, **options):
@@ -559,6 +551,6 @@ for k, m in shells.import_objects({}, no_style()).items():
             if options['command']:
                 imported_objects = self.get_imported_objects(options)
                 exec(options['command'], {}, imported_objects)
-                return
+                return None
 
             runner()
