@@ -8,7 +8,7 @@ import sys
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, SystemCheckError
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
 from django.utils.autoreload import get_reloader
@@ -251,10 +251,13 @@ class Command(BaseCommand):
 
         if self.show_startup_messages:
             print("Performing system checks...\n")
-        if hasattr(self, 'check'):
-            self.check(display_num_errors=self.show_startup_messages)
-        else:
-            self.validate(display_num_errors=self.show_startup_messages)
+        try:
+            if hasattr(self, 'check'):
+                self.check(display_num_errors=self.show_startup_messages)
+            else:
+                self.validate(display_num_errors=self.show_startup_messages)
+        except (SyntaxError, SystemCheckError) as e:
+            self.stderr.write("SyntaxError occurred during system checks: " + str(e), ending="\n")
         try:
             self.check_migrations()
         except ImproperlyConfigured:
