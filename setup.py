@@ -155,7 +155,7 @@ setup(
     tests_require=[
         'Django',
         'Werkzeug',
-        'factory-boy',
+        'factory-boy<3.0.0',
         'mock',
         'pytest',
         'pytest-cov',
