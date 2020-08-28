@@ -76,7 +76,7 @@ The envisioned use case is something like this:
             print("CREATE DATABASE %s WITH ENCODING 'UTF-8' OWNER \"%s\";" % (dbname, dbuser))
             print("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (dbname, dbuser))
         elif engine == 'sqlite3':
-            sys.stderr.write("-- manage.py syncdb will automatically create a sqlite3 database file.\n")
+            sys.stderr.write("-- manage.py migrate will automatically create a sqlite3 database file.\n")
         else:
             # CREATE DATABASE is not SQL standard, but seems to be supported by most.
             sys.stderr.write("-- Don't know how to handle '%s' falling back to SQL.\n" % engine)
