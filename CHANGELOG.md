@@ -8,6 +8,7 @@ Changes:
  - Improvement: runscript, add --continue-on-error unless set runscript will exit on errors
  - Improvement: runscript, allow to return exit-code
  - Improvement: runscript, support raise CommandError(... returncode=...)
+ - Improvement: runscript, run Django checks() and check_migrations() before executing scripts
  - Improvement: shell_plus, set application name on all postgresql backends
 
 
