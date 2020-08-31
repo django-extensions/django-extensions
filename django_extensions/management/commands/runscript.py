@@ -181,6 +181,10 @@ class Command(EmailNotificationCommand):
                     return
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__, include_traceback=True)
+
+                if no_traceback:
+                    raise CommandError(repr(e))
+
                 raise
 
         def my_import(parent_package, module_name):
