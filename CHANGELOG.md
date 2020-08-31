@@ -1,6 +1,15 @@
 Changelog
 =========
 
+3.0.6
+-----
+
+Changes:
+ - Improvement: runscript, add --continue-on-error unless set runscript will exit on errors
+ - Improvement: runscript, allow to return exit-code
+ - Improvement: runscript, support raise CommandError(... returncode=...)
+
+
 3.0.5
 -----
 

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
 import importlib
 import inspect
-import os
 import traceback
 
 from argparse import ArgumentTypeError
 
 from django.apps import apps
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from django_extensions.management.email_notifications import EmailNotificationCommand
@@ -40,6 +42,7 @@ class Command(EmailNotificationCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_directory = os.getcwd()
+        self.last_exit_code = 0
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
@@ -54,7 +57,13 @@ class Command(EmailNotificationCommand):
         )
         parser.add_argument(
             '-s', '--silent', action='store_true', dest='silent', default=False,
-            help='Run silently, do not show errors and tracebacks',
+            help='Run silently, do not show errors and tracebacks. Also implies --continue-on-error.',
+        )
+        parser.add_argument(
+            '-c', '--continue-on-error', action='store_true', dest='continue_on_error', default=False,
+            help='Continue executing other scripts even though one has failed. '
+                 'It will print a traceback unless --no-traceback or --silent are given '
+                 'The exit code used when terminating will always be 1.',
         )
         parser.add_argument(
             '--no-traceback', action='store_true', dest='no_traceback', default=False,
@@ -80,8 +89,6 @@ class Command(EmailNotificationCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        from django.conf import settings
-
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
         ERROR = self.style.ERROR
@@ -97,6 +104,7 @@ class Command(EmailNotificationCommand):
         verbosity = options["verbosity"]
         show_traceback = options['traceback']
         no_traceback = options['no_traceback']
+        continue_on_error = options['continue_on_error']
         if no_traceback:
             show_traceback = False
         else:
@@ -104,6 +112,7 @@ class Command(EmailNotificationCommand):
         silent = options['silent']
         if silent:
             verbosity = 0
+            continue_on_error = True
         email_notifications = options['email_notifications']
 
         if len(subdirs) < 1:
@@ -143,22 +152,36 @@ class Command(EmailNotificationCommand):
             os.chdir(os.path.abspath(directory))
 
         def run_script(mod, *script_args):
+            exit_code = None
             try:
                 set_directory(mod)
-                mod.run(*script_args)
+                exit_code = mod.run(*script_args)
+                if isinstance(exit_code, bool):
+                    # convert boolean True to exit-code 0 and False to exit-code 1
+                    exit_code = 1 if exit_code else 0
+                if isinstance(exit_code, int):
+                    if exit_code != 0:
+                        try:
+                            raise CommandError("'%s' failed with exit code %s" % (mod.__name__, exit_code), returncode=exit_code)
+                        except TypeError:
+                            raise CommandError("'%s' failed with exit code %s" % (mod.__name__, exit_code))
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
             except Exception as e:
+                if isinstance(e, CommandError) and hasattr(e, 'returncode'):
+                    exit_code = e.returncode
+                self.last_exit_code = exit_code if isinstance(exit_code, int) else 1
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
+                if continue_on_error:
+                    if show_traceback:
+                        traceback.print_exc()
+                    return
                 if email_notifications:
-                    self.send_email_notification(
-                        notification_id=mod.__name__, include_traceback=True)
-                if show_traceback:
-                    if not isinstance(e, CommandError):
-                        raise
+                    self.send_email_notification(notification_id=mod.__name__, include_traceback=True)
+                raise
 
         def my_import(parent_package, module_name):
             full_module_path = "%s.%s" % (parent_package, module_name)
@@ -240,3 +263,10 @@ class Command(EmailNotificationCommand):
                 if verbosity > 1:
                     print(NOTICE2("Running script '%s' ..." % mod.__name__))
                 run_script(mod, *script_args)
+
+        if self.last_exit_code != 0:
+            try:
+                raise CommandError("An error has occurred running scripts. See errors above.", returncode=self.last_exit_code)
+            except TypeError:
+                print(ERROR("An error has occurred running scripts. See errors above."))
+                sys.exit(self.last_exit_code)
