@@ -7,8 +7,7 @@ import sys
 
 import django
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, SystemCheckError
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
 from django.utils.autoreload import get_reloader
@@ -26,6 +25,7 @@ from django_extensions.management.technical_response import null_technical_500_r
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
+
 runserver_plus_started = Signal()
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
@@ -33,6 +33,18 @@ naiveip_re = re.compile(r"""^(?:
     (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
     (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
 ):)?(?P<port>\d+)$""", re.X)
+# 7-bit C1 ANSI sequences (https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python)
+ansi_escape = re.compile(r'''
+    \x1B  # ESC
+    (?:   # 7-bit C1 Fe (except CSI)
+        [@-Z\\-_]
+    |     # or [ for CSI, followed by a control sequence
+        \[
+        [0-?]*  # Parameter bytes
+        [ -/]*  # Intermediate bytes
+        [@-~]   # Final byte
+    )
+''', re.VERBOSE)
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
@@ -214,6 +226,18 @@ class Command(BaseCommand):
         with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], logger=logger.info, confprefix="RUNSERVER_PLUS"):
             self.inner_run(options)
 
+    def get_handler(self, *args, **options):
+        """Return the default WSGI handler for the runner."""
+        return get_internal_wsgi_application()
+
+    def get_systemcheckerror_handler(self, error_message, error_class=Exception, **options):
+        error_message = ansi_escape.sub('', error_message)
+
+        def application(env, start_response):
+            raise error_class(error_message)
+
+        return application
+
     def inner_run(self, options):
         try:
             from werkzeug import run_simple
@@ -252,13 +276,15 @@ class Command(BaseCommand):
         if self.show_startup_messages:
             print("Performing system checks...\n")
 
-        self.check(display_num_errors=self.show_startup_messages)
         try:
-            self.check_migrations()
-        except ImproperlyConfigured:
-            pass
+            self.check(display_num_errors=self.show_startup_messages)
+        except (SyntaxError, SystemCheckError) as exc:
+            self.stderr.write("SyntaxError occurred during system checks: " + str(exc), ending="\n\n")
+            handler = self.get_systemcheckerror_handler(str(exc), error_class=type(exc), **options)
+        else:
+            handler = self.get_handler(**options)
 
-        handler = get_internal_wsgi_application()
+        self.check_migrations()
 
         if USE_STATICFILES:
             use_static_handler = options['use_static_handler']
