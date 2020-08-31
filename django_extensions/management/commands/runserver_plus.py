@@ -251,10 +251,8 @@ class Command(BaseCommand):
 
         if self.show_startup_messages:
             print("Performing system checks...\n")
-        if hasattr(self, 'check'):
-            self.check(display_num_errors=self.show_startup_messages)
-        else:
-            self.validate(display_num_errors=self.show_startup_messages)
+
+        self.check(display_num_errors=self.show_startup_messages)
         try:
             self.check_migrations()
         except ImproperlyConfigured:
