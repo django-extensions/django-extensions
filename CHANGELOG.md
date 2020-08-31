@@ -8,6 +8,7 @@ Changes:
  - Improvement: runscript, add --continue-on-error unless set runscript will exit on errors
  - Improvement: runscript, allow to return exit-code
  - Improvement: runscript, support raise CommandError(... returncode=...)
+ - Improvement: shell_plus, set application name on all postgresql backends
 
 
 3.0.5
