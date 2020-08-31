@@ -272,8 +272,15 @@ class Command(EmailNotificationCommand):
                 run_script(mod, *script_args)
 
         if self.last_exit_code != 0:
+            if silent:
+                if hasattr(self, 'running_tests'):
+                    return
+                sys.exit(self.last_exit_code)
+
             try:
                 raise CommandError("An error has occurred running scripts. See errors above.", returncode=self.last_exit_code)
             except TypeError:
                 print(ERROR("An error has occurred running scripts. See errors above."))
+                if hasattr(self, 'running_tests'):
+                    return
                 sys.exit(self.last_exit_code)

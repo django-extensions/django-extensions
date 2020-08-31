@@ -5,16 +5,21 @@ import importlib
 
 from io import StringIO
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 
-from django_extensions.management.commands.runscript import BadCustomDirectoryException, DirPolicyChoices
+from django_extensions.management.commands.runscript import Command, BadCustomDirectoryException, DirPolicyChoices
 
 
 class RunScriptTests(TestCase):
-
     def setUp(self):
         sys.stdout = StringIO()
         sys.stderr = StringIO()
+
+    def get_command(self):
+        cmd = Command()
+        cmd.running_tests = True
+        return cmd
 
     def test_runs(self):
         # lame test...does it run?
@@ -72,11 +77,14 @@ class InvalidScriptsTests(RunScriptTests):
         self.assertIn("Exception while running run() in", sys.stdout.getvalue())
 
     def test_prints_nothing_for_invalid_script_when_silent(self):
-        call_command('runscript', 'error_script', silent=True)
+        cmd = self.get_command()
+        call_command(cmd, 'error_script', silent=True)
+        self.assertEqual(cmd.last_exit_code, 1)
         self.assertEqual("", sys.stdout.getvalue())
 
     def test_doesnt_print_exception_for_nonexistent_script_when_no_traceback(self):
-        call_command('runscript', 'error_script', no_traceback=True)
+        with self.assertRaises(CommandError):
+            call_command('runscript', 'error_script', no_traceback=True)
         self.assertEqual("", sys.stderr.getvalue())
         self.assertIn("Exception while running run() in", sys.stdout.getvalue())
 
