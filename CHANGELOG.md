@@ -1,6 +1,14 @@
 Changelog
 =========
 
+3.0.7
+-----
+
+Changes:
+ - Improvement: runserver_plus, gh #1575 survive syntax and configuration errors
+ - Improvement: runscript, use exit-code 1 if script is not found
+
+
 3.0.6
 -----
 
