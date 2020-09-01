@@ -259,17 +259,28 @@ class Command(EmailNotificationCommand):
             script_args = options['script_args']
         else:
             script_args = []
+
+        # first pass to check if all scripts can be found
+        script_to_run = []
         for script in scripts:
-            modules = find_modules_for_script(script)
-            if not modules:
+            script_modules = find_modules_for_script(script)
+            if not script_modules:
+                self.last_exit_code = 1
                 if verbosity > 0 and not silent:
                     print(ERROR("No (valid) module for script '%s' found" % script))
-                    if verbosity < 2:
-                        print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
-            for mod in modules:
-                if verbosity > 1:
-                    print(NOTICE2("Running script '%s' ..." % mod.__name__))
-                run_script(mod, *script_args)
+                continue
+            script_to_run.extend(script_modules)
+
+        if self.last_exit_code:
+            if verbosity < 2 and not silent:
+                print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
+            if not continue_on_error:
+                script_to_run = []
+
+        for script_mod in script_to_run:
+            if verbosity > 1:
+                print(NOTICE2("Running script '%s' ..." % script_mod.__name__))
+            run_script(script_mod, *script_args)
 
         if self.last_exit_code != 0:
             if silent:
