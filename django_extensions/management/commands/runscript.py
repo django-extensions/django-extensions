@@ -291,6 +291,10 @@ class Command(EmailNotificationCommand):
             try:
                 raise CommandError("An error has occurred running scripts. See errors above.", returncode=self.last_exit_code)
             except TypeError:
+                # Django < 3.1 fallback
+                if self.last_exit_code == 1:
+                    # if exit_code is 1 we can still raise CommandError without returncode argument
+                    raise CommandError("An error has occurred running scripts. See errors above.")
                 print(ERROR("An error has occurred running scripts. See errors above."))
                 if hasattr(self, 'running_tests'):
                     return
