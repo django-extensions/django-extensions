@@ -278,8 +278,8 @@ class Command(BaseCommand):
 
         try:
             self.check(display_num_errors=self.show_startup_messages)
-        except (SyntaxError, SystemCheckError) as exc:
-            self.stderr.write("SyntaxError occurred during system checks: " + str(exc), ending="\n\n")
+        except SystemCheckError as exc:
+            self.stderr.write("SystemCheckError occurred during system checks: " + str(exc), ending="\n\n")
             handler = self.get_systemcheckerror_handler(str(exc), error_class=type(exc), **options)
         else:
             handler = self.get_handler(**options)
