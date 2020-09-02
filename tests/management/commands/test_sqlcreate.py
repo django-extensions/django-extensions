@@ -90,7 +90,7 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
     @override_settings(DATABASES={'default': SQLITE3_DATABASE_SETTINGS})
     @patch('sys.stderr', new_callable=StringIO)
     def test_should_print_stderr_for_sqlite3(self, m_stderr):
-        expected_error = "-- manage.py syncdb will automatically create a sqlite3 database file.\n"
+        expected_error = "-- manage.py migrate will automatically create a sqlite3 database file.\n"
 
         call_command('sqlcreate')
 
