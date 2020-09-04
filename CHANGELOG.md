@@ -1,6 +1,14 @@
 Changelog
 =========
 
+3.0.8
+
+Changes:
+ - Improvement: setup.cfg, remove universal flag from wheel, we only support Python 3 and up
+ - Improvement: sqlcreate, fixed mentioned of old syncdb
+ - Fix: runserver_plus, stop catching SyntaxError since reload for it was not working properly
+
+
 3.0.7
 -----
 
