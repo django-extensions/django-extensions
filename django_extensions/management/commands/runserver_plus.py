@@ -21,6 +21,14 @@ try:
 except ImportError:
     USE_STATICFILES = False
 
+try:
+    from werkzeug import run_simple
+    from werkzeug.debug import DebuggedApplication
+    from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
+    HAS_WERKZEUG = True
+except ImportError:
+    HAS_WERKZEUG = False
+
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
@@ -230,7 +238,7 @@ class Command(BaseCommand):
         """Return the default WSGI handler for the runner."""
         return get_internal_wsgi_application()
 
-    def get_systemcheckerror_handler(self, error_message, error_class=Exception, **options):
+    def get_error_handler(self, error_message, error_class=Exception, **options):
         error_message = ansi_escape.sub('', error_message)
 
         def application(env, start_response):
@@ -239,22 +247,17 @@ class Command(BaseCommand):
         return application
 
     def inner_run(self, options):
-        try:
-            from werkzeug import run_simple
-            from werkzeug.debug import DebuggedApplication
-            from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
-
-            # Set colored output
-            if settings.DEBUG:
-                try:
-                    set_werkzeug_log_color()
-                except Exception:  # We are dealing with some internals, anything could go wrong
-                    if self.show_startup_messages:
-                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
-                    pass
-
-        except ImportError:
+        if not HAS_WERKZEUG:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+
+        # Set colored output
+        if settings.DEBUG:
+            try:
+                set_werkzeug_log_color()
+            except Exception:  # We are dealing with some internals, anything could go wrong
+                if self.show_startup_messages:
+                    print("Wrapping internal werkzeug logger for color highlighting has failed!")
+                pass
 
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
@@ -280,7 +283,7 @@ class Command(BaseCommand):
             self.check(display_num_errors=self.show_startup_messages)
         except SystemCheckError as exc:
             self.stderr.write("SystemCheckError occurred during system checks: " + str(exc), ending="\n\n")
-            handler = self.get_systemcheckerror_handler(str(exc), error_class=type(exc), **options)
+            handler = self.get_error_handler(str(exc), error_class=type(exc), **options)
         else:
             handler = self.get_handler(**options)
 
