@@ -138,10 +138,10 @@ class ActivatorModel(models.Model):
 class UuidModel(models.Model):
     """
     An abstract base class model that provides UUID Field 
-    
+
     Best practice for lookup field url instead pk for security.
     """
-    
+
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -149,7 +149,14 @@ class UuidModel(models.Model):
 
 
 class SoftDeleteManager(models.Manager):
+    """
+    SoftDeleteManager
+
+    Custom main queryset function to return not is_deleted by default.
+    """
+
     def get_queryset(self):
+        """ Return queryset not is_deleted by default """
         return super().get_queryset().filter(is_deleted=False)
 
 
