@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import uuid
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -132,3 +133,31 @@ class ActivatorModel(models.Model):
         if not self.activate_date:
             self.activate_date = now()
         super().save(*args, **kwargs)
+
+
+class UuidModel(models.Model):
+    """ 
+    An abstract base class model that provides UUID Field 
+    Best practice for lookup field url instead pk for security.
+    """
+    uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
+
+    class Meta:
+        abstract = True
+
+
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
+class SoftDeleteModel(models.Model):
+    """
+    An abstract base class model that provides soft delete field.
+    """
+    is_deleted = models.BooleanField(default=False)
+
+    objects = SoftDeleteManager()
+
+    class Meta:
+        abstract = True
