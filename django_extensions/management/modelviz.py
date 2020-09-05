@@ -84,6 +84,7 @@ class ModelGraph:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
             self.app_labels = app_labels
+        self.rankdir = kwargs.get("rankdir")
 
     def generate_graph_data(self):
         self.process_apps()
@@ -107,6 +108,7 @@ class ModelGraph:
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
             'use_subgraph': self.use_subgraph,
+            'rankdir': self.rankdir,
         }
 
         if as_json:

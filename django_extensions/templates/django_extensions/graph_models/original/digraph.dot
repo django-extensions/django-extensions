@@ -5,7 +5,8 @@
 
   {% block digraph_options %}fontname = "Helvetica"
   fontsize = 8
-  splines  = true{% endblock %}
+  splines  = true
+  rankdir = "{{ rankdir }}"{% endblock %}
 
   node [{% block node_options %}
     fontname = "Helvetica"

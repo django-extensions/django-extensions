@@ -1,6 +1,13 @@
 Changelog
 =========
 
+3.1.4
+-----
+
+Changes:
+ - Improvement: graph_models, add --rankdir to change graph direction
+
+
 3.1.3
 -----
 

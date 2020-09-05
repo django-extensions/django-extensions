@@ -171,7 +171,14 @@ class Command(BaseCommand):
                 'dest': 'arrow_shape',
                 'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
                 'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
-            }
+            },
+            '--rankdir': {
+                'action': 'store',
+                'default': 'TB',
+                'dest': 'rankdir',
+                'choices': ['TB', 'BT', 'LR', 'RL'],
+                'help': 'Set direction of graph layout. Supported directions: "TB", "LR", "BT", "RL", corresponding to directed graphs drawn from top to bottom, from left to right, from bottom to top, and from right to left, respectively. Default is TB.'
+            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -229,6 +236,9 @@ class Command(BaseCommand):
             output = "pydot"
         else:
             raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image. To generate text output, use the --json or --dot options.")
+
+        if options.get('rankdir') != 'TB' and output not in ["pydot", "pygraphviz", "dot"]:
+            raise CommandError("--rankdir is not supported for the chosen output format")
 
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
