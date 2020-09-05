@@ -112,7 +112,7 @@ class Command(BaseCommand):
                                  "because Django debug pages tries to call the function and unintentionally shuts down "
                                  "the Werkzeug server.")
         parser.add_argument("--nopin", dest="nopin", action="store_true", default=False,
-                            help="Disable the PIN in werkzeug. USE IT WISELY!"),
+                            help="Disable the PIN in werkzeug. USE IT WISELY!")
 
         if USE_STATICFILES:
             parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
