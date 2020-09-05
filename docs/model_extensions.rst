@@ -71,3 +71,6 @@ See `AutoSlugField docs <field_extensions.html>`_ for more details.
 
 * *UuidModel* - An abstract base class model that provides ``UUID`` Field 
   Best practice for lookup field url instead pk for security.
+
+* *SoftDeleteModel* - An abstract base class model that provides 
+  ``soft delete`` field.
