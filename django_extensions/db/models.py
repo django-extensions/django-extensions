@@ -137,9 +137,11 @@ class ActivatorModel(models.Model):
 
 class UuidModel(models.Model):
     """
-    An abstract base class model that provides UUID Field Best practice for lookup field url instead pk for security.
+    An abstract base class model that provides UUID Field 
+    
+    Best practice for lookup field url instead pk for security.
     """
-
+    
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -157,7 +159,6 @@ class SoftDeleteModel(models.Model):
     """
 
     is_deleted = models.BooleanField(default=False)
-
     objects = SoftDeleteManager()
 
     class Meta:
