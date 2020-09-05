@@ -137,7 +137,7 @@ class ActivatorModel(models.Model):
 
 class UuidModel(models.Model):
     """
-    An abstract base class model that provides UUID Field 
+    An abstract base class model that provides UUID Field
 
     Best practice for lookup field url instead pk for security.
     """
