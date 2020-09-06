@@ -275,7 +275,7 @@ class Command(BaseCommand):
         threaded = options['threaded']
         use_reloader = options['use_reloader']
         open_browser = options['open_browser']
-        quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
+        quit_command = 'CONTROL-C' if sys.platform != 'win32' else 'CTRL-BREAK'
         reloader_interval = options['reloader_interval']
         reloader_type = options['reloader_type']
         self.extra_files = set(options['extra_files'])
