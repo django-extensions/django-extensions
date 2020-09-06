@@ -32,7 +32,7 @@ try:
     from werkzeug.debug import DebuggedApplication
     from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
     from werkzeug.serving import make_ssl_devcert
-    from werkzeug._internal import _log
+    from werkzeug._internal import _log  # type: ignore
     from werkzeug import _reloader
     HAS_WERKZEUG = True
 except ImportError:
