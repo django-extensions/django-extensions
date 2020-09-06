@@ -4,6 +4,7 @@ import os
 import re
 import socket
 import sys
+import traceback
 import webbrowser
 
 import django
@@ -244,11 +245,13 @@ class Command(BaseCommand):
         """Return the default WSGI handler for the runner."""
         return get_internal_wsgi_application()
 
-    def get_error_handler(self, error_message, error_class=Exception, **options):
-        error_message = ansi_escape.sub('', error_message)
-
+    def get_error_handler(self, exc, **options):
         def application(env, start_response):
-            raise error_class(error_message)
+            if isinstance(exc, SystemCheckError):
+                error_message = ansi_escape.sub('', str(exc))
+                raise SystemCheckError(error_message)
+
+            raise exc
 
         return application
 
@@ -286,13 +289,20 @@ class Command(BaseCommand):
 
         try:
             self.check(display_num_errors=self.show_startup_messages)
-        except SystemCheckError as exc:
-            self.stderr.write("SystemCheckError occurred during system checks: " + str(exc), ending="\n\n")
-            handler = self.get_error_handler(str(exc), error_class=type(exc), **options)
+            self.check_migrations()
+        except Exception as exc:
+            self.stderr.write("Error occurred during checks: %r" % exc, ending="\n\n")
+            handler = self.get_error_handler(exc, **options)
+            stack_summary = traceback.extract_tb(exc.__traceback__)
+            # probably only the file from the last frame is enough (but adding every file just in case)
+            for stack_frame in stack_summary:
+                if os.path.isfile(stack_frame.filename):
+                    self.extra_files.add(stack_frame.filename)
+            exc_filename = getattr(exc, 'filename', None)
+            if exc_filename:
+                self.extra_files.add(exc_filename)
         else:
             handler = self.get_handler(**options)
-
-        self.check_migrations()
 
         if USE_STATICFILES:
             use_static_handler = options['use_static_handler']
