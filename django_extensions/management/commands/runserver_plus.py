@@ -4,13 +4,16 @@ import os
 import re
 import socket
 import sys
+import webbrowser
 
 import django
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, SystemCheckError
+from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
 from django.utils.autoreload import get_reloader
+from django.views import debug as django_views_debug
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -25,9 +28,17 @@ try:
     from werkzeug import run_simple
     from werkzeug.debug import DebuggedApplication
     from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
+    from werkzeug.serving import make_ssl_devcert
+    from werkzeug._internal import _log
     HAS_WERKZEUG = True
 except ImportError:
     HAS_WERKZEUG = False
+
+try:
+    import OpenSSL  # NOQA
+    HAS_OPENSSL = True
+except ImportError:
+    HAS_OPENSSL = False
 
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
@@ -195,8 +206,7 @@ class Command(BaseCommand):
                 p.post_mortem(tb)
 
         # usurp django's handler
-        from django.views import debug
-        debug.technical_500_response = postmortem if pm else null_technical_500_response
+        django_views_debug.technical_500_response = postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options['use_ipv6']
         if self.use_ipv6 and not socket.has_ipv6:
@@ -305,9 +315,7 @@ class Command(BaseCommand):
             http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
             for more information on python imports.
             """
-            try:
-                import OpenSSL  # NOQA
-            except ImportError:
+            if not HAS_OPENSSL:
                 raise CommandError("Python OpenSSL Library is "
                                    "required to use runserver_plus with ssl support. "
                                    "Install via pip (pip install pyOpenSSL).")
@@ -316,7 +324,6 @@ class Command(BaseCommand):
             dir_path, root = os.path.split(certfile)
             root, _ = os.path.splitext(root)
             try:
-                from werkzeug.serving import make_ssl_devcert
                 if os.path.exists(certfile) and os.path.exists(keyfile):
                     ssl_context = (certfile, keyfile)
                 else:  # Create cert, key files ourselves.
@@ -338,7 +345,6 @@ class Command(BaseCommand):
             print("Quit the server with %s." % quit_command)
 
         if open_browser:
-            import webbrowser
             webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
@@ -409,12 +415,8 @@ class Command(BaseCommand):
 
 def set_werkzeug_log_color():
     """Try to set color to the werkzeug log."""
-    from django.core.management.color import color_style
-    from werkzeug.serving import WSGIRequestHandler
-    from werkzeug._internal import _log
-
     _style = color_style()
-    _orig_log = WSGIRequestHandler.log
+    _orig_log = _WSGIRequestHandler.log
 
     def werk_log(self, type, message, *args):
         try:
@@ -447,4 +449,4 @@ def set_werkzeug_log_color():
 
         _log(type, msg)
 
-    WSGIRequestHandler.log = werk_log
+    _WSGIRequestHandler.log = werk_log
