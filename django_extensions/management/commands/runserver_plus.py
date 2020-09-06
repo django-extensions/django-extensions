@@ -154,10 +154,6 @@ class Command(BaseCommand):
 
         os.environ['RUNSERVER_PLUS_SHOW_MESSAGES'] = '1'
 
-        # Do not use default ending='\n', because StreamHandler() takes care of it
-        if hasattr(self.stderr, 'ending'):
-            self.stderr.ending = None
-
         setup_logger(logger, self.stderr, filename=options['output_file'])  # , fmt="[%(name)s] %(message)s")
         logredirect = RedirectHandler(__name__)
 
