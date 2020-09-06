@@ -263,7 +263,6 @@ class Command(BaseCommand):
             except Exception:  # We are dealing with some internals, anything could go wrong
                 if self.show_startup_messages:
                     print("Wrapping internal werkzeug logger for color highlighting has failed!")
-                pass
 
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
