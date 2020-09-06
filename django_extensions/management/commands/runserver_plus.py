@@ -6,6 +6,8 @@ import socket
 import sys
 import traceback
 import webbrowser
+import functools
+from typing import Set
 
 import django
 from django.conf import settings
@@ -31,6 +33,7 @@ try:
     from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
     from werkzeug.serving import make_ssl_devcert
     from werkzeug._internal import _log
+    from werkzeug import _reloader
     HAS_WERKZEUG = True
 except ImportError:
     HAS_WERKZEUG = False
@@ -70,10 +73,55 @@ DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOA
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
+_error_files = set()  # type: Set[str]
+
+
+if HAS_WERKZEUG:
+    # Monkey patch the reloader to support adding more files to extra_files
+    for name, reloader_loop_klass in _reloader.reloader_loops.items():
+        class WrappedReloaderLoop(reloader_loop_klass):  # type: ignore
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self._extra_files = self.extra_files
+
+            @property
+            def extra_files(self):
+                return self._extra_files.union(_error_files)
+
+            @extra_files.setter
+            def extra_files(self, extra_files):
+                self._extra_files = extra_files
+
+        _reloader.reloader_loops[name] = WrappedReloaderLoop
 
 
 def gen_filenames():
     return get_reloader().watched_files()
+
+
+def check_errors(fn):
+    # Inspired by https://github.com/django/django/blob/master/django/utils/autoreload.py
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            _exception = sys.exc_info()
+
+            _, ev, tb = _exception
+
+            if getattr(ev, 'filename', None) is None:
+                # get the filename from the last item in the stack
+                filename = traceback.extract_tb(tb)[-1][0]
+            else:
+                filename = ev.filename
+
+            if filename not in _error_files:
+                _error_files.add(filename)
+
+            raise
+
+    return wrapper
 
 
 class Command(BaseCommand):
@@ -288,19 +336,11 @@ class Command(BaseCommand):
             print("Performing system checks...\n")
 
         try:
-            self.check(display_num_errors=self.show_startup_messages)
-            self.check_migrations()
+            check_errors(self.check)(display_num_errors=self.show_startup_messages)
+            check_errors(self.check_migrations)()
         except Exception as exc:
             self.stderr.write("Error occurred during checks: %r" % exc, ending="\n\n")
             handler = self.get_error_handler(exc, **options)
-            stack_summary = traceback.extract_tb(exc.__traceback__)
-            # probably only the file from the last frame is enough (but adding every file just in case)
-            for stack_frame in stack_summary:
-                if os.path.isfile(stack_frame.filename):
-                    self.extra_files.add(stack_frame.filename)
-            exc_filename = getattr(exc, 'filename', None)
-            if exc_filename:
-                self.extra_files.add(exc_filename)
         else:
             handler = self.get_handler(**options)
 
@@ -311,15 +351,6 @@ class Command(BaseCommand):
                 handler = StaticFilesHandler(handler)
 
         if options["cert_path"] or options["key_file_path"]:
-            """
-            OpenSSL is needed for SSL support.
-
-            This will make flakes8 throw warning since OpenSSL is not used
-            directly, alas, this is the only way to show meaningful error
-            messages. See:
-            http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
-            for more information on python imports.
-            """
             if not HAS_OPENSSL:
                 raise CommandError("Python OpenSSL Library is "
                                    "required to use runserver_plus with ssl support. "
@@ -375,7 +406,7 @@ class Command(BaseCommand):
         run_simple(
             self.addr,
             int(self.port),
-            handler,
+            check_errors(handler),
             use_reloader=use_reloader,
             use_debugger=True,
             extra_files=self.extra_files,
