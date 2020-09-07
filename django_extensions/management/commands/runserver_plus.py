@@ -338,11 +338,10 @@ class Command(BaseCommand):
         try:
             check_errors(self.check)(display_num_errors=self.show_startup_messages)
             check_errors(self.check_migrations)()
+            handler = check_errors(self.get_handler)(**options)
         except Exception as exc:
             self.stderr.write("Error occurred during checks: %r" % exc, ending="\n\n")
             handler = self.get_error_handler(exc, **options)
-        else:
-            handler = self.get_handler(**options)
 
         if USE_STATICFILES:
             use_static_handler = options['use_static_handler']
@@ -406,7 +405,7 @@ class Command(BaseCommand):
         run_simple(
             self.addr,
             int(self.port),
-            check_errors(handler),
+            handler,
             use_reloader=use_reloader,
             use_debugger=True,
             extra_files=self.extra_files,
