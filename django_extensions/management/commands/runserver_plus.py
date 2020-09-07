@@ -104,7 +104,7 @@ def check_errors(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         try:
-            fn(*args, **kwargs)
+            return fn(*args, **kwargs)
         except Exception:
             _exception = sys.exc_info()
 
