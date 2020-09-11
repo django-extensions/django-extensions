@@ -92,7 +92,7 @@ class PipCheckerTests(TestCase):
         subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
         os.remove(requirements_path)
 
-        self.assertTrue(value.endswith('repo is not frozen\n'))
+        self.assertTrue(value.endswith('repo is not frozen\n'), value)
 
     def test_pipchecker_with_outdated_requirement_on_pip20_1(self):
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', 'pip==20.1'])

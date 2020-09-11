@@ -3,6 +3,8 @@ import os
 
 SECRET_KEY = 'dummy'
 
+TEST_RUNNER = 'tests.runner.PytestTestRunner'
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',

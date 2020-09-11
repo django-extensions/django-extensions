@@ -19,7 +19,7 @@
     -   id: name-tests-test
         args:
         - --django
-        exclude: ^tests/testapp|^tests/management/|^tests/collisions/|^tests/pythonrc.py
+        exclude: ^tests/testapp|^tests/management/|^tests/collisions/|^tests/pythonrc.py|^tests/runner.py
 -   repo: git://github.com/Lucas-C/pre-commit-hooks.git
     sha: v1.0.1
     hooks:
