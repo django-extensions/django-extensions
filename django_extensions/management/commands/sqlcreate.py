@@ -70,11 +70,20 @@ The envisioned use case is something like this:
         elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
             if options['drop']:
                 print("DROP DATABASE IF EXISTS %s;" % (dbname,))
-                print("DROP USER IF EXISTS %s;" % (dbuser,))
+                if dbuser:
+                    print("DROP USER IF EXISTS %s;" % (dbuser,))
 
-            print("CREATE USER %s WITH ENCRYPTED PASSWORD '%s' CREATEDB;" % (dbuser, dbpass))
-            print("CREATE DATABASE %s WITH ENCODING 'UTF-8' OWNER \"%s\";" % (dbname, dbuser))
-            print("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (dbname, dbuser))
+            if dbuser and dbpass:
+                print("CREATE USER %s WITH ENCRYPTED PASSWORD '%s' CREATEDB;" % (dbuser, dbpass))
+                print("CREATE DATABASE %s WITH ENCODING 'UTF-8' OWNER \"%s\";" % (dbname, dbuser))
+                print("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (dbname, dbuser))
+            else:
+                print(
+                    "-- Assuming that unix domain socket connection mode is being used because\n"
+                    "-- USER or PASSWORD are blank in Django DATABASES configuration."
+                )
+                print("CREATE DATABASE %s WITH ENCODING 'UTF-8';" % (dbname, ))
+
         elif engine == 'sqlite3':
             sys.stderr.write("-- manage.py migrate will automatically create a sqlite3 database file.\n")
         else:

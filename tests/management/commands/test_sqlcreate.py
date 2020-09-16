@@ -31,6 +31,15 @@ POSTGRESQL_DATABASE_SETTINGS = {
     'PORT': '5432',
 }
 
+POSTGRESQL_DATABASE_SETTINGS_SOCKET_MODE = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME': 'database',
+    'USER': '',
+    'PASSWORD': '',
+    'HOST': '',
+    'PORT': '',
+}
+
 
 class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
@@ -67,6 +76,18 @@ GRANT ALL PRIVILEGES ON dbatabase.* to 'foo'@'tumbleweed' identified by 'bar';
         expected_statement = """CREATE USER foo WITH ENCRYPTED PASSWORD 'bar' CREATEDB;
 CREATE DATABASE database WITH ENCODING 'UTF-8' OWNER "foo";
 GRANT ALL PRIVILEGES ON DATABASE database TO foo;
+"""
+
+        call_command('sqlcreate')
+
+        self.assertEqual(expected_statement, m_stdout.getvalue())
+
+    @override_settings(DATABASES={'default': POSTGRESQL_DATABASE_SETTINGS_SOCKET_MODE})
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_SQL_create_database_statement_only_for_postgresql_when_unix_domain_socket_mode_is_used(self, m_stdout):
+        expected_statement = """-- Assuming that unix domain socket connection mode is being used because
+-- USER or PASSWORD are blank in Django DATABASES configuration.
+CREATE DATABASE database WITH ENCODING 'UTF-8';
 """
 
         call_command('sqlcreate')

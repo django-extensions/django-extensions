@@ -29,6 +29,11 @@ PostgreSQL
 ~~~~~~~~~~
   $ ./manage.py sqlcreate [--database=<databasename>] | psql -U <db_administrator> -W
 
+.. note::
+    If `USER` or `PASSWORD` are empty string or None, the `sqlcreate` assumes that unix domain
+    socket connection mode is being used, and because of that the SQL clauses `CREATE USER` and
+    privilege grants to the database and database user are not generated.
+
 
 MySQL
 ~~~~~
