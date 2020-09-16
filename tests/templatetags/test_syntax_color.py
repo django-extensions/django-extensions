@@ -85,7 +85,7 @@ class SyntaxColorTagTests(TestCase):
         content = """{% load syntax_color %}
 {{ code_string|colorize_noclasses }}
 """
-        expected_result = '''<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="color: #008000; font-weight: bold">&lt;h1&gt;</span>TEST<span style="color: #008000; font-weight: bold">&lt;/h1&gt;</span>
+        expected_result = '''<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%; margin: 0;"><span></span><span style="color: #008000; font-weight: bold">&lt;h1&gt;</span>TEST<span style="color: #008000; font-weight: bold">&lt;/h1&gt;</span>
 </pre></div>'''
         result = Template(content).render(ctx)
 
