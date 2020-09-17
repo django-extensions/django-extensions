@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-VERSION = (3, 0, 9)
+VERSION = (3, 1, 0, 'DEV')
 
 
 def get_version(version):
