@@ -1,7 +1,17 @@
 Changelog
 =========
 
+3.0.9
+-----
+
+Changes:
+ - Improvement: runserver_plus, survive syntax and configuration errors part II
+ - Improvement: tests, refactor test runner
+ - Improvement: sqlcreate, support postgresql unix domain socket
+
+
 3.0.8
+-----
 
 Changes:
  - Improvement: setup.cfg, remove universal flag from wheel, we only support Python 3 and up
