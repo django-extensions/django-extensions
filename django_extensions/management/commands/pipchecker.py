@@ -147,19 +147,14 @@ class Command(BaseCommand):
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
                 retry = True
-                retries = 0
                 available = None
                 while retry:
                     try:
                         available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
                         retry = False
                     except Fault as err:
-                        self.stdout.write("Fault Code: {0}".format(err.faultCode))
-                        self.stdout.write("Fault String: {0}".format(err.faultString))
-                        sleep_time = (2 ** retries)/10
-                        self.stdout.write("Waiting {0} seconds and retrying!".format(sleep_time))
-                        sleep(sleep_time)
-                        retries += 1
+                        sleep(60)
+
                 available_version = self._available_version(dist_version, available)
 
                 if not available_version:
