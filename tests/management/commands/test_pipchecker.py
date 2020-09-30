@@ -168,4 +168,4 @@ class PipCheckerTests(TestCase):
         subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
         os.remove(requirements_path)
 
-        self.assertEqual(value, '')
+        self.assertTrue(value.endswith("Retrying in 60 seconds!") or value == '')
