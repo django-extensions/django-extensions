@@ -6,9 +6,10 @@ from distutils.version import LooseVersion
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-from xmlrpc.client import ServerProxy
+from xmlrpc.client import ServerProxy, Fault
 
 import pip
+from time import sleep
 from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -145,7 +146,17 @@ class Command(BaseCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
+                retry = True
+                available = None
+                while retry:
+                    try:
+                        available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
+                        retry = False
+                    except Fault as err:
+                        self.stdout.write(err.faultString)
+                        self.stdout.write("Retrying in 60 seconds!")
+                        sleep(60)
+
                 available_version = self._available_version(dist_version, available)
 
                 if not available_version:
