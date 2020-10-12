@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.db.backends.base.creation import TEST_DATABASE_PREFIX
 
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
@@ -55,7 +56,7 @@ class Command(BaseCommand):
         if dbinfo is None:
             raise CommandError("Unknown database %s" % database)
 
-        engine = dbinfo.get('ENGINE').split('.')[-1]
+        engine = dbinfo.get('ENGINE')
 
         user = password = database_name = database_host = database_port = ''
         if engine == 'mysql':
@@ -94,14 +95,14 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             print("Reset cancelled.")
             return
 
-        if engine in ('sqlite3', 'spatialite'):
+        if engine in SQLITE_ENGINES:
             try:
                 logging.info("Unlinking %s database" % engine)
                 if os.path.isfile(database_name):
                     os.unlink(database_name)
             except OSError:
                 return
-        elif engine in ('mysql',):
+        elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
             kwargs = {
                 'user': user,
@@ -119,7 +120,7 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
             logging.info('Executing: "' + drop_query + '"')
             connection.query(drop_query)
-        elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
+        elif engine in POSTGRESQL_ENGINES:
             import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}

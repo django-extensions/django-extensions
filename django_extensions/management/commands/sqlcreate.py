@@ -9,6 +9,7 @@ from django.db import DEFAULT_DB_ALIAS
 
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 
 
 class Command(BaseCommand):
@@ -47,7 +48,7 @@ The envisioned use case is something like this:
         if dbinfo is None:
             raise CommandError("Unknown database %s" % database)
 
-        engine = dbinfo.get('ENGINE').split('.')[-1]
+        engine = dbinfo.get('ENGINE')
         dbuser = dbinfo.get('USER')
         dbpass = dbinfo.get('PASSWORD')
         dbname = dbinfo.get('NAME')
@@ -59,7 +60,9 @@ The envisioned use case is something like this:
         if not dbhost:
             dbhost = 'localhost'
 
-        if engine == 'mysql':
+        if engine in SQLITE_ENGINES:
+            sys.stderr.write("-- manage.py migrate will automatically create a sqlite3 database file.\n")
+        elif engine in MYSQL_ENGINES:
             sys.stderr.write("""-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
 -- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
 """)
@@ -67,7 +70,7 @@ The envisioned use case is something like this:
             print("GRANT ALL PRIVILEGES ON %s.* to '%s'@'%s' identified by '%s';" % (
                 dbname, dbuser, dbclient, dbpass
             ))
-        elif engine in ('postgresql', 'postgresql_psycopg2', 'postgis'):
+        elif engine in POSTGRESQL_ENGINES:
             if options['drop']:
                 print("DROP DATABASE IF EXISTS %s;" % (dbname,))
                 if dbuser:
@@ -83,9 +86,6 @@ The envisioned use case is something like this:
                     "-- USER or PASSWORD are blank in Django DATABASES configuration."
                 )
                 print("CREATE DATABASE %s WITH ENCODING 'UTF-8';" % (dbname, ))
-
-        elif engine == 'sqlite3':
-            sys.stderr.write("-- manage.py migrate will automatically create a sqlite3 database file.\n")
         else:
             # CREATE DATABASE is not SQL standard, but seems to be supported by most.
             sys.stderr.write("-- Don't know how to handle '%s' falling back to SQL.\n" % engine)

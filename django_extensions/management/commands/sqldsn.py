@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
 from django.db import DEFAULT_DB_ALIAS
+from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
@@ -72,9 +73,7 @@ class Command(BaseCommand):
         if dbinfo is None:
             raise CommandError("Unknown database %s" % database)
 
-        engine = engine = dbinfo.get('ENGINE')
-        if 'psqlextra' not in engine:
-            engine = engine.split('.')[-1]
+        engine = dbinfo.get('ENGINE')
         dbuser = dbinfo.get('USER')
         dbpass = dbinfo.get('PASSWORD')
         dbname = dbinfo.get('NAME')
@@ -83,13 +82,13 @@ class Command(BaseCommand):
 
         dsn = []
 
-        if engine == 'mysql':
+        if engine in SQLITE_ENGINES:
+            dsn.append('{}'.format(dbname))
+        elif engine in MYSQL_ENGINES:
             dsn.append(self._mysql(dbhost, dbport, dbname, dbuser, dbpass))
-        elif engine in ['postgresql', 'postgresql_psycopg2', 'postgis', 'psqlextra.backend']:
+        elif engine in POSTGRESQL_ENGINES:
             dsn.extend(self._postgresql(
                 dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style))
-        elif engine == 'sqlite3':
-            dsn.append('{}'.format(dbname))
         else:
             dsn.append(self.style.ERROR('Unknown database, can''t generate DSN'))
 
