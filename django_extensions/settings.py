@@ -21,6 +21,8 @@ DEFAULT_POSTGRESQL_ENGINES = (
     'django.db.backends.postgis',
     'django.contrib.gis.db.backends.postgis',
     'psqlextra.backend',
+    'django_zero_downtime_migrations.backends.postgres',
+    'django_zero_downtime_migrations.backends.postgis',
 )
 
 SQLITE_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES', DEFAULT_SQLITE_ENGINES)

@@ -18,6 +18,7 @@ Command Extensions
    list_signals
    merge_model_instances
    print_settings
+   reset_db
    runprofileserver
    runserver_plus
    sync_s3
@@ -106,7 +107,7 @@ Command Extensions
   test via some automated system (BuildBot, Jenkins, etc) and making sure that
   the test database is always dropped at the end.
 
-* *reset_db* - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
+* :doc:`reset_db` - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
 
