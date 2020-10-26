@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from django.contrib.auth.models import Group, Permission
 from django.test import override_settings
 
@@ -186,9 +187,10 @@ class CRTestCase(AutomaticShellPlusImportsTestCase):
         SHELL_PLUS_MODEL_IMPORTS_RESOLVER='tests.management.commands.shell_plus_tests.test_collision_resolver.CRNoFunction',
     )
     def test_installed_apps_no_resolve_conflicts_function(self):
-        with self.assertRaisesRegex(
-            TypeError, "Can't instantiate abstract class CRNoFunction with abstract methods resolve_collisions"
-        ):
+        exception_msg = "Can't instantiate abstract class CRNoFunction with abstract methods resolve_collisions"
+        if sys.version_info[:2] >= (3, 9):
+            exception_msg = exception_msg.replace('methods', 'method')
+        with self.assertRaisesRegex(TypeError, exception_msg):
             self._assert_models_present_under_names(
                 set(), set(), set(), set(), set(), set(), set(), set(), set(), set(), set(),
             )
