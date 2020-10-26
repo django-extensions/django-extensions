@@ -24,7 +24,7 @@ class DropTestDatabaseExceptionsTests(TestCase):
     @patch('django_extensions.management.commands.drop_test_database.input')
     def test_should_raise_CommandError_if_unknown_database_engine(self, m_input):
         m_input.return_value = 'yes'
-        with self.assertRaisesRegex(CommandError, "Unknown database engine unknown"):
+        with self.assertRaisesRegex(CommandError, "Unknown database engine django.db.backends.unknown"):
             call_command('drop_test_database')
 
     @override_settings(DATABASES={

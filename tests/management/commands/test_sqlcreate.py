@@ -127,7 +127,7 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
     @patch('sys.stderr', new_callable=StringIO)
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_stderr_and_standard_create_database_statement_for_unsupported_engine(self, m_stdout, m_stderr):
-        expected_error = "-- Don't know how to handle 'unknown' falling back to SQL.\n"
+        expected_error = "-- Don't know how to handle 'django.db.backends.unknown' falling back to SQL.\n"
         expected_statement = """CREATE DATABASE database;
 GRANT ALL PRIVILEGES ON DATABASE database to foo;
 """
