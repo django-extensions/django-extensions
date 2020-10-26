@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
+import html
 import shutil
-from html.parser import HTMLParser
+
 from tempfile import mkdtemp
 
 from django.template import Context, Template
@@ -55,7 +56,7 @@ class SyntaxColorTagTests(TestCase):
 
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)
 
     def test_should_colorize_table_with_default_lexer(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
@@ -78,7 +79,7 @@ class SyntaxColorTagTests(TestCase):
         expected_result = '<h1>TEST</h1>'
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)
 
     def test_should_colorize_noclasses_with_default_lexer(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
@@ -99,4 +100,4 @@ class SyntaxColorTagTests(TestCase):
         expected_result = '<h1>TEST</h1>'
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)
