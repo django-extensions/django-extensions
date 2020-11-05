@@ -7,7 +7,7 @@ Django command that resets your Django database, removing all data from all
 tables. This allows you to run all migrations again.
 
 By default the command will prompt you to confirm that all data will be
-deleted. This can be turned off with the ``--no-input``-argument.
+deleted. This can be turned off with the ``--noinput``-argument.
 
 Supported engines
 -----------------
@@ -50,7 +50,7 @@ Example Usage
 ::
 
   # Don't ask for a confirmation before doing the reset
-  $ ./manage.py reset_db --no-input
+  $ ./manage.py reset_db --noinput
 
 ::
 
