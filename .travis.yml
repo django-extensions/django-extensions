@@ -109,7 +109,124 @@ jobs:
         - postgresql
     - python: pypy3
       env: TOXENV=pypy3-djmaster
-
+# including code to run on power systems
+    - python: 3.8
+      env: TOXENV=py38-flake8
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=precommit
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=safety
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=mypy
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=compile-catalog
+      arch: ppc64le
+    # Django 2.2: Python 3.5, 3.6, 3.7 or 3.8 / PyPy 3.x
+    - python: 3.5
+      env: TOXENV=py35-dj22
+      arch: ppc64le
+    - python: 3.6
+      env: TOXENV=py36-dj22
+      arch: ppc64le
+    - python: 3.7
+      env: TOXENV=py37-dj22
+      arch: ppc64le
+    - python: 3.7
+      env: TOXENV=py37-dj22-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.7
+      env: TOXENV=py37-dj22-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj22
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=py38-dj22-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj22-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: pypy3
+      env: TOXENV=pypy3-dj22
+      arch: ppc64le
+    # Django 3.0: Python 3.6, 3.7 or 3.8 / PyPy 3.x
+    - python: 3.6
+      env: TOXENV=py36-dj30
+      arch: ppc64le
+    - python: 3.7
+      env: TOXENV=py37-dj30
+      arch: ppc64le
+    - python: 3.7
+      env: TOXENV=py37-dj30-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.7
+      env: TOXENV=py37-dj30-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj30
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=py38-dj30-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj30-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: pypy3
+      env: TOXENV=pypy3-dj30
+      arch: ppc64le
+    # Django 3.1: Python 3.6, 3.7 or 3.8 / PyPy 3.x
+    - python: 3.6
+      env: TOXENV=py36-dj31
+      arch: ppc64le
+    - python: 3.7
+      env: TOXENV=py37-dj31
+    - python: 3.7
+      env: TOXENV=py37-dj31-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.7
+      env: TOXENV=py37-dj31-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: 3.8
+      env: TOXENV=py38-dj31
+      arch: ppc64le
+    - python: 3.8
+      env: TOXENV=py38-dj31-postgres
+      arch: ppc64le
+      services:
+        - postgresql
+    - python: 3.8
+      env: TOXENV=py38-dj31-mysql
+      arch: ppc64le
+      services:
+        - mysql
+    - python: pypy3
+      env: TOXENV=pypy3-dj31
+      arch: ppc64le
+   
   allow_failures:
     - python: 3.6
       env: TOXENV=py36-djmaster
