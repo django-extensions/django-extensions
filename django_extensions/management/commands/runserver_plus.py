@@ -386,7 +386,7 @@ class Command(BaseCommand):
             self.extra_files |= set(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
 
         if getattr(settings, 'RUNSERVER_PLUS_EXTRA_FILES', []):
-            self.extra_files |= set(settings['RUNSERVER_PLUS_EXTRA_FILES'])
+            self.extra_files |= set(settings.RUNSERVER_PLUS_EXTRA_FILES)
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
