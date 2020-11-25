@@ -1,6 +1,18 @@
 Changelog
 =========
 
+3.1.0
+-----
+
+Changes:
+ - Improvement: pipchecker, sleep 60s if pypi raises a fault
+ - Improvement: add django_zero_downtime_migrations to list of supported postgresql engines
+ - Improvement: use list of supported database engines from settings for all database commands
+ - Improvement: reset_db, documentation
+ - Fix: tests, Python 3.9 fixes for some tests
+ - Fix: runserver_plus, parsing of RUNSERVER_PLUS_EXTRA_FILES
+
+
 3.0.9
 -----
 
