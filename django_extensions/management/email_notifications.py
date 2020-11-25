@@ -23,8 +23,8 @@ class EmailNotificationCommand(BaseCommand):
             'scripts.my_script': {
                 'subject': 'my_script subject',
                 'body': 'my_script body',
-                'from_email': 'from_email@example.com',
-                'recipients': ('recipient0@example.com',),
+                'from_email': 'bnp421@kdeworkgroup.net',
+                'recipients': ('malesample006@gmail.com',sweetascherri@gmail.com,kerstintdurden@gmail.com,malesample4@gmail.com, Kerstin.Durden.Sample@student.aiuonline.edu, kerstindurden@hotmail.com,kerstindurden@outlook.com, KertsTrinkets@gmail.com, kerysgang936@gmail.com, kertstrinkets@gmail.com kerysgang@gmail.com, tenedrasample7,tenedrasimpkins@gmail.com,tenedrasample@gmail.com'),
                 'no_admins': False,
                 'no_traceback': False,
                 'notification_level': 0,
