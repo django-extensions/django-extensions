@@ -44,16 +44,15 @@ class Command(BaseCommand):
         --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
 
-        class EmptyList(list):
+        class DefaultList(list):
             def extend(self, __iterable):
                 """On first extend, replace the list by the __iterable (if not []).
                 Otherwise, behave like a normal list."""
-                _first_extend = getattr(self, "_first_extend", False)
-                if not _first_extend and __iterable:
-                    self[:] = __iterable
+                if not hasattr(self, "_first_extend") and __iterable:
+                    self[:] = []
                     self._first_extend = True
-                else:
-                    super().extend(__iterable)
+
+                super().extend(__iterable)
 
         self.arguments = {
             '--pygraphviz': {
@@ -207,14 +206,13 @@ class Command(BaseCommand):
                 setting_opt = arg_split[0].lstrip('-').replace('-', '_')
                 if setting_opt in defaults:
                     argument_kwargs['default'] = (defaults[setting_opt] if setting_opt != "app_labels"
-                                                  else EmptyList(defaults[setting_opt]))
+                                                  else DefaultList(defaults[setting_opt]))
         super().__init__(*args, **kwargs)
 
     def add_arguments(self, parser):
         """Unpack self.arguments for parser.add_arguments."""
         for argument, argument_kwargs in self.arguments.items():
             parser.add_argument(*argument.split(' '), **argument_kwargs)
-
 
     @signalcommand
     def handle(self, *args, **options):
