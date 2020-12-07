@@ -43,6 +43,18 @@ class Command(BaseCommand):
         removed and any '-' replaced by '_'. For example, the default value for
         --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
+
+        class EmptyList(list):
+            def extend(self, __iterable):
+                """On first extend, replace the list by the __iterable (if not []).
+                Otherwise, behave like a normal list."""
+                _first_extend = getattr(self, "_first_extend", False)
+                if not _first_extend and __iterable:
+                    self[:] = __iterable
+                    self._first_extend = True
+                else:
+                    super().extend(__iterable)
+
         self.arguments = {
             '--pygraphviz': {
                 'action': 'store_true',
@@ -171,25 +183,38 @@ class Command(BaseCommand):
                 'dest': 'arrow_shape',
                 'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
                 'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
+            },
+            '--app-labels': {
+                'action': 'extend',
+                'default': [],
+                'dest': 'app_label',
+                'help': 'List of applications to graph',
+                'nargs': '*',
+                'type': str
+            },
+            'app_label': {
+                'action': 'extend',
+                'nargs': '*',
+                'type': str
             }
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
 
         if defaults:
-            for argument in self.arguments:
+            for argument, argument_kwargs in self.arguments.items():
                 arg_split = argument.split(' ')
                 setting_opt = arg_split[0].lstrip('-').replace('-', '_')
                 if setting_opt in defaults:
-                    self.arguments[argument]['default'] = defaults[setting_opt]
-
+                    argument_kwargs['default'] = (defaults[setting_opt] if setting_opt != "app_labels"
+                                                  else EmptyList(defaults[setting_opt]))
         super().__init__(*args, **kwargs)
 
     def add_arguments(self, parser):
         """Unpack self.arguments for parser.add_arguments."""
-        parser.add_argument('app_label', nargs='*')
-        for argument in self.arguments:
-            parser.add_argument(*argument.split(' '), **self.arguments[argument])
+        for argument, argument_kwargs in self.arguments.items():
+            parser.add_argument(*argument.split(' '), **argument_kwargs)
+
 
     @signalcommand
     def handle(self, *args, **options):
