@@ -3,11 +3,11 @@ import sys
 import json
 import os
 import tempfile
+import argparse
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import loader
-
 from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
 
@@ -44,15 +44,16 @@ class Command(BaseCommand):
         --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
 
-        class DefaultList(list):
-            def extend(self, __iterable):
-                """On first extend, replace the list by the __iterable (if not []).
-                Otherwise, behave like a normal list."""
-                if not hasattr(self, "_first_extend") and __iterable:
-                    self[:] = []
-                    self._first_extend = True
+        def extendaction(default):
+            """Return an action that extends a list returning a default if nothing extended"""
 
-                super().extend(__iterable)
+            class ExtendAction(argparse.Action):
+                def __call__(self, parser, namespace, values, option_string=None):
+                    items = getattr(namespace, self.dest) or (default if not values else [])
+                    items.extend(values)
+                    setattr(namespace, self.dest, items)
+
+            return ExtendAction
 
         self.arguments = {
             '--pygraphviz': {
@@ -184,15 +185,14 @@ class Command(BaseCommand):
                 'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
             },
             '--app-labels': {
-                'action': 'extend',
-                'default': [],
+                'action': extendaction([]),
                 'dest': 'app_label',
                 'help': 'List of applications to graph',
                 'nargs': '*',
                 'type': str
             },
             'app_label': {
-                'action': 'extend',
+                'action': extendaction([]),
                 'nargs': '*',
                 'type': str
             }
@@ -205,8 +205,12 @@ class Command(BaseCommand):
                 arg_split = argument.split(' ')
                 setting_opt = arg_split[0].lstrip('-').replace('-', '_')
                 if setting_opt in defaults:
-                    argument_kwargs['default'] = (defaults[setting_opt] if setting_opt != "app_labels"
-                                                  else DefaultList(defaults[setting_opt]))
+                    if setting_opt == "app_labels":
+                        # for app-labels, change the action of app_label to use the default apps
+                        self.arguments["app_label"]["action"] = extendaction(defaults[setting_opt])
+                    else:
+                        argument_kwargs['default'] = defaults[setting_opt]
+
         super().__init__(*args, **kwargs)
 
     def add_arguments(self, parser):
