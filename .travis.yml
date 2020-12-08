@@ -228,18 +228,33 @@ jobs:
       arch: ppc64le
    
   allow_failures:
-    - python: 3.6
-      env: TOXENV=py36-djmaster
-    - python: 3.7
-      env: TOXENV=py37-djmaster
     - python: 3.8
-      env: TOXENV=py38-djmaster
+      env: TOXENV=precommit    
+    - python: 3.8
+      env: TOXENV=py38-djmaster     
+    - python: 3.8
+      env: TOXENV=py38-djmaster-postgres  
+    - python: 3.8
+      env: TOXENV=py38-dj31  
+    - python: 3.7
+      env: TOXENV=py37-djmaster  
+    - python: 3.8
+      env: TOXENV=py37-dj31-postgres  
     - python: 3.7
       env: TOXENV=py37-djmaster-postgres
-    - python: 3.8
-      env: TOXENV=py38-djmaster-postgres
+    - python: 3.6
+      env: TOXENV=py36-djmaster     
     - python: pypy3
-      env: TOXENV=pypy3-djmaster
+      env: TOXENV=pypy3-djmaster      
+    - python: pypy3
+      env: TOXENV=pypy3-dj22
+      arch: ppc64le 
+    - python: pypy3
+      env: TOXENV=pypy3-dj30
+      arch: ppc64le 
+    - python: pypy3
+      env: TOXENV=pypy3-dj31
+      arch: ppc64le 
 
 install:
   - pip install virtualenv tox coveralls
