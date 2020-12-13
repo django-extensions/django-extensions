@@ -195,7 +195,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         args = options['app_label']
         if not args and not options['all_applications']:
-            raise CommandError("need one or more arguments for appname")
+            default_app_labels = getattr(settings, 'GRAPH_MODELS', {}).get("app_labels")
+            if default_app_labels:
+                args = default_app_labels
+            else:
+                raise CommandError("need one or more arguments for appname")
 
         # Determine output format based on options, file extension, and library
         # availability.
