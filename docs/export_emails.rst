@@ -85,11 +85,11 @@ Settings
 There are a couple of settings keys which can be configured in `settings.py`.
 Below the default values are shown:
 
-```
-EXPORT_EMAILS_ORDER_BY = ['last_name', 'first_name', 'username', 'email']
-EXPORT_EMAILS_FIELDS = ['last_name', 'first_name', 'username', 'email']
-EXPORT_EMAILS_FULL_NAME_FUNC = None
-```
+::
+
+    EXPORT_EMAILS_ORDER_BY = ['last_name', 'first_name', 'username', 'email']
+    EXPORT_EMAILS_FIELDS = ['last_name', 'first_name', 'username', 'email']
+    EXPORT_EMAILS_FULL_NAME_FUNC = None
 
 EXPORT_EMAILS_ORDER_BY
 ~~~~~~~~~~~~~~~~~~~~~~

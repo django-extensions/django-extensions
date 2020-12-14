@@ -20,7 +20,7 @@ Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* t
 
 This code will be removed in the near future when support for Django older then 2.0 is dropped.
 
-For more information see: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
+More on this: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
 
 
 Known Issues
