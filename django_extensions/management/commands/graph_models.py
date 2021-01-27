@@ -183,7 +183,7 @@ class Command(BaseCommand):
                 if setting_opt in defaults:
                     self.arguments[argument]['default'] = defaults[setting_opt]
 
-        super().__init__(*args, **kwargs)
+        super(Command, self).__init__(*args, **kwargs)
 
     def add_arguments(self, parser):
         """Unpack self.arguments for parser.add_arguments."""
