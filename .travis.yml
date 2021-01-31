@@ -15,9 +15,7 @@ jobs:
       env: TOXENV=mypy
     - python: 3.8
       env: TOXENV=compile-catalog
-    # Django 2.2: Python 3.5, 3.6, 3.7 or 3.8 / PyPy 3.x
-    - python: 3.5
-      env: TOXENV=py35-dj22
+    # Django 2.2: 3.6, 3.7 or 3.8 / PyPy 3.x
     - python: 3.6
       env: TOXENV=py36-dj22
     - python: 3.7
