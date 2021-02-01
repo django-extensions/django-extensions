@@ -13,10 +13,6 @@ from unittest.mock import patch
 class GenerateSecretKeyTests(TestCase):
     """Tests for generate_secret_key command."""
 
-    @pytest.mark.skipif(
-        LooseVersion(get_version()) <= LooseVersion('1.10.0'),
-        reason="This test works only on Django greater than 1.10.x",
-    )
     @patch('django_extensions.management.commands.generate_secret_key.get_random_secret_key')
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_return_random_secret_key(self, m_stdout, m_get_random_secret):
