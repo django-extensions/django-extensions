@@ -34,10 +34,6 @@ class SyncDataExceptionsTests(TestCase):
         with pytest.raises(CommandError, match="django.core.exceptions.FieldDoesNotExist: User has no field named 'non_existent_field'"):
             call_command('syncdata', 'fixture_with_nonexistent_field.json', verbosity=1)
 
-    @pytest.mark.skipif(
-        LooseVersion(get_version()) < LooseVersion('2.0.0'),
-        reason="This test works only on Django greater than 2.x",
-    )
     def test_should_return_SyncDataError_when_multiple_fixtures(self):
         with pytest.raises(CommandError, match="Multiple fixtures named 'users' in '{}'. Aborting.".format(TEST_FIXTURE_DIR)):
             call_command('syncdata', 'users', verbosity=2)
@@ -68,10 +64,6 @@ class SyncDataTests(TestCase):
         self.assertTrue(User.objects.filter(username='jdoe').exists())
         self.assertTrue(User.objects.filter(username='foo').exists())
 
-    @pytest.mark.skipif(
-        LooseVersion(get_version()) < LooseVersion('2.0.0'),
-        reason="This test works only on Django greater than 2.x",
-    )
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_delete_old_objects_and_load_data_from_json_fixture(self, m_stdout):
         User.objects.all().delete()

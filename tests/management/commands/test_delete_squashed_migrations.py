@@ -37,10 +37,6 @@ class BaseDeleteSquashedMigrationsTestCase(TestCase):
 
 
 @pytest.mark.xfail
-@pytest.mark.skipif(
-    LooseVersion(get_version()) <= LooseVersion('2.0.0'),
-    reason="This test works only on Django greater than 2.0.0",
-)
 class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCase):
     """Tests for delete_squashed_migrations command exceptions."""
 
@@ -106,10 +102,6 @@ class DeleteSquashedMigrationsExceptionsTests(BaseDeleteSquashedMigrationsTestCa
 
 
 @pytest.mark.xfail
-@pytest.mark.skipif(
-    LooseVersion(get_version()) <= LooseVersion('2.0.0'),
-    reason="This test works only on Django greater than 2.0.0",
-)
 class DeleteSquashedMigrationsTests(BaseDeleteSquashedMigrationsTestCase):
     """Tests for delete_squashed_migrations command."""
 
