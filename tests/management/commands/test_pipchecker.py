@@ -6,7 +6,6 @@ import sys
 
 import pip
 import pkg_resources
-import pytest
 from django.core.management import call_command
 from django.test import TestCase
 from io import StringIO
@@ -55,7 +54,6 @@ class PipCheckerTests(TestCase):
 
         self.assertTrue(value.endswith('available\n'))
 
-    @pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6 or higher")
     def test_pipchecker_with_up_to_date_requirement(self):
         requirements_path = './requirements.txt'
         out = StringIO()
