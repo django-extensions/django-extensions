@@ -6,7 +6,6 @@ import sys
 
 import pip
 import pkg_resources
-import pytest
 from django.core.management import call_command
 from django.test import TestCase
 from io import StringIO

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-from distutils.version import LooseVersion
 
 import pytest
-from django import get_version
 from django.contrib.auth.models import User
 from django.core.management import call_command, CommandError
 from django.test import TestCase

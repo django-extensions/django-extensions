@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from distutils.version import LooseVersion
 
 import pytest
 from unittest.mock import patch
 
-from django import get_version
 from django.core.management import CommandError, call_command
 from django.db import models
 from django.test import TestCase, override_settings
