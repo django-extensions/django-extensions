@@ -37,6 +37,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        parser.add_argument('addrport', nargs='?')
         parser.add_argument(
             '--output', dest='output_file', default=None,
             help='Specifies an output file to send a copy of all messages (not flushed immediately).'
