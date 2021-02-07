@@ -91,23 +91,25 @@ Below the default values are shown:
     EXPORT_EMAILS_FIELDS = ['last_name', 'first_name', 'username', 'email']
     EXPORT_EMAILS_FULL_NAME_FUNC = None
 
+
 EXPORT_EMAILS_ORDER_BY
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 Specifies the `order_by(...)` clause on the query being done into the database to
 retrieve the users. This determines the order of the output.
 
 
 EXPORT_EMAILS_FIELDS
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 Specifies which fields will be selected from the database. This is most useful in
 combination with `EXPORT_EMAILS_FULL_NAME_FUNC` to select other fields you might
 want to use inside the custom function or when using a custom User model which
 does not have fields like 'first_name' and 'last_name'.
 
+
 EXPORT_EMAILS_FULL_NAME_FUNC
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A function to use to create a full name based on the database fields selected by
 `EXPORT_EMAILS_FULL_NAME_FUNC`. The default implementation can be looked up in

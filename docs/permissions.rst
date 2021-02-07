@@ -11,6 +11,7 @@ query and limit access to certain views.
 Current Mixins
 ---------------------------------
 * *UserPermissionMixin* - A Class Based View mixin that limits the accessibility to the view based on the "owner" of the view.
+
 This will check if the currently logged in user (``self.request.user``) matches the owner of the model instance.
 By default, the "owner" will be called "user".
 
