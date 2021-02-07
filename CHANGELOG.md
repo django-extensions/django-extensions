@@ -1,6 +1,15 @@
 Changelog
 =========
 
+3.1.1
+-----
+
+Changes:
+ - Improvement: graph_models, add option --app-labels
+ - Improvement: shell_plus, update shell_plus for jupyterlab 3
+ - Improvement: tests, add Python 3.9
+
+
 3.1.0
 -----
 
