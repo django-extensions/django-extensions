@@ -575,7 +575,7 @@ for k, m in shells.import_objects({}, no_style()).items():
 
             if options['command']:
                 imported_objects = self.get_imported_objects(options)
-                exec(options['command'], {}, imported_objects)
+                exec(options['command'], imported_objects)
                 return None
 
             runner()
