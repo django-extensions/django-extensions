@@ -63,13 +63,12 @@ class SyntaxColorTagTests(TestCase):
         content = """{% load syntax_color %}
 {{ code_string|colorize_table }}
 """
-        expected_result = '''<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">&lt;h1&gt;</span>TEST<span class="nt">&lt;/h1&gt;</span>
-</pre></div>
-</td></tr></table>'''
-
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(result, expected_result)
+        self.assertIn('<table class="highlighttable">', result)
+        self.assertIn('<td class="linenos">', result)
+        self.assertIn('>1</', result)
+        self.assertIn('<span class="nt">&lt;h1&gt;</span>TEST<span class="nt">&lt;/h1&gt;</span>', result)
 
     def test_colorize_table_should_return_value_if_lexer_class_not_found(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
