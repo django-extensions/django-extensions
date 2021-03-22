@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from itertools import count
 import os
 import logging
 import warnings
@@ -82,12 +83,15 @@ class Command(BaseCommand):
         verbosity = options["verbosity"]
         if options['interactive']:
             confirm = input("""
-You have requested to drop the test database.
+You have requested to drop all test databases.
 This will IRREVERSIBLY DESTROY
-ALL data in the database "%s".
+ALL data in the database "{db_name}"
+and all cloned test databases generated via
+the "--parallel" flag (these are sequentially
+named "{db_name}_1", "{db_name}_2", etc.).
 Are you sure you want to do this?
 
-Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
+Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
         else:
             confirm = 'yes'
 
@@ -95,13 +99,45 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             print("Reset cancelled.")
             return
 
+        def get_database_names(formatter):
+            """
+            Return a generator of all possible test database names.
+            e.g., 'test_foo', 'test_foo_1', test_foo_2', etc.
+
+            formatter: func returning a clone db name given the primary db name
+            and the clone's number, e.g., 'test_foo_1' for mysql/postgres, and
+            'test_foo_1..sqlite3' for sqlite (re: double dots, see comments).
+            """
+            yield database_name
+            yield from (formatter(database_name, n) for n in count(1))
+
         if engine in SQLITE_ENGINES:
+            # By default all sqlite test databases are created in memory.
+            # There will only be database files to delete if the developer has
+            # specified a test database name, which forces files to be written
+            # to disk.
+
+            logging.info("Unlinking %s databases" % engine)
+
+            def format_filename(name, number):
+                filename, ext = os.path.splitext(name)
+                # Since splitext() includes the dot in 'ext', the inclusion of
+                # the dot in the format string below is incorrect and creates a
+                # double dot. Django makes this mistake, so it must be
+                # replicated here. If fixed in Django, this code should be
+                # updated accordingly.
+                # Reference: https://code.djangoproject.com/ticket/32582
+                return '{}_{}.{}'.format(filename, number, ext)
+
             try:
-                logging.info("Unlinking %s database" % engine)
-                if os.path.isfile(database_name):
-                    os.unlink(database_name)
+                for db_name in get_database_names(format_filename):
+                    if not os.path.isfile(db_name):
+                        break
+                    logging.info('Unlinking database named "%s"' % db_name)
+                    os.unlink(db_name)
             except OSError:
                 return
+
         elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
             kwargs = {
@@ -117,9 +153,19 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 kwargs['port'] = int(database_port)
 
             connection = Database.connect(**kwargs)
-            drop_query = 'DROP DATABASE IF EXISTS `%s`' % database_name
-            logging.info('Executing: "' + drop_query + '"')
-            connection.query(drop_query)
+            cursor = connection.cursor()
+
+            for db_name in get_database_names('{}_{}'.format):
+                exists_query = \
+                    "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='%s';" \
+                    % db_name
+                row_count = cursor.execute(exists_query)
+                if row_count < 1:
+                    break
+                drop_query = 'DROP DATABASE IF EXISTS `%s`' % db_name
+                logging.info('Executing: "' + drop_query + '"')
+                cursor.execute(drop_query)
+
         elif engine in POSTGRESQL_ENGINES:
             import psycopg2 as Database  # NOQA
 
@@ -136,14 +182,22 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection = Database.connect(**conn_params)
             connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
-            drop_query = "DROP DATABASE IF EXISTS \"%s\";" % database_name
-            logging.info('Executing: "' + drop_query + '"')
 
-            try:
-                cursor.execute(drop_query)
-            except Database.ProgrammingError as e:
-                logging.exception("Error: %s" % str(e))
-                return
+            for db_name in get_database_names('{}_{}'.format):
+                exists_query = "SELECT datname FROM pg_catalog.pg_database WHERE datname='%s';" \
+                    % db_name
+                try:
+                    cursor.execute(exists_query)
+                    # NOTE: Unlike MySQLdb, the psycopg2 cursor does not return the row count
+                    # however both cursors provide it as a property
+                    if cursor.rowcount < 1:
+                        break
+                    drop_query = "DROP DATABASE IF EXISTS \"%s\";" % db_name
+                    logging.info('Executing: "' + drop_query + '"')
+                    cursor.execute(drop_query)
+                except Database.ProgrammingError as e:
+                    logging.exception("Error: %s" % str(e))
+                    return
         else:
             raise CommandError("Unknown database engine %s" % engine)
 
