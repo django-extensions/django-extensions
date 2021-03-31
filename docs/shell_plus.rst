@@ -179,11 +179,11 @@ Default collision resolver. Model from last application in alphabetical order is
 
 **InstalledAppsOrderCR**
 
-Collision resolver which selects first model from INSTALLED_APPS.
+Collision resolver which selects the first model from INSTALLED_APPS.
 You can set your own app priorities list subclassing him and overwriting ``APP_PRIORITIES`` field.
 
-This collision resolver will select model from first app on this list.
-If both app's are absent on this list, resolver will choose model from first app in alphabetical order::
+This collision resolver will select a model from the first app on this list.
+If both app's are absent on this list, resolver will choose a model from the first app in alphabetical order::
 
     from programming import Language
 
@@ -220,25 +220,25 @@ Model from last application in alphabetical order is selected::
 
 Collision resolver which is mixin of AppNamePrefixCR and InstalledAppsOrderCR.
 
-In case of collisions he sets aliases like AppNamePrefixCR, but sets default model using InstalledAppsOrderCR::
+In case of collisions he sets aliases like AppNamePrefixCR, but sets the default model using InstalledAppsOrderCR::
 
     from programming import Language, Language (as programming_Language)
     from workers import Language (as workers_Language)
 
 **AppNameSuffixCustomOrderCR**
 
-Collision resolver which is mixin of AppNameSuffixCR and InstalledAppsOrderCR.
+Collision resolver which is a mixin of AppNameSuffixCR and InstalledAppsOrderCR.
 
-In case of collisions he sets aliases like AppNameSuffixCR, but sets default model using InstalledAppsOrderCR::
+In case of collisions he sets aliases like AppNameSuffixCR, but sets the default model using InstalledAppsOrderCR::
 
     from programming import Language, Language (as Language_programming)
     from workers import Language (as Language_workers)
 
 **FullPathCustomOrderCR**
 
-Collision resolver which is mixin of FullPathCR and InstalledAppsOrderCR.
+Collision resolver which is a mixin of FullPathCR and InstalledAppsOrderCR.
 
-In case of collisions he sets aliases like FullPathCR, but sets default model using InstalledAppsOrderCR::
+In case of collisions he sets aliases like FullPathCR, but sets the default model using InstalledAppsOrderCR::
 
     from programming import Language, Language (as programming_Language)
     from workers import Language (as workers_Language)
@@ -247,7 +247,7 @@ In case of collisions he sets aliases like FullPathCR, but sets default model us
 
 Collision resolver which transform pair (app_label, model_name) to alias ``{app_label}_{model_name}``
 
-This is very similar to ``AppNamePrefixCR`` but this may generate shorter names in case of apps nested
+This is very similar to ``AppNamePrefixCR`` but this may generate shorter names in the case of apps nested
 into several namespace (like Django's auth app)::
 
     # with AppNamePrefixCR
@@ -281,7 +281,7 @@ Abstract resolver which transforms full model name into alias.
 To use him you need to overwrite transform_import function
 which should have one parameter.
 
-It will be full model name. It should return valid alias as str instance.
+It will be a full model name. It should return valid alias as a str instance.
 
 **AppNameCR**
 
@@ -292,13 +292,13 @@ app_name and model_name. For example: ``{app_name}_{model_name}``.
 
 Model from last application in alphabetical order is selected.
 
-You can mix PathBasedCR or AppNameCR with InstalledAppsOrderCR, but InstalledAppsOrderCR should be second base class.
+You can mix PathBasedCR or AppNameCR with InstalledAppsOrderCR, but InstalledAppsOrderCR should be the second base class.
 
 **BaseCR**
 
 Abstract base collision resolver. All collision resolvers needs to inherit from this class.
 
-To write custom collision resolver you need to overwrite resolve_collisions function.
+To write a custom collision resolver you need to overwrite the resolve_collisions function.
 It receives ``Dict[str, List[str]]`` where key is model name and values are full model names
 (full model name means: module + model_name).
 
@@ -309,14 +309,14 @@ Import Subclasses
 If you want to load automatically all project subclasses of some base class,
 you can achieve this by setting ``SHELL_PLUS_SUBCLASSES_IMPORT`` option.
 
-It must be list of either classes or strings containing paths to this classes.
+It must be a list of either classes or strings containing paths to these classes.
 
-For example if you want to load all your custom managers than you should provide::
+For example, if you want to load all your custom managers then you should provide::
 
     from django.db.models import Manager
     SHELL_PLUS_SUBCLASSES_IMPORT = [Manager]
 
-Than shell_plus will load all your custom managers::
+Then shell_plus will load all your custom managers::
 
     # Shell Plus Subclasses Imports
     from utils.managers import AbstractManager
@@ -324,7 +324,7 @@ Than shell_plus will load all your custom managers::
     from somewhere.else import MyOtherManager
     # django.db.models.Manager is not loaded because only project classes are.
 
-By default all subclasses of your base class from all projects module will be loaded.
+By default, all subclasses of your base class from all projects modules will be loaded.
 
 You can exclude some modules and all their submodules by passing ``SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST`` option::
 
@@ -335,7 +335,7 @@ If these modules are excluded only ``MyCustomManager`` from ``myapp.managers`` w
 
 If you are using ``SHELL_PLUS_SUBCLASSES_IMPORT`` shell_plus loads all project modules for finding subclasses.
 
-Sometimes it can lead to some errors(for example when we have old unused module which contains syntax errors).
+Sometimes it can lead to some errors(for example when we have an old unused module which contains syntax errors).
 
 Excluding these modules can help avoid shell_plus crashes in some situations.
 It is recommended to exclude all ``setup.py`` files.
@@ -389,8 +389,8 @@ Note that the IPython Notebook feature doesn't currently honor the
 Additional Imports
 ------------------
 
-In addition to importing the models you can specify other items to import by default.
-These can be specified with the settings ``SHELL_PLUS_IMPORTS``, ``SHELL_PLUS_PRE_IMPORTS`` and ``SHELL_PLUS_POST_IMPORTS``.
+In addition to importing the models, you can specify other items to import by default.
+These can be specified with the settings ``SHELL_PLUS_IMPORTS``, ``SHELL_PLUS_PRE_IMPORTS``, and ``SHELL_PLUS_POST_IMPORTS``.
 
 The order of import loading is as follows:
 
