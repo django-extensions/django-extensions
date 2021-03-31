@@ -390,7 +390,7 @@ Additional Imports
 ------------------
 
 In addition to importing the models, you can specify other items to import by default.
-These can be specified with the settings ``SHELL_PLUS_IMPORTS``, ``SHELL_PLUS_PRE_IMPORTS``, and ``SHELL_PLUS_POST_IMPORTS``.
+These can be specified with the settings ``SHELL_PLUS_IMPORTS``, ``SHELL_PLUS_PRE_IMPORTS`` and ``SHELL_PLUS_POST_IMPORTS``.
 
 The order of import loading is as follows:
 
