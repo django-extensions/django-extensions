@@ -10,7 +10,7 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       max-parallel: 4
       matrix:
         python-version:
@@ -23,7 +23,8 @@ jobs:
           - "22"
           - "30"
           - "31"
-          - "master"
+          # GH Actions don't support something like allow-failure ?
+          # - "master"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
