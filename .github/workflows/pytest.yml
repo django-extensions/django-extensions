@@ -21,7 +21,7 @@ jobs:
           - "22"
           - "30"
           - "31"
-          - "djmaster"
+          - "master"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
