@@ -71,5 +71,5 @@ jobs:
       - name: Pytest
         run: tox -e py-dj${{ matrix.tox-django-version }}-postgres
         env:
-          DJANGO_EXTENSIONS_DATABASE_HOST: postgres
+          DJANGO_EXTENSIONS_DATABASE_HOST: localhost
           DJANGO_EXTENSIONS_DATABASE_USER: postgres
