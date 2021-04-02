@@ -3,6 +3,8 @@ name: Pre-Commit Checks
 on:
   pull_request:
   push:
+    branches:
+      - main
 
 jobs:
   precommit:

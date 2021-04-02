@@ -3,6 +3,8 @@ name: Linters
 on:
   pull_request:
   push:
+    branches:
+      - main
 
 jobs:
   flake8:
