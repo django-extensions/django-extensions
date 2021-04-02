@@ -42,7 +42,10 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -66,5 +69,5 @@ jobs:
       - run: python -m pip install tox
       - name: Pytest
         run: tox -e py-dj${{ matrix.tox-django-version }}-postgres
-        env:
-          DJANGO_EXTENSIONS_DATABASE_HOST: postgres
+        # env:
+        #   DJANGO_EXTENSIONS_DATABASE_HOST: postgres
