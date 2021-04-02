@@ -33,8 +33,11 @@ MIDDLEWARE = [
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DJANGO_EXTENSIONS_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-        'HOST': os.environ.get('DJANGO_EXTENSIONS_DATABASE_HOST'),
         'NAME': os.environ.get('DJANGO_EXTENSIONS_DATABASE_NAME', ':memory:'),
+        'USER': os.environ.get("DJANGO_EXTENSIONS_DATABASE_USER"),
+        'PASSWORD': os.environ.get("DJANGO_EXTENSIONS_DATABASE_PASSWORD"),
+        'HOST': os.environ.get('DJANGO_EXTENSIONS_DATABASE_HOST'),
+        'PORT': os.environ.get('DJANGO_EXTENSIONS_DATABASE_PORT'),
     }
 }
 

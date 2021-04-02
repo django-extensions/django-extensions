@@ -73,3 +73,4 @@ jobs:
         env:
           DJANGO_EXTENSIONS_DATABASE_HOST: localhost
           DJANGO_EXTENSIONS_DATABASE_USER: postgres
+          DJANGO_EXTENSIONS_DATABASE_PASSWORD: postgres
