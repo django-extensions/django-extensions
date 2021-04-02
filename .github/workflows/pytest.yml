@@ -31,4 +31,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install tox
       - name: Mypy
-        run: tox -e py-dj${{ matrix.django-version }}
+        run: tox -e py-dj${{ matrix.tox-django-version }}
