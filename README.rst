@@ -5,9 +5,20 @@
 .. image:: https://img.shields.io/pypi/l/django-extensions.svg
    :target: https://raw.githubusercontent.com/django-extensions/django-extensions/master/LICENSE
 
-.. image:: https://secure.travis-ci.org/django-extensions/django-extensions.svg?branch=master
-    :alt: Build Status
-    :target: http://travis-ci.org/django-extensions/django-extensions
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/compile_catalog.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/linters.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/precommit.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/pytest.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/security.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
 
 .. image:: https://img.shields.io/pypi/v/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
