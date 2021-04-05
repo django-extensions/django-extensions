@@ -1,6 +1,13 @@
 Changelog
 =========
 
+3.1.1.post1
+-----------
+
+Changes:
+ - Added minimum Django>=2.2 version to PyPI package
+
+
 3.1.1
 -----
 
