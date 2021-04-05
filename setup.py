@@ -107,7 +107,7 @@ setup(
     cmdclass=cmdclasses,
     package_data=package_data,
     python_requires=">=3.6",
-    install_requires=[],
+    install_requires=["Django>=2.2"],
     extras_require={},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
