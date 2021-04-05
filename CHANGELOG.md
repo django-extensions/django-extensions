@@ -1,11 +1,23 @@
 Changelog
 =========
 
+3.1.2
+-----
+
+Changes:
+ - Improvement: shell_plus, not save ipython history when using Jupyter
+ - Improvement: docs, fix spelling mistakes
+ - Improvement: tests, move to Github Actions instead of Travis
+ - Improvement: drop_test_database, delete all cloned test databases (#1637)
+ - Improvement: setup.py, Added minimum Django>=2.2 version to PyPI package
+ - Improvement: shell_plus, fix --command globals / locals error
+
+
 3.1.1.post1
 -----------
 
 Changes:
- - Added minimum Django>=2.2 version to PyPI package
+ - Improvement: setup.py, Added minimum Django>=2.2 version to PyPI package
 
 
 3.1.1
