@@ -142,7 +142,10 @@ class ModelGraph:
             'label': label,
             'type': t,
             'blank': field.blank,
-            'abstract': field in abstract_fields,
+            'abstract': any(
+                field.creation_counter == abstract_field.creation_counter
+                for abstract_field in abstract_fields
+            ),
             'relation': isinstance(field, RelatedField),
             'primary_key': field.primary_key,
         }

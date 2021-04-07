@@ -102,4 +102,4 @@ SHELL_PLUS_POST_IMPORTS = [
     'from django_extensions.utils import *',
 ]
 
-SILENCED_SYSTEM_CHECKS = ["models.W027"]
+SILENCED_SYSTEM_CHECKS = ["models.W027", "models.W042"]
