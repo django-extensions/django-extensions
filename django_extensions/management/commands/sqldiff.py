@@ -853,6 +853,10 @@ class MySQLDiff(SQLDiff):
 
             # extra check removed from superclass here, otherwise function is the same
             if len(columns) == 1:
+                if not field:
+                    # both index and field are missing from the model
+                    self.add_difference('index-missing-in-model', table_name, constraint_name)
+                    continue
                 if constraint['primary_key'] and field.primary_key:
                     continue
                 if constraint['foreign_key'] and isinstance(field, models.ForeignKey) and field.db_constraint:
