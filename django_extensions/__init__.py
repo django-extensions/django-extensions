@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+try:
+    import django
+except ImportError:
+    django = None
+
 VERSION = (3, 1, 3, 'dev')
 
 
@@ -19,4 +24,5 @@ def get_version(version):
 
 __version__ = get_version(VERSION)
 
-default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
+if not django or django.VERSION < (3, 2):
+    default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
