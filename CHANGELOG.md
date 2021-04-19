@@ -1,6 +1,15 @@
 Changelog
 =========
 
+3.1.3
+-----
+
+Changes:
+ - Fix: Django 3.2, Run tests against Django 3.2
+ - Fix: Django 3.2, Handle warnings for default_app_config (#1654)
+ - Fix: sqldiff, Fix for missing field/index in model case
+
+
 3.1.2
 -----
 
