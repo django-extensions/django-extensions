@@ -8,7 +8,7 @@ def test_without_args(capsys, settings):
     call_command('notes')
 
     out, err = capsys.readouterr()
-    assert 'tests/testapp/__init__.py:\n  * [  4] TODO  this is a test todo\n\n' in out
+    assert 'tests/testapp/__init__.py:\n  * [  8] TODO  this is a test todo\n\n' in out
 
 
 def test_with_utf8(capsys, settings):
