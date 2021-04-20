@@ -4,8 +4,9 @@ import inspect
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.db import connection
+
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 
@@ -13,7 +14,7 @@ TAB = "        "
 HALFTAB = "    "
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     """A simple management command which lists model fields and methods."""
 
     help = "List out the fields and methods for each model"

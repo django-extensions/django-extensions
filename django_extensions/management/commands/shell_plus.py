@@ -7,9 +7,10 @@ import warnings
 
 from django.db import connections
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.utils.datastructures import OrderedSet
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.shells import import_objects
 from django_extensions.management.utils import signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
@@ -42,7 +43,7 @@ def shell_runner(flags, name, help=None):
     return decorator
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Like the 'shell' command but autoloads the models of all installed Django apps."
     extra_args = None
     tests_mode = False

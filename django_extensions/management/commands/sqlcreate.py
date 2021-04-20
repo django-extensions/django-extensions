@@ -4,22 +4,23 @@ import sys
 import warnings
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.db import DEFAULT_DB_ALIAS
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = """Generates the SQL to create your database for you, as specified in settings.py
 The envisioned use case is something like this:
 
     ./manage.py sqlcreate [--database=<databasename>] | mysql -u <db_administrator> -p
     ./manage.py sqlcreate [--database=<databasname>] | psql -U <db_administrator> -W"""
 
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
     can_import_settings = True
 
     def add_arguments(self, parser):

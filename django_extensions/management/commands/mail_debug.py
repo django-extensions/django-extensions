@@ -4,8 +4,9 @@ import sys
 from logging import getLogger
 from smtpd import SMTPServer
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import setup_logger, signalcommand
 
 logger = getLogger(__name__)
@@ -29,11 +30,11 @@ class ExtensionDebuggingServer(SMTPServer):
         logger.info('------------ END MESSAGE ------------')
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

@@ -4,11 +4,12 @@ import fnmatch
 
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.core.management.color import color_style
 from django.template.loader import get_template
 
 from django_extensions.compat import get_template_setting
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -17,7 +18,7 @@ from django_extensions.management.utils import signalcommand
 #
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     args = ''
     help = "Validate templates on syntax and compile errors"
     ignores = set([

@@ -1,13 +1,24 @@
 # -*- coding: utf-8 -*-
 import sys
+from typing import List, Tuple, Union
 
-from django.core.management.base import BaseCommand
+from django.core.checks import Tags
+from django.core.management import BaseCommand
 from logging import getLogger
 
 logger = getLogger('django.commands')
 
 
-class LoggingBaseCommand(BaseCommand):
+class _BaseDjangoExtensionsCommand(BaseCommand):
+    """
+    This is an internally used command.
+    It is used for defining suitable defaults for all subclasses that require to inherit from _BaseDjangoExtensionsCommand.
+    All instances of potential BaseCommad usage should inherit from this."""
+    # Django4: bool is provided for backward compatability. Remove bool after django4 is released
+    requires_system_checks: Union[bool, Tuple[Tags, ...], List[Tags], str]
+
+
+class LoggingBaseCommand(_BaseDjangoExtensionsCommand):
     """
     A subclass of BaseCommand that logs run time errors to `django.commands`.
     To use this, create a management command subclassing LoggingBaseCommand:

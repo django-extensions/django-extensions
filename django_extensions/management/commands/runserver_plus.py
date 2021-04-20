@@ -11,7 +11,7 @@ from typing import Set
 
 import django
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, SystemCheckError
+from django.core.management.base import CommandError, SystemCheckError
 from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
@@ -44,6 +44,7 @@ try:
 except ImportError:
     HAS_OPENSSL = False
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
@@ -124,11 +125,11 @@ def check_errors(fn):
     return wrapper
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Starts a lightweight Web server for development."
 
     # Validation is called explicitly each time the server is reloaded.
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
     DEFAULT_CRT_EXTENSION = ".crt"
     DEFAULT_KEY_EXTENSION = ".key"
 

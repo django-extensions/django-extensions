@@ -8,12 +8,13 @@ import weakref
 from collections import defaultdict
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
 from django.db.models.signals import (
     ModelSignal, pre_init, post_init, pre_save, post_save, pre_delete,
     post_delete, m2m_changed, pre_migrate, post_migrate
 )
 from django.utils.encoding import force_str
+
+from django_extensions.management import _BaseDjangoExtensionsCommand
 
 
 MSG = '{module}.{name} #{line}'
@@ -31,7 +32,7 @@ SIGNAL_NAMES = {
 }
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = 'List all signals by model and signal type'
 
     def handle(self, *args, **options):

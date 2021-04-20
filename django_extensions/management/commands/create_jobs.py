@@ -12,7 +12,7 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 class Command(AppCommand):
     help = "Creates a Django jobs command directory structure for the given app name in the current directory."
 
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
     # Can't import settings during this command, because they haven't
     # necessarily been created.
     can_import_settings = True

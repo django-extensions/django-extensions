@@ -5,14 +5,15 @@ import py_compile
 from os.path import join as _j
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Compile python bytecode files for the project."
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
 
     def add_arguments(self, parser):
         parser.add_argument('--path', '-p', action='store', dest='path',

@@ -6,10 +6,10 @@ import re
 
 from django.apps import apps
 from django.core.management import color
-from django.core.management import BaseCommand
 from django.utils import termcolors
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.compat import load_tag_library
 from django_extensions.management.color import _dummy_style_func
 from django_extensions.management.utils import signalcommand
@@ -41,7 +41,7 @@ def format_block(block, nlspaces=0):
     http://code.activestate.com/recipes/145672/
     """
     # separate block into lines
-    lines = smart_text(block).split('\n')
+    lines = smart_str(block).split('\n')
 
     # remove leading/trailing empty lines
     while lines and not lines[0]:
@@ -67,7 +67,7 @@ def format_block(block, nlspaces=0):
     return '\n'.join(flines) + '\n'
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Displays template tags and filters available in the current project."
     results = ""
 

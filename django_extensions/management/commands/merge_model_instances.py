@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.core.management import BaseCommand
 from django.db import transaction
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -85,7 +85,7 @@ def get_generic_fields():
     return generic_fields
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = """
         Removes duplicate model instances based on a specified
         model and field name(s).

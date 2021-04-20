@@ -26,13 +26,14 @@ import sys
 import argparse
 from typing import Dict, Union, Callable, Optional  # NOQA
 from django.apps import apps
-from django.core.management import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction, models
 from django.db.models.fields import AutoField, IntegerField
 from django.db.models.options import normalize_together
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 ORDERING_FIELD = IntegerField('_order', null=True)
@@ -1257,7 +1258,7 @@ DATABASE_SQLDIFF_CLASSES = {
 }
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = """Prints the (approximated) difference between models and fields in the database for the given app name(s).
 
 It indicates how columns in the database are different from the sql that would

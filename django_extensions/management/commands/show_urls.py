@@ -7,9 +7,10 @@ import re
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.utils import translation
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
 
@@ -42,7 +43,7 @@ FMTR = {
 }
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Displays all of the url matching routes for the project."
 
     def add_arguments(self, parser):

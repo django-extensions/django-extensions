@@ -21,7 +21,7 @@ class Command(AppCommand):
             help='The name to use for the template tag base name. Defaults to `appname`_tags.'
         )
 
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
     # Can't import settings during this command, because they haven't
     # necessarily been created.
     can_import_settings = True

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from io import StringIO
 
-from django.conf.urls import url
 from django.core.management import CommandError, call_command
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.views.generic.base import View
+from django.urls import re_path
 
 from unittest.mock import Mock, patch
 
@@ -20,9 +20,9 @@ class ClassView(View):
 
 
 urlpatterns = [
-    url(r'lambda/view', lambda request: HttpResponse('OK')),
-    url(r'function/based/', function_based_view, name='function-based-view'),
-    url(r'class/based/', ClassView.as_view(), name='class-based-view'),
+    re_path(r'lambda/view', lambda request: HttpResponse('OK')),
+    re_path(r'function/based/', function_based_view, name='function-based-view'),
+    re_path(r'class/based/', ClassView.as_view(), name='class-based-view'),
 ]
 
 

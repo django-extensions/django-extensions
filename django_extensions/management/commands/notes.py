@@ -3,8 +3,8 @@ import os
 import re
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.compat import get_template_setting
 from django_extensions.management.utils import signalcommand
 
@@ -12,7 +12,7 @@ ANNOTATION_RE = re.compile(r"\{?#[\s]*?(TODO|FIXME|BUG|HACK|WARNING|NOTE|XXX)[\s
 ANNOTATION_END_RE = re.compile(r"(.*)#\}(.*)")
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = 'Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.'
     label = 'annotation tag (TODO, FIXME, BUG, HACK, WARNING, NOTE, XXX)'
 

@@ -34,15 +34,15 @@ import sys
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
 from django.db import router
 from django.db.models import (
     AutoField, BooleanField, DateField, DateTimeField, FileField, ForeignKey,
 )
 from django.db.models.deletion import Collector
 from django.utils import timezone
-from django.utils.encoding import force_str, smart_text
+from django.utils.encoding import force_str, smart_str
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -83,7 +83,7 @@ def orm_item_locator(orm_obj):
     return output
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = 'Dumps the data as a customised python script.'
 
     def add_arguments(self, parser):
@@ -205,7 +205,7 @@ class ModelCode(Code):
         Return a dictionary of import statements, with the variable being
         defined as the key.
         """
-        return {self.model.__name__: smart_text(self.model.__module__)}
+        return {self.model.__name__: smart_str(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):

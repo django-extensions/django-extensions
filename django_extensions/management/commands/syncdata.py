@@ -14,11 +14,12 @@ import os
 from django.apps import apps
 from django.conf import settings
 from django.core import serializers
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.core.management.color import no_style
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.template.defaultfilters import pluralize
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -30,7 +31,7 @@ class SyncDataError(Exception):
     pass
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     """ syncdata command """
 
     help = 'Makes the current database have the same data as the fixture(s), no more, no less.'

@@ -2,15 +2,15 @@
 import logging
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.jobs import get_jobs, print_jobs
 from django_extensions.management.utils import setup_logger, signalcommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Runs scheduled maintenance jobs."
 
     when_options = ['minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']

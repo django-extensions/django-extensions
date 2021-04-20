@@ -10,12 +10,13 @@ import fnmatch
 import json
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Print the active Django settings."
 
     def add_arguments(self, parser):

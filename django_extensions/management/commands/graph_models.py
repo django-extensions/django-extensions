@@ -5,9 +5,10 @@ import os
 import tempfile
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.template import loader
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.modelviz import ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
 
@@ -27,7 +28,7 @@ except ImportError:
     HAS_PYDOT = False
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Creates a GraphViz dot file for the specified app names. You can pass multiple app names and they will all be combined into a single model. Output is usually directed to a dot file."
 
     can_import_settings = True

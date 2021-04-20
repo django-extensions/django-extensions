@@ -7,16 +7,17 @@ schema while there are active connections.
 
 import warnings
 
-from django.core.management import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.db import DEFAULT_DB_ALIAS
 from django.db import connections
 from django.conf import settings
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.settings import POSTGRESQL_ENGINES
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     """`reset_schema` command implementation."""
 
     help = "Recreates the public schema for this project."

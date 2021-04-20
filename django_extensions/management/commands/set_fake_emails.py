@@ -10,16 +10,17 @@ set_fake_emails.py
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = '''DEBUG only: give all users a new email based on their account data ("%s" by default). Possible parameters are: username, first_name, last_name''' % (DEFAULT_FAKE_EMAIL, )
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

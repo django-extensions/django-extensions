@@ -2,13 +2,14 @@
 import socket
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Set parameters of the default django.contrib.sites Site"
 
     def add_arguments(self, parser):

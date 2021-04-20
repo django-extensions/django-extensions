@@ -15,9 +15,10 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.staticfiles.handlers import StaticFilesHandler
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.core.servers.basehttp import get_internal_wsgi_application
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
@@ -88,7 +89,7 @@ class KCacheGrind:
         out_file.write('%d %d\n' % (lineno, totaltime))
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Starts a lightweight Web server with profiling enabled."
     args = '[optional port number, or ipaddr:port]'
 

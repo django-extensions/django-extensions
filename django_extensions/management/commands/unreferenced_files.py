@@ -4,13 +4,14 @@ from collections import defaultdict
 
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.db import models
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
 
     @signalcommand

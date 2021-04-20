@@ -5,8 +5,9 @@ import csv
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -40,7 +41,7 @@ def full_name(**kwargs):
     return ""
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Export user email address list in one of a number of formats."
     args = "[output file]"
     label = 'filename to save to'

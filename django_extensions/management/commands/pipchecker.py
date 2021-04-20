@@ -10,7 +10,8 @@ from xmlrpc.client import ServerProxy, Fault
 
 import pip
 from time import sleep
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
 from pip._internal.req import InstallRequirement
@@ -28,9 +29,9 @@ try:
 except ImportError:
     # pip < 10
     try:
-        from pip import get_installed_distributions  # type:ignore
-        from pip.download import PipSession  # type:ignore
-        from pip.req import parse_requirements  # type:ignore
+        from pip import get_installed_distributions  # type: ignore
+        from pip.download import PipSession  # type: ignore
+        from pip.req import parse_requirements  # type: ignore
     except ImportError:
         raise CommandError("Pip version 6 or higher is required")
 
@@ -41,7 +42,7 @@ except ImportError:
     HAS_REQUESTS = False
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Scan pip requirement files for out-of-date packages."
 
     def add_arguments(self, parser):

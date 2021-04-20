@@ -4,12 +4,13 @@ import traceback
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.management import BaseCommand
+
+from django_extensions.management import _BaseDjangoExtensionsCommand
 
 
-class EmailNotificationCommand(BaseCommand):
+class EmailNotificationCommand(_BaseDjangoExtensionsCommand):
     """
-    A BaseCommand subclass which adds sending email fuctionality.
+    A _BaseDjangoExtensionsCommand subclass which adds sending email fuctionality.
 
     Subclasses will have an extra command line option ``--email-notification``
     and will be able to send emails by calling ``send_email_notification()``

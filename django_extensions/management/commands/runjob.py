@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.core.management.base import BaseCommand
+from django_extensions.management import _BaseDjangoExtensionsCommand
 
 from django_extensions.management.jobs import get_job, print_jobs
 from django_extensions.management.utils import setup_logger, signalcommand
@@ -9,7 +9,7 @@ from django_extensions.management.utils import setup_logger, signalcommand
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Run a single maintenance job."
     missing_args_message = "test"
 

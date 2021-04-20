@@ -65,9 +65,10 @@ import time
 from typing import List  # NOQA
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from io import StringIO
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
@@ -79,7 +80,7 @@ else:
     HAS_BOTO = True
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     # Extra variables to avoid passing these around
     AWS_ACCESS_KEY_ID = ''
     AWS_SECRET_ACCESS_KEY = ''

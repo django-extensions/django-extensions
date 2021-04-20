@@ -4,12 +4,12 @@ from django.apps import apps as django_apps
 from django.contrib.auth.management import create_permissions, _get_all_permissions
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import BaseCommand
 
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = 'reloads permissions for specified apps, or all apps if no args are specified'
 
     def add_arguments(self, parser):

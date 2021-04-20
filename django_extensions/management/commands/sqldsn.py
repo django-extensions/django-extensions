@@ -9,16 +9,18 @@ import sys
 import warnings
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
 from django.core.management.color import color_style
 from django.db import DEFAULT_DB_ALIAS
+
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = "Prints DSN on stdout, as specified in settings.py"
-    requires_system_checks = False
+    requires_system_checks = []  # type: ignore
     can_import_settings = True
 
     def add_arguments(self, parser):

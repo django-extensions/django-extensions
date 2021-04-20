@@ -4,11 +4,13 @@ import importlib
 from django.conf import settings
 from django.contrib.auth import load_backend, BACKEND_SESSION_KEY, SESSION_KEY
 from django.contrib.sessions.backends.base import VALID_KEY_CHARS
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
+
+from django_extensions.management import _BaseDjangoExtensionsCommand
 from django_extensions.management.utils import signalcommand
 
 
-class Command(BaseCommand):
+class Command(_BaseDjangoExtensionsCommand):
     help = ("print the user information for the provided session key. "
             "this is very helpful when trying to track down the person who "
             "experienced a site crash.")
