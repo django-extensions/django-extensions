@@ -121,7 +121,7 @@ class CryptoFieldMixin(models.Field):
         key = base64.urlsafe_b64encode(kdf.derive(to_bytes(password)))
         return key
 
-    @cached_property
+    @property
     def fernet_key(self):
         key = self.generate_password_key(self.password, self.salt)
         return Fernet(key)
@@ -154,7 +154,7 @@ class CryptoFieldMixin(models.Field):
             data = self.decrypt(value)
             return pickle.loads(data)
 
-    @cached_property
+    @property
     def validators(self):
         # For IntegerField (and subclasses) we must pretend to be that
         # field type to get proper validators.
