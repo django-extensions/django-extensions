@@ -1,8 +1,7 @@
 import pickle
-from functools import cached_property
 
 from django.conf import settings
-from django.core.exceptions import FieldError, ImproperlyConfigured, FieldDoesNotExist
+from django.core.exceptions import ImproperlyConfigured, FieldDoesNotExist
 from django.core.checks import Error
 from django.db import models
 from django.utils.encoding import force_bytes
@@ -36,6 +35,7 @@ def to_bytes(_obj):
     else:
         return pickle.dumps(_obj)
 
+
 class CryptoFieldMixin(models.Field):
     """A field that encrypts values with AES 256 symmetric encryption,
     using Pycryptodome.
@@ -47,7 +47,9 @@ class CryptoFieldMixin(models.Field):
     to transfer data from the old field.
     """
 
-    def __init__(self, salt_settings_env=None, password_field_name=None, *args, **kwargs):
+    def __init__(
+        self, salt_settings_env=None, password_field_name=None, *args, **kwargs
+    ):
 
         if salt_settings_env and not isinstance(salt_settings_env, str):
             raise ImproperlyConfigured("'salt_settings_env' must be a string")
@@ -72,8 +74,8 @@ class CryptoFieldMixin(models.Field):
         kwargs["null"] = True  # should be nullable, in case data field is nullable.
         kwargs["blank"] = True
 
-        self.password = 'password'
-        self.salt = getattr(settings, 'SECRET_KEY', "Salt")
+        self.password = "password"
+        self.salt = getattr(settings, "SECRET_KEY", "Salt")
 
         self.get_passwords()
 
@@ -85,7 +87,9 @@ class CryptoFieldMixin(models.Field):
             try:
                 self.salt = getattr(settings, self.salt_settings_env)
             except ImproperlyConfigured:
-                raise Error(f"salt_settings_env {self.salt_settings_env} is not set in settings file")
+                raise Error(
+                    f"salt_settings_env {self.salt_settings_env} is not set in settings file"
+                )
         else:
             pass
 
@@ -93,10 +97,12 @@ class CryptoFieldMixin(models.Field):
             try:
                 self.password = self.model._meta.get_field(self.password_field_name)
             except FieldDoesNotExist:
-                raise Error(f"password_field_name {self.password_field_name} doesn't exist.")
+                raise Error(
+                    f"password_field_name {self.password_field_name} doesn't exist."
+                )
         else:
             try:
-                self.password = self.model._meta.get_field('password')
+                self.password = self.model._meta.get_field("password")
             except:
                 pass
 
@@ -109,14 +115,14 @@ class CryptoFieldMixin(models.Field):
             kwargs["password_field_name"] = self.password_field_name
         return name, path, args, kwargs
 
-
     def generate_password_key(self, password, salt):
         # password = b"password"
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=to_bytes(salt),
-            iterations=100000, )
+            iterations=100000,
+        )
 
         key = base64.urlsafe_b64encode(kdf.derive(to_bytes(password)))
         return key
@@ -128,13 +134,11 @@ class CryptoFieldMixin(models.Field):
 
     def encrypt(self, message):
         b_message = to_bytes(message)
-        # encrypted_message = self.fernet.encrypt(b_message)
         encrypted_message = self.fernet_key.encrypt(b_message)
         return encrypted_message
 
     def decrypt(self, encrypted_message):
         b_message = to_bytes(encrypted_message)
-        # decrypted_message = self.fernet.decrypt(b_message)
         decrypted_message = self.fernet_key.decrypt(b_message)
         return decrypted_message
 
