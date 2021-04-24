@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pickle
+from functools import cached_property
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, FieldDoesNotExist
@@ -38,14 +39,12 @@ def to_bytes(_obj):
 
 
 class CryptoFieldMixin(models.Field):
-    """A field that encrypts values with AES 256 symmetric encryption,
-    using Pycryptodome.
+    """
+    A Mixin that can be ued to convert standard django model field to encrypted binary. Fields are fully encrypted in
+    data base, but automatically readable in Django. Therefore there is no need for additional description of data,
+    it will be handheld automatically.
 
-    Note: Be careful not to change/alter a pre-existing regular django field to be an
-    CryptoField. The data for existing rows will be unencrypted in the database and
-    appear 'corrupted' when trying to decrypt/fetch it.
-    Instead, add the new CryptoField to the model and do a data-migration
-    to transfer data from the old field.
+    Cryptography protocol used in mixin: Fernet (symmetric encryption) provided by Cryptography (pyca/cryptography)
     """
 
     def __init__(
@@ -128,7 +127,7 @@ class CryptoFieldMixin(models.Field):
         key = base64.urlsafe_b64encode(kdf.derive(to_bytes(password)))
         return key
 
-    @property
+    @cached_property
     def fernet_key(self):
         key = self.generate_password_key(self.password, self.salt)
         return Fernet(key)
@@ -159,7 +158,7 @@ class CryptoFieldMixin(models.Field):
             data = self.decrypt(value)
             return pickle.loads(data)
 
-    @property
+    @cached_property
     def validators(self):
         # For IntegerField (and subclasses) we must pretend to be that
         # field type to get proper validators.
