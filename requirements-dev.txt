@@ -9,3 +9,4 @@ requests
 mock
 pygments
 vobject
+cryptography
