@@ -10,7 +10,7 @@ query and limit access to certain views.
 
 Current Mixins
 ---------------------------------
-* *UserPermissionMixin* - A Class Based View mixin that limits the accessibility to the view based on the "owner" of the view.
+* *ModelUserFieldPermissionMixin* - A Class Based View mixin that limits the accessibility to the view based on the "owner" of the view.
 
 This will check if the currently logged in user (``self.request.user``) matches the owner of the model instance.
 By default, the "owner" will be called "user".
@@ -33,11 +33,11 @@ By default, the "owner" will be called "user".
 
    from django.views.generic import UpdateView
 
-   from django_extensions.auth.mixins import UserPermissionMixin
+   from django_extensions.auth.mixins import ModelUserFieldPermissionMixin
 
    from .models import MyModel
 
-   class MyModelUpdateView(UserPermissionMixin, UpdateView):
+   class MyModelUpdateView(ModelUserFieldPermissionMixin, UpdateView):
       model = MyModel
       template_name = 'mymodels/update.html'
       model_permission_user_field = 'author'
