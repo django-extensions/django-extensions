@@ -82,3 +82,10 @@ class SetDefaultSiteTests(TestCase):
 
         self.assertEqual(result.name, 'example.com')
         self.assertEqual(result.domain, 'bar')
+
+    def test_should_not_raise_if_sites_installed_through_appconfig(self):
+        with self.modify_settings(INSTALLED_APPS={
+            'append': 'django.contrib.sites.apps.SitesConfig',
+            'remove': 'django.contrib.sites',
+        }):
+            call_command('set_default_site', '--name=foo', '--domain=foo.bar')
