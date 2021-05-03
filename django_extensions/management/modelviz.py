@@ -13,6 +13,9 @@ import os
 import re
 
 from django.apps import apps
+from django.db.models.fields.reverse_related import (
+    OneToOneRel, ManyToOneRel,
+)
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
 )
@@ -68,6 +71,7 @@ class ModelGraph:
         self.verbose_names = kwargs.get('verbose_names', False)
         self.inheritance = kwargs.get('inheritance', True)
         self.relations_as_fields = kwargs.get("relations_as_fields", True)
+        self.relation_fields_only = kwargs.get("relation_fields_only", False)
         self.sort_fields = kwargs.get("sort_fields", True)
         self.language = kwargs.get('language', None)
         if self.language is not None:
@@ -413,6 +417,12 @@ class ModelGraph:
                 if field.verbose_name in self.exclude_columns:
                     return True
             if field.name in self.exclude_columns:
+                return True
+        if self.relation_fields_only:
+            if not isinstance(
+                field,
+                (ForeignKey, ManyToManyField, OneToOneField, RelatedField, OneToOneRel, ManyToOneRel)
+            ):
                 return True
         return False
 
