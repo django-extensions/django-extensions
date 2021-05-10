@@ -44,6 +44,7 @@ __contributors__ = [
     "Mikkel Munch Mortensen <https://www.detfalskested.dk/>",
     "Andrzej Bistram <andrzej.bistram@gmail.com>",
     "Daniel Lipsitt <danlipsitt@gmail.com>",
+    "Tobias Mitterdorfer <tobias.mitterdorfer97@gmail.com>"
 ]
 
 
