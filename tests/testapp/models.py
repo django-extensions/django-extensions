@@ -7,6 +7,18 @@ from django.db.models.signals import pre_save
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
+from django_extensions.db.fields.crypto_field import (
+    CryptoTextField,
+    CryptoCharField,
+    CryptoEmailField,
+    CryptoIntegerField,
+    CryptoDateField,
+    CryptoDateTimeField,
+    CryptoBigIntegerField,
+    CryptoPositiveIntegerField,
+    CryptoPositiveSmallIntegerField,
+    CryptoSmallIntegerField,
+)
 
 from .fields import UniqField
 
@@ -527,6 +539,27 @@ class MultipleFieldsAndMethods(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+class CryptoTextModel(models.Model):
+    text_field = CryptoTextField()
+
+
+class CryptoTextModelPassword(models.Model):
+    text_field = CryptoTextField(password="password_to_be_used_as_key")
+
+
+class CryptoAllFieldModel(models.Model):
+    text_field = CryptoTextField()
+    char_field = CryptoCharField()
+    email_field = CryptoEmailField()
+    int_field = CryptoIntegerField()
+    date_field = CryptoDateField()
+    date_time_field = CryptoDateTimeField()
+    big_int_field = CryptoBigIntegerField()
+    positive_int_field = CryptoPositiveIntegerField()
+    positive_small_int_field = CryptoPositiveSmallIntegerField()
+    small_int_field = CryptoSmallIntegerField()
 
 
 def dummy_handler(sender, instance, **kwargs):

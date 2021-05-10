@@ -46,17 +46,18 @@ class CryptoFieldMixin(models.Field):
     Cryptography protocol used in mixin: Fernet (symmetric encryption) provided by Cryptography (pyca/cryptography)
     """
 
-    def __init__(
-        self, salt_settings_env=None, password_field_name=None, *args, **kwargs
-    ):
+    def __init__(self, salt_settings_env=None, password=None, *args, **kwargs):
 
         if salt_settings_env and not isinstance(salt_settings_env, str):
             raise ImproperlyConfigured("'salt_settings_env' must be a string")
         self.salt_settings_env = salt_settings_env
+        self.password = "Password123!!!"
 
-        if password_field_name and not isinstance(password_field_name, str):
-            raise ImproperlyConfigured("'password_field_name' must be a string")
-        self.password_field_name = password_field_name
+        if password and not isinstance(password, (str, int)):
+            raise ImproperlyConfigured("'password' must be a string or int")
+
+        if password:
+            self.password = password
 
         if kwargs.get("primary_key"):
             raise ImproperlyConfigured(
@@ -73,45 +74,31 @@ class CryptoFieldMixin(models.Field):
         kwargs["null"] = True  # should be nullable, in case data field is nullable.
         kwargs["blank"] = True
 
-        self.password = "password"
-        self.salt = getattr(settings, "SECRET_KEY", "Salt")
+        self.salt = "Salt123!!!"
 
-        self.get_passwords()
+        self.get_salt()
 
         self._internal_type = "BinaryField"
         super().__init__(*args, **kwargs)
 
-    def get_passwords(self):
+    def get_salt(self):
         if self.salt_settings_env:
             try:
                 self.salt = getattr(settings, self.salt_settings_env)
-            except ImproperlyConfigured:
+            except AttributeError:
                 raise Error(
                     f"salt_settings_env {self.salt_settings_env} is not set in settings file"
                 )
         else:
             pass
 
-        if self.password_field_name:
-            try:
-                self.password = self.model._meta.get_field(self.password_field_name)
-            except FieldDoesNotExist:
-                raise Error(
-                    f"password_field_name {self.password_field_name} doesn't exist."
-                )
-        else:
-            try:
-                self.password = self.model._meta.get_field("password")
-            except ImproperlyConfigured:
-                pass
-
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
         # Only include kwarg if it's not the default (None)
         if self.salt_settings_env:
             kwargs["salt_settings_env"] = self.salt_settings_env
-        if self.password_field_name:
-            kwargs["password_field_name"] = self.password_field_name
+        if self.password:
+            kwargs["password"] = self.password
         return name, path, args, kwargs
 
     def generate_password_key(self, password, salt):
@@ -144,13 +131,14 @@ class CryptoFieldMixin(models.Field):
     def get_internal_type(self):
         return self._internal_type
 
-    def get_db_prep_save(self, value, connection):
+    def get_db_prep_value(self, value, connection, prepared=False):
         if self.empty_strings_allowed and value == bytes():
             value = ""
-        value = super().get_db_prep_save(value, connection)
+        value = super().get_db_prep_value(value, connection, prepared=False)
         if value is not None:
             encrypted_value = self.encrypt(value)
-            return connection.Database.Binary(encrypted_value)
+            return encrypted_value
+            # return connection.Database.Binary(encrypted_value)
 
     def from_db_value(self, value, expression, connection):
         if value is not None:

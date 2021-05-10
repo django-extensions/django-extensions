@@ -159,9 +159,9 @@ Current Database Model Field Extensions
     * *CryptoSmallIntegerField* - SmallIntegerField inheriting Field
 
     **Settings.**
-    each CryptoField has 2 kwargs *salt_settings_env* and *password_field_name*.
-    * *salt_settings_env* - name of variable stored in settings.py file, which will be used as cryptographic salt. default = 'SECRET_KEY'
-    * *password_field_name* - name of the field or property in the parent model which store value to be use as password in encryption process. Due to support of property, you can pass full dynamic keys. default = 'password'
+    each CryptoField has 2 kwargs *salt_settings_env* and *password*.
+    * *salt_settings_env* - name of variable stored in settings.py file, which will be used as cryptographic salt. default: salt_settings_env = 'SECRET_KEY' if settings not set or no SECRET_KEY in setting default: salt = "Salt123!!!"
+    * *password* - password to be used in encryption process of given field (together with salt set globally) default = 'password'
 
     **Example.**
     .. code-block:: python
@@ -173,9 +173,6 @@ Current Database Model Field Extensions
         from django_extensions.db.fields.crypto_field import CryptoEmailField
 
         class TestCryptoEmail(models.Model):
-            @property
-            def new_password(self):
-                return str("password_to_be_used_as_key")
 
-            value = CryptoEmailField(salt_settings_env='NEW_SECRET_KEY', password_field_name='new_password')
+            value = CryptoEmailField(salt_settings_env='NEW_SECRET_KEY', password='new_password')
 
