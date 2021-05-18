@@ -22,15 +22,15 @@ try:
     try:
         from pip._internal.network.session import PipSession
     except ImportError:
-        from pip._internal.download import PipSession
+        from pip._internal.download import PipSession  # type:ignore
     from pip._internal.req.req_file import parse_requirements
     from pip._internal.utils.misc import get_installed_distributions
 except ImportError:
     # pip < 10
     try:
-        from pip import get_installed_distributions
-        from pip.download import PipSession
-        from pip.req import parse_requirements
+        from pip import get_installed_distributions  # type:ignore
+        from pip.download import PipSession  # type:ignore
+        from pip.req import parse_requirements  # type:ignore
     except ImportError:
         raise CommandError("Pip version 6 or higher is required")
 
