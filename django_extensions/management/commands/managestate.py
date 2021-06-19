@@ -2,6 +2,7 @@ import json
 from logging import getLogger
 from pathlib import Path
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.recorder import MigrationRecorder
@@ -15,7 +16,8 @@ DEFAULT_STATE = 'default'
 
 class Command(BaseCommand):
     help = 'Manage database state depending on branch.'
-    conn = file = None
+    common_args = common_options = None
+    database = filename = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -36,27 +38,41 @@ class Command(BaseCommand):
         )
 
     def handle(self, action, database, filename, state, *args, **options):
-        self.conn = connections[database]
-        self.file = filename
+        self.common_args = args
+        self.common_options = options
+        self.database = database
+        self.filename = filename
         getattr(self, action)(state)
 
     def dump(self, state: str):
         """Save applied migrations to the file"""
-        applied_migrations = MigrationRecorder(self.conn).applied_migrations()
+        conn = connections[self.database]
+        applied_migrations = MigrationRecorder(conn).applied_migrations()
         data = {state: dict(applied_migrations.keys())}
         self.write(data)
 
     def load(self, state: str):
         """Apply migrations from the file"""
-        self.read()
+        migrations = self.read().get(state)
+        if not migrations:
+            raise CommandError(f'No such state saved: {state}')
+
+        for app, migration in migrations.items():
+            args = (app, migration, *self.common_args)
+            kwargs = {
+                **self.common_options,
+                'database': self.database,
+                'verbosity': 0,
+            }
+            call_command('migrate', *args, **kwargs)
 
     def read(self) -> dict:
         """Get saved state from the file."""
-        path = Path(self.file)
+        path = Path(self.filename)
         if not path.exists() and not path.is_file():
-            raise CommandError(f'No such file: {self.file}')
+            raise CommandError(f'No such file: {self.filename}')
 
-        with open(self.file) as file:
+        with open(self.filename) as file:
             data = json.load(file)
 
         data.pop('saved_at')
@@ -70,5 +86,5 @@ class Command(BaseCommand):
             saved = {}
 
         saved.update(data, saved_at=str(timezone.now()))
-        with open(self.file, 'w') as file:
+        with open(self.filename, 'w') as file:
             json.dump(saved, file, indent=2, sort_keys=True)
