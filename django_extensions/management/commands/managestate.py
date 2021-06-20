@@ -18,7 +18,7 @@ DEFAULT_STATE = 'default'
 class Command(BaseCommand):
     help = 'Manage database state in the convenient way.'
     migrate_args = migrate_options = None
-    database = filename = None
+    conn = database = filename = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -78,54 +78,46 @@ class Command(BaseCommand):
         self.migrate_args = args
         self.migrate_options = options
         self.database = database
+        self.conn = connections[database]
         self.filename = filename
         getattr(self, action)(state)
 
     def dump(self, state: str):
-        """Save applied migrations to the file"""
-        conn = connections[self.database]
-        applied_migrations = MigrationRecorder(conn).applied_migrations()
-        data = {state: dict(applied_migrations.keys())}
-        self.write(data)
+        """Save applied migrations to the file."""
+        migrated_apps = dict.fromkeys(self.get_migrated_apps(), 'zero')
+        migrated_apps.update(self.get_applied_migrations())
+        self.write({state: migrated_apps})
 
     def load(self, state: str):
-        """Apply migrations from the file"""
+        """Apply migrations from the file."""
         migrations = self.read().get(state)
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
 
-        migrated_apps = self.get_migrated_apps()
+        kwargs = {**self.migrate_options, 'database': self.database}
 
         for app, migration in migrations.items():
-            migrated_apps.remove(app)
-            self.apply(app, migration)
-
-        for app in migrated_apps:
-            self.apply(app, 'zero')
+            args = (app, migration, *self.migrate_args)
+            call_command('migrate', *args, **kwargs)
 
     def get_migrated_apps(self):
-        """Get installed apps having migrations"""
-        conn = connections[self.database]
-        loader = MigrationLoader(conn)
+        """Get installed apps having migrations."""
+        loader = MigrationLoader(self.conn)
         return loader.migrated_apps
 
-    def apply(self, app: str, migration: str):
-        """Apply a migration"""
-        args = (app, migration, *self.migrate_args)
-        kwargs = {**self.migrate_options, 'database': self.database}
-        call_command('migrate', *args, **kwargs)
+    def get_applied_migrations(self):
+        """Get installed apps with last applied migrations."""
+        recorder = MigrationRecorder(self.conn)
+        return dict(recorder.applied_migrations().keys())
 
     def read(self) -> dict:
         """Get saved state from the file."""
         path = Path(self.filename)
-        if not path.exists() and not path.is_file():
+        if not path.exists() or not path.is_file():
             raise CommandError(f'No such file: {self.filename}')
 
         with open(self.filename) as file:
-            data = json.load(file)
-
-        data.pop('updated_at')
-        return data
+            return json.load(file)
 
     def write(self, data: dict):
         """Write new data to the file using existent one."""
