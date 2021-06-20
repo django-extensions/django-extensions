@@ -1,5 +1,4 @@
 import json
-from logging import getLogger
 from pathlib import Path
 
 from django.core.management import call_command
@@ -9,16 +8,14 @@ from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.utils import timezone
 
-logger = getLogger(__name__)
-
 DEFAULT_FILENAME = 'managestate.json'
 DEFAULT_STATE = 'default'
 
 
 class Command(BaseCommand):
     help = 'Manage database state in the convenient way.'
+    conn = database = filename = verbosity = None
     migrate_args = migrate_options = None
-    conn = database = filename = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -28,16 +25,16 @@ class Command(BaseCommand):
                  'Load action applies migrations specified in a file.',
         )
         parser.add_argument(
+            'state', nargs='?', default=DEFAULT_STATE,
+            help=f'A name of a state. Usually a name of a git branch. Defaults to "{DEFAULT_STATE}"',
+        )
+        parser.add_argument(
             '-d', '--database', default=DEFAULT_DB_ALIAS,
             help=f'Nominates a database to synchronize. Defaults to the "{DEFAULT_DB_ALIAS}" database.',
         )
         parser.add_argument(
             '-f', '--filename', default=DEFAULT_FILENAME,
             help=f'A file to write to. Defaults to "{DEFAULT_FILENAME}"',
-        )
-        parser.add_argument(
-            '-s', '--state', default=DEFAULT_STATE,
-            help=f'A name of a state. Usually a name of a git branch. Defaults to "{DEFAULT_STATE}"',
         )
 
         # migrate command arguments
@@ -77,8 +74,9 @@ class Command(BaseCommand):
     def handle(self, action, database, filename, state, *args, **options):
         self.migrate_args = args
         self.migrate_options = options
-        self.database = database
+        self.verbosity = options['verbosity']
         self.conn = connections[database]
+        self.database = database
         self.filename = filename
         getattr(self, action)(state)
 
@@ -87,6 +85,9 @@ class Command(BaseCommand):
         migrated_apps = dict.fromkeys(self.get_migrated_apps(), 'zero')
         migrated_apps.update(self.get_applied_migrations())
         self.write({state: migrated_apps})
+        self.stdout.write(self.style.SUCCESS(
+            f'Migrations for state "{state}" has been successfully saved to {self.filename}.'
+        ))
 
     def load(self, state: str):
         """Apply migrations from the file."""
@@ -94,18 +95,30 @@ class Command(BaseCommand):
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
 
-        kwargs = {**self.migrate_options, 'database': self.database}
+        kwargs = {
+            **self.migrate_options,
+            'database': self.database,
+            'verbosity': self.verbosity - 1 if self.verbosity > 1 else 0
+        }
 
         for app, migration in migrations.items():
+            if self.verbosity:
+                self.stdout.write(self.style.WARNING(f'Applying migrations for "{app}"'))
             args = (app, migration, *self.migrate_args)
             call_command('migrate', *args, **kwargs)
 
-    def get_migrated_apps(self):
-        """Get installed apps having migrations."""
-        loader = MigrationLoader(self.conn)
-        return loader.migrated_apps
+        self.stdout.write(self.style.SUCCESS(
+            f'Migrations for "{state}" has been successfully applied.'
+        ))
 
-    def get_applied_migrations(self):
+    def get_migrated_apps(self) -> dict:
+        """Get installed apps having migrations."""
+        apps = MigrationLoader(self.conn).migrated_apps
+        if self.verbosity:
+            self.stdout.write('Apps having migrations: ' + ', '.join(sorted(apps)))
+        return apps
+
+    def get_applied_migrations(self) -> dict:
         """Get installed apps with last applied migrations."""
         recorder = MigrationRecorder(self.conn)
         return dict(recorder.applied_migrations().keys())
