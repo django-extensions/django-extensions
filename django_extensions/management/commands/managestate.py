@@ -5,6 +5,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
+from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.utils import timezone
 
@@ -93,10 +94,26 @@ class Command(BaseCommand):
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
 
+        migrated_apps = self.get_migrated_apps()
+
         for app, migration in migrations.items():
-            args = (app, migration, *self.migrate_args)
-            kwargs = {**self.migrate_options, 'database': self.database}
-            call_command('migrate', *args, **kwargs)
+            migrated_apps.remove(app)
+            self.apply(app, migration)
+
+        for app in migrated_apps:
+            self.apply(app, 'zero')
+
+    def get_migrated_apps(self):
+        """Get installed apps having migrations"""
+        conn = connections[self.database]
+        loader = MigrationLoader(conn)
+        return loader.migrated_apps
+
+    def apply(self, app: str, migration: str):
+        """Apply a migration"""
+        args = (app, migration, *self.migrate_args)
+        kwargs = {**self.migrate_options, 'database': self.database}
+        call_command('migrate', *args, **kwargs)
 
     def read(self) -> dict:
         """Get saved state from the file."""
