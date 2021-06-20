@@ -61,9 +61,26 @@ class TestManageState:
         call_command(COMMAND, 'dump', state)
         with open(DEFAULT_FILE) as file:
             data = json.load(file)
+        assert isinstance(data, dict)
         assert data.get(state) is not None
 
     def test_load(self, make_dump, capsys):
         call_command(COMMAND, 'load', '-v', 0)
+        stdout, _ = capsys.readouterr()
+        assert 'successfully applied' in stdout
+
+    @pytest.mark.parametrize('filename', [DEFAULT_FILENAME, 'custom_f1l3n4m3.json'])
+    def test_load_files(self, request, capsys, filename):
+        request.addfinalizer(Path(filename).unlink)
+        call_command(COMMAND, 'dump', '-f', filename)
+        call_command(COMMAND, 'load', '-f', filename)
+        stdout, _ = capsys.readouterr()
+        assert 'successfully applied' in stdout
+
+    @pytest.mark.parametrize('state', [DEFAULT_STATE, 'custom_state'])
+    def test_load_states(self, request, capsys, state):
+        request.addfinalizer(DEFAULT_FILE.unlink)
+        call_command(COMMAND, 'dump', state)
+        call_command(COMMAND, 'load', state)
         stdout, _ = capsys.readouterr()
         assert 'successfully applied' in stdout
