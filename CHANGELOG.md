@@ -1,6 +1,15 @@
 Changelog
 =========
 
+3.1.4
+-----
+
+Changes:
+ - Fix: set_default_site, improve django.contrib.sites application detection
+ - Improvements: documentation, Fix name of mixin in docs
+ - Improvements: mypy, type ignore backwards compatible imports
+
+
 3.1.3
 -----
 
