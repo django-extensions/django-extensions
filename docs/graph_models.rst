@@ -133,6 +133,12 @@ image by using the *graph_models* command::
   # Create a graph with 'normal' arrow shape for relations
   $ ./manage.py graph_models -a --arrow-shape normal -o my_project_sans_foo_bar.png
 
+::
+
+  # Create a graph with different layout direction,
+  # supported directions: "TB", "LR", "BT", "RL"
+  $ ./manage.py graph_models -a --rankdir BT -o my_project_sans_foo_bar.png
+
 
 
 .. _GraphViz: http://www.graphviz.org/

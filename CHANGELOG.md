@@ -8,6 +8,7 @@ Changes:
  - Fix: set_default_site, improve django.contrib.sites application detection
  - Improvements: documentation, Fix name of mixin in docs
  - Improvements: mypy, type ignore backwards compatible imports
+ - Improvement: graph_models, add --rankdir to change graph direction
 
 
 3.1.3
