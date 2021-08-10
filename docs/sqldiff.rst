@@ -42,3 +42,8 @@ Example Usage
 
   # View SQL differences for all installed applications using text instead of SQL
   $ ./manage.py sqldiff -a -t
+
+::
+
+  # View SQL differences with specified database alias
+  $ ./manage.py sqldiff -D {database_alias}

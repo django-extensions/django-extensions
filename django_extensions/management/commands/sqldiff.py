@@ -29,7 +29,7 @@ from django.apps import apps
 from django.core.management import BaseCommand, CommandError
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
-from django.db import connection, transaction, models
+from django.db import connection, connections, transaction, models
 from django.db.models.fields import AutoField, IntegerField
 from django.db.models.options import normalize_together
 
@@ -197,6 +197,7 @@ class SQLDiff:
         self.app_models = app_models
         self.options = options
         self.dense = options['dense_output']
+        self.database_alias = options['database_alias']
         self.stdout = stdout
         self.stderr = stderr
 
@@ -227,7 +228,7 @@ class SQLDiff:
         }
 
     def load(self):
-        self.cursor = connection.cursor()
+        self.cursor = connections[self.database_alias].cursor()
         self.django_tables = self.introspection.django_table_names(only_existing=self.options['only_existing'])
         # TODO: We are losing information about tables which are views here
         self.db_tables = [table_info.name for table_info in self.introspection.get_table_list(self.cursor)]
@@ -1251,6 +1252,7 @@ DATABASE_SQLDIFF_CLASSES = {
     'postgis': PostgresqlSQLDiff,
     'postgresql_psycopg2': PostgresqlSQLDiff,
     'postgresql': PostgresqlSQLDiff,
+    'psqlextra.backend': PostgresqlSQLDiff,
     'mysql': MySQLDiff,
     'sqlite3': SqliteSQLDiff,
     'oracle': GenericSQLDiff
@@ -1288,6 +1290,11 @@ to check/debug ur models compared to the real database tables and columns."""
             help="Shows the output in dense format, normally output is spreaded over multiple lines."
         )
         parser.add_argument(
+            '--database-alias', '-D', type=str, dest='database_alias',
+            default='default',
+            help="Specify the database for analysis."
+        )
+        parser.add_argument(
             '--output_text', '-t', action='store_false', dest='sql',
             default=True,
             help="Outputs the differences as descriptive text instead of SQL"
@@ -1317,9 +1324,10 @@ to check/debug ur models compared to the real database tables and columns."""
         from django.conf import settings
 
         app_labels = options['app_label']
+        database_alias = options['database_alias']
         engine = None
         if hasattr(settings, 'DATABASES'):
-            engine = settings.DATABASES['default']['ENGINE']
+            engine = settings.DATABASES[database_alias]['ENGINE']
         else:
             engine = settings.DATABASE_ENGINE
 
