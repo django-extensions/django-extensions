@@ -16,6 +16,7 @@ class Command(BaseCommand):
     help = 'Manage database state in the convenient way.'
     conn = database = filename = verbosity = None
     migrate_args = migrate_options = None
+    _applied_migrations = None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -81,16 +82,16 @@ class Command(BaseCommand):
         getattr(self, action)(state)
 
     def dump(self, state: str):
-        """Save applied migrations to the file."""
-        migrated_apps = dict.fromkeys(self.get_migrated_apps(), 'zero')
+        """Save applied migrations to a file."""
+        migrated_apps = self.get_migrated_apps()
         migrated_apps.update(self.get_applied_migrations())
         self.write({state: migrated_apps})
         self.stdout.write(self.style.SUCCESS(
-            f'Migrations for state "{state}" has been successfully saved to {self.filename}.'
+            f'Migrations for state "{state}" have been successfully saved to {self.filename}.'
         ))
 
     def load(self, state: str):
-        """Apply migrations from the file."""
+        """Apply migrations from a file."""
         migrations = self.read().get(state)
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
@@ -102,26 +103,45 @@ class Command(BaseCommand):
         }
 
         for app, migration in migrations.items():
+            if self.is_applied(app, migration):
+                continue
+
             if self.verbosity:
                 self.stdout.write(self.style.WARNING(f'Applying migrations for "{app}"'))
             args = (app, migration, *self.migrate_args)
             call_command('migrate', *args, **kwargs)
 
         self.stdout.write(self.style.SUCCESS(
-            f'Migrations for "{state}" has been successfully applied.'
+            f'Migrations for "{state}" have been successfully applied.'
         ))
 
     def get_migrated_apps(self) -> dict:
-        """Get installed apps having migrations."""
+        """Installed apps having migrations."""
         apps = MigrationLoader(self.conn).migrated_apps
+        migrated_apps = dict.fromkeys(apps, 'zero')
         if self.verbosity:
-            self.stdout.write('Apps having migrations: ' + ', '.join(sorted(apps)))
-        return apps
+            self.stdout.write('Apps having migrations: ' + ', '.join(sorted(migrated_apps)))
+        return migrated_apps
 
     def get_applied_migrations(self) -> dict:
-        """Get installed apps with last applied migrations."""
-        recorder = MigrationRecorder(self.conn)
-        return dict(recorder.applied_migrations().keys())
+        """Installed apps with last applied migrations."""
+        if self._applied_migrations:
+            return self._applied_migrations
+
+        migrations = MigrationRecorder(self.conn).applied_migrations()
+        self._applied_migrations = dict(migrations.keys())
+        return self._applied_migrations
+
+    def is_applied(self, app: str, migration: str) -> bool:
+        """Check whether a migration for an app is applied or not."""
+        applied = self.get_applied_migrations().get(app)
+        if applied == migration:
+            if self.verbosity:
+                self.stdout.write(self.style.WARNING(
+                    f'Migrations for "{app}" are already applied.'
+                ))
+            return True
+        return False
 
     def read(self) -> dict:
         """Get saved state from the file."""

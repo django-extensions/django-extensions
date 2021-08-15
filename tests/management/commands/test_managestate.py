@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 from django.core.management import CommandError, call_command
+
 from django_extensions.management.commands.managestate import DEFAULT_FILENAME, DEFAULT_STATE
 
 pytestmark = [pytest.mark.django_db]
