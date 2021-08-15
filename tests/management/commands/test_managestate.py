@@ -34,7 +34,8 @@ class TestManageStateExceptions:
         with pytest.raises(CommandError), TemporaryDirectory() as tmp_dir:
             call_command(COMMAND, 'load', '-f', tmp_dir)
 
-    def test_no_such_state(self, make_dump):
+    @pytest.mark.usefixtures('make_dump')
+    def test_no_such_state(self):
         with pytest.raises(CommandError):
             call_command(COMMAND, 'load', 'non_existent_state')
 
@@ -50,14 +51,14 @@ class TestManageState:
         assert 'successfully saved' in stdout
 
     @pytest.mark.parametrize('filename', [DEFAULT_FILENAME, 'custom_f1l3n4m3.json'])
-    def test_dump_files(self, request, capsys, filename):
+    def test_dump_files(self, request, filename):
         path = Path(filename)
         request.addfinalizer(path.unlink)
         call_command(COMMAND, 'dump', '-f', filename)
         assert path.exists()
 
     @pytest.mark.parametrize('state', [DEFAULT_STATE, 'custom_state'])
-    def test_dump_states(self, request, capsys, state):
+    def test_dump_states(self, request, state):
         request.addfinalizer(DEFAULT_FILE.unlink)
         call_command(COMMAND, 'dump', state)
         with open(DEFAULT_FILE) as file:
@@ -65,7 +66,8 @@ class TestManageState:
         assert isinstance(data, dict)
         assert data.get(state) is not None
 
-    def test_load(self, make_dump, capsys):
+    @pytest.mark.usefixtures('make_dump')
+    def test_load(self, capsys):
         call_command(COMMAND, 'load', '-v', 0)
         stdout, _ = capsys.readouterr()
         assert 'successfully applied' in stdout

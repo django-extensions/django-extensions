@@ -1,15 +1,19 @@
 import json
+from operator import itemgetter
 from pathlib import Path
 
+from django import get_version
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.utils import timezone
+from django.utils.version import get_version_tuple
 
 DEFAULT_FILENAME = 'managestate.json'
 DEFAULT_STATE = 'default'
+VERSION = get_version_tuple(get_version())
 
 
 class Command(BaseCommand):
@@ -96,6 +100,9 @@ class Command(BaseCommand):
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
 
+        if VERSION < (3, 0):
+            self.migrate_options.pop('check_unapplied', None)
+
         kwargs = {
             **self.migrate_options,
             'database': self.database,
@@ -106,7 +113,7 @@ class Command(BaseCommand):
             if self.is_applied(app, migration):
                 continue
 
-            if self.verbosity:
+            if self.verbosity > 1:
                 self.stdout.write(self.style.WARNING(f'Applying migrations for "{app}"'))
             args = (app, migration, *self.migrate_args)
             call_command('migrate', *args, **kwargs)
@@ -119,7 +126,7 @@ class Command(BaseCommand):
         """Installed apps having migrations."""
         apps = MigrationLoader(self.conn).migrated_apps
         migrated_apps = dict.fromkeys(apps, 'zero')
-        if self.verbosity:
+        if self.verbosity > 1:
             self.stdout.write('Apps having migrations: ' + ', '.join(sorted(migrated_apps)))
         return migrated_apps
 
@@ -129,14 +136,17 @@ class Command(BaseCommand):
             return self._applied_migrations
 
         migrations = MigrationRecorder(self.conn).applied_migrations()
-        self._applied_migrations = dict(migrations.keys())
+        migrations = migrations if VERSION < (3, 0) else migrations.keys()
+        last_applied = sorted(migrations, key=itemgetter(1))
+
+        self._applied_migrations = dict(last_applied)
         return self._applied_migrations
 
     def is_applied(self, app: str, migration: str) -> bool:
         """Check whether a migration for an app is applied or not."""
         applied = self.get_applied_migrations().get(app)
         if applied == migration:
-            if self.verbosity:
+            if self.verbosity > 1:
                 self.stdout.write(self.style.WARNING(
                     f'Migrations for "{app}" are already applied.'
                 ))
