@@ -4,8 +4,10 @@ from tempfile import TemporaryDirectory
 
 import pytest
 from django.core.management import CommandError, call_command
+from django.db import connection
+from django.db.migrations.recorder import MigrationRecorder
 
-from django_extensions.management.commands.managestate import DEFAULT_FILENAME, DEFAULT_STATE
+from django_extensions.management.commands.managestate import DEFAULT_FILENAME, DEFAULT_STATE, Command
 
 pytestmark = [pytest.mark.django_db]
 
@@ -17,6 +19,16 @@ DEFAULT_FILE = Path(DEFAULT_FILENAME)
 def make_dump(request):
     request.addfinalizer(DEFAULT_FILE.unlink)
     return call_command(COMMAND, 'dump', '-v', 0)
+
+
+@pytest.fixture
+def cmd_data():
+    cmd = Command()
+    cmd.verbosity = 0
+    cmd.conn = connection
+    data = cmd.get_migrated_apps()
+    data.update(cmd.get_applied_migrations())
+    return data
 
 
 class TestManageStateExceptions:
@@ -87,3 +99,9 @@ class TestManageState:
         call_command(COMMAND, 'load', state)
         stdout, _ = capsys.readouterr()
         assert 'successfully applied' in stdout
+
+    def test_migration_is_last_applied(self, cmd_data):
+        migrations = MigrationRecorder(connection).applied_migrations()
+        for app, migration in cmd_data.items():
+            last_migration = sorted(filter(lambda x: x[0] == app, migrations))[-1][1]
+            assert migration == last_migration
