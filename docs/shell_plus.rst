@@ -449,4 +449,3 @@ You can also set the configuration option SHELL_PLUS_PRINT_SQL_TRUNCATE to omit 
 
   # print SQL queries in shell_plus
   SHELL_PLUS_PRINT_SQL_TRUNCATE = None
-

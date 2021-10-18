@@ -16,7 +16,8 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
     if not print_sql:
         yield
     else:
-        truncate = truncate or getattr(settings, '%s_PRINT_SQL_TRUNCATE' % confprefix, DEFAULT_PRINT_SQL_TRUNCATE_CHARS)
+        if truncate is None:
+            truncate = getattr(settings, '%s_PRINT_SQL_TRUNCATE' % confprefix, DEFAULT_PRINT_SQL_TRUNCATE_CHARS)
 
         # Code orginally from http://gist.github.com/118990
         sqlparse = None
