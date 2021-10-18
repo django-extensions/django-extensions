@@ -150,6 +150,8 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
+        parser.add_argument('--truncate-sql', action='store', type=int,
+                            help="Truncate SQL queries to a number of characters.")
         parser.add_argument('--print-sql-location', action='store_true', default=False,
                             help="Show location in code where SQL query generated from")
         cert_group = parser.add_mutually_exclusive_group()
@@ -286,7 +288,9 @@ class Command(BaseCommand):
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
             self._raw_ipv6 = True
 
-        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], logger=logger.info, confprefix="RUNSERVER_PLUS"):
+        truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
+
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], truncate=truncate, logger=logger.info, confprefix="RUNSERVER_PLUS"):
             self.inner_run(options)
 
     def get_handler(self, *args, **options):

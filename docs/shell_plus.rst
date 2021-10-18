@@ -436,3 +436,16 @@ You can also set the configuration option SHELL_PLUS_PRINT_SQL to omit the above
 
   # print SQL queries in shell_plus
   SHELL_PLUS_PRINT_SQL = True
+
+Printing SQL queries also comes with the possibility of specifying the maximum amount of characters to display:
+
+  $ ./manage.py shell_plus --print-sql --truncate-sql
+
+`--truncate-sql` accepts an int value starting from 0 (which disables truncation). Defaults to 1000.
+
+You can also set the configuration option SHELL_PLUS_PRINT_SQL_TRUNCATE to omit the above command line option.
+
+::
+
+  # print SQL queries in shell_plus
+  SHELL_PLUS_PRINT_SQL_TRUNCATE = None
