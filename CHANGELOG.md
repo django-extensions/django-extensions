@@ -6,9 +6,11 @@ Changelog
 
 Changes:
  - Fix: set_default_site, improve django.contrib.sites application detection
- - Improvements: documentation, Fix name of mixin in docs
- - Improvements: mypy, type ignore backwards compatible imports
+ - Improvement: documentation, Fix name of mixin in docs
+ - Improvement: mypy, type ignore backwards compatible imports
  - Improvement: graph_models, add --rankdir to change graph direction
+ - Improvement: runserver_plus, Add --sql-truncate cli modifier
+ - Improvement: shell_plus, Add --sql-truncate cli modifier
 
 
 3.1.3
