@@ -25,7 +25,7 @@ try:
         from pip._internal.download import PipSession  # type:ignore
     from pip._internal.req.req_file import parse_requirements
     try:
-        from pip._internal.utils.misc import get_installed_distributions
+        from pip._internal.utils.misc import get_installed_distributions  # type:ignore
     except ImportError:
         from typing import cast
 
