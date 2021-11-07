@@ -180,6 +180,7 @@ class Command(BaseCommand):
                     try:
                         available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
                         retry = False
+                        sleep(1)  # crude way slow down to avoid HTTPTooManyRequests
                     except Fault as err:
                         self.stdout.write(err.faultString)
                         self.stdout.write("Retrying in 60 seconds!")
