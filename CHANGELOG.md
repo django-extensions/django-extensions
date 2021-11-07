@@ -1,6 +1,9 @@
 Changelog
 =========
 
+See https://github.com/django-extensions/django-extensions/releases
+
+
 3.1.4
 -----
 
