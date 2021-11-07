@@ -24,7 +24,35 @@ try:
     except ImportError:
         from pip._internal.download import PipSession  # type:ignore
     from pip._internal.req.req_file import parse_requirements
-    from pip._internal.utils.misc import get_installed_distributions
+    try:
+        from pip._internal.utils.misc import get_installed_distributions
+    except ImportError:
+        from typing import cast
+
+        def get_installed_distributions(
+            local_only=True,
+            include_editables=True,
+            editables_only=False,
+            user_only=False,
+            paths=None,
+        ):
+            """Return a list of installed Distribution objects.
+            Left for compatibility until direct pkg_resources uses are refactored out.
+            """
+            from pip._internal.metadata import get_default_environment, get_environment
+            from pip._internal.metadata.pkg_resources import Distribution as _Dist
+
+            if paths is None:
+                env = get_default_environment()
+            else:
+                env = get_environment(paths)
+            dists = env.iter_installed_distributions(
+                local_only=local_only,
+                include_editables=include_editables,
+                editables_only=editables_only,
+                user_only=user_only,
+            )
+            return [cast(_Dist, dist)._dist for dist in dists]
 except ImportError:
     # pip < 10
     try:
