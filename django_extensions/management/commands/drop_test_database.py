@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--noinput', action='store_false', dest='interactive',
+            '--noinput', '--no-input', action='store_false', dest='interactive',
             default=True, help='Tells Django to NOT prompt the user for input of any kind.'
         )
         parser.add_argument(
