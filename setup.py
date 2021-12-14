@@ -132,4 +132,10 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
     ],
+    project_urls={
+        "Documentation": "https://django-extensions.readthedocs.io/",
+        "Changelog": "https://github.com/django-extensions/django-extensions/blob/main/CHANGELOG.md",
+        "Source": "https://github.com/django-extensions/django-extensions",
+        "Tracker": "https://github.com/django-extensions/django-extensions/issues",
+    },
 )
