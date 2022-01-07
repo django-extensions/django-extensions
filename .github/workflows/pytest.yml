@@ -25,6 +25,7 @@ jobs:
           - "30"
           - "31"
           - "32"
+          - "40"
           # GH Actions don't support something like allow-failure ?
           # - "master"
     steps:
