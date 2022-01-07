@@ -58,7 +58,7 @@ class ShowUrlsTests(TestCase):
         lines = m_stdout.getvalue().splitlines()
         self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[0])
         self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
-        
+
         if VERSION >= (4, 0):
             self.assertIn('/class/based/\ttests.management.commands.test_show_urls.view\tclass-based-view', lines[2])
         else:
@@ -129,11 +129,11 @@ class ShowUrlsTests(TestCase):
         call_command('show_urls', '--format=aligned')
 
         lines = m_stdout.getvalue().splitlines()
-        
+
         if VERSION >= (4, 0):
-            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.view                  class-based-view      ', lines[0])  
-        else: 
-            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ', lines[0])  
+            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.view                  class-based-view      ', lines[0])
+        else:
+            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ', lines[0])
 
         self.assertEqual('/function/based/   tests.management.commands.test_show_urls.function_based_view   function-based-view   ', lines[1])
         self.assertEqual('/lambda/view       tests.management.commands.test_show_urls.<lambda>                                    ', lines[2])
@@ -148,6 +148,6 @@ class ShowUrlsTests(TestCase):
             self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.view\tclass-based-view', lines[0])
         else:
             self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
-        
+
         self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
         self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])

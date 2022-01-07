@@ -37,7 +37,7 @@ jobs:
       - run: python -m pip install tox
       - name: Pytest
         run: tox -e py-dj${{ matrix.tox-django-version }}
-        
+
   pytest-dj4:
     runs-on: ubuntu-latest
     strategy:
