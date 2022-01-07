@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from io import StringIO
 
-from django.urls import re_path
+from django.urls import path
 from django.core.management import CommandError, call_command
 from django.http import HttpResponse
 from django.test import TestCase
@@ -21,9 +21,9 @@ class ClassView(View):
 
 
 urlpatterns = [
-    re_path(r'lambda/view', lambda request: HttpResponse('OK')),
-    re_path(r'function/based/', function_based_view, name='function-based-view'),
-    re_path(r'class/based/', ClassView.as_view(), name='class-based-view'),
+    path('lambda/view', lambda request: HttpResponse('OK')),
+    path('function/based/', function_based_view, name='function-based-view'),
+    path('class/based/', ClassView.as_view(), name='class-based-view'),
 ]
 
 
