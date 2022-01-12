@@ -260,6 +260,18 @@ If the PIN is entered too many times incorrectly the server needs to be restarte
 exploit the debugger. Never enable the debugger in production.**
 
 
+Using a static build command
+------------
+
+If you want to use a build server such as webpack or vite.js to compile static assets in the background while you develop
+You can pass ``--static-build`` to enable the server to run a background subprocess to watch and build your static assets.
+You can define the subprocess command to run with the argument ``--static-build-command``, which defaults to ``npm run dev``
+
+Additionally, by default the output of the build command will merge with the servers output, but you can pass the option ``--static-build-quiet``
+to silence the output.
+
+
+
 .. _gh625: https://github.com/django-extensions/django-extensions/issues/625
 .. _Werkzeug: http://werkzeug.pocoo.org/
 .. _Watchdog: https://pypi.python.org/pypi/watchdog
