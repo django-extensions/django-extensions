@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import subprocess
+import threading
 import re
 import socket
 import sys
@@ -15,7 +17,8 @@ from django.core.management.base import BaseCommand, CommandError, SystemCheckEr
 from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
-from django.utils.autoreload import get_reloader
+from django.utils.autoreload import get_reloader, DJANGO_AUTORELOAD_ENV
+
 from django.views import debug as django_views_debug
 
 try:
@@ -183,6 +186,13 @@ class Command(BaseCommand):
                                  "the Werkzeug server.")
         parser.add_argument("--nopin", dest="nopin", action="store_true", default=False,
                             help="Disable the PIN in werkzeug. USE IT WISELY!")
+        parser.add_argument("--static-build", dest="static_build", action="store_true", default=False,
+                            help="Run a static build command in another thread.",)
+        parser.add_argument("--static-build-command", dest="static_command", default="npm run dev",
+                            help="This static build command will be run in another thread.",)
+        parser.add_argument("--static-build-quiet", action="store_true", dest="static_quiet", default=False,
+                            help="Suppress the output of the webpack build command.",)
+
 
         if USE_STATICFILES:
             parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
@@ -293,6 +303,9 @@ class Command(BaseCommand):
         with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], truncate=truncate, logger=logger.info, confprefix="RUNSERVER_PLUS"):
             self.inner_run(options)
 
+
+
+
     def get_handler(self, *args, **options):
         """Return the default WSGI handler for the runner."""
         return get_internal_wsgi_application()
@@ -397,6 +410,22 @@ class Command(BaseCommand):
         # https://git.io/vVIgo
         if not use_reloader:
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+
+        if os.environ.get(DJANGO_AUTORELOAD_ENV) != "true" and \
+           os.environ.get('WERKZEUG_RUN_MAIN') != "true" and \
+           options['static_build']:
+            self.stdout.write("Starting static build thread.")
+            quiet = options["static_quiet"]
+            command = options["static_command"]
+            kwargs = {"shell": True}
+            if quiet:
+                # if --quiet, suppress command's output:
+                kwargs.update({"stdin": subprocess.PIPE, "stdout": subprocess.PIPE})
+            static_thread = threading.Thread(
+                target=subprocess.run, args=(command,), kwargs=kwargs
+            )
+            static_thread.start()
+
 
         # Don't run a second instance of the debugger / reloader
         # See also: https://github.com/django-extensions/django-extensions/issues/832
