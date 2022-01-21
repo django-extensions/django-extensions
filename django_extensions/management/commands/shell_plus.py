@@ -255,23 +255,19 @@ class Command(BaseCommand):
             ksm = app.kernel_spec_manager
             for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
                 roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-                success = False
+                
                 for root in roots:
                     kernel_dir = os.path.join(root, kid)
                     try:
                         if not os.path.exists(kernel_dir):
                             os.makedirs(kernel_dir)
-
                         with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
                             f.write(ks.to_json())
-
-                        success = True
                         break
                     except OSError:
                         continue
-
-                if not success:
-                    raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
+                else:
+                    raise CommandError('Could not write kernel %r in directories %r' % (kid, roots))
 
         app.start()
 
