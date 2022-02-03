@@ -28,7 +28,7 @@ Python::
 
   $ ./manage.py shell_plus --plain
 
-It is possible to directly add command line arguments to the underlying Python shell using `--`::
+It is possible to directly add command line arguments to the underlying Python shell using ``--``::
 
   $ ./manage.py shell_plus --ipython -- --profile=foo
 
