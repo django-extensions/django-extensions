@@ -18,10 +18,13 @@ $ source venv/bin/activate
 # install django-extensions in development mode
 (venv) $ pip install -e .
 # install dependencies
+# might need to replace DJango with 'Django<4' until issue #1695 is resolved.
 (venv) $ pip install Django -r requirements-dev.txt
 
 # for accessing the GUI portion of the test application
 (venv) $ export DJANGO_EXTENSIONS_DATABASE_NAME="db.sqlite3"    # you may change if you want to use any other database
+# run migrations
+(venv) $ python manage.py migrate
 # start the development server
 (venv) $ python manage.py runserver
 ```
