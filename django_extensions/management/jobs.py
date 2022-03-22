@@ -67,7 +67,7 @@ def my_import(name):
 
 def find_jobs(jobs_dir):
     try:
-        return [f[:-3] for f in os.listdir(jobs_dir) if not f.startswith('_') and f.endswith(".py")]
+        return sorted([f[:-3] for f in os.listdir(jobs_dir) if not f.startswith('_') and f.endswith(".py")])
     except OSError:
         return []
 
