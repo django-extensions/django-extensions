@@ -322,7 +322,7 @@ class Command(BaseCommand):
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
                 environ = super().make_environ()
-                if not options['keep_meta_shutdown_func']:
+                if environ.get('werkzeug.server.shutdown') and not options['keep_meta_shutdown_func']:
                     del environ['werkzeug.server.shutdown']
                 return environ
 
