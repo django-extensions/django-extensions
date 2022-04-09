@@ -80,7 +80,7 @@ def find_job_module(app_name: str, when: Optional[str] = None) -> str:
         parts.append(when)
     module_name = ".".join(parts)
     module = importlib.import_module(module_name)
-    return os.path.dirname(module.__file__)
+    return module.__path__[0]
 
 
 def import_job(app_name, name, when=None):
