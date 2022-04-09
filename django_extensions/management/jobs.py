@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-from imp import find_module
+import importlib
 from typing import Optional  # NOQA
 from django.apps import apps
 
@@ -72,17 +72,15 @@ def find_jobs(jobs_dir):
         return []
 
 
-def find_job_module(app_name, when=None):
+def find_job_module(app_name: str, when: Optional[str] = None) -> str:
+    """Find the directory path to a job module."""
     parts = app_name.split('.')
     parts.append('jobs')
     if when:
         parts.append(when)
-    parts.reverse()
-    path = None
-    while parts:
-        part = parts.pop()
-        f, path, descr = find_module(part, path and [path] or None)
-    return path
+    module_name = ".".join(parts)
+    module = importlib.import_module(module_name)
+    return os.path.dirname(module.__file__)
 
 
 def import_job(app_name, name, when=None):
