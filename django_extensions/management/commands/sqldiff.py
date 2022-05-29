@@ -30,6 +30,7 @@ from django.core.management import BaseCommand, CommandError
 from django.core.management.base import OutputWrapper
 from django.core.management.color import no_style
 from django.db import connection, transaction, models
+from django.db.models import UniqueConstraint
 from django.db.models.fields import AutoField, IntegerField
 from django.db.models.options import normalize_together
 
@@ -381,6 +382,23 @@ class SQLDiff:
             return field_type.split(" ")[0].split("(")[0].lower()
         return field_type
 
+    def get_index_together(self, meta):
+        indexes_normalized = list(normalize_together(meta.index_together))
+
+        for idx in meta.indexes:
+            indexes_normalized.append(idx.fields)
+
+        return self.expand_together(indexes_normalized, meta)
+
+    def get_unique_together(self, meta):
+        unique_normalized = list(normalize_together(meta.unique_together))
+
+        for constraint in meta.constraints:
+            if isinstance(constraint, UniqueConstraint):
+                unique_normalized.append(constraint.fields)
+
+        return self.expand_together(unique_normalized, meta)
+
     def expand_together(self, together, meta):
         new_together = []
         for fields in normalize_together(together):
@@ -411,7 +429,7 @@ class SQLDiff:
                 if db_type.startswith('text'):
                     self.add_difference('index-missing-in-db', table_name, [attname], index_name + '_like', ' text_pattern_ops')
 
-        unique_together = self.expand_together(meta.unique_together, meta)
+        unique_together = self.get_unique_together(meta)
         db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique'] and not v['index']])
 
         for unique_columns in unique_together:
@@ -427,7 +445,7 @@ class SQLDiff:
 
     def find_unique_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         fields = dict([(field.column, field) for field in all_local_fields(meta)])
-        unique_together = self.expand_together(meta.unique_together, meta)
+        unique_together = self.get_unique_together(meta)
 
         for constraint_name, constraint in table_constraints.items():
             if not constraint['unique']:
@@ -463,7 +481,7 @@ class SQLDiff:
                     if db_type.startswith('text'):
                         self.add_difference('index-missing-in-db', table_name, [attname], index_name + '_like', ' text_pattern_ops')
 
-        index_together = self.expand_together(meta.index_together, meta)
+        index_together = self.get_index_together(meta)
         db_index_together = normalize_together([v['columns'] for v in table_constraints.values() if v['index'] and not v['unique']])
         for columns in index_together:
             if columns in db_index_together:
@@ -478,7 +496,7 @@ class SQLDiff:
     def find_index_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         fields = dict([(field.column, field) for field in all_local_fields(meta)])
         meta_index_names = [idx.name for idx in meta.indexes]
-        index_together = self.expand_together(meta.index_together, meta)
+        index_together = self.get_index_together(meta)
 
         for constraint_name, constraint in table_constraints.items():
             if constraint_name in meta_index_names:
@@ -838,8 +856,8 @@ class MySQLDiff(SQLDiff):
     def find_index_missing_in_model(self, meta, table_indexes, table_constraints, table_name):
         fields = dict([(field.column, field) for field in all_local_fields(meta)])
         meta_index_names = [idx.name for idx in meta.indexes]
-        index_together = self.expand_together(meta.index_together, meta)
-        unique_together = self.expand_together(meta.unique_together, meta)
+        index_together = self.get_index_together(meta)
+        unique_together = self.get_unique_together(meta)
 
         for constraint_name, constraint in table_constraints.items():
             if constraint_name in meta_index_names:
@@ -904,7 +922,7 @@ class MySQLDiff(SQLDiff):
                 if db_type.startswith('text'):
                     self.add_difference('index-missing-in-db', table_name, [attname], index_name + '_like', ' text_pattern_ops')
 
-        unique_together = self.expand_together(meta.unique_together, meta)
+        unique_together = self.get_unique_together(meta)
 
         # This comparison changed from superclass - otherwise function is the same
         db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique']])
@@ -953,7 +971,7 @@ class SqliteSQLDiff(SQLDiff):
                 if column in unique_columns and (constraint['unique'] or constraint['primary_key']):
                     skip_list.append(column)
 
-        unique_together = self.expand_together(meta.unique_together, meta)
+        unique_together = self.get_unique_together(meta)
         db_unique_columns = normalize_together([v['columns'] for v in table_constraints.values() if v['unique']])
 
         for unique_columns in unique_together:

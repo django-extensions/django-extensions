@@ -9,6 +9,8 @@ from django.test import TestCase
 
 # from django.core.management import call_command
 from django_extensions.management.commands.sqldiff import SqliteSQLDiff, Command, MySQLDiff, PostgresqlSQLDiff
+from tests.testapp.models import PostWithUniqField, SluggedWithUniqueTogetherTestModel, \
+    RandomCharTestModelUniqueTogether, SqlDiffUniqueTogether, SqlDiff, SqlDiffIndexes
 
 
 class SqlDiffTests(TestCase):
@@ -52,6 +54,29 @@ class SqlDiffTests(TestCase):
         )
         expected_field_name = ['name', 'email', 'address']
         self.assertEqual(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
+
+    def test_get_index_together(self):
+        instance = MySQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+        self.assertEqual(instance.get_index_together(SqlDiff._meta), [('number', 'creator')])
+        self.assertEqual(instance.get_index_together(SqlDiffIndexes._meta), [('first', 'second')])
+
+    def test_get_unique_together(self):
+        instance = MySQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+        self.assertEqual(instance.get_unique_together(SluggedWithUniqueTogetherTestModel._meta), [('slug', 'category')])
+        self.assertEqual(instance.get_unique_together(RandomCharTestModelUniqueTogether._meta),
+                         [('random_char_field', 'common_field')])
+        self.assertEqual(instance.get_unique_together(SqlDiffUniqueTogether._meta), [('aaa', 'bbb')])
+        self.assertEqual(instance.get_unique_together(PostWithUniqField._meta), [('common_field', 'uniq_field')])
 
     @pytest.mark.skipif(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.mysql', reason="Test can only run on mysql")
     def test_mysql_to_dict(self):
