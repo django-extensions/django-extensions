@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import mock
+from unittest import mock
 import logging
 import importlib
 
