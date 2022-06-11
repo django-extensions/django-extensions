@@ -319,6 +319,9 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     include_punctuation
         If set to True, include punctuation characters (default: False)
+    
+    keep_default
+        If set to True, keeps the default initialization value (default: False)
     """
 
     def __init__(self, *args, **kwargs):
@@ -341,6 +344,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         self.include_alpha = kwargs.pop('include_alpha', True)
         self.check_is_bool('include_alpha')
         self.include_punctuation = kwargs.pop('include_punctuation', False)
+        self.keep_default = kwargs.pop('keep_default', False)
         self.check_is_bool('include_punctuation')
         self.max_unique_query_attempts = kwargs.pop('max_unique_query_attempts', MAX_UNIQUE_QUERY_ATTEMPTS)
 
@@ -362,7 +366,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
         return False
 
     def pre_save(self, model_instance, add):
-        if not add and getattr(model_instance, self.attname) != '':
+        if (not add or self.keep_default) and getattr(model_instance, self.attname) != '':
             return getattr(model_instance, self.attname)
 
         population = ''
