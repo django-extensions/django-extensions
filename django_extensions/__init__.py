@@ -20,10 +20,7 @@ def get_version(version):
 __version__ = get_version(VERSION)
 
 try:
-    import django
-
-    if django.VERSION < (3, 2):
-        default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
+    default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
 except ModuleNotFoundError:
     # this part is useful for allow setup.py to be used for version checks
     pass
