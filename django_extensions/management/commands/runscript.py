@@ -89,8 +89,6 @@ class Command(EmailNotificationCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        self.check()
-        self.check_migrations()
 
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
