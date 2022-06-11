@@ -68,7 +68,9 @@ Installing It
 =============
 
 To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects
-`settings.py` file::
+`settings.py` file:
+
+.. code-block:: python
 
     INSTALLED_APPS = (
         ...
