@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.core.exceptions import ValidationError
-from django.test import TestCase
+from unittest.mock import patch
 
-from django_extensions.validators import NoControlCharactersValidator, NoWhitespaceValidator
+from django.core.exceptions import ValidationError
+from django.test import TestCase, SimpleTestCase
+
+from django_extensions.validators import NoControlCharactersValidator, NoWhitespaceValidator, HexValidator
 
 
 class NoControlCharactersValidatorTests(TestCase):
@@ -70,5 +72,84 @@ class NoWhiteSpaceValidatorTests(TestCase):
         value_without_leading_or_trailing_whitespaces = 'test value'
 
         result = self.validator(value_without_leading_or_trailing_whitespaces)
+
+        self.assertIsNone(result)
+
+
+class TestHexValidator(SimpleTestCase):
+    def test_custom_message_and_code(self):
+        self.validator = HexValidator(message='message', code='code')
+
+        self.assertEqual(self.validator.message, 'message')
+        self.assertEqual(self.validator.code, 'code')
+
+    def test_equality_of_objs_with_obj_of_different_type(self):
+        self.assertNotEqual(TypeError(), HexValidator())
+
+    def test_equality_of_objs_with_different_code(self):
+        self.assertNotEqual(HexValidator(code='1'), HexValidator(code='a'))
+
+    def test_equality_of_objs_with_different_message(self):
+        self.assertNotEqual(HexValidator(code='code', message='a'), HexValidator(code='code', message='acb'))
+
+    def test_equality_of_objs_with_same_code_and_message(self):
+        self.assertEqual(HexValidator(code='c', message='m'), HexValidator(code='c', message='m'))
+
+    def test_fixed_length(self):
+        value = 'abcd'
+        self.validator = HexValidator(length=5)
+
+        with self.assertRaises(ValidationError) as err:
+            self.validator(value)
+
+        self.assertEqual(str(err.exception), "['Invalid length. Must be 5 characters.']")
+        self.assertEqual(err.exception.code, 'hex_only_length')
+
+    def test_min_length(self):
+        value = 'a'
+        self.validator = HexValidator(min_length=5)
+
+        with self.assertRaises(ValidationError) as err:
+            self.validator(value)
+
+        self.assertEqual(str(err.exception), "['Ensure that there are more than 5 characters.']")
+        self.assertEqual(err.exception.code, 'hex_only_min_length')
+
+    def test_with_max_length(self):
+        value = 'abcd'
+        self.validator = HexValidator(max_length=2)
+
+        with self.assertRaises(ValidationError) as err:
+            self.validator(value)
+
+        self.assertEqual(str(err.exception), "['Ensure that there are no more than 2 characters.']")
+        self.assertEqual(err.exception.code, 'hex_only_max_length')
+
+    def test_invalid_type(self):
+        value = 1
+        with patch('django_extensions.validators.force_str', return_value=1):
+            self.validator = HexValidator()
+
+            with self.assertRaises(ValidationError) as err:
+                self.validator(value)
+
+        self.assertEqual(str(err.exception), "['Only a hex string is allowed.']")
+        self.assertEqual(err.exception.code, 'hex_only')
+
+    def test_invalid_hex(self):
+        value = '1'
+        self.validator = HexValidator()
+
+        with self.assertRaises(ValidationError) as err:
+            self.validator(value)
+
+        self.assertEqual(str(err.exception), "['Only a hex string is allowed.']")
+        self.assertEqual(err.exception.code, 'hex_only')
+
+    def test_valid_hex(self):
+        value = 'b901ef'
+        self.validator = HexValidator()
+
+        result = self.validator(value)
 
         self.assertIsNone(result)
