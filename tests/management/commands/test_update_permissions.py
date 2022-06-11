@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import sys
+from io import StringIO
 
 from django.contrib.auth.models import Permission
 from django.core.management import call_command
 from django.db import models
 from django.test import TestCase
-from six import StringIO
 
 
 class UpdatePermissionsTests(TestCase):

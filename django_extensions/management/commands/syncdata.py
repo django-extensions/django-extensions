@@ -11,16 +11,19 @@ and anything extra will of been deleted.
 
 import os
 
-import six
 from django.apps import apps
 from django.conf import settings
 from django.core import serializers
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.template.defaultfilters import pluralize
 
 from django_extensions.management.utils import signalcommand
+
+
+def humanize(dirname):
+    return "'%s'" % dirname if dirname else 'absolute path'
 
 
 class SyncDataError(Exception):
@@ -40,6 +43,10 @@ class Command(BaseCommand):
             help='Avoid remove any object from db',
         )
         parser.add_argument(
+            '--remove-before', action='store_true', dest='remove_before', default=False,
+            help='Remove existing objects before inserting and updating new ones',
+        )
+        parser.add_argument(
             '--database', default=DEFAULT_DB_ALIAS,
             help='Nominates a specific database to load fixtures into. Defaults to the "default" database.',
         )
@@ -56,8 +63,8 @@ class Command(BaseCommand):
         """
         for class_ in objects_to_keep.keys():
             current = class_.objects.all()
-            current_ids = set([x.pk for x in current])
-            keep_ids = set([x.pk for x in objects_to_keep[class_]])
+            current_ids = set(x.pk for x in current)
+            keep_ids = set(x.pk for x in objects_to_keep[class_])
 
             remove_these_ones = current_ids.difference(keep_ids)
             if remove_these_ones:
@@ -65,14 +72,14 @@ class Command(BaseCommand):
                     if obj.pk in remove_these_ones:
                         obj.delete()
                         if verbosity >= 2:
-                            print("Deleted object: %s" % six.u(obj))
+                            print("Deleted object: %s" % str(obj))
 
             if verbosity > 0 and remove_these_ones:
                 num_deleted = len(remove_these_ones)
                 if num_deleted > 1:
-                    type_deleted = six.u(class_._meta.verbose_name_plural)
+                    type_deleted = str(class_._meta.verbose_name_plural)
                 else:
-                    type_deleted = six.u(class_._meta.verbose_name)
+                    type_deleted = str(class_._meta.verbose_name)
 
                 print("Deleted %s %s" % (str(num_deleted), type_deleted))
 
@@ -85,14 +92,14 @@ class Command(BaseCommand):
             with transaction.atomic():
                 self.syncdata(fixture_labels, options)
         except SyncDataError as exc:
-            print(self.style.ERROR(exc))
-
-        # Close the DB connection -- unless we're still in a transaction. This
-        # is required as a workaround for an edge case in MySQL: if the same
-        # connection is used to create tables, load data, and query, the query
-        # can return incorrect results. See Django #7572, MySQL #37735.
-        if transaction.get_autocommit(self.using):
-            connections[self.using].close()
+            raise CommandError(exc)
+        finally:
+            # Close the DB connection -- unless we're still in a transaction. This
+            # is required as a workaround for an edge case in MySQL: if the same
+            # connection is used to create tables, load data, and query, the query
+            # can return incorrect results. See Django #7572, MySQL #37735.
+            if transaction.get_autocommit(self.using):
+                connections[self.using].close()
 
     def syncdata(self, fixture_labels, options):
         verbosity = options['verbosity']
@@ -103,8 +110,6 @@ class Command(BaseCommand):
         object_count = 0
         objects_per_fixture = []
         models = set()
-
-        humanize = lambda dirname: dirname and "'%s'" % dirname or 'absolute path'
 
         # Get a cursor (even though we don't need one yet). This has
         # the side effect of initializing the test database (if
@@ -119,9 +124,9 @@ class Command(BaseCommand):
                 fixture_name = fixture_label
                 formats = serializers.get_public_serializer_formats()
             else:
-                fixture_name, format = '.'.join(parts[:-1]), parts[-1]
-                if format in serializers.get_public_serializer_formats():
-                    formats = [format]
+                fixture_name, format_ = '.'.join(parts[:-1]), parts[-1]
+                if format_ in serializers.get_public_serializer_formats():
+                    formats = [format_]
                 else:
                     formats = []
 
@@ -129,7 +134,7 @@ class Command(BaseCommand):
                 if verbosity > 1:
                     print("Loading '%s' fixtures..." % fixture_name)
             else:
-                raise SyncDataError("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format))
+                raise SyncDataError("Problem installing fixture '%s': %s is not a known serialization format." % (fixture_name, format_))
 
             if os.path.isabs(fixture_name):
                 fixture_dirs = [fixture_name]
@@ -141,11 +146,11 @@ class Command(BaseCommand):
                     print("Checking %s for fixtures..." % humanize(fixture_dir))
 
                 label_found = False
-                for format in formats:
+                for format_ in formats:
                     if verbosity > 1:
-                        print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format, fixture_name))
+                        print("Trying %s for %s fixture '%s'..." % (humanize(fixture_dir), format_, fixture_name))
                     try:
-                        full_path = os.path.join(fixture_dir, '.'.join([fixture_name, format]))
+                        full_path = os.path.join(fixture_dir, '.'.join([fixture_name, format_]))
                         fixture = open(full_path, 'r')
                         if label_found:
                             fixture.close()
@@ -154,23 +159,26 @@ class Command(BaseCommand):
                             fixture_count += 1
                             objects_per_fixture.append(0)
                             if verbosity > 0:
-                                print("Installing %s fixture '%s' from %s." % (format, fixture_name, humanize(fixture_dir)))
+                                print("Installing %s fixture '%s' from %s." % (format_, fixture_name, humanize(fixture_dir)))
                             try:
                                 objects_to_keep = {}
-                                objects = serializers.deserialize(format, fixture)
+                                objects = list(serializers.deserialize(format_, fixture))
                                 for obj in objects:
-                                    object_count += 1
-                                    objects_per_fixture[-1] += 1
-
                                     class_ = obj.object.__class__
                                     if class_ not in objects_to_keep:
                                         objects_to_keep[class_] = set()
                                     objects_to_keep[class_].add(obj.object)
 
-                                    models.add(class_)
+                                if options['remove'] and options['remove_before']:
+                                    self.remove_objects_not_in(objects_to_keep, verbosity)
+
+                                for obj in objects:
+                                    object_count += 1
+                                    objects_per_fixture[-1] += 1
+                                    models.add(obj.object.__class__)
                                     obj.save()
 
-                                if options['remove']:
+                                if options['remove'] and not options['remove_before']:
                                     self.remove_objects_not_in(objects_to_keep, verbosity)
 
                                 label_found = True
@@ -179,7 +187,6 @@ class Command(BaseCommand):
                             except Exception:
                                 import traceback
                                 fixture.close()
-                                transaction.rollback()
                                 if show_traceback:
                                     traceback.print_exc()
                                 raise SyncDataError("Problem installing fixture '%s': %s\n" % (full_path, traceback.format_exc()))
@@ -189,7 +196,7 @@ class Command(BaseCommand):
                         raise e
                     except Exception:
                         if verbosity > 1:
-                            print("No %s fixture '%s' in %s." % (format, fixture_name, humanize(fixture_dir)))
+                            print("No %s fixture '%s' in %s." % (format_, fixture_name, humanize(fixture_dir)))
 
         # If any of the fixtures we loaded contain 0 objects, assume that an
         # error was encountered during fixture loading.

@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import sys
 import importlib
 
+from io import StringIO
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 
-from django_extensions.management.commands.runscript import BadCustomDirectoryException, DirPolicyChoices
+from django_extensions.management.commands.runscript import Command, BadCustomDirectoryException, DirPolicyChoices
 
 
 class RunScriptTests(TestCase):
-
     def setUp(self):
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+
+    def get_command(self):
+        cmd = Command()
+        cmd.running_tests = True
+        return cmd
 
     def test_runs(self):
         # lame test...does it run?
@@ -34,66 +39,96 @@ class RunScriptTests(TestCase):
 
 class NonExistentScriptsTests(RunScriptTests):
     def test_prints_error_on_nonexistent_script(self):
-        call_command('runscript', 'non_existent_script', verbosity=2)
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'non_existent_script', verbosity=2)
         self.assertIn("No (valid) module for script 'non_existent_script' found", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_prints_nothing_for_nonexistent_script_when_silent(self):
-        call_command('runscript', 'non_existent_script', silent=True)
+        cmd = self.get_command()
+        call_command(cmd, 'non_existent_script', silent=True)
         self.assertEqual("", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_doesnt_print_exception_for_nonexistent_script_when_no_traceback(self):
-        call_command('runscript', 'non_existent_script', no_traceback=True)
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'non_existent_script', no_traceback=True)
         self.assertEqual("", sys.stderr.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
 
 class InvalidImportScriptsTests(RunScriptTests):
     def test_prints_additional_info_on_nonexistent_script_by_default(self):
-        call_command('runscript', 'non_existent_script')
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'non_existent_script')
         self.assertIn("No (valid) module for script 'non_existent_script' found", sys.stdout.getvalue())
         self.assertIn("Try running with a higher verbosity level like: -v2 or -v3", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_prints_import_error_on_script_with_invalid_imports_by_default(self):
-        call_command('runscript', 'invalid_import_script')
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'invalid_import_script')
         self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-        six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+        self.assertRegex(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_prints_import_error_on_script_with_invalid_imports_reliably(self):
+        cmd = self.get_command()
         if hasattr(importlib, 'util') and hasattr(importlib.util, 'find_spec'):
             with self.settings(BASE_DIR=os.path.dirname(os.path.abspath(__file__))):
-                call_command('runscript', 'invalid_import_script')
+                with self.assertRaises(CommandError):
+                    call_command(cmd, 'invalid_import_script')
                 self.assertIn("Cannot import module 'tests.testapp.scripts.invalid_import_script'", sys.stdout.getvalue())
-                six.assertRegex(self, sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+                self.assertRegex(sys.stdout.getvalue(), 'No module named (\')?(invalidpackage)\1?')
+                self.assertEqual(cmd.last_exit_code, 1)
 
 
 class InvalidScriptsTests(RunScriptTests):
     def test_raises_error_message_on_invalid_script_by_default(self):
+        cmd = self.get_command()
         with self.assertRaises(Exception):
-            call_command('runscript', 'error_script')
+            call_command(cmd, 'error_script')
         self.assertIn("Exception while running run() in", sys.stdout.getvalue())
 
     def test_prints_nothing_for_invalid_script_when_silent(self):
-        call_command('runscript', 'error_script', silent=True)
+        cmd = self.get_command()
+        call_command(cmd, 'error_script', silent=True)
+        self.assertEqual(cmd.last_exit_code, 1)
         self.assertEqual("", sys.stdout.getvalue())
 
     def test_doesnt_print_exception_for_nonexistent_script_when_no_traceback(self):
-        call_command('runscript', 'error_script', no_traceback=True)
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'error_script', no_traceback=True)
         self.assertEqual("", sys.stderr.getvalue())
         self.assertIn("Exception while running run() in", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
 
 class RunFunctionTests(RunScriptTests):
     def test_prints_error_message_for_script_without_run(self):
-        call_command('runscript', 'script_no_run_function')
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'script_no_run_function')
         self.assertIn("No (valid) module for script 'script_no_run_function' found", sys.stdout.getvalue())
         self.assertIn("Try running with a higher verbosity level like: -v2 or -v3", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_prints_additional_info_for_script__run_extra_verbosity(self):
-        call_command('runscript', 'script_no_run_function', verbosity=2)
+        cmd = self.get_command()
+        with self.assertRaises(CommandError):
+            call_command(cmd, 'script_no_run_function', verbosity=2)
         self.assertIn("No (valid) module for script 'script_no_run_function' found", sys.stdout.getvalue())
         self.assertIn("Found script", sys.stdout.getvalue())
+        self.assertEqual(cmd.last_exit_code, 1)
 
     def test_prints_nothing_for_script_without_run(self):
-        call_command('runscript', 'script_no_run_function', silent=True)
+        cmd = self.get_command()
+        call_command(cmd, 'script_no_run_function', silent=True)
         self.assertEqual("", sys.stdout.getvalue())
 
 
@@ -132,8 +167,7 @@ class ChangingDirectoryTests(RunScriptTests):
 
     def test_each_policy_command_run(self):
         os.chdir(os.path.join(project_path, 'tests'))
-        call_command('runscript', 'directory_checker_script', 'other_directory_checker_script',
-                     dir_policy=DirPolicyChoices.EACH)
+        call_command('runscript', 'directory_checker_script', 'other_directory_checker_script', dir_policy=DirPolicyChoices.EACH)
         output = sys.stdout.getvalue()
         first_output = output.split('Script called from: ')[1].split('Cannot import module ')[0]
         self.assertEqual(first_output, os.path.join(project_path, 'tests', 'testapp', 'scripts') + '\n')
@@ -167,8 +201,7 @@ class ChangingDirectoryTests(RunScriptTests):
 
     @override_settings(RUNSCRIPT_CHDIR='bad path')
     def test_custom_policy_django_settings_bad_path(self):
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             BadCustomDirectoryException,
             'bad path is not a directory! If --dir-policy is custom than you must set '
             'correct directory in --dir option or in settings.RUNSCRIPT_CHDIR'

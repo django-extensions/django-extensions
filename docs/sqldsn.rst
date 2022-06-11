@@ -16,10 +16,33 @@ Currently the following databases are supported:
 
 Patches to support other databases are welcome! :-)
 
+
+Supported Styles
+----------------
+
+Currently the following databases are supported:
+
++----------+------------+-------+---------+---------------------------+
+| Style    | PostgreSQL | MySQL | Sqlite3 | Description               |
++==========+============+=======+=========+===========================+
+| args     |            |   Y   |         | command-line arguments    |
++----------+------------+-------+---------+---------------------------+
+| filename |            |       |    Y    | filename                  |
++----------+------------+-------+---------+---------------------------+
+| keyvalue |      Y     |   Y   |         | key-value pairs (legacy)  |
++----------+------------+-------+---------+---------------------------+
+| kwargs   |      Y     |       |         | Python keyword arguments  |
++----------+------------+-------+---------+---------------------------+
+| pgpass   |      Y     |       |         | ``.pgpass`` format        |
++----------+------------+-------+---------+---------------------------+
+| uri      |      Y     |   Y   |    Y    | (See ``dj-database-url``) |
++----------+------------+-------+---------+---------------------------+
+
+
 Exit Codes
 ----------
 
-Exit status is 0
+Exit status is 0 unless invalid options were given.
 
 
 Example Usage
@@ -38,12 +61,17 @@ Example Usage
 ::
 
   # Print the DSN for database named 'slave'
-  $ ./manage.py sqldsn --router=slave
+  $ ./manage.py sqldsn --database=slave
 
 ::
 
   # Print all DSN styles available for the default database
   $ ./manage.py sqldsn --style=all
+
+::
+
+  # Print the URI for the default database
+  $ ./manage.py sqldsn -q --style=uri
 
 ::
 

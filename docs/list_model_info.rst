@@ -10,7 +10,7 @@ When working with large projects or when returning to a code base after some tim
 fields and methods associated with your models. This command makes it easy to see:
 
  * what fields are available
- * how they are refered to in queries
+ * how they are referred to in queries
  * each field's class
  * each field's representation in the database
  * what methods are available

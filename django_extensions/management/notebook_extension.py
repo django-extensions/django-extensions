@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 def load_ipython_extension(ipython):
     from django.core.management.color import no_style
     from django_extensions.management.shells import import_objects

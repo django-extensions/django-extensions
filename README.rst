@@ -5,9 +5,20 @@
 .. image:: https://img.shields.io/pypi/l/django-extensions.svg
    :target: https://raw.githubusercontent.com/django-extensions/django-extensions/master/LICENSE
 
-.. image:: https://secure.travis-ci.org/django-extensions/django-extensions.svg?branch=master
-    :alt: Build Status
-    :target: http://travis-ci.org/django-extensions/django-extensions
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/compile_catalog.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/linters.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/precommit.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/pytest.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
+
+.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/security.yml/badge.svg
+    :target: https://github.com/django-extensions/django-extensions/actions
 
 .. image:: https://img.shields.io/pypi/v/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
@@ -36,7 +47,7 @@ minutes Eric walks you through a half a dozen command extensions. There is also 
 Requirements
 ============
 
-Django Extensions requires Django 1.11 or later.
+Django Extensions requires Django 2.2 or later.
 
 
 Getting It
@@ -57,7 +68,9 @@ Installing It
 =============
 
 To enable `django_extensions` in your project you need to add it to `INSTALLED_APPS` in your projects
-`settings.py` file::
+`settings.py` file:
+
+.. code-block:: python
 
     INSTALLED_APPS = (
         ...
@@ -114,7 +127,7 @@ Or you can look at the docs/ directory in the repository.
 Support
 =======
 
-Django Extensions is free and always will be. It is development and maintained by developers in an Open Source manner.
+Django Extensions is free and always will be. It is developed and maintained by developers in an Open Source manner.
 Any support is welcome. You could help by writing documentation, pull-requests, report issues and/or translations.
 
 Please remember that nobody is paid directly to develop or maintain Django Extensions so we do have to divide our time

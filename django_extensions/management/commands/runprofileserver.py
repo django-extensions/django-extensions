@@ -23,7 +23,7 @@ from django_extensions.management.utils import signalcommand
 USE_STATICFILES = 'django.contrib.staticfiles' in settings.INSTALLED_APPS
 
 
-class KCacheGrind(object):
+class KCacheGrind:
     def __init__(self, profiler):
         self.data = profiler.getstats()
         self.out_file = None
@@ -247,11 +247,9 @@ class Command(BaseCommand):
                         os.rename(profname, profname2)
                 return handler
 
-            print("Validating models...")
-            if hasattr(self, 'check'):
-                self.check(display_num_errors=True)
-            else:
-                self.validate(display_num_errors=True)
+            print("Performing system checks...")
+            self.check(display_num_errors=True)
+
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at http://%s:%s/" % (addr, port))
             print("Quit the server with %s." % quit_command)

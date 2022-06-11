@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import six
 from django.template import Context, Template, TemplateSyntaxError
 from django.test import TestCase
 
@@ -15,8 +14,7 @@ class HighlightTagExceptionTests(TestCase):
 {% highlight %}
 {% endhighlight %}
 """
-        with six.assertRaisesRegex(
-                self,
+        with self.assertRaisesRegex(
                 TemplateSyntaxError,
                 "'highlight' statement requires an argument"):
             Template(content).render(self.ctx)

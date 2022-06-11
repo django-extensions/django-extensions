@@ -1,7 +1,7 @@
-Current Admin Extensions
-========================
+Admin Extensions
+================
 
-:synopsis: Current Field Extensions
+:synopsis: Admin Extensions
 
 
 * *ForeignKeyAutocompleteAdmin* - ForeignKeyAutocompleteAdmin will enable the
@@ -11,16 +11,16 @@ Current Admin Extensions
 
 * *ForeignKeyAutocompleteStackedInline*, *ForeignKeyAutocompleteTabularInline* -
   in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
-  enable a search input field for ForeginKey fields in AdminInline classes.
+  enable a search input field for ForeignKey fields in AdminInline classes.
 
 Depreciation
 ------------
 
-Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefor we are deprecated this extension and high encourage everybody to update to it.
+Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefore we are deprecating this extension and highly encouraging everyone to update to it.
 
-This code will be removed in the near feature when support for Django older then 2.0 is dropped.
+This code will be removed in the near future when support for Django older then 2.0 is dropped.
 
-For more information see: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
+More on this: https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin.autocomplete_fields
 
 
 Known Issues

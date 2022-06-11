@@ -4,7 +4,7 @@ import os
 import shutil
 import sys
 
-import six
+from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -13,8 +13,8 @@ from .testapp.models import Name, Note, Person, Club
 
 class DumpScriptTests(TestCase):
     def setUp(self):
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
 
     def test_runs(self):
         # lame test...does it run?
@@ -25,10 +25,10 @@ class DumpScriptTests(TestCase):
 
     def test_replaced_stdout(self):
         # check if stdout can be replaced
-        sys.stdout = six.StringIO()
+        sys.stdout = StringIO()
         n = Name(name='Mike')
         n.save()
-        tmp_out = six.StringIO()
+        tmp_out = StringIO()
         call_command('dumpscript', 'django_extensions', stdout=tmp_out)
         self.assertTrue('Mike' in tmp_out.getvalue())  # script should go to tmp_out
         self.assertEqual(0, len(sys.stdout.getvalue()))  # there should not be any output to sys.stdout
@@ -38,8 +38,8 @@ class DumpScriptTests(TestCase):
         # check if stderr can be replaced, without changing stdout
         n = Name(name='Fred')
         n.save()
-        tmp_err = six.StringIO()
-        sys.stderr = six.StringIO()
+        tmp_err = StringIO()
+        sys.stderr = StringIO()
         call_command('dumpscript', 'django_extensions', stderr=tmp_err)
         self.assertTrue('Fred' in sys.stdout.getvalue())  # script should still go to stdout
         self.assertTrue('Name' in tmp_err.getvalue())  # error output should go to tmp_err
@@ -61,7 +61,7 @@ class DumpScriptTests(TestCase):
         note2 = Note(note="This is the second note.")
         note2.save()
         p2.notes.add(note1, note2)
-        tmp_out = six.StringIO()
+        tmp_out = StringIO()
         call_command('dumpscript', 'django_extensions', stdout=tmp_out)
         ast_syntax_tree = ast.parse(tmp_out.getvalue())
         if hasattr(ast_syntax_tree, 'body'):

@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-import django
-
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import UniqueConstraint
+from django.db.models.signals import pre_save
 
 from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
 from .fields import UniqField
-
-if django.VERSION >= (2, 2):
-    from django.db.models import UniqueConstraint
 
 
 class Secret(models.Model):
@@ -99,7 +96,12 @@ class ThirdDummyRelationModel(models.Model):
         app_label = 'django_extensions'
 
 
-class PostWithUniqField(models.Model):
+class PostWithUniqFieldCompat(models.Model):
+    """
+    django-extensions from version 3.0 officially supports only Django 2.2+ which
+    introduced Meta.constraints and suggests using it instead of Meta.unique_together
+    this is left only to ensure compatibility with Meta.unique_together
+    """
     uniq_field = UniqField(
         max_length=255,
         boolean_attr=True,
@@ -114,6 +116,40 @@ class PostWithUniqField(models.Model):
     class Meta:
         app_label = 'django_extensions'
         unique_together = ('common_field', 'uniq_field',)
+
+
+class ReverseModelCompat(models.Model):
+    post_field = models.ForeignKey(PostWithUniqFieldCompat, related_name='reverse_models', on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class InheritedFromPostWithUniqFieldCompat(PostWithUniqFieldCompat):
+    new_field = models.CharField(max_length=10)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class PostWithUniqField(models.Model):
+    uniq_field = UniqField(
+        max_length=255,
+        boolean_attr=True,
+        non_boolean_attr='non_boolean_attr'
+    )
+    common_field = models.CharField(max_length=10)
+    another_common_field = models.CharField(max_length=10)
+    many_to_one_field = models.ForeignKey(DummyRelationModel, on_delete=models.CASCADE)
+    one_to_one_field = models.OneToOneField(SecondDummyRelationModel, on_delete=models.CASCADE)
+    many_to_many_field = models.ManyToManyField(ThirdDummyRelationModel, related_name='posts22_with_uniq')
+
+    class Meta:
+        app_label = 'django_extensions'
+        constraints = [
+            models.UniqueConstraint(fields=('common_field', 'uniq_field'), name='unique_common_uniq_pair'),
+            models.CheckConstraint(check=~models.Q(common_field=models.F("another_common_field")), name='common_and_another_common_differ'),
+        ]
 
 
 class ReverseModel(models.Model):
@@ -158,13 +194,12 @@ class SluggedWithConstraintsTestModel(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
-        if django.VERSION >= (2, 2):
-            constraints = [
-                UniqueConstraint(
-                    fields=['slug', 'category'],
-                    name="unique_slug_and_category",
-                ),
-            ]
+        constraints = [
+            UniqueConstraint(
+                fields=['slug', 'category'],
+                name="unique_slug_and_category",
+            ),
+        ]
 
 
 class SluggedWithUniqueTogetherTestModel(models.Model):
@@ -492,3 +527,10 @@ class MultipleFieldsAndMethods(models.Model):
 
     class Meta:
         app_label = 'django_extensions'
+
+
+def dummy_handler(sender, instance, **kwargs):
+    pass
+
+
+pre_save.connect(dummy_handler, sender=HasOwnerModel)

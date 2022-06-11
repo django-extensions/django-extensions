@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import mock
 import os
-import six
+from io import StringIO
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -19,7 +19,7 @@ class ClearCacheTests(TestCase):
         os.environ['DJANGO_SETTINGS_MODULE'] = 'django_extensions.settings'
         DefaultCacheMock.reset_mock()
         OtherCacheMock.reset_mock()
-        self.out = six.StringIO()
+        self.out = StringIO()
 
     def tearDown(self):
         if self._settings:
@@ -55,7 +55,7 @@ class ClearCacheTests(TestCase):
 
     def test_called_with_invalid_arguments(self):
         with self.settings(BASE_DIR=self.project_root):
-            with six.assertRaisesRegex(self, CommandError, 'Using both --all and --cache is not supported'):
+            with self.assertRaisesRegex(CommandError, 'Using both --all and --cache is not supported'):
                 call_command('clear_cache', '--all', '--cache', 'foo')
 
     def test_should_print_that_cache_is_invalid_on_InvalidCacheBackendError(self):

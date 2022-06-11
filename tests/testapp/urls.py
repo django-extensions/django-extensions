@@ -16,7 +16,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.urls import path
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
@@ -24,7 +24,7 @@ login_view = auth_views.LoginView.as_view() if hasattr(auth_views, 'LoginView') 
 logout_view = auth_views.LogoutView.as_view() if hasattr(auth_views, 'LogoutView') else auth_views.logout
 
 urlpatterns = [
-    url(r'^login/$', login_view, {'template_name': 'login.html'}, name="login"),
-    url(r'^logout/$', logout_view, name="logout"),
-    url(r'^admin/', admin.site.urls),
+    path('login/', login_view, {'template_name': 'login.html'}, name="login"),
+    path('logout/', logout_view, name="logout"),
+    path('admin/', admin.site.urls),
 ]

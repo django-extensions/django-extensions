@@ -6,14 +6,16 @@ originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import os
 import logging
+import warnings
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from six.moves import input
+from django.db import DEFAULT_DB_ALIAS
 
 from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL_ENGINES
 from django_extensions.management.mysql import parse_mysql_cnf
 from django_extensions.management.utils import signalcommand
+from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
 class Command(BaseCommand):
@@ -22,7 +24,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--noinput', action='store_false',
+            '--noinput', '--no-input', action='store_false',
             dest='interactive', default=True,
             help='Tells Django to NOT prompt the user for input of any kind.'
         )
@@ -48,8 +50,12 @@ class Command(BaseCommand):
             help='Use another database name than defined in settings.py'
         )
         parser.add_argument(
-            '-R', '--router', action='store', dest='router', default='default',
+            '-R', '--router', action='store', dest='router', default=DEFAULT_DB_ALIAS,
             help='Use this router-database other than defined in settings.py'
+        )
+        parser.add_argument(
+            '--database', default=DEFAULT_DB_ALIAS,
+            help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
         )
         parser.add_argument(
             '-c', '--close-sessions', action='store_true', dest='close_sessions', default=False,
@@ -64,10 +70,14 @@ class Command(BaseCommand):
         Note: Transaction wrappers are in reverse as a work around for
         autocommit, anybody know how to do this the right way?
         """
-        router = options['router']
-        dbinfo = settings.DATABASES.get(router)
+        database = options['database']
+        if options['router'] != DEFAULT_DB_ALIAS:
+            warnings.warn("--router is deprecated. You should use --database.", RemovedInNextVersionWarning, stacklevel=2)
+            database = options['router']
+
+        dbinfo = settings.DATABASES.get(database)
         if dbinfo is None:
-            raise CommandError("Unknown database router %s" % router)
+            raise CommandError("Unknown database %s" % database)
 
         engine = dbinfo.get('ENGINE')
 
@@ -108,7 +118,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 os.unlink(database_name)
             except OSError:
                 pass
-
         elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
             kwargs = {
@@ -131,7 +140,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             connection.query(drop_query)
             logging.info('Executing... "%s"', create_query)
             connection.query(create_query.strip())
-
         elif engine in POSTGRESQL_ENGINES:
             import psycopg2 as Database  # NOQA
 
@@ -180,7 +188,6 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
 
             logging.info('Executing... "%s"', create_query)
             cursor.execute(create_query)
-
         else:
             raise CommandError("Unknown database engine %s" % engine)
 

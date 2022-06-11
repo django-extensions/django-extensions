@@ -1,19 +1,12 @@
 # -*- coding: utf-8 -*-
-import six
-from six.moves import urllib
+import urllib
+
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-try:
-    from django.templatetags.static import static
-except ImportError:
-    # compatibility with django < 2.1
-    from django.contrib.admin.templatetags.admin_static import static
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
+from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 
@@ -75,7 +68,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         if value:
             label = self.label_for_value(value)
         else:
-            label = six.u('')
+            label = ''
 
         context = {
             'url': url,
@@ -94,4 +87,4 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         ), context))
         output.reverse()
 
-        return mark_safe(six.u('').join(output))
+        return mark_safe(''.join(output))

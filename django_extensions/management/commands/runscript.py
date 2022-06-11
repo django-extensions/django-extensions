@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
 import importlib
 import inspect
-import os
 import traceback
 
 from argparse import ArgumentTypeError
 
 from django.apps import apps
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from django_extensions.management.email_notifications import EmailNotificationCommand
@@ -40,6 +42,7 @@ class Command(EmailNotificationCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_directory = os.getcwd()
+        self.last_exit_code = 0
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
@@ -54,7 +57,13 @@ class Command(EmailNotificationCommand):
         )
         parser.add_argument(
             '-s', '--silent', action='store_true', dest='silent', default=False,
-            help='Run silently, do not show errors and tracebacks',
+            help='Run silently, do not show errors and tracebacks. Also implies --continue-on-error.',
+        )
+        parser.add_argument(
+            '-c', '--continue-on-error', action='store_true', dest='continue_on_error', default=False,
+            help='Continue executing other scripts even though one has failed. '
+                 'It will print a traceback unless --no-traceback or --silent are given '
+                 'The exit code used when terminating will always be 1.',
         )
         parser.add_argument(
             '--no-traceback', action='store_true', dest='no_traceback', default=False,
@@ -80,7 +89,8 @@ class Command(EmailNotificationCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        from django.conf import settings
+        self.check()
+        self.check_migrations()
 
         NOTICE = self.style.SQL_TABLE
         NOTICE2 = self.style.SQL_FIELD
@@ -97,6 +107,7 @@ class Command(EmailNotificationCommand):
         verbosity = options["verbosity"]
         show_traceback = options['traceback']
         no_traceback = options['no_traceback']
+        continue_on_error = options['continue_on_error']
         if no_traceback:
             show_traceback = False
         else:
@@ -104,6 +115,7 @@ class Command(EmailNotificationCommand):
         silent = options['silent']
         if silent:
             verbosity = 0
+            continue_on_error = True
         email_notifications = options['email_notifications']
 
         if len(subdirs) < 1:
@@ -143,22 +155,40 @@ class Command(EmailNotificationCommand):
             os.chdir(os.path.abspath(directory))
 
         def run_script(mod, *script_args):
+            exit_code = None
             try:
                 set_directory(mod)
-                mod.run(*script_args)
+                exit_code = mod.run(*script_args)
+                if isinstance(exit_code, bool):
+                    # convert boolean True to exit-code 0 and False to exit-code 1
+                    exit_code = 1 if exit_code else 0
+                if isinstance(exit_code, int):
+                    if exit_code != 0:
+                        try:
+                            raise CommandError("'%s' failed with exit code %s" % (mod.__name__, exit_code), returncode=exit_code)
+                        except TypeError:
+                            raise CommandError("'%s' failed with exit code %s" % (mod.__name__, exit_code))
                 if email_notifications:
                     self.send_email_notification(notification_id=mod.__name__)
             except Exception as e:
+                if isinstance(e, CommandError) and hasattr(e, 'returncode'):
+                    exit_code = e.returncode
+                self.last_exit_code = exit_code if isinstance(exit_code, int) else 1
                 if silent:
                     return
                 if verbosity > 0:
                     print(ERROR("Exception while running run() in '%s'" % mod.__name__))
+                if continue_on_error:
+                    if show_traceback:
+                        traceback.print_exc()
+                    return
                 if email_notifications:
-                    self.send_email_notification(
-                        notification_id=mod.__name__, include_traceback=True)
-                if show_traceback:
-                    if not isinstance(e, CommandError):
-                        raise
+                    self.send_email_notification(notification_id=mod.__name__, include_traceback=True)
+
+                if no_traceback:
+                    raise CommandError(repr(e))
+
+                raise
 
         def my_import(parent_package, module_name):
             full_module_path = "%s.%s" % (parent_package, module_name)
@@ -229,14 +259,43 @@ class Command(EmailNotificationCommand):
             script_args = options['script_args']
         else:
             script_args = []
+
+        # first pass to check if all scripts can be found
+        script_to_run = []
         for script in scripts:
-            modules = find_modules_for_script(script)
-            if not modules:
+            script_modules = find_modules_for_script(script)
+            if not script_modules:
+                self.last_exit_code = 1
                 if verbosity > 0 and not silent:
                     print(ERROR("No (valid) module for script '%s' found" % script))
-                    if verbosity < 2:
-                        print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
-            for mod in modules:
-                if verbosity > 1:
-                    print(NOTICE2("Running script '%s' ..." % mod.__name__))
-                run_script(mod, *script_args)
+                continue
+            script_to_run.extend(script_modules)
+
+        if self.last_exit_code:
+            if verbosity < 2 and not silent:
+                print(ERROR("Try running with a higher verbosity level like: -v2 or -v3"))
+            if not continue_on_error:
+                script_to_run = []
+
+        for script_mod in script_to_run:
+            if verbosity > 1:
+                print(NOTICE2("Running script '%s' ..." % script_mod.__name__))
+            run_script(script_mod, *script_args)
+
+        if self.last_exit_code != 0:
+            if silent:
+                if hasattr(self, 'running_tests'):
+                    return
+                sys.exit(self.last_exit_code)
+
+            try:
+                raise CommandError("An error has occurred running scripts. See errors above.", returncode=self.last_exit_code)
+            except TypeError:
+                # Django < 3.1 fallback
+                if self.last_exit_code == 1:
+                    # if exit_code is 1 we can still raise CommandError without returncode argument
+                    raise CommandError("An error has occurred running scripts. See errors above.")
+                print(ERROR("An error has occurred running scripts. See errors above."))
+                if hasattr(self, 'running_tests'):
+                    return
+                sys.exit(self.last_exit_code)

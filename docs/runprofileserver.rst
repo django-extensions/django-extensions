@@ -84,10 +84,6 @@ Example::
   <ctrl-c>
   $ kcachegrind /tmp/my-profile-data/root.12574391.592.prof
 
-Here is a screenshot of how the above commands might look in KCacheGrind:
-
-  http://trbs.net/media/misc/django-runprofileserver-kcachegrind-full.jpg
-
 Links
 -----
 

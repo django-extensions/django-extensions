@@ -5,10 +5,10 @@ import subprocess
 import sys
 
 import pip
-import pytest
+import pkg_resources
 from django.core.management import call_command
 from django.test import TestCase
-from six import StringIO
+from io import StringIO
 from pip._internal.exceptions import InstallationError
 
 
@@ -44,11 +44,7 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-        if sys.version_info.major == 3:
-            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
-        else:
-            # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
+        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -58,7 +54,6 @@ class PipCheckerTests(TestCase):
 
         self.assertTrue(value.endswith('available\n'))
 
-    @pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6 or higher")
     def test_pipchecker_with_up_to_date_requirement(self):
         requirements_path = './requirements.txt'
         out = StringIO()
@@ -68,11 +63,7 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-        if sys.version_info.major == 3:
-            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
-        else:
-            # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
+        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -91,11 +82,7 @@ class PipCheckerTests(TestCase):
         f.close()
 
         subprocess.call([sys.executable, '-m', 'pip', 'install', 'django-json-widget'])
-        if sys.version_info.major == 3:
-            pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
-        else:
-            # Python 2.7
-            pip._vendor.pkg_resources = reload(pip._vendor.pkg_resources)  # noqa
+        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
         call_command('pipchecker', '-r', requirements_path, stdout=out)
 
         value = out.getvalue()
@@ -103,4 +90,80 @@ class PipCheckerTests(TestCase):
         subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
         os.remove(requirements_path)
 
-        self.assertTrue(value.endswith('repo is not frozen\n'))
+        self.assertTrue(value.endswith('repo is not frozen\n'), value)
+
+    def test_pipchecker_with_outdated_requirement_on_pip20_1(self):
+        subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', 'pip==20.1'])
+        importlib.reload(pip)
+
+        requirements_path = './requirements.txt'
+        out = StringIO()
+
+        f = open(requirements_path, 'wt')
+        f.write('djangorestframework==3.0.0')
+        f.close()
+
+        subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+        importlib.reload(pkg_resources)
+        call_command('pipchecker', '-r', requirements_path, stdout=out)
+
+        value = out.getvalue()
+
+        subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
+        os.remove(requirements_path)
+
+        self.assertTrue(value.endswith('available\n'))
+
+    def test_pipchecker_with_long_up_to_date_requirements(self):
+        requirements_path = './requirements.txt'
+        out = StringIO()
+
+        f = open(requirements_path, 'wt')
+        f.write('appdirs')
+        f.write('asgiref')
+        f.write('attrs')
+        f.write('black')
+        f.write('certifi')
+        f.write('chardet')
+        f.write('click')
+        f.write('distlib')
+        f.write('Django')
+        f.write('django-cors-headers')
+        f.write('django-debug-toolbar')
+        f.write('djangorestframework')
+        f.write('filelock')
+        f.write('idna')
+        f.write('iniconfig')
+        f.write('mypy-extensions')
+        f.write('packaging')
+        f.write('pathspec')
+        f.write('Pillow')
+        f.write('pluggy')
+        f.write('psycopg2-binary')
+        f.write('py')
+        f.write('pyparsing')
+        f.write('pytest')
+        f.write('pytz')
+        f.write('regex')
+        f.write('requests')
+        f.write('sentry-sdk')
+        f.write('shortuuid')
+        f.write('six')
+        f.write('sqlparse')
+        f.write('toml')
+        f.write('typed-ast')
+        f.write('typing-extensions')
+        f.write('urllib3')
+        f.write('whitenoise')
+        f.write('zipp')
+
+        subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+        pip._vendor.pkg_resources = importlib.reload(pip._vendor.pkg_resources)
+        call_command('pipchecker', '-r', requirements_path, stdout=out)
+
+        value = out.getvalue()
+
+        subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
+        os.remove(requirements_path)
+
+        self.assertTrue(value.endswith("Retrying in 60 seconds!") or value == '')

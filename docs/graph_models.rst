@@ -53,7 +53,11 @@ The option GRAPH_MODELS = {} can be used in the settings file to specify default
   }
 
 It uses the same names as on the command line only with the leading two dashes removed and
-the other dashes replaced by underscores.
+the other dashes replaced by underscores. You can specify a list of applications with the *app_labels* key::
+
+  GRAPH_MODELS = {
+    'app_labels': ["myapp1", "myapp2", "auth"],
+  }
 
 
 Templates
@@ -128,6 +132,12 @@ image by using the *graph_models* command::
 
   # Create a graph with 'normal' arrow shape for relations
   $ ./manage.py graph_models -a --arrow-shape normal -o my_project_sans_foo_bar.png
+
+::
+
+  # Create a graph with different layout direction,
+  # supported directions: "TB", "LR", "BT", "RL"
+  $ ./manage.py graph_models -a --rankdir BT -o my_project_sans_foo_bar.png
 
 
 

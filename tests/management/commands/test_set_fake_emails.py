@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from io import StringIO
 
 from django.core.management import call_command, CommandError
 from django.contrib.auth.models import User
-from six import StringIO
+
 from django_extensions.management.commands.set_fake_emails import Command
 
 import pytest

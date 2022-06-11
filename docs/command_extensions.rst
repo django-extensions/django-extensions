@@ -1,7 +1,34 @@
-Current Command Extensions
-==========================
+Command Extensions
+==================
 
-:synopsis: Current Command Extensions
+:synopsis: Command Extensions
+
+.. toctree::
+   :maxdepth: 3
+
+   shell_plus
+   create_template_tags
+   delete_squashed_migrations
+   dumpscript
+   runscript
+   export_emails
+   generate_password
+   graph_models
+   list_model_info
+   list_signals
+   merge_model_instances
+   print_settings
+   reset_db
+   runprofileserver
+   runserver_plus
+   sync_s3
+   syncdata
+   sqldiff
+   sqlcreate
+   sqldsn
+   validate_templates
+   admin_generator
+
 
 * :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
   all your models making it easy to work with the ORM right away.
@@ -62,7 +89,7 @@ Current Command Extensions
 
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
-* *passwd* - Makes it easy to reset a user's password.
+* *passwd* - DEPRECATED: Use Django's ``changepassword``.
 
 * *pipchecker* - Scan pip requirement file(s)s for out-of-date packages. Similar to
   ``pip list -o`` which used installed packages (in virtualenv) instead of requirements file(s).
@@ -83,7 +110,7 @@ Current Command Extensions
 * *raise_test_exception* - Raises a test exception via command. Useful for debugging error reporters such as Sentry.
   settings.py module.
 
-* *reset_db* - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
+* :doc:`reset_db` - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
 

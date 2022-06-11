@@ -12,7 +12,6 @@ import datetime
 import os
 import re
 
-import six
 from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
@@ -55,7 +54,7 @@ def parse_file_or_list(arg):
     return [e.strip() for e in arg.split(',')]
 
 
-class ModelGraph(object):
+class ModelGraph:
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
         self.cli_options = kwargs.get('cli_options', None)
@@ -85,6 +84,7 @@ class ModelGraph(object):
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
             self.app_labels = app_labels
+        self.rankdir = kwargs.get("rankdir")
 
     def generate_graph_data(self):
         self.process_apps()
@@ -108,10 +108,18 @@ class ModelGraph(object):
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
             'use_subgraph': self.use_subgraph,
+            'rankdir': self.rankdir,
         }
 
         if as_json:
-            graph_data['graphs'] = [context.flatten() for context in self.graphs]
+            # We need to remove the model and field class because it is not JSON serializable
+            graphs = [context.flatten() for context in self.graphs]
+            for context in graphs:
+                for model_data in context['models']:
+                    model_data.pop('model')
+                    for field_data in model_data['fields']:
+                        field_data.pop('field')
+            graph_data['graphs'] = graphs
         else:
             graph_data['graphs'] = self.graphs
 
@@ -131,11 +139,15 @@ class ModelGraph(object):
         # TODO: ManyToManyField, GenericRelation
 
         return {
+            'field': field,
             'name': field.name,
             'label': label,
             'type': t,
             'blank': field.blank,
-            'abstract': field in abstract_fields,
+            'abstract': any(
+                field.creation_counter == abstract_field.creation_counter
+                for abstract_field in abstract_fields
+            ),
             'relation': isinstance(field, RelatedField),
             'primary_key': field.primary_key,
         }
@@ -158,7 +170,7 @@ class ModelGraph(object):
             label = ''
 
         # handle self-relationships and lazy-relationships
-        if isinstance(field.remote_field.model, six.string_types):
+        if isinstance(field.remote_field.model, str):
             if field.remote_field.model == 'self':
                 target_model = field.model
             else:
@@ -211,6 +223,7 @@ class ModelGraph(object):
 
     def get_appmodel_context(self, appmodel, appmodel_abstracts):
         context = {
+            'model': appmodel,
             'app_name': appmodel.__module__.replace(".", "_"),
             'name': appmodel.__name__,
             'abstracts': appmodel_abstracts,
@@ -407,7 +420,7 @@ class ModelGraph(object):
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    if isinstance(template, six.string_types):
+    if isinstance(template, str):
         template = loader.get_template(template)
 
     if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):

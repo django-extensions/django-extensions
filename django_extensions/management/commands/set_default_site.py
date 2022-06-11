@@ -3,6 +3,7 @@ import socket
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.apps import apps
 
 from django_extensions.management.utils import signalcommand
 
@@ -29,7 +30,7 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if 'django.contrib.sites' not in settings.INSTALLED_APPS:
+        if not apps.is_installed('django.contrib.sites'):
             raise CommandError('The sites framework is not installed.')
 
         from django.contrib.sites.models import Site

@@ -31,7 +31,6 @@ Improvements:
 import datetime
 import sys
 
-import six
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -42,7 +41,7 @@ from django.db.models import (
 )
 from django.db.models.deletion import Collector
 from django.utils import timezone
-from django.utils.encoding import force_str, smart_text
+from django.utils.encoding import force_str, smart_str
 
 from django_extensions.management.utils import signalcommand
 
@@ -73,8 +72,8 @@ def orm_item_locator(orm_obj):
             if isinstance(v, datetime.datetime):
                 v = timezone.make_aware(v)
                 clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
-            elif not isinstance(v, (six.string_types, six.integer_types, float)):
-                clean_dict[key] = six.u("%s" % v)
+            elif not isinstance(v, (str, int, float)):
+                clean_dict[key] = str("%s" % v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class, original_pk_name,
@@ -153,7 +152,7 @@ def get_models(app_labels):
     return models
 
 
-class Code(object):
+class Code:
     """
     A snippet of python script.
     This keeps track of import statements and can be output to a string.
@@ -206,7 +205,7 @@ class ModelCode(Code):
         Return a dictionary of import statements, with the variable being
         defined as the key.
         """
-        return {self.model.__name__: smart_text(self.model.__module__)}
+        return {self.model.__name__: smart_str(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
@@ -496,7 +495,7 @@ class Script(Code):
     FILE_HEADER = """
 
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 # This file has been automatically generated.
 # Instead of changing it, create a file called import_helper.py
@@ -506,7 +505,7 @@ class Script(Code):
 # it will actually extend the class BasicImportHelper()
 #
 # That means you just have to overload the methods you want to
-# change, leaving the other ones inteact.
+# change, leaving the other ones intact.
 #
 # Something that you might want to do is use transactions, for example.
 #
@@ -525,7 +524,7 @@ class Script(Code):
 import os, sys
 from django.db import transaction
 
-class BasicImportHelper(object):
+class BasicImportHelper:
 
     def pre_import(self):
         pass
@@ -643,7 +642,7 @@ def flatten_blocks(lines, num_indents=-1):
         return ""
 
     # If this is a string, add the indentation and finish here
-    if isinstance(lines, six.string_types):
+    if isinstance(lines, str):
         return INDENTATION * num_indents + lines
 
     # If this is not a string, join the lines and recurse

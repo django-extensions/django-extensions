@@ -3,7 +3,6 @@ import os
 import inspect
 import re
 
-import six
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import AmbiguityError, MigrationLoader
@@ -38,6 +37,10 @@ class Command(BaseCommand):
         parser.add_argument(
             '--dry-run', action='store_true', default=False,
             help='Do not actually delete or change any files')
+        parser.add_argument(
+            '--database', default=DEFAULT_DB_ALIAS,
+            help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
+        )
 
     def handle(self, **options):
         self.verbosity = options['verbosity']
@@ -45,9 +48,10 @@ class Command(BaseCommand):
         self.dry_run = options['dry_run']
         app_label = options['app_label']
         squashed_migration_name = options['squashed_migration_name']
+        database = options['database']
 
         # Load the current graph state, check the app and migration they asked for exists
-        loader = MigrationLoader(connections[DEFAULT_DB_ALIAS])
+        loader = MigrationLoader(connections[database])
         if app_label not in loader.migrated_apps:
             raise CommandError(
                 "App '%s' does not have migrations (so delete_squashed_migrations on "
@@ -155,7 +159,7 @@ class Command(BaseCommand):
         if self.interactive:
             answer = None
             while not answer or answer not in "yn":
-                answer = six.moves.input("Do you wish to proceed? [yN] ")
+                answer = input("Do you wish to proceed? [yN] ")
                 if not answer:
                     answer = "n"
                     break

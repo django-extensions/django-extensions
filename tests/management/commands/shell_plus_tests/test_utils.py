@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
-
+from io import StringIO
 from typing import Dict, Set, Type  # noqa
 
-import six
 from django.test import TestCase
 from django_extensions.management.commands import shell_plus
 
@@ -11,8 +10,8 @@ from django_extensions.management.commands import shell_plus
 class AutomaticShellPlusImportsTestCase(TestCase):
     def setUp(self):
         super().setUp()
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
         self.imported_objects = {}  # type: Dict[str, Type]
         self.output = ""
 

@@ -6,6 +6,7 @@ print_settings
 Django command similar to 'diffsettings' but shows all active Django settings.
 """
 
+import fnmatch
 import json
 
 from django.conf import settings
@@ -25,6 +26,12 @@ class Command(BaseCommand):
             help='Specifies setting to be printed.'
         )
         parser.add_argument(
+            '-f', '--fail',
+            action='store_true',
+            dest='fail',
+            help='Fail if invalid setting name is given.'
+        )
+        parser.add_argument(
             '--format',
             default='simple',
             dest='format',
@@ -40,47 +47,37 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        a_dict = {}
+        setting_names = options['setting']
+        settings_dct = {k: getattr(settings, k) for k in dir(settings) if k.isupper()}
 
-        for attr in dir(settings):
-            if self.include_attr(attr, options['setting']):
-                value = getattr(settings, attr)
-                a_dict[attr] = value
+        if setting_names:
+            settings_dct = {
+                key: value for key, value in settings_dct.items()
+                if any(fnmatch.fnmatchcase(key, setting_name) for setting_name in setting_names)
+            }
 
-        for setting in args:
-            if setting not in a_dict:
-                raise CommandError('%s not found in settings.' % setting)
+        if options['fail']:
+            for setting_name in setting_names:
+                if not any(fnmatch.fnmatchcase(key, setting_name) for key in settings_dct.keys()):
+                    raise CommandError('%s not found in settings.' % setting_name)
 
         output_format = options['format']
         indent = options['indent']
 
         if output_format == 'json':
-            print(json.dumps(a_dict, indent=indent))
+            print(json.dumps(settings_dct, indent=indent))
         elif output_format == 'yaml':
             import yaml  # requires PyYAML
-            print(yaml.dump(a_dict, indent=indent))
+            print(yaml.dump(settings_dct, indent=indent))
         elif output_format == 'pprint':
             from pprint import pprint
-            pprint(a_dict)
+            pprint(settings_dct)
         elif output_format == 'text':
-            for key, value in a_dict.items():
+            for key, value in settings_dct.items():
                 print("%s = %s" % (key, value))
         elif output_format == 'value':
-            for value in a_dict.values():
+            for value in settings_dct.values():
                 print(value)
         else:
-            self.print_simple(a_dict)
-
-    @staticmethod
-    def include_attr(attr, settings):
-        if attr.startswith('__'):
-            return False
-        elif settings == []:
-            return True
-        elif attr in settings:
-            return True
-
-    @staticmethod
-    def print_simple(a_dict):
-        for key, value in a_dict.items():
-            print('%-40s = %r' % (key, value))
+            for key, value in settings_dct.items():
+                print('%-40s = %r' % (key, value))

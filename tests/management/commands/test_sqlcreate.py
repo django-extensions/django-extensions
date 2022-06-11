@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
+from io import StringIO
 
-import six
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 MYSQL_DATABASE_SETTINGS = {
@@ -35,13 +31,22 @@ POSTGRESQL_DATABASE_SETTINGS = {
     'PORT': '5432',
 }
 
+POSTGRESQL_DATABASE_SETTINGS_SOCKET_MODE = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME': 'database',
+    'USER': '',
+    'PASSWORD': '',
+    'HOST': '',
+    'PORT': '',
+}
+
 
 class SqlcreateExceptionsTests(TestCase):
     """Test for sqlcreate exception."""
 
-    def test_should_raise_CommandError_if_router_is_unknown(self):
-        with six.assertRaisesRegex(self, CommandError, "Unknown database router unknown"):
-            call_command('sqlcreate', '--router=unknown')
+    def test_should_raise_CommandError_if_database_is_unknown(self):
+        with self.assertRaisesRegex(CommandError, "Unknown database unknown"):
+            call_command('sqlcreate', '--database=unknown')
 
 
 class SqlCreateTests(TestCase):
@@ -77,6 +82,18 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
 
         self.assertEqual(expected_statement, m_stdout.getvalue())
 
+    @override_settings(DATABASES={'default': POSTGRESQL_DATABASE_SETTINGS_SOCKET_MODE})
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_SQL_create_database_statement_only_for_postgresql_when_unix_domain_socket_mode_is_used(self, m_stdout):
+        expected_statement = """-- Assuming that unix domain socket connection mode is being used because
+-- USER or PASSWORD are blank in Django DATABASES configuration.
+CREATE DATABASE database WITH ENCODING 'UTF-8';
+"""
+
+        call_command('sqlcreate')
+
+        self.assertEqual(expected_statement, m_stdout.getvalue())
+
     @override_settings(DATABASES={'default': POSTGRESQL_DATABASE_SETTINGS})
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_SQL_drop_and_create_database_statement_for_postgresql(self, m_stdout):
@@ -94,7 +111,7 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
     @override_settings(DATABASES={'default': SQLITE3_DATABASE_SETTINGS})
     @patch('sys.stderr', new_callable=StringIO)
     def test_should_print_stderr_for_sqlite3(self, m_stderr):
-        expected_error = "-- manage.py syncdb will automatically create a sqlite3 database file.\n"
+        expected_error = "-- manage.py migrate will automatically create a sqlite3 database file.\n"
 
         call_command('sqlcreate')
 
@@ -110,12 +127,12 @@ GRANT ALL PRIVILEGES ON DATABASE database TO foo;
     @patch('sys.stderr', new_callable=StringIO)
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_stderr_and_standard_create_database_statement_for_unsupported_engine(self, m_stdout, m_stderr):
-        expected_error = "-- Don't know how to handle 'unknown' falling back to SQL.\n"
+        expected_error = "-- Don't know how to handle 'django.db.backends.unknown' falling back to SQL.\n"
         expected_statement = """CREATE DATABASE database;
 GRANT ALL PRIVILEGES ON DATABASE database to foo;
 """
 
-        call_command('sqlcreate', '--router=unknown')
+        call_command('sqlcreate', '--database=unknown')
 
         self.assertEqual(expected_error, m_stderr.getvalue())
         self.assertEqual(expected_statement, m_stdout.getvalue())

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-
 import os
 import sys
-from imp import find_module
+import importlib
 from typing import Optional  # NOQA
 from django.apps import apps
 
@@ -17,7 +16,7 @@ class JobError(Exception):
     pass
 
 
-class BaseJob(object):
+class BaseJob:
     help = "undefined job description."
     when = None  # type: Optional[str]
 
@@ -68,22 +67,20 @@ def my_import(name):
 
 def find_jobs(jobs_dir):
     try:
-        return [f[:-3] for f in os.listdir(jobs_dir) if not f.startswith('_') and f.endswith(".py")]
+        return sorted([f[:-3] for f in os.listdir(jobs_dir) if not f.startswith('_') and f.endswith(".py")])
     except OSError:
         return []
 
 
-def find_job_module(app_name, when=None):
+def find_job_module(app_name: str, when: Optional[str] = None) -> str:
+    """Find the directory path to a job module."""
     parts = app_name.split('.')
     parts.append('jobs')
     if when:
         parts.append(when)
-    parts.reverse()
-    path = None
-    while parts:
-        part = parts.pop()
-        f, path, descr = find_module(part, path and [path] or None)
-    return path
+    module_name = ".".join(parts)
+    module = importlib.import_module(module_name)
+    return module.__path__[0]
 
 
 def import_job(app_name, name, when=None):

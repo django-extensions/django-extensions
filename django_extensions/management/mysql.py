@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six.moves import configparser
+import configparser
 
 
 def parse_mysql_cnf(dbinfo):

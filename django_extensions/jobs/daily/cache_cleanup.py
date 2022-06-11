@@ -5,7 +5,6 @@ Daily cleanup job.
 Can be run as a cronjob to clean out old data from the database (only expired
 sessions at the moment).
 """
-import six
 
 from django.conf import settings
 from django.core.cache import caches
@@ -18,7 +17,7 @@ class Job(DailyJob):
 
     def execute(self):
         if hasattr(settings, 'CACHES'):
-            for cache_name, cache_options in six.iteritems(settings.CACHES):
+            for cache_name, cache_options in settings.CACHES.items():
                 if cache_options['BACKEND'].endswith("DatabaseCache"):
                     cache = caches[cache_name]
                     cache.clear()

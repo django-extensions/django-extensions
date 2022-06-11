@@ -3,6 +3,8 @@ import os
 
 SECRET_KEY = 'dummy'
 
+TEST_RUNNER = 'tests.runner.PytestTestRunner'
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,6 +34,10 @@ DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DJANGO_EXTENSIONS_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
         'NAME': os.environ.get('DJANGO_EXTENSIONS_DATABASE_NAME', ':memory:'),
+        'USER': os.environ.get("DJANGO_EXTENSIONS_DATABASE_USER"),
+        'PASSWORD': os.environ.get("DJANGO_EXTENSIONS_DATABASE_PASSWORD"),
+        'HOST': os.environ.get('DJANGO_EXTENSIONS_DATABASE_HOST'),
+        'PORT': os.environ.get('DJANGO_EXTENSIONS_DATABASE_PORT'),
     }
 }
 
@@ -68,7 +74,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 STATIC_URL = "/static/"
 
 SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
-    'django_extensions.db.fields.encrypted',
     'django_extensions.mongodb.fields',
     'django_extensions.mongodb.models',
     'tests.testapp.scripts.invalid_import_script',
@@ -83,3 +88,18 @@ CACHES = {
         'BACKEND': 'tests.management.commands.test_clear_cache.OtherCacheMock',
     },
 }
+
+SHELL_PLUS_PRE_IMPORTS = [
+    'import sys, os',
+]
+SHELL_PLUS_IMPORTS = [
+    'from django_extensions import settings as django_extensions_settings',
+]
+SHELL_PLUS_POST_IMPORTS = [
+    'import traceback',
+    'import pprint',
+    'import os as test_os',
+    'from django_extensions.utils import *',
+]
+
+SILENCED_SYSTEM_CHECKS = ["models.W027", "models.W042"]

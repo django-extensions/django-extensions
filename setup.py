@@ -9,39 +9,6 @@ from distutils.command.install import INSTALL_SCHEMES
 from distutils.command.install_data import install_data
 from setuptools import setup
 
-try:
-    from setuptools.command.test import test as TestCommand
-
-    class PyTest(TestCommand):
-        user_options = TestCommand.user_options[:] + [
-            ('pytest-args=', 'a', "Arguments to pass into py.test"),
-            ('exitfirst', 'x', "exit instantly on first error or failed test."),
-            ('no-cov', 'C', "Disable coverage report completely"),
-        ]
-        exitfirst = False
-        no_cov = False
-
-        def initialize_options(self):
-            TestCommand.initialize_options(self)
-            self.pytest_args = 'tests django_extensions --ds=tests.testapp.settings --cov=django_extensions --cov-report html --cov-report term'
-
-        def finalize_options(self):
-            TestCommand.finalize_options(self)
-            self.test_args = []
-            self.test_suite = True
-            if self.exitfirst:
-                self.pytest_args += " -x"
-            if self.no_cov:
-                self.pytest_args += " --no-cov"
-
-        def run_tests(self):
-            import shlex
-            import pytest
-            errno = pytest.main(shlex.split(self.pytest_args))
-            sys.exit(errno)
-except ImportError:
-    PyTest = None
-
 
 class osx_install_data(install_data):
     # On MacOS, the platform-specific lib dir is at:
@@ -62,9 +29,6 @@ if sys.platform == "darwin":
     cmdclasses = {'install_data': osx_install_data}
 else:
     cmdclasses = {'install_data': install_data}
-
-if PyTest:
-    cmdclasses['test'] = PyTest
 
 
 def fullsplit(path, result=None):
@@ -117,17 +81,8 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
 
 version = __import__('django_extensions').__version__
 
-install_requires = ['six>=1.2']
-extras_require = {}
-
 if int(setuptools.__version__.split(".", 1)[0]) < 18:
     assert "bdist_wheel" not in sys.argv, "setuptools 18 or later is required for wheels."
-    if sys.version_info[:2] < (3, 5):
-        install_requires.append('typing')
-elif int(setuptools.__version__.split(".", 1)[0]) >= 36:
-    install_requires.append('typing;python_version<"3.5"')
-else:
-    extras_require[":python_version<'3.5'"] = ["typing"]
 
 long_description = """django-extensions bundles several useful
 additions for Django projects. See the project page for more information:
@@ -151,42 +106,36 @@ setup(
     packages=packages,
     cmdclass=cmdclasses,
     package_data=package_data,
-    install_requires=install_requires,
-    extras_require=extras_require,
-    tests_require=[
-        'Django',
-        'Werkzeug',
-        'factory-boy',
-        'mock',
-        'pytest',
-        'pytest-cov',
-        'pytest-django',
-        'python-dateutil',
-        'shortuuid',
-        'tox',
-        'vobject',
-    ],
+    python_requires=">=3.6",
+    install_requires=["Django>=2.2"],
+    extras_require={},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.11',
-        'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
+        'Framework :: Django :: 3.2',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',
     ],
+    project_urls={
+        "Documentation": "https://django-extensions.readthedocs.io/",
+        "Changelog": "https://github.com/django-extensions/django-extensions/blob/main/CHANGELOG.md",
+        "Source": "https://github.com/django-extensions/django-extensions",
+        "Tracker": "https://github.com/django-extensions/django-extensions/issues",
+    },
 )

@@ -2,10 +2,8 @@
 #
 # Autocomplete feature for admin panel
 #
-import six
 import operator
-from functools import update_wrapper
-from six.moves import reduce
+from functools import update_wrapper, reduce
 from typing import Tuple, Dict, Callable  # NOQA
 
 from django.apps import apps
@@ -52,7 +50,7 @@ class ForeignKeyAutocompleteAdminMixin:
     autocomplete_limit = getattr(settings, 'FOREIGNKEY_AUTOCOMPLETE_LIMIT', None)
 
     def get_urls(self):
-        from django.conf.urls import url
+        from django.urls import path
 
         def wrap(view):
             def wrapper(*args, **kwargs):
@@ -60,7 +58,7 @@ class ForeignKeyAutocompleteAdminMixin:
             return update_wrapper(wrapper, view)
 
         return [
-            url(r'foreignkey_autocomplete/$', wrap(self.foreignkey_autocomplete),
+            path('foreignkey_autocomplete/', wrap(self.foreignkey_autocomplete),
                 name='%s_%s_autocomplete' % (self.model._meta.app_label, self.model._meta.model_name))
         ] + super().get_urls()
 
@@ -111,7 +109,7 @@ class ForeignKeyAutocompleteAdminMixin:
                 if self.autocomplete_limit:
                     queryset = queryset[:self.autocomplete_limit]
 
-                data = ''.join([six.u('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset])
+                data = ''.join([str('%s|%s\n') % (to_string_function(f), f.pk) for f in queryset])
             elif object_pk:
                 try:
                     obj = queryset.get(pk=object_pk)
@@ -149,7 +147,7 @@ class ForeignKeyAutocompleteAdminMixin:
         if isinstance(db_field, models.ForeignKey) and db_field.name in self.related_search_fields:
             help_text = self.get_help_text(db_field.name, db_field.remote_field.model._meta.object_name)
             if kwargs.get('help_text'):
-                help_text = six.u('%s %s' % (kwargs['help_text'], help_text))
+                help_text = str('%s %s') % (kwargs['help_text'], help_text)
             kwargs['widget'] = ForeignKeySearchInput(db_field.remote_field, self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
         return super().formfield_for_dbfield(db_field, **kwargs)

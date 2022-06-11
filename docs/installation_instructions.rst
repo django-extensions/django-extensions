@@ -4,18 +4,15 @@ Installation instructions
 :synopsis: Installing django-extensions
 
 
-Installation
-------------
-
-For usage
-^^^^^^^^^
+Installing
+----------
 
 You can use pip to install django-extensions for usage::
 
   $ pip install django-extensions
 
-For development
-^^^^^^^^^^^^^^^
+Development
+-----------
 
 Django-extensions is hosted on github::
 
@@ -24,7 +21,7 @@ Django-extensions is hosted on github::
 Source code can be accessed by performing a Git clone.
 
 Tracking the development version of *django command extensions* should be
-pretty stable and will keep you up-to-date with the latests fixes.
+pretty stable and will keep you up-to-date with the latest fixes.
 
   $ pip install -e git+https://github.com/django-extensions/django-extensions.git#egg=django-extensions
 
@@ -44,7 +41,7 @@ likely also new goodies to play with.
 
 
 Configuration
-^^^^^^^^^^^^^
+-------------
 
 You will need to add the *django_extensions* application to the INSTALLED_APPS
 setting of your Django project *settings.py* file.::

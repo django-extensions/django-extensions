@@ -1,7 +1,7 @@
-Model extensions
+Model Extensions
 ================
 
-:synopsis: Current Model Extensions
+:synopsis: Model Extensions
 
 Introduction
 ------------
@@ -10,13 +10,13 @@ Django Extensions provides you a set of Abstract Base Classes for models
 that implements commonly used patterns like holding the model's creation
 and last modification dates.
 
-Current Database Model Extensions
----------------------------------
+Database Model Extensions
+-------------------------
 
 * *ActivatorModel* - Abstract Base Class that provides a ``status``,
   ``activate_date``, and ``deactivate_date`` fields.
 
-The ``status`` field is an ``IntegerField`` whose value is choosen from a tuple
+The ``status`` field is an ``IntegerField`` whose value is chosen from a tuple
 of choices - active and inactive - defaulting to active. This model also
 exposes a custom manager, allowing the user to easily query for active or
 inactive objects.

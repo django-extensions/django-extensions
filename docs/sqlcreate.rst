@@ -13,7 +13,7 @@ information, so DRY.
 Usage
 -------------
 
-  $ python manage.py sqlcreate [--router=<routername>] | <my_database_shell_command>
+  $ python manage.py sqlcreate [--database=<databasename>] | <my_database_shell_command>
 
 It will spit out SQL which you can review (if you want). Ultimately you want to
 pipe it into the database shell command of your choice.
@@ -27,12 +27,17 @@ Example
 
 PostgreSQL
 ~~~~~~~~~~
-  $ ./manage.py sqlcreate [--router=<routername>] | psql -U <db_administrator> -W
+  $ ./manage.py sqlcreate [--database=<databasename>] | psql -U <db_administrator> -W
+
+.. note::
+    If `USER` or `PASSWORD` are empty string or None, the `sqlcreate` assumes that unix domain
+    socket connection mode is being used, and because of that the SQL clauses `CREATE USER` and
+    privilege grants to the database and database user are not generated.
 
 
 MySQL
 ~~~~~
-  $ ./manage.py sqlcreate [--router=<routername>] | mysql -u <db_administrator> -p
+  $ ./manage.py sqlcreate [--database=<databasename>] | mysql -u <db_administrator> -p
 
 
 Known Issues
