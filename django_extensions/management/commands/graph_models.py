@@ -153,6 +153,12 @@ class Command(BaseCommand):
                 'dest': 'relations_as_fields',
                 'help': 'Do not show relations as fields in the graph.',
             },
+            '--relation-fields-only': {
+                'action': 'store',
+                'default': False,
+                'dest': 'relation_fields_only',
+                'help': 'Only display fields that are relevant for relations',
+            },
             '--disable-sort-fields -S': {
                 'action': 'store_false',
                 'default': True,
