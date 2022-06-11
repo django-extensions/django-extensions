@@ -107,6 +107,8 @@ Command Extensions
   test via some automated system (BuildBot, Jenkins, etc) and making sure that
   the test database is always dropped at the end.
 
+* *raise_test_exception* - Raises a test exception via command. Useful for debugging error reporters such as Sentry.
+
 * :doc:`reset_db` - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
