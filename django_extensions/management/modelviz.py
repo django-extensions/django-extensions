@@ -13,11 +13,12 @@ import os
 import re
 
 from django.apps import apps
-from django.db.models.fields.reverse_related import (
-    OneToOneRel, ManyToOneRel,
-)
+from django.db.models import deletion
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
+)
+from django.db.models.fields.reverse_related import (
+    OneToOneRel, ManyToOneRel,
 )
 from django.contrib.contenttypes.fields import GenericRelation
 from django.template import Context, Template, loader
@@ -46,6 +47,17 @@ __contributors__ = [
     "Daniel Lipsitt <danlipsitt@gmail.com>",
     "Tobias Mitterdorfer <tobias.mitterdorfer97@gmail.com>"
 ]
+
+
+ON_DELETE_COLORS = {
+    deletion.CASCADE: 'red',
+    deletion.PROTECT: 'blue',
+    deletion.SET_NULL: 'orange',
+    deletion.SET_DEFAULT: 'green',
+    deletion.SET: 'yellow',
+    deletion.DO_NOTHING: 'grey',
+    deletion.RESTRICT: 'purple',
+}
 
 
 def parse_file_or_list(arg):
@@ -85,10 +97,12 @@ class ModelGraph:
         )
         self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
         self.arrow_shape = kwargs.get("arrow_shape")
+        self.color_code_deletions = kwargs.get("color_code_deletions", False)
         if self.all_applications:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
             self.app_labels = app_labels
+        self.rankdir = kwargs.get("rankdir")
 
     def generate_graph_data(self):
         self.process_apps()
@@ -112,6 +126,7 @@ class ModelGraph:
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
             'use_subgraph': self.use_subgraph,
+            'rankdir': self.rankdir,
         }
 
         if as_json:
@@ -155,7 +170,7 @@ class ModelGraph:
             'primary_key': field.primary_key,
         }
 
-    def add_relation(self, field, model, extras=""):
+    def add_relation(self, field, model, extras="", color=None):
         if self.verbose_names and field.verbose_name:
             label = force_str(field.verbose_name)
             if label.islower():
@@ -185,6 +200,9 @@ class ModelGraph:
                 target_model = apps.get_model(app_label, model_name)
         else:
             target_model = field.remote_field.model
+
+        if color:
+            extras = '[{}, color={}]'.format(extras[1:-1], color)
 
         _rel = self.get_relation_context(target_model, field, label, extras)
 
@@ -340,9 +358,15 @@ class ModelGraph:
             # excluding field redundant with inheritance relation
             # excluding fields inherited from abstract classes. they too show as local_fields
             return newmodel
+
+        color = None
+        if self.color_code_deletions and isinstance(field, (OneToOneField, ForeignKey)):
+            field_on_delete = getattr(field.remote_field, 'on_delete', None)
+            color = ON_DELETE_COLORS.get(field_on_delete)
+
         if isinstance(field, OneToOneField):
             relation = self.add_relation(
-                field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]'
+                field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]', color
             )
         elif isinstance(field, ForeignKey):
             relation = self.add_relation(
@@ -351,6 +375,7 @@ class ModelGraph:
                 '[arrowhead=none, arrowtail={}, dir=both]'.format(
                     self.arrow_shape
                 ),
+                color
             )
         else:
             relation = None

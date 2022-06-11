@@ -9,3 +9,8 @@ requests
 mock
 pygments
 vobject
+
+types-pyOpenSSL
+types-PyYAML
+types-boto
+types-requests

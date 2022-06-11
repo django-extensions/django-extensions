@@ -81,12 +81,40 @@ db.sqlite3
 
         self.assertEqual(expected_result, m_stdout.getvalue())
 
+    @override_settings(DATABASES={'default': SQLITE3_DATABASE_SETTINGS})
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_uri_for_default_sqlite3_database(self, m_stdout):
+        expected_result = """DSN for database 'default' with engine 'django.db.backends.sqlite3':
+sqlite:///db.sqlite3
+"""
+        call_command('sqldsn', '--style=uri')
+
+        self.assertEqual(expected_result, m_stdout.getvalue())
+
     @override_settings(DATABASES={'default': MYSQL_DATABASE_SETTINGS})
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_print_quiet_info_for_mysql_database(self, m_stdout):
         expected_result = """host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"
 """
         call_command('sqldsn', '-q')
+
+        self.assertEqual(expected_result, m_stdout.getvalue())
+
+    @override_settings(DATABASES={'default': MYSQL_DATABASE_SETTINGS})
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_quiet_uri_for_mysql_database(self, m_stdout):
+        expected_result = """mysql://foo:bar@127.0.0.1:3306/dbatabase
+"""
+        call_command('sqldsn', '-q', '--style=uri')
+
+        self.assertEqual(expected_result, m_stdout.getvalue())
+
+    @override_settings(DATABASES={'default': MYSQL_DATABASE_SETTINGS})
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_should_print_quiet_args_for_mysql_database(self, m_stdout):
+        expected_result = """-h "127.0.0.1" -D "dbatabase" -u "foo" -p "bar" -P 3306
+"""
+        call_command('sqldsn', '-q', '--style=args')
 
         self.assertEqual(expected_result, m_stdout.getvalue())
 
@@ -160,7 +188,7 @@ host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"'''
         test_sqlite3 = """DSN for database 'test' with engine 'django.db.backends.sqlite3':
 db.sqlite3"""
         unknown = """DSN for database 'unknown' with engine 'django.db.backends.unknown':
-Unknown database, cant generate DSN"""
+Unknown database, can't generate DSN"""
 
         call_command('sqldsn', '--all')
 
@@ -189,7 +217,7 @@ host="127.0.0.1", db="dbatabase", user="foo", passwd="bar", port="3306"'''
         test_sqlite3 = """DSN for database 'test' with engine 'django.db.backends.sqlite3':
 db.sqlite3"""
         unknown = """DSN for database 'unknown' with engine 'django.db.backends.unknown':
-Unknown database, cant generate DSN"""
+Unknown database, can't generate DSN"""
 
         call_command('sqldsn', '--all', '--style=all')
 

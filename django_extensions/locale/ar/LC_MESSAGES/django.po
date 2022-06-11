@@ -1,0 +1,109 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-06-06 11:44+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin/__init__.py:139
+msgid "and"
+msgstr "و"
+
+#: admin/__init__.py:141
+#, python-format
+msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
+msgstr "إستعمل الحقل الأيسر من (model_name)% لبحث ضمن الأحقال التالية (field_list)% "
+
+#: admin/filter.py:24 admin/filter.py:53
+msgid "Yes"
+msgstr "نعم"
+
+#: admin/filter.py:25 admin/filter.py:54
+msgid "No"
+msgstr "لا"
+
+#: admin/filter.py:32
+msgid "All"
+msgstr "كل"
+
+#: db/models.py:18
+msgid "created"
+msgstr "تم تكونه"
+
+#: db/models.py:19
+msgid "modified"
+msgstr "تم تعديله"
+
+#: db/models.py:37
+msgid "title"
+msgstr "عنوان"
+
+#: db/models.py:38
+msgid "description"
+msgstr "وصف"
+
+#: db/models.py:59
+msgid "slug"
+msgstr "رابط "
+
+#: db/models.py:120 mongodb/models.py:76
+msgid "Inactive"
+msgstr "غير نشط"
+
+#: db/models.py:121 mongodb/models.py:77
+msgid "Active"
+msgstr "نشط"
+
+#: db/models.py:123
+msgid "status"
+msgstr "الحالة"
+
+#: db/models.py:124 mongodb/models.py:80
+msgid "keep empty for an immediate activation"
+msgstr "أترك الحقل فارغ ليتم التنشيط مباشرة"
+
+#: db/models.py:125 mongodb/models.py:81
+msgid "keep empty for indefinite activation"
+msgstr "أترك الحقل فارغ لتنشيط لمدة غير محددة"
+
+#: mongodb/fields/__init__.py:22
+#, python-format
+msgid "String (up to %(max_length)s)"
+msgstr "سلسلة الإحرف (طولها يصل إلى %(max_length))"
+
+#: validators.py:14
+msgid "Control Characters like new lines or tabs are not allowed."
+msgstr "لا يسمح  إستعمال أحرف تحكم مثل حرف العودة إلى السطر أو علامات التبويب"
+
+#: validators.py:48
+msgid "Leading and Trailing whitespaces are not allowed."
+msgstr "المسافات البيضاء الزائدة عند البداية أو نهاية غير مسموح بها"
+
+#: validators.py:74
+msgid "Only a hex string is allowed."
+msgstr "مسموح إستعمال سلسلة أحرف hex فقط"
+
+#: validators.py:75
+#, python-format
+msgid "Invalid length. Must be %(length)d characters."
+msgstr "الطول غير مقبول, يجب أن لا يكون أطول من %(length)d"
+
+#: validators.py:76
+#, python-format
+msgid "Ensure that there are more than %(min)s characters."
+msgstr "تأكد أن طول سلسلة الإحرف أطول من (min)% "
+
+#: validators.py:77
+#, python-format
+msgid "Ensure that there are no more than %(max)s characters."
+msgstr "تأكد أن طول سلسلة الأحرف لا تتجوز (max)% "

@@ -19,3 +19,4 @@ htmlcov/
 django-sample-app*/
 *.swp
 *.swo
+*.sqlite3

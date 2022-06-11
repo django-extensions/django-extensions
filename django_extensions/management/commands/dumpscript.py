@@ -41,7 +41,7 @@ from django.db.models import (
 )
 from django.db.models.deletion import Collector
 from django.utils import timezone
-from django.utils.encoding import force_str, smart_text
+from django.utils.encoding import force_str, smart_str
 
 from django_extensions.management.utils import signalcommand
 
@@ -205,7 +205,7 @@ class ModelCode(Code):
         Return a dictionary of import statements, with the variable being
         defined as the key.
         """
-        return {self.model.__name__: smart_text(self.model.__module__)}
+        return {self.model.__name__: smart_str(self.model.__module__)}
     imports = property(get_imports)
 
     def get_lines(self):
