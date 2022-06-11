@@ -255,7 +255,7 @@ class Command(BaseCommand):
             ksm = app.kernel_spec_manager
             for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
                 roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-                
+
                 for root in roots:
                     kernel_dir = os.path.join(root, kid)
                     try:
