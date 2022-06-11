@@ -67,4 +67,3 @@ Check out to the "master" branch back and rollback a database state with just on
 If you need to add some improvements to your feature, just use::
 
     $ ./manage.py managestate load super-feature
-

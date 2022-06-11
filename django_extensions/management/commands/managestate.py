@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 from operator import itemgetter
 from pathlib import Path
