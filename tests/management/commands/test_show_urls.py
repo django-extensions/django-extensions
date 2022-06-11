@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from io import StringIO
 
-from django.conf.urls import url
+from django.urls import path
 from django.core.management import CommandError, call_command
 from django.http import HttpResponse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.views.generic.base import View
+from django import VERSION
 
 from unittest.mock import Mock, patch
 
@@ -20,9 +21,9 @@ class ClassView(View):
 
 
 urlpatterns = [
-    url(r'lambda/view', lambda request: HttpResponse('OK')),
-    url(r'function/based/', function_based_view, name='function-based-view'),
-    url(r'class/based/', ClassView.as_view(), name='class-based-view'),
+    path('lambda/view', lambda request: HttpResponse('OK')),
+    path('function/based/', function_based_view, name='function-based-view'),
+    path('class/based/', ClassView.as_view(), name='class-based-view'),
 ]
 
 
@@ -57,14 +58,23 @@ class ShowUrlsTests(TestCase):
         lines = m_stdout.getvalue().splitlines()
         self.assertIn('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[0])
         self.assertIn('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
-        self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[2])
+
+        if VERSION >= (4, 0):
+            self.assertIn('/class/based/\ttests.management.commands.test_show_urls.view\tclass-based-view', lines[2])
+        else:
+            self.assertIn('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[2])
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_sorted_alphabetically(self, m_stdout):
         call_command('show_urls', verbosity=3)
 
         lines = m_stdout.getvalue().splitlines()
-        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+
+        if VERSION >= (4, 0):
+            self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.view\tclass-based-view', lines[0])
+        else:
+            self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+
         self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
         self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])
 
@@ -72,29 +82,45 @@ class ShowUrlsTests(TestCase):
     def test_should_show_urls_in_json_format(self, m_stdout):
         call_command('show_urls', '--format=json')
 
-        self.assertJSONEqual(m_stdout.getvalue(), [
+        json = [
             {"url": "/lambda/view", "module": "tests.management.commands.test_show_urls.<lambda>", "name": "", "decorators": ""},
-            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""},
-            {"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""}
-        ])
+            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""}
+        ]
+
+        if VERSION >= (4, 0):
+            json.append({"url": "/class/based/", "module": "tests.management.commands.test_show_urls.view", "name": "class-based-view", "decorators": ""})
+        else:
+            json.append({"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""})
+
+        self.assertJSONEqual(m_stdout.getvalue(), json)
         self.assertEqual(len(m_stdout.getvalue().splitlines()), 1)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_in_pretty_json_format(self, m_stdout):
         call_command('show_urls', '--format=pretty-json')
 
-        self.assertJSONEqual(m_stdout.getvalue(), [
+        json = [
             {"url": "/lambda/view", "module": "tests.management.commands.test_show_urls.<lambda>", "name": "", "decorators": ""},
-            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""},
-            {"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""}
-        ])
+            {"url": "/function/based/", "module": "tests.management.commands.test_show_urls.function_based_view", "name": "function-based-view", "decorators": ""}
+        ]
+
+        if VERSION >= (4, 0):
+            json.append({"url": "/class/based/", "module": "tests.management.commands.test_show_urls.view", "name": "class-based-view", "decorators": ""})
+        else:
+            json.append({"url": "/class/based/", "module": "tests.management.commands.test_show_urls.ClassView", "name": "class-based-view", "decorators": ""})
+
+        self.assertJSONEqual(m_stdout.getvalue(), json)
         self.assertEqual(len(m_stdout.getvalue().splitlines()), 20)
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_should_show_urls_in_table_format(self, m_stdout):
         call_command('show_urls', '--format=table')
 
-        self.assertIn('/class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
+        if VERSION >= (4, 0):
+            self.assertIn('/class/based/    | tests.management.commands.test_show_urls.view                | class-based-view    |', m_stdout.getvalue())
+        else:
+            self.assertIn('/class/based/    | tests.management.commands.test_show_urls.ClassView           | class-based-view    |', m_stdout.getvalue())
+
         self.assertIn('/function/based/ | tests.management.commands.test_show_urls.function_based_view | function-based-view |', m_stdout.getvalue())
         self.assertIn('/lambda/view     | tests.management.commands.test_show_urls.<lambda>            |                     |', m_stdout.getvalue())
 
@@ -103,7 +129,12 @@ class ShowUrlsTests(TestCase):
         call_command('show_urls', '--format=aligned')
 
         lines = m_stdout.getvalue().splitlines()
-        self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ', lines[0])
+
+        if VERSION >= (4, 0):
+            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.view                  class-based-view      ', lines[0])
+        else:
+            self.assertEqual('/class/based/      tests.management.commands.test_show_urls.ClassView             class-based-view      ', lines[0])
+
         self.assertEqual('/function/based/   tests.management.commands.test_show_urls.function_based_view   function-based-view   ', lines[1])
         self.assertEqual('/lambda/view       tests.management.commands.test_show_urls.<lambda>                                    ', lines[2])
 
@@ -112,6 +143,11 @@ class ShowUrlsTests(TestCase):
         call_command('show_urls', '--no-color')
 
         lines = m_stdout.getvalue().splitlines()
-        self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+
+        if VERSION >= (4, 0):
+            self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.view\tclass-based-view', lines[0])
+        else:
+            self.assertEqual('/class/based/\ttests.management.commands.test_show_urls.ClassView\tclass-based-view', lines[0])
+
         self.assertEqual('/function/based/\ttests.management.commands.test_show_urls.function_based_view\tfunction-based-view', lines[1])
         self.assertEqual('/lambda/view\ttests.management.commands.test_show_urls.<lambda>', lines[2])

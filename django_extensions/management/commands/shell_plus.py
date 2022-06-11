@@ -85,6 +85,10 @@ class Command(BaseCommand):
             help="Print SQL queries as they're executed"
         )
         parser.add_argument(
+            '--truncate-sql', action='store', type=int,
+            help="Truncate SQL queries to a number of characters."
+        )
+        parser.add_argument(
             '--print-sql-location', action='store_true',
             default=False,
             help="Show location in code where SQL query generated from"
@@ -251,23 +255,19 @@ class Command(BaseCommand):
             ksm = app.kernel_spec_manager
             for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
                 roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-                success = False
+
                 for root in roots:
                     kernel_dir = os.path.join(root, kid)
                     try:
                         if not os.path.exists(kernel_dir):
                             os.makedirs(kernel_dir)
-
                         with open(os.path.join(kernel_dir, 'kernel.json'), 'w') as f:
                             f.write(ks.to_json())
-
-                        success = True
                         break
                     except OSError:
                         continue
-
-                if not success:
-                    raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
+                else:
+                    raise CommandError('Could not write kernel %r in directories %r' % (kid, roots))
 
         app.start()
 
@@ -508,8 +508,9 @@ for k, m in shells.import_objects({}, no_style()).items():
         print_sql = getattr(settings, 'SHELL_PLUS_PRINT_SQL', False)
         runner = None
         runner_name = None
+        truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
 
-        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"] or print_sql, truncate=truncate, print_sql_location=options["print_sql_location"], confprefix="SHELL_PLUS"):
             SETTINGS_SHELL_PLUS = getattr(settings, 'SHELL_PLUS', None)
 
             def get_runner_by_flag(flag):
