@@ -3,25 +3,27 @@ import json
 from operator import itemgetter
 from pathlib import Path
 
-from django import get_version
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.utils import timezone
-from django.utils.version import get_version_tuple
+
+from django_extensions.management.utils import signalcommand
 
 DEFAULT_FILENAME = 'managestate.json'
 DEFAULT_STATE = 'default'
-VERSION = get_version_tuple(get_version())
 
 
 class Command(BaseCommand):
     help = 'Manage database state in the convenient way.'
-    conn = database = filename = verbosity = None
-    migrate_args = migrate_options = None
+    conn = database = None
     _applied_migrations = None
+    migrate_args: dict
+    migrate_options: dict
+    filename: str
+    verbosity: int
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -77,6 +79,7 @@ class Command(BaseCommand):
                  'Exits with a non-zero status if unapplied migrations exist.',
         )
 
+    @signalcommand
     def handle(self, action, database, filename, state, *args, **options):
         self.migrate_args = args
         self.migrate_options = options
@@ -100,9 +103,6 @@ class Command(BaseCommand):
         migrations = self.read().get(state)
         if migrations is None:
             raise CommandError(f'No such state saved: {state}')
-
-        if VERSION < (3, 0):
-            self.migrate_options.pop('check_unapplied', None)
 
         kwargs = {
             **self.migrate_options,
@@ -137,8 +137,7 @@ class Command(BaseCommand):
             return self._applied_migrations
 
         migrations = MigrationRecorder(self.conn).applied_migrations()
-        migrations = migrations if VERSION < (3, 0) else migrations.keys()
-        last_applied = sorted(migrations, key=itemgetter(1))
+        last_applied = sorted(migrations.keys(), key=itemgetter(1))
 
         self._applied_migrations = dict(last_applied)
         return self._applied_migrations
