@@ -319,7 +319,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     include_punctuation
         If set to True, include punctuation characters (default: False)
-    
+
     keep_default
         If set to True, keeps the default initialization value (default: False)
     """
