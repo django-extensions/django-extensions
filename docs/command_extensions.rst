@@ -108,7 +108,6 @@ Command Extensions
   the test database is always dropped at the end.
 
 * *raise_test_exception* - Raises a test exception via command. Useful for debugging error reporters such as Sentry.
-  settings.py module.
 
 * :doc:`reset_db` - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
 
