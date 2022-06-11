@@ -1,0 +1,9 @@
+[
+   {
+      "pk" : 2,
+      "fields" : {
+         "global_id" : "must be unique"
+      },
+      "model" : "testapp.UniqueTestAppModel"
+   }
+]
