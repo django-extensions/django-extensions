@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
-import six
 import shutil
+from io import StringIO
 from tempfile import mkdtemp
 
 from django.conf import settings
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
 
 def test_validate_templates():
@@ -33,7 +32,7 @@ class ValidateTemplatesTests(TestCase):
 
     def test_should_print_that_there_is_error(self):
         with override_settings(INSTALLED_APPS=settings.INSTALLED_APPS + ['tests.testapp_with_template_errors']):
-            with six.assertRaisesRegex(self, CommandError, '1 errors found'):
+            with self.assertRaisesRegex(CommandError, '1 errors found'):
                 call_command('validate_templates', verbosity=3)
 
     def test_should_not_print_any_errors_if_template_in_VALIDATE_TEMPLATES_IGNORES(self):
@@ -65,5 +64,5 @@ class ValidateTemplatesTests(TestCase):
         with open(fn, 'w') as f:
             f.write("""{% invalid_tag %}""")
 
-        with six.assertRaisesRegex(self, CommandError, 'Errors found'):
+        with self.assertRaisesRegex(CommandError, 'Errors found'):
             call_command('validate_templates', '-i', self.tempdir, '-b', verbosity=3)

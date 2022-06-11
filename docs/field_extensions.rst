@@ -1,7 +1,7 @@
 Field Extensions
 ================
 
-:synopsis: Current Field Extensions
+:synopsis: Field Extensions
 
 
 Current Database Model Field Extensions

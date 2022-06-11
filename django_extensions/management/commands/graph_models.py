@@ -4,7 +4,6 @@ import json
 import os
 import tempfile
 
-import six
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import loader
@@ -172,7 +171,14 @@ class Command(BaseCommand):
                 'dest': 'arrow_shape',
                 'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
                 'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
-            }
+            },
+            '--rankdir': {
+                'action': 'store',
+                'default': 'TB',
+                'dest': 'rankdir',
+                'choices': ['TB', 'BT', 'LR', 'RL'],
+                'help': 'Set direction of graph layout. Supported directions: "TB", "LR", "BT", "RL", corresponding to directed graphs drawn from top to bottom, from left to right, from bottom to top, and from right to left, respectively. Default is TB.'
+            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -196,7 +202,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         args = options['app_label']
         if not args and not options['all_applications']:
-            raise CommandError("need one or more arguments for appname")
+            default_app_labels = getattr(settings, 'GRAPH_MODELS', {}).get("app_labels")
+            if default_app_labels:
+                args = default_app_labels
+            else:
+                raise CommandError("need one or more arguments for appname")
 
         # Determine output format based on options, file extension, and library
         # availability.
@@ -226,6 +236,9 @@ class Command(BaseCommand):
             output = "pydot"
         else:
             raise CommandError("Neither pygraphviz nor pydotplus could be found to generate the image. To generate text output, use the --json or --dot options.")
+
+        if options.get('rankdir') != 'TB' and output not in ["pydot", "pygraphviz", "dot"]:
+            raise CommandError("--rankdir is not supported for the chosen output format")
 
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
@@ -257,7 +270,7 @@ class Command(BaseCommand):
 
     def print_output(self, dotdata, output_file=None):
         """Write model data to file or stdout in DOT (text) format."""
-        if isinstance(dotdata, six.binary_type):
+        if isinstance(dotdata, bytes):
             dotdata = dotdata.decode()
 
         if output_file:

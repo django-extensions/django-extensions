@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 import logging
 import sys
-import six
+from io import StringIO
 
 from django.core.management import call_command
 from django.test import TestCase
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 class RunJobTests(TestCase):
 
     def setUp(self):
-        sys.stdout = six.StringIO()
-        sys.stderr = six.StringIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
 
         # Remove old loggers, since utils.setup_logger does not clean up after itself
         logger = logging.getLogger("django_extensions.management.commands.runjob")
@@ -35,7 +32,7 @@ class RunJobTests(TestCase):
 
     def test_list_jobs(self):
         call_command('runjob', '-l', verbosity=2)
-        six.assertRegex(self, sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
+        self.assertRegex(sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
 
     def test_list_jobs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={
@@ -43,7 +40,7 @@ class RunJobTests(TestCase):
             'remove': 'tests.testapp',
         }):
             call_command('runjob', '-l', verbosity=2)
-            six.assertRegex(self, sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
+            self.assertRegex(sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
 
     def test_runs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={

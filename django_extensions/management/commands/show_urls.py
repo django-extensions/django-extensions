@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+
 import functools
 import json
 import re
 
-import django
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
@@ -13,34 +13,24 @@ from django.utils import translation
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
 
-if django.VERSION >= (2, 0):
-    from django.urls import URLPattern, URLResolver  # type: ignore
+from django.urls import URLPattern, URLResolver  # type: ignore
 
-    class RegexURLPattern:  # type: ignore
-        pass
 
-    class RegexURLResolver:  # type: ignore
-        pass
+class RegexURLPattern:  # type: ignore
+    pass
 
-    class LocaleRegexURLResolver:  # type: ignore
-        pass
 
-    def describe_pattern(p):
-        return str(p.pattern)
-else:
-    try:
-        from django.urls import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
-    except ImportError:
-        from django.core.urlresolvers import RegexURLPattern, RegexURLResolver, LocaleRegexURLResolver  # type: ignore
+class RegexURLResolver:  # type: ignore
+    pass
 
-    class URLPattern:  # type: ignore
-        pass
 
-    class URLResolver:  # type: ignore
-        pass
+class LocaleRegexURLResolver:  # type: ignore
+    pass
 
-    def describe_pattern(p):
-        return p.regex.pattern
+
+def describe_pattern(p):
+    return str(p.pattern)
+
 
 FMTR = {
     'dense': "{url}\t{module}\t{url_name}\t{decorator}",

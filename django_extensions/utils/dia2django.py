@@ -17,8 +17,6 @@ import re
 import sys
 from xml.dom.minidom import Node, parseString
 
-import six
-
 dependclasses = ["User", "Group", "Permission", "Message"]
 
 # Type dictionary translation types SQL -> Django
@@ -79,7 +77,7 @@ def dia2django(archivo):
     datos = ppal.getElementsByTagName("dia:diagram")[0].getElementsByTagName("dia:layer")[0].getElementsByTagName("dia:object")
     clases = {}
     herit = []
-    imports = six.u("")
+    imports = str("")
     for i in datos:
         # Look for the classes
         if i.getAttribute("type") == "UML - Class":
@@ -169,13 +167,13 @@ def dia2django(archivo):
             a = i.getElementsByTagName("dia:string")
             for j in a:
                 if len(j.childNodes[0].data[1:-1]):
-                    imports += six.u("from %s.models import *" % j.childNodes[0].data[1:-1])
+                    imports += str("from %s.models import *" % j.childNodes[0].data[1:-1])
 
     addparentstofks(herit, clases)
     # Ordering the appearance of classes
     # First we make a list of the classes each classs is related to.
     ordered = []
-    for j, k in six.iteritems(clases):
+    for j, k in clases.items():
         k[2] += "\n    def __str__(self):\n        return u\"\"\n"
         for fk in k[0]:
             if fk not in dependclasses:

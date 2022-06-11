@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
-import six
 from django.db import models
 from django.test import TestCase
 from tests.testapp.models import (
@@ -20,7 +16,7 @@ class UniqFieldMixinTestCase(TestCase):
 
         class MockField(UniqueFieldMixin):
             def __init__(self, **kwargs):
-                for key, value in six.iteritems(kwargs):
+                for key, value in kwargs.items():
                     setattr(self, key, value)
 
         self.uniq_field = MockField(

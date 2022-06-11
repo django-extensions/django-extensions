@@ -12,7 +12,6 @@ import datetime
 import os
 import re
 
-import six
 from django.apps import apps
 from django.db.models.fields.related import (
     ForeignKey, ManyToManyField, OneToOneField, RelatedField,
@@ -85,6 +84,7 @@ class ModelGraph:
             self.app_labels = [app.label for app in apps.get_app_configs()]
         else:
             self.app_labels = app_labels
+        self.rankdir = kwargs.get("rankdir")
 
     def generate_graph_data(self):
         self.process_apps()
@@ -108,6 +108,7 @@ class ModelGraph:
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
             'use_subgraph': self.use_subgraph,
+            'rankdir': self.rankdir,
         }
 
         if as_json:
@@ -143,7 +144,10 @@ class ModelGraph:
             'label': label,
             'type': t,
             'blank': field.blank,
-            'abstract': field in abstract_fields,
+            'abstract': any(
+                field.creation_counter == abstract_field.creation_counter
+                for abstract_field in abstract_fields
+            ),
             'relation': isinstance(field, RelatedField),
             'primary_key': field.primary_key,
         }
@@ -166,7 +170,7 @@ class ModelGraph:
             label = ''
 
         # handle self-relationships and lazy-relationships
-        if isinstance(field.remote_field.model, six.string_types):
+        if isinstance(field.remote_field.model, str):
             if field.remote_field.model == 'self':
                 target_model = field.model
             else:
@@ -416,7 +420,7 @@ class ModelGraph:
 
 
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
-    if isinstance(template, six.string_types):
+    if isinstance(template, str):
         template = loader.get_template(template)
 
     if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):

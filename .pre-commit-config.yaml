@@ -1,4 +1,4 @@
--   repo: git://github.com/pre-commit/pre-commit-hooks
+-   repo: https://github.com/pre-commit/pre-commit-hooks
     sha: v0.9.1
     hooks:
     -   id: trailing-whitespace
@@ -19,12 +19,12 @@
     -   id: name-tests-test
         args:
         - --django
-        exclude: ^tests/testapp|^tests/management/|^tests/collisions/|^tests/pythonrc.py
--   repo: git://github.com/Lucas-C/pre-commit-hooks.git
+        exclude: ^tests/testapp|^tests/management/|^tests/collisions/|^tests/pythonrc.py|^tests/runner.py
+-   repo: https://github.com/Lucas-C/pre-commit-hooks.git
     sha: v1.0.1
     hooks:
     -   id: forbid-crlf
--   repo: git://github.com/trbs/pre-commit-hooks-trbs.git
+-   repo: https://github.com/trbs/pre-commit-hooks-trbs.git
     sha: e233916fb2b4b9019b4a3cc0497994c7926fe36b
     hooks:
     -   id: forbid-executables

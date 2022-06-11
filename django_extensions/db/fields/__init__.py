@@ -6,7 +6,6 @@ Some fields might require additional dependencies to be installed.
 """
 
 import re
-import six
 import string
 
 try:
@@ -23,7 +22,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import DateTimeField, CharField, SlugField, Q
+from django.db.models import DateTimeField, CharField, SlugField, Q, UniqueConstraint
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
@@ -70,19 +69,22 @@ class UniqueFieldMixin:
         query = Q()
         constraints = getattr(model_instance._meta, 'constraints', None)
         if constraints:
-            for constraint in constraints:
-                if self.attname in constraint.fields:
+            unique_constraints = filter(
+                lambda c: isinstance(c, UniqueConstraint), constraints
+            )
+            for unique_constraint in unique_constraints:
+                if self.attname in unique_constraint.fields:
                     condition = {
                         field: getattr(model_instance, field, None)
-                        for field in constraint.fields
+                        for field in unique_constraint.fields
                         if field != self.attname
                     }
                     query &= Q(**condition)
 
-        new = six.next(iterator)
+        new = next(iterator)
         kwargs[self.attname] = new
         while not new or queryset.filter(query, **kwargs):
-            new = six.next(iterator)
+            new = next(iterator)
             kwargs[self.attname] = new
         setattr(model_instance, self.attname, new)
         return new
@@ -158,11 +160,11 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             if not isinstance(populate_from, (list, tuple)):
                 populate_from = (populate_from, )
 
-            if not all(isinstance(e, six.string_types) for e in populate_from):
+            if not all(isinstance(e, str) for e in populate_from):
                 raise TypeError("'populate_from' must be str or list[str] or tuple[str], found `%s`" % populate_from)
 
         self.slugify_function = kwargs.pop('slugify_function', slugify)
-        self.separator = kwargs.pop('separator', six.u('-'))
+        self.separator = kwargs.pop('separator', '-')
         self.overwrite = kwargs.pop('overwrite', False)
         self.check_is_bool('overwrite')
         self.overwrite_on_add = kwargs.pop('overwrite_on_add', True)
@@ -278,7 +280,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
         kwargs['populate_from'] = self._populate_from
-        if not self.separator == six.u('-'):
+        if not self.separator == '-':
             kwargs['separator'] = self.separator
         if self.overwrite is not False:
             kwargs['overwrite'] = True
@@ -380,7 +382,7 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
         random_chars = self.random_char_generator(population)
         if not self.unique and not self.in_unique_together(model_instance):
-            new = six.next(random_chars)
+            new = next(random_chars)
             setattr(model_instance, self.attname, new)
             return new
 

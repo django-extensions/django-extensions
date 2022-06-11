@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
 
-import six
 from django.core.handlers.wsgi import WSGIHandler
 
 tld = threading.local()
@@ -34,4 +33,12 @@ def null_technical_500_response(request, exc_type, exc_value, tb, status_code=50
     except AttributeError:
         pass
 
-    six.reraise(exc_type, exc_value, tb)
+    try:
+        if exc_value is None:
+            exc_value = exc_type()
+        if exc_value.__traceback__ is not tb:
+            raise exc_value.with_traceback(tb)
+        raise exc_value
+    finally:
+        exc_value = None
+        tb = None

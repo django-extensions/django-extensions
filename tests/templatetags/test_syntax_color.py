@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+import html
 import shutil
+
 from tempfile import mkdtemp
 
 from django.template import Context, Template
 from django.test import TestCase
-from six.moves.html_parser import HTMLParser
 
 from django_extensions.templatetags.syntax_color import generate_pygments_css
 
@@ -55,20 +56,19 @@ class SyntaxColorTagTests(TestCase):
 
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)
 
     def test_should_colorize_table_with_default_lexer(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
         content = """{% load syntax_color %}
 {{ code_string|colorize_table }}
 """
-        expected_result = '''<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">&lt;h1&gt;</span>TEST<span class="nt">&lt;/h1&gt;</span>
-</pre></div>
-</td></tr></table>'''
-
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(result, expected_result)
+        self.assertIn('<table class="highlighttable">', result)
+        self.assertIn('<td class="linenos">', result)
+        self.assertIn('>1</', result)
+        self.assertIn('<span class="nt">&lt;h1&gt;</span>TEST<span class="nt">&lt;/h1&gt;</span>', result)
 
     def test_colorize_table_should_return_value_if_lexer_class_not_found(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
@@ -78,14 +78,14 @@ class SyntaxColorTagTests(TestCase):
         expected_result = '<h1>TEST</h1>'
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)
 
     def test_should_colorize_noclasses_with_default_lexer(self):
         ctx = Context({'code_string': '<h1>TEST</h1>'})
         content = """{% load syntax_color %}
 {{ code_string|colorize_noclasses }}
 """
-        expected_result = '''<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="color: #008000; font-weight: bold">&lt;h1&gt;</span>TEST<span style="color: #008000; font-weight: bold">&lt;/h1&gt;</span>
+        expected_result = '''<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">&lt;h1&gt;</span>TEST<span style="color: #008000; font-weight: bold">&lt;/h1&gt;</span>
 </pre></div>'''
         result = Template(content).render(ctx)
 
@@ -99,4 +99,4 @@ class SyntaxColorTagTests(TestCase):
         expected_result = '<h1>TEST</h1>'
         result = Template(content).render(ctx)
 
-        self.assertHTMLEqual(HTMLParser().unescape(result), expected_result)
+        self.assertHTMLEqual(html.unescape(result), expected_result)

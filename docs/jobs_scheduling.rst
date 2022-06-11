@@ -1,4 +1,4 @@
-Jobs scheduling
+Jobs Scheduling
 ===============
 
 :synopsis: Documentation on creating/using jobs in Django-extensions

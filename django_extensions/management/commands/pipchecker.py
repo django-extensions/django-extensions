@@ -6,9 +6,10 @@ from distutils.version import LooseVersion
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-from xmlrpc.client import ServerProxy
+from xmlrpc.client import ServerProxy, Fault
 
 import pip
+from time import sleep
 from django.core.management.base import BaseCommand, CommandError
 from django_extensions.management.color import color_style
 from django_extensions.management.utils import signalcommand
@@ -21,15 +22,43 @@ try:
     try:
         from pip._internal.network.session import PipSession
     except ImportError:
-        from pip._internal.download import PipSession
+        from pip._internal.download import PipSession  # type:ignore
     from pip._internal.req.req_file import parse_requirements
-    from pip._internal.utils.misc import get_installed_distributions
+    try:
+        from pip._internal.utils.misc import get_installed_distributions  # type:ignore
+    except ImportError:
+        from typing import cast
+
+        def get_installed_distributions(
+            local_only=True,
+            include_editables=True,
+            editables_only=False,
+            user_only=False,
+            paths=None,
+        ):
+            """Return a list of installed Distribution objects.
+            Left for compatibility until direct pkg_resources uses are refactored out.
+            """
+            from pip._internal.metadata import get_default_environment, get_environment
+            from pip._internal.metadata.pkg_resources import Distribution as _Dist
+
+            if paths is None:
+                env = get_default_environment()
+            else:
+                env = get_environment(paths)
+            dists = env.iter_installed_distributions(
+                local_only=local_only,
+                include_editables=include_editables,
+                editables_only=editables_only,
+                user_only=user_only,
+            )
+            return [cast(_Dist, dist)._dist for dist in dists]
 except ImportError:
     # pip < 10
     try:
-        from pip import get_installed_distributions
-        from pip.download import PipSession
-        from pip.req import parse_requirements
+        from pip import get_installed_distributions  # type:ignore
+        from pip.download import PipSession  # type:ignore
+        from pip.req import parse_requirements  # type:ignore
     except ImportError:
         raise CommandError("Pip version 6 or higher is required")
 
@@ -145,7 +174,18 @@ class Command(BaseCommand):
             elif "dist" in req:
                 dist = req["dist"]
                 dist_version = LooseVersion(dist.version)
-                available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
+                retry = True
+                available = None
+                while retry:
+                    try:
+                        available = pypi.package_releases(req["pip_req"].name, True) or pypi.package_releases(req["pip_req"].name.replace('-', '_'), True)
+                        retry = False
+                        sleep(1)  # crude way slow down to avoid HTTPTooManyRequests
+                    except Fault as err:
+                        self.stdout.write(err.faultString)
+                        self.stdout.write("Retrying in 60 seconds!")
+                        sleep(60)
+
                 available_version = self._available_version(dist_version, available)
 
                 if not available_version:

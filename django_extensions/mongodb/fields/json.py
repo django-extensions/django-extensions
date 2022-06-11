@@ -11,13 +11,10 @@ more information.
      extra = json.JSONField()
 """
 
-from __future__ import absolute_import
-
 import datetime
 from decimal import Decimal
 
 import json
-import six
 from django.conf import settings
 from mongoengine.fields import StringField
 
@@ -68,7 +65,7 @@ class JSONField(StringField):
         """ Convert our string value to JSON after we load it from the DB """
         if not value:
             return {}
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             res = loads(value)
             assert isinstance(res, dict)
             return JSONDict(**res)

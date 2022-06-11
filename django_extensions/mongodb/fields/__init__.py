@@ -7,7 +7,6 @@ These fields are essentially identical to existing Extensions fields, but South 
 """
 
 import re
-import six
 import datetime
 from django import forms
 from django.db.models.constants import LOOKUP_SEP
@@ -71,7 +70,7 @@ class AutoSlugField(SlugField):
             self._populate_from = populate_from
 
         self.slugify_function = kwargs.pop('slugify_function', slugify)
-        self.separator = kwargs.pop('separator', six.u('-'))
+        self.separator = kwargs.pop('separator', str('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         super().__init__(*args, **kwargs)
 
@@ -165,7 +164,7 @@ class AutoSlugField(SlugField):
         return attr
 
     def pre_save(self, model_instance, add):
-        value = six.u(self.create_slug(model_instance, add))
+        value = str(self.create_slug(model_instance, add))
         setattr(model_instance, self.attname, value)
         return value
 
@@ -258,12 +257,12 @@ class UUIDField(StringField):
 
     def pre_save(self, model_instance, add):
         if self.auto and add:
-            value = six.u(self.create_uuid())
+            value = str(self.create_uuid())
             setattr(model_instance, self.attname, value)
             return value
         else:
             value = super().pre_save(model_instance, add)
             if self.auto and not value:
-                value = six.u(self.create_uuid())
+                value = str(self.create_uuid())
                 setattr(model_instance, self.attname, value)
         return value

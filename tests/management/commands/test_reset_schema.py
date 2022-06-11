@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
-import six
+from io import StringIO
+
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.test.utils import override_settings
-from six import StringIO
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 
 class ResetSchemaExceptionsTests(TestCase):
     """Tests if reset_schema command raises exceptions."""
 
-    def test_should_raise_CommandError_when_router_does_not_exist(self):
-        with six.assertRaisesRegex(self, CommandError, 'Unknown database router non-existing_router'):
-            call_command('reset_schema', '--router=non-existing_router')
+    def test_should_raise_CommandError_when_database_does_not_exist(self):
+        with self.assertRaisesRegex(CommandError, 'Unknown database non-existing_database'):
+            call_command('reset_schema', '--database=non-existing_database')
 
     @override_settings(DATABASES={
         'default': {
@@ -24,7 +21,7 @@ class ResetSchemaExceptionsTests(TestCase):
         },
     })
     def test_should_raise_CommandError_when_database_ENGINE_different_thant_postgresql(self):
-        with six.assertRaisesRegex(self, CommandError, 'This command can be used only with PostgreSQL databases.'):
+        with self.assertRaisesRegex(CommandError, 'This command can be used only with PostgreSQL databases.'):
             call_command('reset_schema')
 
 

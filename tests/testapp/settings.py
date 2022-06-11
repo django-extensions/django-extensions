@@ -3,6 +3,8 @@ import os
 
 SECRET_KEY = 'dummy'
 
+TEST_RUNNER = 'tests.runner.PytestTestRunner'
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,6 +34,10 @@ DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DJANGO_EXTENSIONS_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
         'NAME': os.environ.get('DJANGO_EXTENSIONS_DATABASE_NAME', ':memory:'),
+        'USER': os.environ.get("DJANGO_EXTENSIONS_DATABASE_USER"),
+        'PASSWORD': os.environ.get("DJANGO_EXTENSIONS_DATABASE_PASSWORD"),
+        'HOST': os.environ.get('DJANGO_EXTENSIONS_DATABASE_HOST'),
+        'PORT': os.environ.get('DJANGO_EXTENSIONS_DATABASE_PORT'),
     }
 }
 
@@ -95,3 +101,5 @@ SHELL_PLUS_POST_IMPORTS = [
     'import os as test_os',
     'from django_extensions.utils import *',
 ]
+
+SILENCED_SYSTEM_CHECKS = ["models.W027", "models.W042"]

@@ -35,11 +35,10 @@ compile-catalog:
 	done
 
 test:
-	python setup.py test
+	pytest django_extensions tests
 
-coverage:
-	coverage run --source django_extensions setup.py test
-	coverage report -m
+coverage: test
+	coverage report -i -m
 	coverage html
 
 install: clean

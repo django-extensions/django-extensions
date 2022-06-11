@@ -6,10 +6,8 @@ from django.test.utils import override_settings
 
 from django_extensions.logging.filters import RateLimiterFilter
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
+
 
 TEST_SUBJECT = 'test_subect'
 

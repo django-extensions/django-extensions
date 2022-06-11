@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import logging
 import os
 import re
 import socket
 import sys
+import traceback
+import webbrowser
+import functools
+from typing import Set
 
 import django
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, SystemCheckError
+from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
+from django.dispatch import Signal
 from django.utils.autoreload import get_reloader
+from django.views import debug as django_views_debug
 
 try:
     if 'whitenoise.runserver_nostatic' in settings.INSTALLED_APPS:
@@ -23,26 +27,101 @@ try:
 except ImportError:
     USE_STATICFILES = False
 
+try:
+    from werkzeug import run_simple
+    from werkzeug.debug import DebuggedApplication
+    from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
+    from werkzeug.serving import make_ssl_devcert
+    from werkzeug._internal import _log  # type: ignore
+    from werkzeug import _reloader
+    HAS_WERKZEUG = True
+except ImportError:
+    HAS_WERKZEUG = False
+
+try:
+    import OpenSSL  # NOQA
+    HAS_OPENSSL = True
+except ImportError:
+    HAS_OPENSSL = False
+
 from django_extensions.management.technical_response import null_technical_500_response
 from django_extensions.management.utils import RedirectHandler, has_ipdb, setup_logger, signalcommand
 from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
 
 
-def gen_filenames():
-    return get_reloader().watched_files()
-
-
+runserver_plus_started = Signal()
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
     (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
     (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
     (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
 ):)?(?P<port>\d+)$""", re.X)
+# 7-bit C1 ANSI sequences (https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python)
+ansi_escape = re.compile(r'''
+    \x1B  # ESC
+    (?:   # 7-bit C1 Fe (except CSI)
+        [@-Z\\-_]
+    |     # or [ for CSI, followed by a control sequence
+        \[
+        [0-?]*  # Parameter bytes
+        [ -/]*  # Intermediate bytes
+        [@-~]   # Final byte
+    )
+''', re.VERBOSE)
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_INTERVAL', 1)
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
+_error_files = set()  # type: Set[str]
+
+
+if HAS_WERKZEUG:
+    # Monkey patch the reloader to support adding more files to extra_files
+    for name, reloader_loop_klass in _reloader.reloader_loops.items():
+        class WrappedReloaderLoop(reloader_loop_klass):  # type: ignore
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self._extra_files = self.extra_files
+
+            @property
+            def extra_files(self):
+                return self._extra_files.union(_error_files)
+
+            @extra_files.setter
+            def extra_files(self, extra_files):
+                self._extra_files = extra_files
+
+        _reloader.reloader_loops[name] = WrappedReloaderLoop
+
+
+def gen_filenames():
+    return get_reloader().watched_files()
+
+
+def check_errors(fn):
+    # Inspired by https://github.com/django/django/blob/master/django/utils/autoreload.py
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception:
+            _exception = sys.exc_info()
+
+            _, ev, tb = _exception
+
+            if getattr(ev, 'filename', None) is None:
+                # get the filename from the last item in the stack
+                filename = traceback.extract_tb(tb)[-1][0]
+            else:
+                filename = ev.filename
+
+            if filename not in _error_files:
+                _error_files.add(filename)
+
+            raise
+
+    return wrapper
 
 
 class Command(BaseCommand):
@@ -71,6 +150,8 @@ class Command(BaseCommand):
                             help='Specifies an output file to send a copy of all messages (not flushed immediately).')
         parser.add_argument('--print-sql', action='store_true', default=False,
                             help="Print SQL queries as they're executed")
+        parser.add_argument('--truncate-sql', action='store', type=int,
+                            help="Truncate SQL queries to a number of characters.")
         parser.add_argument('--print-sql-location', action='store_true', default=False,
                             help="Show location in code where SQL query generated from")
         cert_group = parser.add_mutually_exclusive_group()
@@ -101,7 +182,7 @@ class Command(BaseCommand):
                                  "because Django debug pages tries to call the function and unintentionally shuts down "
                                  "the Werkzeug server.")
         parser.add_argument("--nopin", dest="nopin", action="store_true", default=False,
-                            help="Disable the PIN in werkzeug. USE IT WISELY!"),
+                            help="Disable the PIN in werkzeug. USE IT WISELY!")
 
         if USE_STATICFILES:
             parser.add_argument('--nostatic', action="store_false", dest='use_static_handler', default=True,
@@ -123,10 +204,6 @@ class Command(BaseCommand):
             self.show_startup_messages = True
 
         os.environ['RUNSERVER_PLUS_SHOW_MESSAGES'] = '1'
-
-        # Do not use default ending='\n', because StreamHandler() takes care of it
-        if hasattr(self.stderr, 'ending'):
-            self.stderr.ending = None
 
         setup_logger(logger, self.stderr, filename=options['output_file'])  # , fmt="[%(name)s] %(message)s")
         logredirect = RedirectHandler(__name__)
@@ -176,8 +253,7 @@ class Command(BaseCommand):
                 p.post_mortem(tb)
 
         # usurp django's handler
-        from django.views import debug
-        debug.technical_500_response = postmortem if pm else null_technical_500_response
+        django_views_debug.technical_500_response = postmortem if pm else null_technical_500_response
 
         self.use_ipv6 = options['use_ipv6']
         if self.use_ipv6 and not socket.has_ipv6:
@@ -212,73 +288,73 @@ class Command(BaseCommand):
             self.addr = '::1' if self.use_ipv6 else '127.0.0.1'
             self._raw_ipv6 = True
 
-        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], logger=logger.info, confprefix="RUNSERVER_PLUS"):
+        truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
+
+        with monkey_patch_cursordebugwrapper(print_sql=options["print_sql"], print_sql_location=options["print_sql_location"], truncate=truncate, logger=logger.info, confprefix="RUNSERVER_PLUS"):
             self.inner_run(options)
 
+    def get_handler(self, *args, **options):
+        """Return the default WSGI handler for the runner."""
+        return get_internal_wsgi_application()
+
+    def get_error_handler(self, exc, **options):
+        def application(env, start_response):
+            if isinstance(exc, SystemCheckError):
+                error_message = ansi_escape.sub('', str(exc))
+                raise SystemCheckError(error_message)
+
+            raise exc
+
+        return application
+
     def inner_run(self, options):
-        try:
-            from werkzeug import run_simple
-            from werkzeug.debug import DebuggedApplication
-            from werkzeug.serving import WSGIRequestHandler as _WSGIRequestHandler
-
-            # Set colored output
-            if settings.DEBUG:
-                try:
-                    set_werkzeug_log_color()
-                except Exception:  # We are dealing with some internals, anything could go wrong
-                    if self.show_startup_messages:
-                        print("Wrapping internal werkzeug logger for color highlighting has failed!")
-                    pass
-
-        except ImportError:
+        if not HAS_WERKZEUG:
             raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+
+        # Set colored output
+        if settings.DEBUG:
+            try:
+                set_werkzeug_log_color()
+            except Exception:  # We are dealing with some internals, anything could go wrong
+                if self.show_startup_messages:
+                    print("Wrapping internal werkzeug logger for color highlighting has failed!")
 
         class WSGIRequestHandler(_WSGIRequestHandler):
             def make_environ(self):
                 environ = super().make_environ()
-                if not options['keep_meta_shutdown_func']:
+                if not options['keep_meta_shutdown_func'] and 'werkzeug.server.shutdown' in environ:
                     del environ['werkzeug.server.shutdown']
                 return environ
 
         threaded = options['threaded']
         use_reloader = options['use_reloader']
         open_browser = options['open_browser']
-        quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
-        extra_files = options['extra_files']
+        quit_command = 'CONTROL-C' if sys.platform != 'win32' else 'CTRL-BREAK'
         reloader_interval = options['reloader_interval']
         reloader_type = options['reloader_type']
+        self.extra_files = set(options['extra_files'])
 
         self.nopin = options['nopin']
 
         if self.show_startup_messages:
             print("Performing system checks...\n")
-        if hasattr(self, 'check'):
-            self.check(display_num_errors=self.show_startup_messages)
-        else:
-            self.validate(display_num_errors=self.show_startup_messages)
+
         try:
-            self.check_migrations()
-        except ImproperlyConfigured:
-            pass
-        handler = get_internal_wsgi_application()
+            check_errors(self.check)(display_num_errors=self.show_startup_messages)
+            check_errors(self.check_migrations)()
+            handler = check_errors(self.get_handler)(**options)
+        except Exception as exc:
+            self.stderr.write("Error occurred during checks: %r" % exc, ending="\n\n")
+            handler = self.get_error_handler(exc, **options)
+
         if USE_STATICFILES:
             use_static_handler = options['use_static_handler']
             insecure_serving = options['insecure_serving']
             if use_static_handler and (settings.DEBUG or insecure_serving):
                 handler = StaticFilesHandler(handler)
-        if options["cert_path"] or options["key_file_path"]:
-            """
-            OpenSSL is needed for SSL support.
 
-            This will make flakes8 throw warning since OpenSSL is not used
-            directly, alas, this is the only way to show meaningful error
-            messages. See:
-            http://lucumr.pocoo.org/2011/9/21/python-import-blackbox/
-            for more information on python imports.
-            """
-            try:
-                import OpenSSL  # NOQA
-            except ImportError:
+        if options["cert_path"] or options["key_file_path"]:
+            if not HAS_OPENSSL:
                 raise CommandError("Python OpenSSL Library is "
                                    "required to use runserver_plus with ssl support. "
                                    "Install via pip (pip install pyOpenSSL).")
@@ -287,7 +363,6 @@ class Command(BaseCommand):
             dir_path, root = os.path.split(certfile)
             root, _ = os.path.splitext(root)
             try:
-                from werkzeug.serving import make_ssl_devcert
                 if os.path.exists(certfile) and os.path.exists(keyfile):
                     ssl_context = (certfile, keyfile)
                 else:  # Create cert, key files ourselves.
@@ -296,7 +371,6 @@ class Command(BaseCommand):
                 if self.show_startup_messages:
                     print("Werkzeug version is less than 0.9, trying adhoc certificate.")
                 ssl_context = "adhoc"
-
         else:
             ssl_context = None
 
@@ -310,11 +384,13 @@ class Command(BaseCommand):
             print("Quit the server with %s." % quit_command)
 
         if open_browser:
-            import webbrowser
             webbrowser.open(bind_url)
 
         if use_reloader and settings.USE_I18N:
-            extra_files.extend(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
+            self.extra_files |= set(filter(lambda filename: str(filename).endswith('.mo'), gen_filenames()))
+
+        if getattr(settings, 'RUNSERVER_PLUS_EXTRA_FILES', []):
+            self.extra_files |= set(settings.RUNSERVER_PLUS_EXTRA_FILES)
 
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
@@ -329,13 +405,14 @@ class Command(BaseCommand):
                 os.environ['WERKZEUG_DEBUG_PIN'] = 'off'
             handler = DebuggedApplication(handler, True)
 
+        runserver_plus_started.send(sender=self)
         run_simple(
             self.addr,
             int(self.port),
             handler,
             use_reloader=use_reloader,
             use_debugger=True,
-            extra_files=extra_files,
+            extra_files=self.extra_files,
             reloader_interval=reloader_interval,
             reloader_type=reloader_type,
             threaded=threaded,
@@ -377,12 +454,8 @@ class Command(BaseCommand):
 
 def set_werkzeug_log_color():
     """Try to set color to the werkzeug log."""
-    from django.core.management.color import color_style
-    from werkzeug.serving import WSGIRequestHandler
-    from werkzeug._internal import _log
-
     _style = color_style()
-    _orig_log = WSGIRequestHandler.log
+    _orig_log = _WSGIRequestHandler.log
 
     def werk_log(self, type, message, *args):
         try:
@@ -415,4 +488,4 @@ def set_werkzeug_log_color():
 
         _log(type, msg)
 
-    WSGIRequestHandler.log = werk_log
+    _WSGIRequestHandler.log = werk_log

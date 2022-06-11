@@ -3,7 +3,7 @@ import fnmatch
 import os
 import shutil
 
-import six
+from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -36,7 +36,7 @@ class CleanPycTests(TestCase):
         self.assertEqual(len(pyc_glob), 0)
 
     def test_takes_path(self):
-        out = six.StringIO()
+        out = StringIO()
         project_root = os.path.join('tests', 'testapp')
         call_command('compile_pyc', path=project_root)
         pyc_glob = self._find_pyc(project_root)
@@ -46,7 +46,7 @@ class CleanPycTests(TestCase):
         self.assertEqual(sorted(pyc_glob), sorted(output))
 
     def test_removes_pyo_files(self):
-        out = six.StringIO()
+        out = StringIO()
         project_root = os.path.join('tests', 'testapp')
         call_command('compile_pyc', path=project_root)
         pyc_glob = self._find_pyc(project_root)
