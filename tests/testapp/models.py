@@ -43,6 +43,20 @@ class Note(models.Model):
         app_label = 'django_extensions'
 
 
+class Neighborhood(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
+class Bank(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        app_label = 'django_extensions'
+
+
 class Person(models.Model):
     name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
@@ -54,6 +68,8 @@ class Person(models.Model):
         on_delete=models.CASCADE,
     )
     clubs = models.ManyToManyField(Club, through='testapp.Membership')
+    neighborhood = models.ForeignKey(Neighborhood, on_delete=models.SET_NULL, null=True)
+    current_bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True)
 
     class Meta:
         app_label = 'django_extensions'

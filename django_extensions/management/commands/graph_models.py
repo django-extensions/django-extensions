@@ -163,7 +163,7 @@ class Command(BaseCommand):
                 'action': 'store_true',
                 'default': False,
                 'dest': 'hide_edge_labels',
-                'help': 'Do not showrelations labels in the graph.',
+                'help': 'Do not show relations labels in the graph.',
             },
             '--arrow-shape': {
                 'action': 'store',
@@ -171,6 +171,12 @@ class Command(BaseCommand):
                 'dest': 'arrow_shape',
                 'choices': ['box', 'crow', 'curve', 'icurve', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee'],
                 'help': 'Arrow shape to use for relations. Default is dot. Available shapes: box, crow, curve, icurve, diamond, dot, inv, none, normal, tee, vee.',
+            },
+            '--color-code-deletions': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'color_code_deletions',
+                'help': 'Color the relations according to their on_delete setting, where it it applicable. The colors are: red (CASCADE), orange (SET_NULL), green (SET_DEFAULT), yellow (SET), blue (PROTECT), grey (DO_NOTHING) and purple (RESTRICT).',
             },
             '--rankdir': {
                 'action': 'store',

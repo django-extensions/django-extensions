@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.test import SimpleTestCase
-from django_extensions.management.modelviz import generate_graph_data
+from django_extensions.management.modelviz import generate_graph_data, ON_DELETE_COLORS
 
 
 class ModelVizTests(SimpleTestCase):
@@ -25,3 +25,31 @@ class ModelVizTests(SimpleTestCase):
             'parent_cafe': u'Café latte',
         }
         self.assertEqual(expected, fields)
+
+    def test_on_delete_color_coding(self):
+        app_labels = ['django_extensions']
+        data = generate_graph_data(app_labels, color_code_deletions=True)
+
+        models = data['graphs'][0]['models']
+
+        for model in models:
+            relations = [x for x in model['relations'] if x['type'] in ('ForeignKey', 'OneToOneField')]
+
+            for relation in relations:
+                field = [x['field'] for x in model['fields'] if x['name'] == relation['name']][0]
+                on_delete = getattr(field.remote_field, 'on_delete', None)
+                expected_color = ON_DELETE_COLORS[on_delete]
+
+                self.assertIn('color={}'.format(expected_color), relation['arrows'])
+
+    def test_disabled_on_delete_color_coding(self):
+        app_labels = ['django_extensions']
+        data = generate_graph_data(app_labels)
+
+        models = data['graphs'][0]['models']
+
+        for model in models:
+            relations = [x for x in model['relations'] if x['type'] in ('ForeignKey', 'OneToOneField')]
+
+            for relation in relations:
+                self.assertNotIn('color=', relation['arrows'])
