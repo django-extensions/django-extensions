@@ -6,7 +6,6 @@ pytest-django
 pytest-cov
 factory-boy
 requests
-mock
 pygments
 vobject
 
