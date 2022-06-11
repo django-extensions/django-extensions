@@ -53,10 +53,8 @@ ON_DELETE_COLORS = {
     deletion.SET_DEFAULT: 'green',
     deletion.SET: 'yellow',
     deletion.DO_NOTHING: 'grey',
+    deletion.RESTRICT: 'purple',
 }
-
-if django.VERSION >= (3, 1):
-    ON_DELETE_COLORS[deletion.RESTRICT] = 'purple'
 
 
 def parse_file_or_list(arg):
