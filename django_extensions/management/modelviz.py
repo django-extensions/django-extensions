@@ -12,7 +12,6 @@ import datetime
 import os
 import re
 
-import django
 from django.apps import apps
 from django.db.models import deletion
 from django.db.models.fields.related import (
