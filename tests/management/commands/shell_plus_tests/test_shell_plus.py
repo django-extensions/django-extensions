@@ -41,6 +41,39 @@ def test_shell_plus_print_sql(capsys):
     assert re.search(r"SELECT\s+.+\s+FROM\s+.auth_user.\s+LIMIT\s+1", out)
 
 
+@pytest.mark.django_db()
+@override_settings(SHELL_PLUS_SQLPARSE_ENABLED=False, SHELL_PLUS_PYGMENTS_ENABLED=False)
+def test_shell_plus_print_sql_truncate(capsys):
+    try:
+        from django.db import connection
+        from django.db.backends import utils
+        CursorDebugWrapper = utils.CursorDebugWrapper
+        force_debug_cursor = True if connection.force_debug_cursor else False
+        call_command("shell_plus", "--plain", "--print-sql", "--truncate-sql=0", "--command=User.objects.all().exists()")
+    finally:
+        utils.CursorDebugWrapper = CursorDebugWrapper
+        connection.force_debug_cursor = force_debug_cursor
+
+    out, err = capsys.readouterr()
+
+    assert re.search(r"SELECT\s+.+\s+FROM\s+.auth_user.\s+LIMIT\s+1", out)
+
+    try:
+        from django.db import connection
+        from django.db.backends import utils
+        CursorDebugWrapper = utils.CursorDebugWrapper
+        force_debug_cursor = True if connection.force_debug_cursor else False
+        call_command("shell_plus", "--plain", "--print-sql", "--truncate-sql=4", "--command=User.objects.all().exists()")
+    finally:
+        utils.CursorDebugWrapper = CursorDebugWrapper
+        connection.force_debug_cursor = force_debug_cursor
+
+    out, err = capsys.readouterr()
+
+    assert re.search(r"SELE", out)
+    assert not re.search(r"SELEC", out)
+
+
 def test_shell_plus_plain_startup():
     command = shell_plus.Command()
     command.tests_mode = True

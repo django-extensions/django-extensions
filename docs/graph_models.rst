@@ -133,6 +133,17 @@ image by using the *graph_models* command::
   # Create a graph with 'normal' arrow shape for relations
   $ ./manage.py graph_models -a --arrow-shape normal -o my_project_sans_foo_bar.png
 
+::
+
+  # Create a graph with colored edges for relations with on_delete settings
+  $ ./manage.py graph_models -a --color-code-deletions -o my_project_colored.png
+
+::
+
+  # Create a graph with different layout direction,
+  # supported directions: "TB", "LR", "BT", "RL"
+  $ ./manage.py graph_models -a --rankdir BT -o my_project_sans_foo_bar.png
+
 
 
 .. _GraphViz: http://www.graphviz.org/

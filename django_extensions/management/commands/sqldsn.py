@@ -16,6 +16,72 @@ from django_extensions.settings import SQLITE_ENGINES, POSTGRESQL_ENGINES, MYSQL
 from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
+def _sqlite_name(dbhost, dbport, dbname, dbuser, dbpass):
+    return dbname
+
+
+def _mysql_keyvalue(dbhost, dbport, dbname, dbuser, dbpass):
+    dsnstr = f'host="{dbhost}", db="{dbname}", user="{dbuser}", passwd="{dbpass}"'
+    if dbport is not None:
+        dsnstr += f', port="{dbport}"'
+    return dsnstr
+
+
+def _mysql_args(dbhost, dbport, dbname, dbuser, dbpass):
+    dsnstr = f'-h "{dbhost}" -D "{dbname}" -u "{dbuser}" -p "{dbpass}"'
+    if dbport is not None:
+        dsnstr += f' -P {dbport}'
+    return dsnstr
+
+
+def _postgresql_keyvalue(dbhost, dbport, dbname, dbuser, dbpass):
+    dsnstr = f"host='{dbhost}' dbname='{dbname}' user='{dbuser}' password='{dbpass}'"
+    if dbport is not None:
+        dsnstr += f" port='{dbport}'"
+    return dsnstr
+
+
+def _postgresql_kwargs(dbhost, dbport, dbname, dbuser, dbpass):
+    dsnstr = f"host={dbhost!r}, database={dbname!r}, user={dbuser!r}, password={dbpass!r}"
+    if dbport is not None:
+        dsnstr += f", port={dbport!r}"
+    return dsnstr
+
+
+def _postgresql_pgpass(dbhost, dbport, dbname, dbuser, dbpass):
+    return ':'.join(str(s) for s in [dbhost, dbport, dbname, dbuser, dbpass])
+
+
+def _uri(engine):
+    def inner(dbhost, dbport, dbname, dbuser, dbpass):
+        host = dbhost or ''
+        if dbport is not None and dbport != '':
+            host += f':{dbport}'
+        if dbuser is not None and dbuser != '':
+            user = dbuser
+            if dbpass is not None and dbpass != '':
+                user += f':{dbpass}'
+            host = f'{user}@{host}'
+        return f'{engine}://{host}/{dbname}'
+    return inner
+
+
+_FORMATTERS = [
+    (SQLITE_ENGINES, None, _sqlite_name),
+    (SQLITE_ENGINES, 'filename', _sqlite_name),
+    (SQLITE_ENGINES, 'uri', _uri('sqlite')),
+    (MYSQL_ENGINES, None, _mysql_keyvalue),
+    (MYSQL_ENGINES, 'keyvalue', _mysql_keyvalue),
+    (MYSQL_ENGINES, 'args', _mysql_args),
+    (MYSQL_ENGINES, 'uri', _uri('mysql')),
+    (POSTGRESQL_ENGINES, None, _postgresql_keyvalue),
+    (POSTGRESQL_ENGINES, 'keyvalue', _postgresql_keyvalue),
+    (POSTGRESQL_ENGINES, 'kwargs', _postgresql_kwargs),
+    (POSTGRESQL_ENGINES, 'uri', _uri('postgresql')),
+    (POSTGRESQL_ENGINES, 'pgpass', _postgresql_pgpass),
+]
+
+
 class Command(BaseCommand):
     help = "Prints DSN on stdout, as specified in settings.py"
     requires_system_checks = False
@@ -23,21 +89,23 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument(
+        dbspec = parser.add_mutually_exclusive_group()
+        dbspec.add_argument(
             '-R', '--router', action='store',
             dest='router', default=DEFAULT_DB_ALIAS,
             help='Use this router-database other then default (deprecated: use --database instead)'
         )
-        parser.add_argument(
+        dbspec.add_argument(
             '--database', default=DEFAULT_DB_ALIAS,
             help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
         )
+        styles = sorted(set([style for _, style, _ in _FORMATTERS if style is not None]))
         parser.add_argument(
             '-s', '--style', action='store',
-            dest='style', default=None,
-            help='DSN format style: keyvalue, uri, pgpass, all'
+            dest='style', default=None, choices=styles + ['all'],
+            help='DSN format style.'
         )
-        parser.add_argument(
+        dbspec.add_argument(
             '-a', '--all', action='store_true',
             dest='all', default=False,
             help='Show DSN for all database routes'
@@ -79,78 +147,27 @@ class Command(BaseCommand):
         dbname = dbinfo.get('NAME')
         dbhost = dbinfo.get('HOST')
         dbport = dbinfo.get('PORT')
+        if dbport == '':
+            dbport = None
 
-        dsn = []
+        dsn = [
+            formatter(dbhost, dbport, dbname, dbuser, dbpass)
+            for engines, style, formatter in _FORMATTERS
+            if engine in engines and (
+                dsn_style == style or dsn_style == 'all' and style is not None)
+        ]
 
-        if engine in SQLITE_ENGINES:
-            dsn.append('{}'.format(dbname))
-        elif engine in MYSQL_ENGINES:
-            dsn.append(self._mysql(dbhost, dbport, dbname, dbuser, dbpass))
-        elif engine in POSTGRESQL_ENGINES:
-            dsn.extend(self._postgresql(
-                dbhost, dbport, dbname, dbuser, dbpass, dsn_style=dsn_style))
-        else:
-            dsn.append(self.style.ERROR('Unknown database, can''t generate DSN'))
+        if not dsn:
+            available = ', '.join(
+                style for engines, style, _ in _FORMATTERS
+                if engine in engines and style is not None)
+            dsn = [self.style.ERROR(
+                f"Invalid style {dsn_style} for {engine} (available: {available})"
+                if available else "Unknown database, can't generate DSN"
+            )]
 
         if not quiet:
-            sys.stdout.write(self.style.SQL_TABLE("DSN for database '%s' with engine '%s':\n" % (database, engine)))
+            sys.stdout.write(self.style.SQL_TABLE(f'DSN for database {database!r} with engine {engine!r}:\n'))
 
         for output in dsn:
-            sys.stdout.write("{}\n".format(output))
-
-    def _mysql(self, dbhost, dbport, dbname, dbuser, dbpass):
-        dsnstr = 'host="{0}", db="{2}", user="{3}", passwd="{4}"'
-
-        if dbport is not None:
-            dsnstr += ', port="{1}"'
-
-        return dsnstr.format(dbhost, dbport, dbname, dbuser, dbpass)
-
-    def _postgresql(self, dbhost, dbport, dbname, dbuser, dbpass, dsn_style=None):  # noqa
-        """PostgreSQL psycopg2 driver accepts two syntaxes
-
-        Plus a string for .pgpass file
-        """
-        dsn = []
-
-        if dsn_style is None or dsn_style == 'all' or dsn_style == 'keyvalue':
-            dsnstr = "host='{0}' dbname='{2}' user='{3}' password='{4}'"
-
-            if dbport is not None:
-                dsnstr += " port='{1}'"
-
-            dsn.append(dsnstr.format(
-                dbhost,
-                dbport,
-                dbname,
-                dbuser,
-                dbpass,
-            ))
-
-        if dsn_style in ('all', 'kwargs'):
-            dsnstr = "host='{0}', database='{2}', user='{3}', password='{4}'"
-            if dbport is not None:
-                dsnstr += ", port='{1}'"
-
-            dsn.append(dsnstr.format(
-                dbhost,
-                dbport,
-                dbname,
-                dbuser,
-                dbpass,
-            ))
-
-        if dsn_style in ('all', 'uri'):
-            dsnstr = "postgresql://{user}:{password}@{host}/{name}"
-
-            dsn.append(dsnstr.format(
-                host="{host}:{port}".format(host=dbhost, port=dbport) if dbport else dbhost,  # noqa
-                name=dbname,
-                user=dbuser,
-                password=dbpass,
-            ))
-
-        if dsn_style in ('all', 'pgpass'):
-            dsn.append(':'.join(map(str, filter(None, [dbhost, dbport, dbname, dbuser, dbpass]))))
-
-        return dsn
+            sys.stdout.write(f'{output}\n')
