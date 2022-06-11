@@ -2,15 +2,13 @@
 import os
 
 import pytest
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.test.utils import override_settings
 from io import StringIO
 
 from unittest.mock import patch
-
-from tests.testapp.models import UniqueTestAppModel
 
 
 TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -74,15 +72,3 @@ class SyncDataTests(TestCase):
         self.assertTrue(User.objects.filter(username='jdoe').exists())
         self.assertEqual(User.objects.count(), 1)
         self.assertIn('Installed 1 object from 1 fixture', m_stdout.getvalue())
-
-    def test_should_handle_natural_keys_in_fixtures(self):
-        call_command('syncdata', 'fixture_with_natural_key.json')
-
-        self.assertTrue(Group.objects.filter(name='teachers').exists())
-        self.assertTrue(User.objects.filter(username='staff').exists())
-
-    def test_should_resolve_transient_constraint_conflicts_in_fixtures(self):
-        UniqueTestAppModel.objects.create(pk=1, global_id="must be unique")
-        # This fixture creates a second instance with a different pk but the same global_id
-        call_command('syncdata', 'fixture_with_constraint.json')
-        self.assertEqual(UniqueTestAppModel.objects.count(), 1)
