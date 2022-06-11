@@ -2,7 +2,6 @@
 import os
 
 import pytest
-from django import get_version
 from django.contrib.auth.models import User, Group
 from django.core.management import call_command, CommandError
 from django.test import TestCase
