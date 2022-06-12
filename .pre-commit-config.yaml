@@ -15,6 +15,9 @@ repos:
     -   id: check-yaml
     -   id: detect-private-key
     -   id: end-of-file-fixer
+    -   id: mixed-line-ending
+        args: [ '--fix=lf' ]
+        description: Forces to replace line ending by the UNIX 'lf' character.
     -   id: fix-encoding-pragma
     -   id: name-tests-test
         args:
@@ -24,10 +27,6 @@ repos:
     rev: 4.0.1
     hooks:
     -   id: flake8
--   repo: https://github.com/Lucas-C/pre-commit-hooks.git
-    rev: v1.2.0
-    hooks:
-    -   id: forbid-crlf
 -   repo: https://github.com/trbs/pre-commit-hooks-trbs.git
     rev: 1.2.4
     hooks:
