@@ -22,7 +22,7 @@ Current Database Model Field Extensions
 
   AutoSlugField uses Django's slugify_ function by default to "slugify" ``populate_from`` field.
 
-  .. _slugify: https://docs.djangoproject.com/en/4.0/ref/templates/builtins/#slugify
+  .. _slugify: https://docs.djangoproject.com/en/dev/ref/templates/builtins/#slugify
 
   To provide custom "slugify" function you could either provide the function as
   an argument to :py:class:`~AutoSlugField` or define your ``slugify_function``
