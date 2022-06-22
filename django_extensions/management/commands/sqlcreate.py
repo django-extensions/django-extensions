@@ -2,6 +2,7 @@
 import socket
 import sys
 import warnings
+from typing import List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -19,7 +20,7 @@ The envisioned use case is something like this:
     ./manage.py sqlcreate [--database=<databasename>] | mysql -u <db_administrator> -p
     ./manage.py sqlcreate [--database=<databasname>] | psql -U <db_administrator> -W"""
 
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
     can_import_settings = True
 
     def add_arguments(self, parser):

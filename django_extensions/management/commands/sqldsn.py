@@ -7,6 +7,7 @@ Prints Data Source Name on stdout
 
 import sys
 import warnings
+from typing import List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -84,7 +85,7 @@ _FORMATTERS = [
 
 class Command(BaseCommand):
     help = "Prints DSN on stdout, as specified in settings.py"
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
     can_import_settings = True
 
     def add_arguments(self, parser):

@@ -3,6 +3,7 @@ import asyncore
 import sys
 from logging import getLogger
 from smtpd import SMTPServer
+from typing import List
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -33,7 +34,7 @@ class Command(BaseCommand):
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

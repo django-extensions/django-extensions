@@ -7,7 +7,7 @@ import sys
 import traceback
 import webbrowser
 import functools
-from typing import Set
+from typing import List, Set
 
 import django
 from django.conf import settings
@@ -128,7 +128,7 @@ class Command(BaseCommand):
     help = "Starts a lightweight Web server for development."
 
     # Validation is called explicitly each time the server is reloaded.
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
     DEFAULT_CRT_EXTENSION = ".crt"
     DEFAULT_KEY_EXTENSION = ".key"
 
