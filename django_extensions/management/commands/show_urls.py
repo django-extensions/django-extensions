@@ -135,16 +135,16 @@ class Command(BaseCommand):
             module = '{0}.{1}'.format(func.__module__, func_name)
             url_name = url_name or ''
             url = simplify_regex(regex)
-            decorator = ', '.join(decorators)
+            decorators = ', '.join(decorators)
 
             if format_style == 'json':
-                views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
+                views.append({"url": url, "module": module, "name": url_name, "decorators": decorators})
             else:
                 views.append(fmtr.format(
                     module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
                     url_name=style.URL_NAME(url_name),
                     url=style.URL(url),
-                    decorator=decorator,
+                    decorator=decorators,
                 ).strip())
 
         if not options['unsorted'] and format_style != 'json':
