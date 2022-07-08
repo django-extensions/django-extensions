@@ -4,6 +4,14 @@ Changelog
 See https://github.com/django-extensions/django-extensions/releases
 
 
+3.1.5
+-----
+
+Changes:
+
+- Fix: pipchecker, crude way slow down to avoid HTTPTooManyRequests
+- Fix: pipchecker, fix for removed get_installed_distributions function
+
 3.1.4
 -----
 
