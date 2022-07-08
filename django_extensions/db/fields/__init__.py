@@ -20,9 +20,11 @@ try:
 except ImportError:
     HAS_SHORT_UUID = False
 
+import django
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import DateTimeField, CharField, SlugField, Q, UniqueConstraint
+from django.db.models import CharField, DateTimeField, F, Q, SlugField, UniqueConstraint
 from django.db.models.constants import LOOKUP_SEP
 from django.template.defaultfilters import slugify
 from django.utils.crypto import get_random_string
@@ -44,6 +46,24 @@ class UniqueFieldMixin:
             (f, f.model if f.model != model_cls else None) for f in model_cls._meta.get_fields()
             if not f.is_relation or f.one_to_one or (f.many_to_one and f.related_model)
         ]
+
+    @staticmethod
+    def _get_unique_constraint_fields(unique_constraint):
+        if unique_constraint.fields:
+            return unique_constraint.fields
+
+        fields = []
+
+        if django.VERSION >= (4, 0) and unique_constraint.contains_expressions:
+
+            for expression in unique_constraint.expressions:
+                if isinstance(expression, F):
+                    fields.append(expression.name)
+                else:
+                    for inner_expression in expression.get_source_expressions():
+                        fields.append(inner_expression.name)
+
+        return fields
 
     def get_queryset(self, model_cls, slug_field):
         for field, model in self._get_fields(model_cls):
@@ -73,10 +93,12 @@ class UniqueFieldMixin:
                 lambda c: isinstance(c, UniqueConstraint), constraints
             )
             for unique_constraint in unique_constraints:
-                if self.attname in unique_constraint.fields:
+                unique_constraint_fields = self._get_unique_constraint_fields(unique_constraint)
+
+                if self.attname in unique_constraint_fields:
                     condition = {
                         field: getattr(model_instance, field, None)
-                        for field in unique_constraint.fields
+                        for field in unique_constraint_fields
                         if field != self.attname
                     }
                     query &= Q(**condition)
