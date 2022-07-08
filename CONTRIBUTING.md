@@ -2,8 +2,7 @@
 
 There are many ways to contribute to the project. You may improve the documentation, address a bug, add some feature to the code or do something else. All sort of contributions are welcome.
 
-
-### Development
+## Development
 
 To start development on this project, fork this repository and follow the following instructions.
 
@@ -28,7 +27,7 @@ $ source venv/bin/activate
 (venv) $ python manage.py runserver
 ```
 
-### Testing
+## Testing
 
 To run tests against a particular `python` and `django` version installed inside your virtual environment, you may use:
 
