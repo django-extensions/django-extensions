@@ -3,6 +3,21 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
+3.2.0
+-----
+
+Changes:
+
+- Improvement: Django 4 support
+- Improvement: Accept both --no-input and --noinput
+- Improvement: sqldsn, Added more styles to the sqldsn management command
+- Improvement: graph_models, Flag for to color code relations based on on_delete
+- Improvement: graph_models, Add --relation-fields-only flag
+- Improvement: RandomCharField, allow keeping default values
+- Fix: HexValidator, Max length validation
+- Fix: runserver_plus, Fix KeyError: 'werkzeug.server.shutdown'
+- New: managestate, Saves current applied migrations to a file or applies migrations from file
+
 
 3.1.5
 -----
