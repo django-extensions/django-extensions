@@ -16,6 +16,7 @@ Command Extensions
    graph_models
    list_model_info
    list_signals
+   managestate
    merge_model_instances
    print_settings
    reset_db
