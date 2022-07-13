@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import django
+
 VERSION = (3, 2, 1, 'DEV')
 
 
@@ -19,8 +21,5 @@ def get_version(version):
 
 __version__ = get_version(VERSION)
 
-try:
-    default_app_config = 'django_extensions.apps.DjangoExtensionsConfig'
-except ModuleNotFoundError:
-    # this part is useful for allow setup.py to be used for version checks
-    pass
+if django.VERSION < (3, 2):  # pragma: no cover
+    default_app_config = "django_extensions.apps.DjangoExtensionsConfig"
