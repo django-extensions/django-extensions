@@ -70,7 +70,8 @@ def orm_item_locator(orm_obj):
         v = clean_dict[key]
         if v is not None:
             if isinstance(v, datetime.datetime):
-                v = timezone.make_aware(v)
+                if not timezone.is_aware(v):
+                    v = timezone.make_aware(v)
                 clean_dict[key] = StrToCodeChanger('dateutil.parser.parse("%s")' % v.isoformat())
             elif not isinstance(v, (str, int, float)):
                 clean_dict[key] = str("%s" % v)
