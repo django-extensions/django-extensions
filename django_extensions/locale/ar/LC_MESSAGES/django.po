@@ -22,7 +22,7 @@ msgstr "و"
 #: admin/__init__.py:141
 #, python-format
 msgid "Use the left field to do %(model_name)s lookups in the fields %(field_list)s."
-msgstr "إستعمل الحقل الأيسر من (model_name)% لبحث ضمن الأحقال التالية (field_list)% "
+msgstr "إستعمل الحقل الأيسر من %(model_name)s لبحث ضمن الأحقال التالية %(field_list)s "
 
 #: admin/filter.py:24 admin/filter.py:53
 msgid "Yes"
@@ -79,7 +79,7 @@ msgstr "أترك الحقل فارغ لتنشيط لمدة غير محددة"
 #: mongodb/fields/__init__.py:22
 #, python-format
 msgid "String (up to %(max_length)s)"
-msgstr "سلسلة الإحرف (طولها يصل إلى %(max_length))"
+msgstr "سلسلة الإحرف (طولها يصل إلى %(max_length)s)"
 
 #: validators.py:14
 msgid "Control Characters like new lines or tabs are not allowed."
@@ -101,9 +101,9 @@ msgstr "الطول غير مقبول, يجب أن لا يكون أطول من %(
 #: validators.py:76
 #, python-format
 msgid "Ensure that there are more than %(min)s characters."
-msgstr "تأكد أن طول سلسلة الإحرف أطول من (min)% "
+msgstr "تأكد أن طول سلسلة الإحرف أطول من %(min)s "
 
 #: validators.py:77
 #, python-format
 msgid "Ensure that there are no more than %(max)s characters."
-msgstr "تأكد أن طول سلسلة الأحرف لا تتجوز (max)% "
+msgstr "تأكد أن طول سلسلة الأحرف لا تتجوز %(max)s "
