@@ -27,7 +27,7 @@ break
 ~~~~~
 Do not continue scanning other templates after the first failure.
 
-ignore_app
+ignore-app
 ~~~~~~~~~~
 Ignore this app (can be used multiple times).
 
@@ -35,7 +35,7 @@ includes
 ~~~~~~~~
 Use -i (can be used multiple times) to add directories to the TEMPLATE DIRS.
 
-no_apps
+no-apps
 ~~~~~~~
 Do not automatically include app template directories.
 
