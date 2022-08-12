@@ -111,7 +111,7 @@ translation in your language. If you have some time to spare and like to help us
 
 - GitHub: https://github.com/django-extensions/django-extensions
 - Mailing list: http://groups.google.com/group/django-extensions
-- Translations: https://www.transifex.net/projects/p/django-extensions/
+- Translations: https://www.transifex.com/projects/p/django-extensions/
 
 
 Documentation
