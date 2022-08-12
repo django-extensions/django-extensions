@@ -84,7 +84,7 @@ _FORMATTERS = [
 
 class Command(BaseCommand):
     help = "Prints DSN on stdout, as specified in settings.py"
-    requires_system_checks = False
+    requires_system_checks = []
     can_import_settings = True
 
     def add_arguments(self, parser):

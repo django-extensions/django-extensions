@@ -12,7 +12,7 @@ from django_extensions.management.utils import signalcommand
 
 class Command(BaseCommand):
     help = "Compile python bytecode files for the project."
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         parser.add_argument('--path', '-p', action='store', dest='path',

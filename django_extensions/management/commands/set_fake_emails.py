@@ -19,7 +19,7 @@ DEFAULT_FAKE_EMAIL = '%(username)s@example.com'
 
 class Command(BaseCommand):
     help = '''DEBUG only: give all users a new email based on their account data ("%s" by default). Possible parameters are: username, first_name, last_name''' % (DEFAULT_FAKE_EMAIL, )
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

@@ -23,6 +23,7 @@ jobs:
         tox-django-version:
           - "32"
           - "40"
+          - "41"
           # GH Actions don't support something like allow-failure ?
           # - "master"
         exclude:
@@ -32,6 +33,12 @@ jobs:
             tox-django-version: "40"
           - python-version: "pypy3"
             tox-django-version: "40"
+          - python-version: "3.6"
+            tox-django-version: "41"
+          - python-version: "3.7"
+            tox-django-version: "41"
+          - python-version: "pypy3"
+            tox-django-version: "41"
     steps:
       - name: Checkout
         uses: actions/checkout@v2

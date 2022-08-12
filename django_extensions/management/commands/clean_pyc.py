@@ -12,7 +12,7 @@ from django_extensions.management.utils import signalcommand
 class Command(BaseCommand):
     help = "Removes all python bytecode compiled files from the project."
 
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         parser.add_argument(

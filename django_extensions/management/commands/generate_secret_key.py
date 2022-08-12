@@ -8,7 +8,7 @@ from django_extensions.management.utils import signalcommand
 class Command(BaseCommand):
     help = "Generates a new SECRET_KEY that can be used in a project settings file."
 
-    requires_system_checks = False
+    requires_system_checks = []
 
     @signalcommand
     def handle(self, *args, **options):
