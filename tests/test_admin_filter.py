@@ -35,7 +35,7 @@ class NullFieldListFilterTests(BaseFieldFilter):
 
         result = filter_spec.queryset(self.request, self.qs)
 
-        self.assertQuerysetEqual(self.qs, map(repr, result), ordered=False)
+        self.assertCountEqual(self.qs, result)
 
     def test_should_return_objects_with_empty_text_if_yes_lookup_selected(self):
         expected_result = Secret.objects.filter(text__isnull=True)
@@ -44,7 +44,7 @@ class NullFieldListFilterTests(BaseFieldFilter):
 
         result = filter_spec.queryset(self.request, self.qs)
 
-        self.assertQuerysetEqual(expected_result, map(repr, result), ordered=False)
+        self.assertCountEqual(expected_result, result)
 
     def test_should_return_objects_with_not_empty_text_value_if_no_lookup_selected(self):
         expected_result = Secret.objects.filter(text__isnull=False)
@@ -53,7 +53,7 @@ class NullFieldListFilterTests(BaseFieldFilter):
 
         result = filter_spec.queryset(self.request, self.qs)
 
-        self.assertQuerysetEqual(expected_result, map(repr, result), ordered=False)
+        self.assertCountEqual(expected_result, result)
 
     def test_choices(self):
         expected_result = [
@@ -79,4 +79,4 @@ class NotNullFieldListFilterTests(BaseFieldFilter):
 
         result = filter_spec.queryset(self.request, self.qs)
 
-        self.assertQuerysetEqual(self.qs, map(repr, result), ordered=False)
+        self.assertCountEqual(self.qs, result)
