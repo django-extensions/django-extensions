@@ -33,7 +33,7 @@ class Command(BaseCommand):
     help = "Starts a test mail server for development."
     args = '[optional port number or ippaddr:port]'
 
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

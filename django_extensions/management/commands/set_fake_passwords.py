@@ -18,7 +18,7 @@ DEFAULT_FAKE_PASSWORD = 'password'
 
 class Command(BaseCommand):
     help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
-    requires_system_checks = False
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

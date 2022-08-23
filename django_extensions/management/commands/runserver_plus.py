@@ -128,7 +128,7 @@ class Command(BaseCommand):
     help = "Starts a lightweight Web server for development."
 
     # Validation is called explicitly each time the server is reloaded.
-    requires_system_checks = False
+    requires_system_checks = []
     DEFAULT_CRT_EXTENSION = ".crt"
     DEFAULT_KEY_EXTENSION = ".key"
 

@@ -19,7 +19,7 @@ The envisioned use case is something like this:
     ./manage.py sqlcreate [--database=<databasename>] | mysql -u <db_administrator> -p
     ./manage.py sqlcreate [--database=<databasname>] | psql -U <db_administrator> -W"""
 
-    requires_system_checks = False
+    requires_system_checks = []
     can_import_settings = True
 
     def add_arguments(self, parser):
