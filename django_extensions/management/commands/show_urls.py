@@ -125,6 +125,8 @@ class Command(BaseCommand):
                 func = func.func
                 decorators.insert(0, 'functools.partial')
 
+            if hasattr(func, 'view_class'):
+                func = func.view_class
             if hasattr(func, '__name__'):
                 func_name = func.__name__
             elif hasattr(func, '__class__'):
