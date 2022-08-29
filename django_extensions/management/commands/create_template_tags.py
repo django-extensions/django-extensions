@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+from typing import List
 
 from django.core.management.base import AppCommand
 
@@ -21,7 +22,7 @@ class Command(AppCommand):
             help='The name to use for the template tag base name. Defaults to `appname`_tags.'
         )
 
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
     # Can't import settings during this command, because they haven't
     # necessarily been created.
     can_import_settings = True

@@ -7,6 +7,8 @@ set_fake_passwords.py
     setting.DEBUG is True.
 
 """
+from typing import List
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
@@ -18,7 +20,7 @@ DEFAULT_FAKE_PASSWORD = 'password'
 
 class Command(BaseCommand):
     help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
