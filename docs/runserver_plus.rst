@@ -206,6 +206,9 @@ Other configuration options and their defaults include:
   # Add extra files to watch
   RUNSERVER_PLUS_EXTRA_FILES = []
 
+  # Do not watch files matching any of these patterns
+  RUNSERVER_PLUS_EXCLUDE_PATTERNS = []
+
 
 IO Calls and CPU Usage
 ^^^^^^^^^^^^^^^^^^^^^^
