@@ -77,6 +77,7 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
         path = os.path.join(*relative_path)
         package_files = package_data.setdefault('.'.join(parts), [])
         package_files.extend([os.path.join(path, f) for f in filenames])
+package_data['django_extensions'].append('py.typed')
 
 
 version = __import__('django_extensions').__version__
