@@ -165,6 +165,8 @@ class Command(BaseCommand):
                                  'Either --cert-file or --key-file must be provided to use SSL.')
         parser.add_argument('--extra-file', dest='extra_files', action="append", type=str, default=[],
                             help='auto-reload whenever the given file changes too (can be specified multiple times)')
+        parser.add_argument('--exclude-pattern', dest='exclude_patterns', action="append", type=str, default=[],
+                            help='ignore reload on changes to files matching this pattern (can be specified multiple times)')
         parser.add_argument('--reloader-interval', dest='reloader_interval', action="store", type=int, default=DEFAULT_POLLER_RELOADER_INTERVAL,
                             help='After how many seconds auto-reload should scan for updates in poller-mode [default=%s]' % DEFAULT_POLLER_RELOADER_INTERVAL)
         parser.add_argument('--reloader-type', dest='reloader_type', action="store", type=str, default=DEFAULT_POLLER_RELOADER_TYPE,
@@ -333,6 +335,7 @@ class Command(BaseCommand):
         reloader_interval = options['reloader_interval']
         reloader_type = options['reloader_type']
         self.extra_files = set(options['extra_files'])
+        exclude_patterns = set(options['exclude_patterns'])
 
         self.nopin = options['nopin']
 
@@ -392,6 +395,8 @@ class Command(BaseCommand):
         if getattr(settings, 'RUNSERVER_PLUS_EXTRA_FILES', []):
             self.extra_files |= set(settings.RUNSERVER_PLUS_EXTRA_FILES)
 
+        exclude_patterns |= set(getattr(settings, 'RUNSERVER_PLUS_EXCLUDE_PATTERNS', []))
+
         # Werkzeug needs to be clued in its the main instance if running
         # without reloader or else it won't show key.
         # https://git.io/vVIgo
@@ -413,6 +418,7 @@ class Command(BaseCommand):
             use_reloader=use_reloader,
             use_debugger=True,
             extra_files=self.extra_files,
+            exclude_patterns=exclude_patterns,
             reloader_interval=reloader_interval,
             reloader_type=reloader_type,
             threaded=threaded,
