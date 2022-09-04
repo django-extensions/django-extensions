@@ -642,7 +642,7 @@ class SQLDiff:
                 transaction.rollback()  # reset transaction
                 continue
 
-            # map table_contraints into table_indexes
+            # map table_constraints into table_indexes
             table_indexes = {}
             for contraint_name, dct in table_constraints.items():
 
@@ -1192,7 +1192,7 @@ class PostgresqlSQLDiff(SQLDiff):
                 #       constraints for the type in `get_data_type_arrayfield` which instantiates
                 #       the array base_field or maybe even better restructure sqldiff entirely
                 #       to be based around the concrete type yielded by the code below. That gives
-                #       the complete type the database uses, why not use thie much earlier in the
+                #       the complete type the database uses, why not use this much earlier in the
                 #       process to compare to whatever django spits out as the desired database type ?
                 attname = field.db_column or field.attname
                 introspect_db_type = self.sql_to_dict(

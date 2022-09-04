@@ -21,7 +21,7 @@ less efficient compared to specifying the lexer to use.
 
     {{ code_string|colorize }}
 
-You may also render the syntax highlighed text with line numbers.
+You may also render the syntax highlighted text with line numbers.
 
     {% load syntax_color %}
     {{ some_code|colorize_table:"html+django" }}
