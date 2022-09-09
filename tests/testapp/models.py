@@ -474,6 +474,19 @@ class SqlDiff(models.Model):
     number = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
     creator = models.CharField(max_length=20, null=True, blank=True)
 
+    class Meta:
+        index_together = ['number', 'creator']
+
+
+class SqlDiffIndexes(models.Model):
+    first = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
+    second = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['first', 'second']),
+        ]
+
 
 class SqlDiffUniqueTogether(models.Model):
     aaa = models.CharField(max_length=20)
