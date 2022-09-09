@@ -3,6 +3,20 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
+3.2.1
+-----
+
+Changes:
+
+- Improvement: fix translation interpolation in prospective arabic translations (#1740)
+- Improvement: runserver_plus, Add option to ignore files on runserver_plus reload (#1762)
+- Improvement: docs: Fix a few typos (#1764) (#1751)
+- Improvement: drop python 3.5 as it is EOL (#1735)
+- Improvement: sqldiff, Added support for meta indexes and constraints in sqldiff. (#1726)
+- Improvement: show_urls, Ensure consistent output in show_urls for django 4.0+ (#1759)
+- Fix: dumpscript, make_aware should not be called if aware already (#1745)
+- Fix: Use list values for requires_system_checks (#1736)
+
 3.2.0
 -----
 
@@ -17,7 +31,6 @@ Changes:
 - Fix: HexValidator, Max length validation
 - Fix: runserver_plus, Fix KeyError: 'werkzeug.server.shutdown'
 - New: managestate, Saves current applied migrations to a file or applies migrations from file
-
 
 3.1.5
 -----
