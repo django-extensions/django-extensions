@@ -326,6 +326,9 @@ class Command(BaseCommand):
                 environ = super().make_environ()
                 if not options['keep_meta_shutdown_func'] and 'werkzeug.server.shutdown' in environ:
                     del environ['werkzeug.server.shutdown']
+                remote_user = os.getenv('REMOTE_USER')
+                if remote_user is not None:
+                    environ['REMOTE_USER'] = remote_user
                 return environ
 
         threaded = options['threaded']
