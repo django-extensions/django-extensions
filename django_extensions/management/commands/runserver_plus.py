@@ -7,6 +7,7 @@ import sys
 import traceback
 import webbrowser
 import functools
+from pathlib import Path
 from typing import List, Set
 
 import django
@@ -15,7 +16,7 @@ from django.core.management.base import BaseCommand, CommandError, SystemCheckEr
 from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
-from django.utils.autoreload import get_reloader
+from django.utils.autoreload import file_changed, get_reloader
 from django.views import debug as django_views_debug
 
 try:
@@ -86,11 +87,17 @@ if HAS_WERKZEUG:
 
             @property
             def extra_files(self):
-                return self._extra_files.union(_error_files)
+                return self._extra_files.union(_error_files, {"*.html"})
 
             @extra_files.setter
             def extra_files(self, extra_files):
                 self._extra_files = extra_files
+
+            def trigger_reload(self, filename: str) -> None:
+                path = Path(filename)
+                results = file_changed.send(sender=self, file_path=path)
+                if not any(res[1] for res in results):
+                    super().trigger_reload(filename)
 
         _reloader.reloader_loops[name] = WrappedReloaderLoop
 
