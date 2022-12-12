@@ -93,26 +93,34 @@ class PipCheckerTests(TestCase):
         self.assertTrue(value.endswith('repo is not frozen\n'), value)
 
     def test_pipchecker_with_outdated_requirement_on_pip20_1(self):
-        subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', 'pip==20.1'])
-        importlib.reload(pip)
+        def _install_pip(version):
+            subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', f'pip=={version}'])
+            importlib.reload(pip)
 
-        requirements_path = './requirements.txt'
-        out = StringIO()
+        current_pip_version = pip.__version__
 
-        f = open(requirements_path, 'wt')
-        f.write('djangorestframework==3.0.0')
-        f.close()
+        try:
+            _install_pip("20.1")
 
-        subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-        importlib.reload(pkg_resources)
-        call_command('pipchecker', '-r', requirements_path, stdout=out)
+            requirements_path = './requirements.txt'
+            out = StringIO()
 
-        value = out.getvalue()
+            f = open(requirements_path, 'wt')
+            f.write('djangorestframework==3.0.0')
+            f.close()
 
-        subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
-        os.remove(requirements_path)
+            subprocess.call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+            importlib.reload(pkg_resources)
+            call_command('pipchecker', '-r', requirements_path, stdout=out)
 
-        self.assertTrue(value.endswith('available\n'))
+            value = out.getvalue()
+
+            subprocess.call([sys.executable, '-m', 'pip', 'uninstall', '--yes', '-r', requirements_path])
+            os.remove(requirements_path)
+
+            self.assertTrue(value.endswith('available\n'))
+        finally:
+            _install_pip(current_pip_version)
 
     def test_pipchecker_with_long_up_to_date_requirements(self):
         requirements_path = './requirements.txt'
