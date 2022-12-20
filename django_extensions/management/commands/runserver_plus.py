@@ -73,7 +73,7 @@ DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOA
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
-_error_files: Set = set()
+_error_files: Set[str] = set()
 
 
 if HAS_WERKZEUG:
