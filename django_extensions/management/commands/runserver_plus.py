@@ -7,7 +7,7 @@ import sys
 import traceback
 import webbrowser
 import functools
-from typing import List, Set
+from typing import List, Set  # NOQA
 
 import django
 from django.conf import settings
