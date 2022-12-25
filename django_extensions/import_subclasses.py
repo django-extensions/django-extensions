@@ -39,7 +39,7 @@ class SubclassesFinder:
         but in future functionality of aliasing subclasses can be added.
         """
         result = {}  # type: Dict[str, List[Tuple[str, str]]]
-        for loader, module_name, is_pkg in walk_packages(path=[settings.BASE_DIR]):
+        for loader, module_name, is_pkg in walk_packages(path=[str(settings.BASE_DIR)]):
             subclasses_from_module = self._collect_classes_from_module(module_name)
             if subclasses_from_module:
                 result[module_name] = subclasses_from_module
