@@ -27,11 +27,11 @@ class Command(BaseCommand):
             "--all-methods", action="store_true", default=None, help="list all methods, including private and default."
         )
         parser.add_argument(
-            "--model",
+            "--models",
             nargs="?",
             type=str,
             default=None,
-            help="list the details for a single model. Input should be in the form appname.Modelname",
+            help="list the details for specific models. Input should be in the form appname.Modelname, separated by a comma",
         )
 
     def list_model_info(self, options):
@@ -51,10 +51,10 @@ class Command(BaseCommand):
         ALL_METHODS = (
             True if options.get("all_methods", None) is not None else getattr(settings, "MODEL_INFO_ALL_METHODS", False)
         )
-        MODEL = (
-            options.get("model")
-            if options.get("model", None) is not None
-            else getattr(settings, "MODEL_INFO_MODEL", False)
+        MODELS = (
+            options.get("models")
+            if options.get("models", None) is not None
+            else getattr(settings, "MODEL_INFO_MODELS", False)
         )
 
         default_methods = [
@@ -76,8 +76,8 @@ class Command(BaseCommand):
             "validate_unique",
         ]
 
-        if MODEL:
-            model_list = [django_apps.get_model(MODEL)]
+        if MODELS:
+            model_list = [django_apps.get_model(x) for x in MODELS.split(",")]
         else:
             model_list = sorted(
                 django_apps.get_models(), key=lambda x: (x._meta.app_label, x._meta.object_name), reverse=False
