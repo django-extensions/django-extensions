@@ -16,6 +16,7 @@ from django.core.management.base import BaseCommand, CommandError, SystemCheckEr
 from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
+from django.template.autoreload import get_template_directories
 from django.utils.autoreload import file_changed, get_reloader
 from django.views import debug as django_views_debug
 
@@ -77,6 +78,18 @@ logger = logging.getLogger(__name__)
 _error_files = set()  # type: Set[str]
 
 
+def get_all_templates() -> Set[str]:
+
+    template_list = set()
+
+    for template_dir in get_template_directories():
+        for base_dir, _, filenames in os.walk(template_dir):
+            for filename in filenames:
+                template_list.add(os.path.join(base_dir, filename))
+
+    return template_list
+
+
 if HAS_WERKZEUG:
     # Monkey patch the reloader to support adding more files to extra_files
     for name, reloader_loop_klass in _reloader.reloader_loops.items():
@@ -87,7 +100,7 @@ if HAS_WERKZEUG:
 
             @property
             def extra_files(self):
-                return self._extra_files.union(_error_files, {"*.html"})
+                return self._extra_files.union(_error_files, get_all_templates())
 
             @extra_files.setter
             def extra_files(self, extra_files):
