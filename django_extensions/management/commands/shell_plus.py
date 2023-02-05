@@ -484,7 +484,7 @@ for k, m in shells.import_objects({}, no_style()).items():
         Use the fallback_application_name to let the user override
         it with PGAPPNAME env variable
 
-        http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
+        https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
         """
         supported_backends = (
             'django.db.backends.postgresql',

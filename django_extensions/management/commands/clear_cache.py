@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Author: AxiaCore S.A.S. http://axiacore.com
+# Author: AxiaCore S.A.S. https://axiacore.com
 from django.conf import settings
 from django.core.cache import DEFAULT_CACHE_ALIAS, caches
 from django.core.cache.backends.base import InvalidCacheBackendError

@@ -110,7 +110,7 @@ Open Source projects can always use more help. Fixing a problem, documenting a f
 translation in your language. If you have some time to spare and like to help us, here are the places to do so:
 
 - GitHub: https://github.com/django-extensions/django-extensions
-- Mailing list: http://groups.google.com/group/django-extensions
+- Mailing list: https://groups.google.com/group/django-extensions
 - Translations: https://www.transifex.com/projects/p/django-extensions/
 
 
@@ -134,6 +134,6 @@ Please remember that nobody is paid directly to develop or maintain Django Exten
 between putting food on the table, family, this project and the rest of life :-)
 
 
-__ http://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
-__ http://vimeo.com/1720508
+__ https://ericholscher.com/blog/2008/sep/12/screencast-django-command-extensions/
+__ https://vimeo.com/1720508
 __ https://www.youtube.com/watch?v=1F6G3ONhr4k

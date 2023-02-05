@@ -143,7 +143,7 @@ class AutoSlugField(UniqueFieldMixin, SlugField):
             slug = AutoSlugField(populate_from='title')
 
     Inspired by SmileyChris' Unique Slugify snippet:
-    http://www.djangosnippets.org/snippets/690/
+    https://www.djangosnippets.org/snippets/690/
     """
 
     def __init__(self, *args, **kwargs):
@@ -484,7 +484,7 @@ class UUIDFieldMixin:
     By default uses UUID version 4 (randomly generated UUID).
 
     The field support all uuid versions which are natively supported by the uuid python module, except version 2.
-    For more information see: http://docs.python.org/lib/module-uuid.html
+    For more information see: https://docs.python.org/lib/module-uuid.html
     """
 
     DEFAULT_MAX_LENGTH = 36

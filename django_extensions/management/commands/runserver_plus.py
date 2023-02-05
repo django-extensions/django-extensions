@@ -318,7 +318,7 @@ class Command(BaseCommand):
 
     def inner_run(self, options):
         if not HAS_WERKZEUG:
-            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+            raise CommandError("Werkzeug is required to use runserver_plus. Please visit https://werkzeug.palletsprojects.com/ or install via pip. (pip install Werkzeug)")
 
         # Set colored output
         if settings.DEBUG:
@@ -393,7 +393,7 @@ class Command(BaseCommand):
         if self.show_startup_messages:
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Using the Werkzeug debugger (https://werkzeug.palletsprojects.com/)")
             print("Quit the server with %s." % quit_command)
 
         if open_browser:

@@ -382,7 +382,7 @@ notebook extension or copy its auto-loading code into your own extension.
 Note that the IPython Notebook feature doesn't currently honor the
 ``--dont-load`` option.
 
-.. _`IPython Notebook`: http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
+.. _`IPython Notebook`: https://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
 
 
 

@@ -72,7 +72,7 @@ Templates used:
  - django_extensions/graph_models/label.dot
  - django_extensions/graph_models/relation.dot
 
-Documentation on how to create dot files can be found here: http://www.graphviz.org/documentation/
+Documentation on how to create dot files can be found here: https://www.graphviz.org/documentation/
 
 .. warning::
   Modifying Django's default templates behaviour might break *graph_models*
@@ -146,6 +146,6 @@ image by using the *graph_models* command::
 
 
 
-.. _GraphViz: http://www.graphviz.org/
+.. _GraphViz: https://www.graphviz.org/
 .. _pygraphviz: https://pygraphviz.github.io/
 .. _pydot: https://pypi.python.org/pypi/pydot

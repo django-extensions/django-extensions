@@ -30,7 +30,7 @@ structure helps to keep your profile data organized and keeps /tmp uncluttered.
 
 To define profile filenames use --prof-file option. Default format
 is "{path}.{duration:06d}ms.{time}" (Python
-`Format Specification <http://docs.python.org/3/library/string.html#formatspec>`_
+`Format Specification <https://docs.python.org/3/library/string.html#formatspec>`_
 is used).
 
 Examples:
@@ -87,8 +87,6 @@ Example::
 Links
 -----
 
-* http://code.djangoproject.com/wiki/ProfilingDjango
-* http://www.rkblog.rk.edu.pl/w/p/django-profiling-hotshot-and-kcachegrind/
-* http://code.djangoproject.com/browser/django/trunk/django/bin/profiling/gather_profile_stats.py
-* http://www.oluyede.org/blog/2007/03/07/profiling-django/
-* http://simonwillison.net/2008/May/22/debugging/
+* https://code.djangoproject.com/wiki/ProfilingDjango
+* https://rk.edu.pl/en/django-profiling-hotshot-and-kcachegrind/
+* https://simonwillison.net/2008/May/22/debugging/

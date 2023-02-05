@@ -167,5 +167,5 @@ Command Extensions
 .. _`runscript`: runscript.html
 .. _`runserver_plus`: runserver_plus.html
 .. _`sync_s3`: sync_s3.html
-.. _GraphViz: http://www.graphviz.org/
-.. _Werkzeug: http://werkzeug.pocoo.org/
+.. _GraphViz: https://www.graphviz.org/
+.. _Werkzeug: https://werkzeug.palletsprojects.com/

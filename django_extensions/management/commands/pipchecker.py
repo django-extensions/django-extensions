@@ -216,8 +216,8 @@ class Command(BaseCommand):
              curl -u 'rizumu' -d '{"scopes":["repo"], "note":"pipchecker"}' https://api.github.com/authorizations
 
         For more info on github api tokens:
-            https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
-            http://developer.github.com/v3/oauth/#oauth-authorizations-api
+            https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+            https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps
 
         Requirement Format
         ------------------

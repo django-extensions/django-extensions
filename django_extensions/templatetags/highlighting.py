@@ -4,14 +4,11 @@ Similar to syntax_color.py but this is intended more for being able to
 copy+paste actual code into your Django templates without needing to
 escape or anything crazy.
 
-http://lobstertech.com/2008/aug/30/django_syntax_highlight_template_tag/
-
 Example:
 
  {% load highlighting %}
 
  <style>
- @import url("http://lobstertech.com/media/css/highlight.css");
  .highlight { background: #f8f8f8; }
  .highlight { font-size: 11px; margin: 1em; border: 1px solid #ccc;
               border-left: 3px solid #F90; padding: 0; }

@@ -12,7 +12,7 @@ Coloring a string with the Python lexer:
 You may use any lexer in Pygments. The complete list of which
 can be found [on the Pygments website][1].
 
-[1]: http://pygments.org/docs/lexers/
+[1]: https://pygments.org/docs/lexers/
 
 You may also have Pygments attempt to guess the correct lexer for
 a particular string. However, if may not be able to choose a lexer,
