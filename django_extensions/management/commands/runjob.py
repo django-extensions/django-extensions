@@ -21,9 +21,14 @@ class Command(BaseCommand):
             '--list', '-l', action="store_true", dest="list_jobs",
             default=False, help="List all jobs with their description"
         )
+        parser.add_argument(
+            '--force', '-f', action="store_true", dest="force",
+            default=False, help="Run job even if it is not scheduled for this hour."
+        )        
 
     def runjob(self, app_name, job_name, options):
         verbosity = options["verbosity"]
+        force = options["force"]
         if verbosity > 1:
             logger.info("Executing job: %s (app: %s)", job_name, app_name)
         try:
@@ -36,7 +41,11 @@ class Command(BaseCommand):
             logger.info("Use -l option to view all the available jobs")
             return
         try:
-            job().execute()
+            j = job()
+            if not j.can_run() and not force:
+                logger.error("Error: Job %s (app: %s) can't run due to schedule, use --force to override.", job_name, app_name)
+                return
+            j._execute(force)
         except Exception:
             logger.exception("ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name)
 

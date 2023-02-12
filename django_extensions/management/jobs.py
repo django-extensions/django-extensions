@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import logging
+import datetime
 import os
 import sys
 import importlib
 import textwrap
-from typing import Optional  # NOQA
+from typing import Optional, List  # NOQA
 from django.apps import apps
 from rich.console import Console
 from rich.table import Table, Column
 
+logger = logging.getLogger(__name__)
 _jobs = None
 
 
@@ -23,6 +26,18 @@ class BaseJob:
     help = "undefined job description."
     when = None  # type: Optional[str]
 
+    @classmethod
+    def can_run(cls):
+        """Return True if the job can run now."""
+        return True
+        
+    def _execute(self, force=False):
+        """Internal: calls the sub-class' .execute() method."""
+        if not force and not self.can_run():
+            logger.debug("Cannot run: %s reports that it can't run.", self.help)
+            return
+        return self.execute()
+
     def execute(self):
         raise NotImplementedError("Job needs to implement the execute method")
 
@@ -37,6 +52,14 @@ class QuarterHourlyJob(BaseJob):
 
 class HourlyJob(BaseJob):
     when = "hourly"
+    hours: Optional[List[int]] = None  # list of hours when the job should run
+
+    @classmethod
+    def can_run(cls):
+        if cls.hours:
+            current_hour = datetime.datetime.now().hour
+            return current_hour in cls.hours
+        return True
 
 
 class DailyJob(BaseJob):
@@ -175,6 +198,7 @@ def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=Fal
         table.add_column('jobname')
         if show_when:
             table.add_column('when')
+            table.add_column('runnable', justify='center')
         table.add_column('help')
 
     for app_name, job_name in jlist:
@@ -184,7 +208,11 @@ def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=Fal
             row.append(app_name)
         row.append(job_name)
         if show_when:
-            row.append(job.when and job.when or "")
+            when = job.when if job.when else ""
+            if hasattr(job, 'hours') and job.hours is not None:
+                when = "%s (%s)" % (when, ', '.join(str(hr) for hr in job.hours))
+            row.append(when)
+            row.append('Y' if job.can_run() else 'N')
         row.append(format_help_text(job.help, digest=not verbose))
         table.add_row(*row)
     console.print(table)
