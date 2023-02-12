@@ -152,10 +152,10 @@ def get_job(app_name, job_name):
 
 def format_help_text(txt: str, digest: bool=False, maxwidth: int=80) -> str:
     """Return the help text properly formatted."""
-    if digest:
-        return textwrap.shorten(txt, maxwidth)
     paragraphs = txt.split('\n\n')
-    return '\n\n'.join(textwrap.fill(textwrap.dedent(p), width=maxwidth) for p in paragraphs)
+    if digest:
+        return textwrap.shorten(paragraphs[0], maxwidth)
+    return '\n\n'.join(textwrap.dedent(p).replace('\n', ' ') for p in paragraphs)
 
 
 def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True, verbose=False):
