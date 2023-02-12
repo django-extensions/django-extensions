@@ -2,8 +2,11 @@
 import os
 import sys
 import importlib
+import textwrap
 from typing import Optional  # NOQA
 from django.apps import apps
+from rich.console import Console
+from rich.table import Table, Column
 
 _jobs = None
 
@@ -147,34 +150,41 @@ def get_job(app_name, job_name):
         raise KeyError("Job not found: %s" % job_name)
 
 
-def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True):
+def format_help_text(txt: str, digest: bool=False, maxwidth: int=80) -> str:
+    """Return the help text properly formatted."""
+    if digest:
+        return textwrap.shorten(txt, maxwidth)
+    paragraphs = txt.split('\n\n')
+    return '\n\n'.join(textwrap.fill(textwrap.dedent(p), width=maxwidth) for p in paragraphs)
+
+
+def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True, verbose=False):
+    console = Console()
+
     jobmap = get_jobs(when, only_scheduled=only_scheduled)
-    print("Job List: %i jobs" % len(jobmap))
+    console.print("Job List: %i jobs" % len(jobmap))
     jlist = sorted(jobmap.keys())
     if not jlist:
         return
 
-    appname_spacer = "%%-%is" % max(len(e[0]) for e in jlist)
-    name_spacer = "%%-%is" % max(len(e[1]) for e in jlist)
-    when_spacer = "%%-%is" % max(len(e.when) for e in jobmap.values() if e.when)
+    table = Table()
+
     if show_header:
-        line = " "
         if show_appname:
-            line += appname_spacer % "appname" + " - "
-        line += name_spacer % "jobname"
+            table.add_column('appname')
+        table.add_column('jobname')
         if show_when:
-            line += " - " + when_spacer % "when"
-        line += " - help"
-        print(line)
-        print("-" * 80)
+            table.add_column('when')
+        table.add_column('help')
 
     for app_name, job_name in jlist:
         job = jobmap[(app_name, job_name)]
-        line = " "
+        row = []
         if show_appname:
-            line += appname_spacer % app_name + " - "
-        line += name_spacer % job_name
+            row.append(app_name)
+        row.append(job_name)
         if show_when:
-            line += " - " + when_spacer % (job.when and job.when or "")
-        line += " - " + job.help
-        print(line)
+            row.append(job.when and job.when or "")
+        row.append(format_help_text(job.help, digest=not verbose))
+        table.add_row(*row)
+    console.print(table)

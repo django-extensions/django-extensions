@@ -53,6 +53,6 @@ class Command(BaseCommand):
         setup_logger(logger, self.stdout)
 
         if options['list_jobs']:
-            print_jobs(only_scheduled=False, show_when=True, show_appname=True)
+            print_jobs(only_scheduled=False, show_when=True, show_appname=True, verbose=options['verbosity'] >= 2)
         else:
             self.runjob(app_name, job_name, options)
