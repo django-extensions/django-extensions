@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import sys
-stdout = sys.stdout
 from io import StringIO
 
 from django.core.management import call_command
