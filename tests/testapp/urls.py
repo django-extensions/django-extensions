@@ -24,7 +24,7 @@ login_view = auth_views.LoginView.as_view() if hasattr(auth_views, 'LoginView') 
 logout_view = auth_views.LogoutView.as_view() if hasattr(auth_views, 'LogoutView') else auth_views.logout
 
 urlpatterns = [
-    url(r'^login/$', login_view, {'template_name': 'login.html'}, name="login"),
+    url(r'^login/$', login_view, {'template_dir': 'login.html'}, name="login"),
     url(r'^logout/$', logout_view, name="logout"),
     url(r'^admin/', admin.site.urls),
 ]
