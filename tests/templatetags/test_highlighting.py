@@ -44,7 +44,7 @@ def need_food(self):
 {% highlight 'bash' %}
 echo "Hello $1"
 {% endhighlight %}"""
-        expected_result = '''<div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;Hello </span><span class="nv">$1</span><span class="s2">&quot;</span>
+        expected_result = '''<div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Hello </span><span class="nv">$1</span><span class="s2">&quot;</span>
 </pre></div>'''
 
         result = Template(content).render(self.ctx)
