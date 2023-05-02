@@ -4,6 +4,7 @@ reset_db command
 
 originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
 """
+import importlib.util
 import os
 import logging
 import warnings
@@ -141,7 +142,11 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             logging.info('Executing... "%s"', create_query)
             connection.query(create_query.strip())
         elif engine in POSTGRESQL_ENGINES:
-            import psycopg2 as Database  # NOQA
+            has_psycopg3 = importlib.util.find_spec("psycopg")
+            if has_psycopg3:
+                import psycopg as Database  # NOQA
+            else:
+                import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
             if user:

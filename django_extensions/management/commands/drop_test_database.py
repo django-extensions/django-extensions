@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import importlib.util
 from itertools import count
 import os
 import logging
@@ -167,7 +168,11 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
                 cursor.execute(drop_query)
 
         elif engine in POSTGRESQL_ENGINES:
-            import psycopg2 as Database  # NOQA
+            has_psycopg3 = importlib.util.find_spec("psycopg")
+            if has_psycopg3:
+                import psycopg as Database  # NOQA
+            else:
+                import psycopg2 as Database  # NOQA
 
             conn_params = {'database': 'template1'}
             if user:
