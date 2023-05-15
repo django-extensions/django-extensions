@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import importlib.util
 from io import StringIO
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 
@@ -251,7 +252,11 @@ class DropTestDatabaseTests(TestCase):
         # Indicate that no clone databases exist
         type(m_cursor).rowcount = PropertyMock(side_effect=(1, 0))
 
-        with patch.dict("sys.modules", psycopg2=m_database):
+        mock_kwargs = {"psycopg2": m_database}
+        has_psycopg3 = importlib.util.find_spec("psycopg") is not None
+        if has_psycopg3:
+            mock_kwargs = {"psycopg": m_database}
+        with patch.dict("sys.modules", **mock_kwargs):
             call_command('drop_test_database', '--noinput', verbosity=2)
 
         with self.subTest('Should check for and remove test database names until failure'):
@@ -277,7 +282,11 @@ class DropTestDatabaseTests(TestCase):
         # Indicate that clone databases exist up to test_test_2
         type(m_cursor).rowcount = PropertyMock(side_effect=(1, 1, 1, 0))
 
-        with patch.dict("sys.modules", psycopg2=m_database):
+        mock_kwargs = {"psycopg2": m_database}
+        has_psycopg3 = importlib.util.find_spec("psycopg") is not None
+        if has_psycopg3:
+            mock_kwargs = {"psycopg": m_database}
+        with patch.dict("sys.modules", **mock_kwargs):
             call_command('drop_test_database', '--noinput')
 
         exists_query = "SELECT datname FROM pg_catalog.pg_database WHERE datname="
@@ -303,7 +312,11 @@ class DropTestDatabaseTests(TestCase):
         m_cursor.execute.side_effect = m_database.ProgrammingError
         m_database.connect.return_value.cursor.return_value = m_cursor
 
-        with patch.dict("sys.modules", psycopg2=m_database):
+        mock_kwargs = {"psycopg2": m_database}
+        has_psycopg3 = importlib.util.find_spec("psycopg") is not None
+        if has_psycopg3:
+            mock_kwargs = {"psycopg": m_database}
+        with patch.dict("sys.modules", **mock_kwargs):
             call_command('drop_test_database', '--noinput', verbosity=2)
 
         self.assertNotIn("Reset successful.", m_stdout.getvalue())

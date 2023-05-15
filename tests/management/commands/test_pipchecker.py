@@ -140,6 +140,7 @@ class PipCheckerTests(TestCase):
         f.write('Pillow')
         f.write('pluggy')
         f.write('psycopg2-binary')
+        f.write('psycopg[binary,pool]')
         f.write('py')
         f.write('pyparsing')
         f.write('pytest')
