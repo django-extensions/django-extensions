@@ -174,7 +174,7 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
             else:
                 import psycopg2 as Database  # NOQA
 
-            conn_params = {'database': 'template1'}
+            conn_params = {'dbname': 'template1'}
             if user:
                 conn_params['user'] = user
             if password:
@@ -185,7 +185,10 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
                 conn_params['port'] = database_port
 
             connection = Database.connect(**conn_params)
-            connection.set_isolation_level(0)  # autocommit false
+            if has_psycopg3:
+                connection.autocommit = True
+            else:
+                connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
 
             for db_name in get_database_names('{}_{}'.format):
