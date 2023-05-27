@@ -174,7 +174,7 @@ class ResetDbPostgresqlTests(TestCase):
         with mock.patch.dict("sys.modules", **mock_kwargs):
             call_command('reset_db', '--noinput', verbosity=2)
 
-        m_database.connect.assert_called_once_with(database='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
+        m_database.connect.assert_called_once_with(dbname='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
 
         m_cursor.execute.assert_has_calls(expected_calls, any_order=False)
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
@@ -198,7 +198,7 @@ class ResetDbPostgresqlTests(TestCase):
         with mock.patch.dict("sys.modules", **mock_kwargs):
             call_command('reset_db', '--noinput', '--close-sessions', verbosity=2)
 
-        m_database.connect.assert_called_once_with(database='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
+        m_database.connect.assert_called_once_with(dbname='template1', host='127.0.0.1', password='bar', port='5432', user='foo')
 
         m_cursor.execute.assert_has_calls(expected_calls, any_order=False)
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
