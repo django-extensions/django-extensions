@@ -56,7 +56,7 @@ class AutoSlugField(SlugField):
         If set to True, overwrites the slug on every save (default: False)
 
     Inspired by SmileyChris' Unique Slugify snippet:
-    http://www.djangosnippets.org/snippets/690/
+    https://www.djangosnippets.org/snippets/690/
     """
 
     def __init__(self, *args, **kwargs):
@@ -216,7 +216,7 @@ class UUIDField(StringField):
     By default uses UUID version 1 (generate from host ID, sequence number and current time)
 
     The field support all uuid versions which are natively supported by the uuid python module.
-    For more information see: http://docs.python.org/lib/module-uuid.html
+    For more information see: https://docs.python.org/lib/module-uuid.html
     """
 
     def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):

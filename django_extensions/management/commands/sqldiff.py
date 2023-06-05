@@ -265,7 +265,7 @@ class SQLDiff:
 
         sql_to_dict(query, param) -> list of dicts
 
-        code from snippet at http://www.djangosnippets.org/snippets/1383/
+        code from snippet at https://www.djangosnippets.org/snippets/1383/
         """
         cursor = connection.cursor()
         cursor.execute(query, param)
@@ -947,7 +947,7 @@ class SqliteSQLDiff(SQLDiff):
             # sqlite does not support tablespaces
             tablespace = "public"
             # index, column_name, column_type, nullable, default_value
-            # see: http://www.sqlite.org/pragma.html#pragma_table_info
+            # see: https://www.sqlite.org/pragma.html#pragma_table_info
             for table_info in self.sql_to_dict("PRAGMA table_info('%s');" % table_name, []):
                 key = (tablespace, table_name, table_info['name'])
                 self.null[key] = not table_info['notnull']

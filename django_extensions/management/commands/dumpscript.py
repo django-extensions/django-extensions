@@ -2,7 +2,7 @@
 """
       Title: Dumpscript management command
     Project: Hardytools (queryset-refactor version)
-     Author: Will Hardy (http://willhardy.com.au)
+     Author: Will Hardy
        Date: June 2008
       Usage: python manage.py dumpscript appname > scripts/scriptname.py
   $Revision: 217 $

@@ -2,7 +2,7 @@
 """
 reset_db command
 
-originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
+originally from https://www.djangosnippets.org/snippets/828/ by dnordberg
 """
 import importlib.util
 import os

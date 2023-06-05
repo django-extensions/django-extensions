@@ -48,7 +48,7 @@ def fullsplit(path, result=None):
 
 # Tell distutils to put the data_files in platform-specific installation
 # locations. See here for an explanation:
-# http://groups.google.com/group/comp.lang.python/browse_thread/thread/35ec7b2fed36eaec/2105ee4d9e8042cb
+# https://groups.google.com/group/comp.lang.python/browse_thread/thread/35ec7b2fed36eaec/2105ee4d9e8042cb
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
@@ -86,7 +86,7 @@ if int(setuptools.__version__.split(".", 1)[0]) < 18:
 
 long_description = """django-extensions bundles several useful
 additions for Django projects. See the project page for more information:
-  http://github.com/django-extensions/django-extensions"""
+  https://github.com/django-extensions/django-extensions"""
 if os.path.isfile("README.rst"):
     with open("README.rst") as f:
         long_description = f.read()
@@ -100,7 +100,7 @@ setup(
     author_email='mtrier@gmail.com',
     maintainer='Bas van Oostveen',
     maintainer_email='v.oostveen@gmail.com',
-    url='http://github.com/django-extensions/django-extensions',
+    url='https://github.com/django-extensions/django-extensions',
     license='MIT License',
     platforms=['any'],
     packages=packages,

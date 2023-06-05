@@ -30,7 +30,7 @@ To get started we just use the *runserver_plus* command instead of the normal
 
   Django version X.Y.Z, using settings 'screencasts.settings'
   Development server is running at http://127.0.0.1:8000/
-  Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
+  Using the Werkzeug debugger (https://werkzeug.palletsprojects.com/)
   Quit the server with CONTROL-C.
 
 Note: all normal runserver options apply. In other words, if you need to change
@@ -90,7 +90,7 @@ Not even for a quick problem check.  I cannot emphasize this enough. The
 interactive debugger allows you to evaluate python code right against the
 server.  You've been warned.
 
-.. _`Werkzeug WSGI utilities`: http://werkzeug.pocoo.org/
+.. _`Werkzeug WSGI utilities`: https://werkzeug.palletsprojects.com/
 
 
 SSL
@@ -106,7 +106,7 @@ a key and certificate file will be automatically generated::
 
   Django version X.Y.Z, using settings 'mysite.settings'
   Development server is running at http://127.0.0.1:8000/
-  Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
+  Using the Werkzeug debugger (https://werkzeug.palletsprojects.com/)
   Quit the server with CONTROL-C.
    * Running on https://127.0.0.1:8000/
    * Restarting with reloader
@@ -115,7 +115,7 @@ a key and certificate file will be automatically generated::
 
   Django version X.Y.Z, using settings 'mysite.settings'
   Development server is running at http://127.0.0.1:8000/
-  Using the Werkzeug debugger (http://werkzeug.pocoo.org/)
+  Using the Werkzeug debugger (https://werkzeug.palletsprojects.com/)
   Quit the server with CONTROL-C.
 
 After running this command, your web application can be accessed through
@@ -225,7 +225,7 @@ causes the CPU and IO load.
 If possible try to install the Watchdog_ package, this should automatically cause Werkzeug_ to use
 `file system events` whenever possible.
 
-You can read more about this in `Werkzeug documentation <http://werkzeug.pocoo.org/docs/serving/#reloader>`_
+You can read more about this in `Werkzeug documentation <https://werkzeug.palletsprojects.com/serving/#reloader>`_
 
 You can also increase the poll interval when using `stat polling` from the default of 1 second. This
 will decrease the CPU load at the expense of file edits taking longer to pick up.
@@ -243,7 +243,7 @@ Debugger PIN
 ------------
 
 .. epigraph::
-   The following text about the debugger PIN is taken verbatim from the Werkzeug `documentation about its debugger PIN <http://werkzeug.pocoo.org/docs/debug/#debugger-pin>`_.
+   The following text about the debugger PIN is taken verbatim from the Werkzeug `documentation about its debugger PIN <https://werkzeug.palletsprojects.com/en/2.2.x/debug/#debugger-pin>`_.
 
 Starting with Werkzeug 0.11 the debugger is additionally protected by a PIN. This is a security helper to
 make it less likely for the debugger to be exploited in production as it has happened to people to keep the
@@ -264,5 +264,5 @@ exploit the debugger. Never enable the debugger in production.**
 
 
 .. _gh625: https://github.com/django-extensions/django-extensions/issues/625
-.. _Werkzeug: http://werkzeug.pocoo.org/
+.. _Werkzeug: https://werkzeug.palletsprojects.com/
 .. _Watchdog: https://pypi.python.org/pypi/watchdog

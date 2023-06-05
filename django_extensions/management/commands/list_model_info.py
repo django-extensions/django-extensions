@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Author: OmenApps. http://www.omenapps.com
+# Author: OmenApps. https://omenapps.com
 import inspect
 
 from django.apps import apps as django_apps
