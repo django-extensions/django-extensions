@@ -44,7 +44,8 @@ class Command(BaseCommand):
         for signal in signals:
             signal_name = SIGNAL_NAMES.get(signal, 'unknown')
             for receiver in signal.receivers:
-                lookup, receiver = receiver
+                # TODO: Determine what to do with is_async for Django 5.0
+                lookup, receiver, is_async = receiver
                 if isinstance(receiver, weakref.ReferenceType):
                     receiver = receiver()
                 if receiver is None:

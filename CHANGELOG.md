@@ -3,6 +3,13 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
+
+Pending
+-------
+
+- Improvement: Add support for Django 5.0
+
+
 3.2.2
 -----
 
