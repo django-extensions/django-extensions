@@ -5,9 +5,8 @@ from django.conf import settings
 
 TEMPLATES = [
     {
-        # ...
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        # ...
+        
     },
 ]
 REPLACEMENTS = getattr(settings, 'EXTENSIONS_REPLACEMENTS', {})
