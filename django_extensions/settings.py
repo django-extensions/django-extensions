@@ -3,7 +3,13 @@ import os
 
 from django.conf import settings
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+TEMPLATES = [
+    {
+        # ...
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        # ...
+    },
+]
 REPLACEMENTS = getattr(settings, 'EXTENSIONS_REPLACEMENTS', {})
 
 DEFAULT_SQLITE_ENGINES = (
