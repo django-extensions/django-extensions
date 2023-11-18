@@ -1,0 +1,39 @@
+{% load indent_text %}{% if use_subgraph %}  subgraph {{ graph.cluster_app_name }} {
+    label=<
+          <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+          <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER">
+          <FONT FACE="Roboto" COLOR="Black" POINT-SIZE="10">
+          <B>{{ graph.app_name }}</B>
+          </FONT>
+          </TD></TR>
+          </TABLE>
+          >
+    color=olivedrab4
+    style="rounded"{% endif %}
+{% indentby 2 if use_subgraph %}{% for model in graph.models %}
+  {{ model.app_name }}_{{ model.name }} [label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER"
+    {% if model.style.bg%}
+        BGCOLOR="{{model.style.bg}}"
+    {%else%}
+            BGCOLOR="#1b563f"
+    {%endif%}
+    >
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    {{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Roboto"><I>{{ model.abstracts|join:"," }}</I></FONT>&gt;{% endif %}
+    </B></FONT></TD></TR>
+  {% if not disable_fields %}{% for field in model.fields %}
+  {% if disable_abstract_fields and field.abstract %}
+  {% else %}
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.label }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.type }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
+    </TD></TR>
+  {% endif %}
+  {% endfor %}{% endif %}
+    </TABLE>
+    >]
+{% endfor %}{% endindentby %}
+{% if use_subgraph %}  }{% endif %}

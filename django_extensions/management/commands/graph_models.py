@@ -27,6 +27,28 @@ except ImportError:
     HAS_PYDOT = False
 
 
+def retheme(graph_data, app_style={}):
+    if isinstance(app_style, str):
+        if os.path.exists(app_style):
+            try:
+                with open(app_style, 'rt') as f:
+                    app_style = json.load(f)
+            except Exception as e:
+                print(f"Invalid app style file {app_style}")
+                raise Exception(e)
+        else:
+            return graph_data
+
+    for gc in graph_data["graphs"]:
+        for g in gc:
+            if "name" in g:
+                for m in g["models"]:
+                    app_name = g['app_name']
+                    if app_name in app_style:
+                        m["style"] = app_style[app_name]
+    return graph_data
+
+
 class Command(BaseCommand):
     help = "Creates a GraphViz dot file for the specified app names. You can pass multiple app names and they will all be combined into a single model. Output is usually directed to a dot file."
 
@@ -44,6 +66,12 @@ class Command(BaseCommand):
         --disable-fields can be set in settings.GRAPH_MODELS['disable_fields'].
         """
         self.arguments = {
+            '--app-style': {
+                'action': 'store',
+                'help': 'Path to style json to configure the style per app',
+                'dest': 'app-style',
+                'default': ".app-style.json"#dict(),
+            },
             '--pygraphviz': {
                 'action': 'store_true',
                 'default': False,
@@ -106,7 +134,7 @@ class Command(BaseCommand):
             '--theme -t': {
                 'action': 'store',
                 'dest': 'theme',
-                'default': 'django2018',
+                'default': 'django2018style',
                 'help': 'Theme to use. Supplied are \'original\' and \'django2018\'. You can create your own by creating dot templates in \'django_extentions/graph_models/themename/\' template directory.',
             },
             '--verbose-names -n': {
@@ -272,6 +300,7 @@ class Command(BaseCommand):
         template_name = os.path.join('django_extensions', 'graph_models', theme, 'digraph.dot')
         template = loader.get_template(template_name)
 
+        graph_data = retheme(graph_data, app_style=options['app-style'])
         dotdata = generate_dot(graph_data, template=template)
 
         if output == "pygraphviz":
