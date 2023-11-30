@@ -12,17 +12,21 @@
     style="rounded"{% endif %}
 {% indentby 2 if use_subgraph %}{% for model in graph.models %}
   {{ model.app_name }}_{{ model.name }} [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
-    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
-    {{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Roboto"><I>{{ model.abstracts|join:"," }}</I></FONT>&gt;{% endif %}
-    </B></FONT></TD></TR>
+        <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+        <TR><TD COLSPAN="{% if both_names %}3{% else %}2{% endif %}" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR><TD ALIGN="CENTER"><FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>{{ model.label.strip }}</B></FONT></TD></TR>
+        {% if model.abstracts %}<TR><TD ALIGN="CENTER"><FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>&lt;<I>{{ model.abstracts|join:"," }}</I>&gt;</B></FONT></TD></TR>{% endif %}
+        {% if model.db_name %}<TR><TD ALIGN="CENTER"><FONT FACE="Roboto" COLOR="white" POINT-SIZE="8">{{ model.db_name.strip }}</FONT></TD></TR>{% endif %}
+        </TABLE></TD></TR>
   {% if not disable_fields %}{% for field in model.fields %}
   {% if disable_abstract_fields and field.abstract %}
   {% else %}
     <TR><TD ALIGN="LEFT" BORDER="0">
     <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.label }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
-    </TD><TD ALIGN="LEFT">
+    </TD>{% if field.verbose_name %}<TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#444444" FACE="Roboto">{{ field.verbose_name }}</FONT>
+    </TD>{% endif %}<TD ALIGN="LEFT">
     <FONT {% if not field.primary_key and field.blank %}COLOR="#7B7B7B" {% endif %}FACE="Roboto">{% if field.abstract %}<I>{% endif %}{% if field.relation or field.primary_key %}<B>{% endif %}{{ field.type }}{% if field.relation or field.primary_key %}</B>{% endif %}{% if field.abstract %}</I>{% endif %}</FONT>
     </TD></TR>
   {% endif %}
