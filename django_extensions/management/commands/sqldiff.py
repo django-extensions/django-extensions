@@ -337,10 +337,9 @@ class SQLDiff:
             kwargs['geography'] = True
 
         if reverse_type == 'GeometryField':
-            geo_col = description[0]
             # Getting a more specific field type and any additional parameters
             # from the `get_geometry_type` routine for the spatial backend.
-            reverse_type, geo_params = self.introspection.get_geometry_type(table_name, geo_col)
+            reverse_type, geo_params = self.introspection.get_geometry_type(table_name, description)
             if geo_params:
                 kwargs.update(geo_params)
             reverse_type = 'django.contrib.gis.db.models.fields.%s' % reverse_type
