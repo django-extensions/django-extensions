@@ -13,3 +13,5 @@ types-pyOpenSSL
 types-PyYAML
 types-boto
 types-requests
+
+setuptools
