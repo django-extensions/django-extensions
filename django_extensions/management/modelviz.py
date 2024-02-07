@@ -102,6 +102,7 @@ class ModelGraph:
         else:
             self.app_labels = app_labels
         self.rankdir = kwargs.get("rankdir")
+        self.display_field_choices = kwargs.get("display_field_choices", False)
 
     def generate_graph_data(self):
         self.process_apps()
@@ -124,6 +125,7 @@ class ModelGraph:
             'cli_options': self.cli_options,
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
+            'display_field_choices': self.display_field_choices,
             'use_subgraph': self.use_subgraph,
             'rankdir': self.rankdir,
         }
@@ -153,6 +155,9 @@ class ModelGraph:
         t = type(field).__name__
         if isinstance(field, (OneToOneField, ForeignKey)):
             t += " ({0})".format(field.remote_field.field_name)
+        if self.display_field_choices and field.choices is not None:
+            choices = {c for c, _ in field.choices}
+            t = str(choices)
         # TODO: ManyToManyField, GenericRelation
 
         return {

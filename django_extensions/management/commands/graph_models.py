@@ -80,6 +80,12 @@ class Command(BaseCommand):
                 'dest': 'disable_abstract_fields',
                 'help': 'Do not show the class member fields that were inherited',
             },
+            '--display-field-choices': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'display_field_choices',
+                'help': 'Display choices instead of field type',
+            },
             '--group-models -g': {
                 'action': 'store_true',
                 'default': False,
