@@ -37,7 +37,7 @@ class Command(BaseCommand):
             if verbosity > 1:
                 logger.info("Executing %s job: %s (app: %s)", when, job_name, app_name)
             try:
-                job().execute()
+                job()._execute()
             except Exception:
                 logger.exception("ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name)
 

@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+import logging
+import datetime
 import os
 import sys
 import importlib
-from typing import Optional  # NOQA
+import textwrap
+from typing import Optional, List  # NOQA
 from django.apps import apps
+from rich.console import Console
+from rich.table import Table, Column
 
+logger = logging.getLogger(__name__)
 _jobs = None
 
 
@@ -20,6 +26,18 @@ class BaseJob:
     help = "undefined job description."
     when = None  # type: Optional[str]
 
+    @classmethod
+    def can_run(cls):
+        """Return True if the job can run now."""
+        return True
+        
+    def _execute(self, force=False):
+        """Internal: calls the sub-class' .execute() method."""
+        if not force and not self.can_run():
+            logger.debug("Cannot run: %s reports that it can't run.", self.help)
+            return
+        return self.execute()
+
     def execute(self):
         raise NotImplementedError("Job needs to implement the execute method")
 
@@ -34,6 +52,14 @@ class QuarterHourlyJob(BaseJob):
 
 class HourlyJob(BaseJob):
     when = "hourly"
+    hours: Optional[List[int]] = None  # list of hours when the job should run
+
+    @classmethod
+    def can_run(cls):
+        if cls.hours:
+            current_hour = datetime.datetime.now().hour
+            return current_hour in cls.hours
+        return True
 
 
 class DailyJob(BaseJob):
@@ -147,34 +173,46 @@ def get_job(app_name, job_name):
         raise KeyError("Job not found: %s" % job_name)
 
 
-def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True):
+def format_help_text(txt: str, digest: bool=False, maxwidth: int=80) -> str:
+    """Return the help text properly formatted."""
+    paragraphs = txt.split('\n\n')
+    if digest:
+        return textwrap.shorten(paragraphs[0], maxwidth)
+    return '\n\n'.join(textwrap.dedent(p).replace('\n', ' ') for p in paragraphs)
+
+
+def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True, verbose=False):
+    console = Console()
+
     jobmap = get_jobs(when, only_scheduled=only_scheduled)
-    print("Job List: %i jobs" % len(jobmap))
+    console.print("Job List: %i jobs" % len(jobmap))
     jlist = sorted(jobmap.keys())
     if not jlist:
         return
 
-    appname_spacer = "%%-%is" % max(len(e[0]) for e in jlist)
-    name_spacer = "%%-%is" % max(len(e[1]) for e in jlist)
-    when_spacer = "%%-%is" % max(len(e.when) for e in jobmap.values() if e.when)
+    table = Table()
+
     if show_header:
-        line = " "
         if show_appname:
-            line += appname_spacer % "appname" + " - "
-        line += name_spacer % "jobname"
+            table.add_column('appname')
+        table.add_column('jobname')
         if show_when:
-            line += " - " + when_spacer % "when"
-        line += " - help"
-        print(line)
-        print("-" * 80)
+            table.add_column('when')
+            table.add_column('runnable', justify='center')
+        table.add_column('help')
 
     for app_name, job_name in jlist:
         job = jobmap[(app_name, job_name)]
-        line = " "
+        row = []
         if show_appname:
-            line += appname_spacer % app_name + " - "
-        line += name_spacer % job_name
+            row.append(app_name)
+        row.append(job_name)
         if show_when:
-            line += " - " + when_spacer % (job.when and job.when or "")
-        line += " - " + job.help
-        print(line)
+            when = job.when if job.when else ""
+            if hasattr(job, 'hours') and job.hours is not None:
+                when = "%s (%s)" % (when, ', '.join(str(hr) for hr in job.hours))
+            row.append(when)
+            row.append('Y' if job.can_run() else 'N')
+        row.append(format_help_text(job.help, digest=not verbose))
+        table.add_row(*row)
+    console.print(table)
