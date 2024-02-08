@@ -32,7 +32,7 @@ class RunJobTests(TestCase):
 
     def test_list_jobs(self):
         call_command('runjob', '-l', verbosity=2)
-        self.assertRegex(sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
+        self.assertRegex(sys.stdout.getvalue(), r"tests.testapp[^\w]+sample_job[^\w]+My sample job.")
 
     def test_list_jobs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={
@@ -40,7 +40,7 @@ class RunJobTests(TestCase):
             'remove': 'tests.testapp',
         }):
             call_command('runjob', '-l', verbosity=2)
-            self.assertRegex(sys.stdout.getvalue(), "tests.testapp +- sample_job +- +- My sample job.\n")
+            self.assertRegex(sys.stdout.getvalue(), r"tests.testapp[^\w]+sample_job[^\w]+My sample job.")
 
     def test_runs_appconfig(self):
         with self.modify_settings(INSTALLED_APPS={
