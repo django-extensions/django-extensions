@@ -334,6 +334,26 @@ class Command(BaseCommand):
         # Using normal Python shell
         import code
         imported_objects = self.get_imported_objects(options)
+
+        # By default, this will set up readline to do tab completion and to read and
+        # write history to the .python_history file, but this can be overridden by
+        # $PYTHONSTARTUP or ~/.pythonrc.py.
+        try:
+            hook = sys.__interactivehook__
+        except AttributeError:
+            # Match the behavior of the cpython shell where a missing
+            # sys.__interactivehook__ is ignored.
+            pass
+        else:
+            try:
+                hook()
+            except Exception:
+                # Match the behavior of the cpython shell where an error in
+                # sys.__interactivehook__ prints a warning and the exception
+                # and continues.
+                print("Failed calling sys.__interactivehook__")
+                traceback.print_exc()
+        
         try:
             # Try activating rlcompleter, because it's handy.
             import readline
