@@ -377,7 +377,7 @@ class Command(BaseCommand):
                 # and continues.
                 print("Failed calling sys.__interactivehook__")
                 traceback.print_exc()
-        
+
         try:
             # Try activating rlcompleter, because it's handy.
             import readline
