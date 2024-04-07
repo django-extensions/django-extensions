@@ -338,7 +338,7 @@ class Command(BaseCommand):
         try:
             # Try activating rlcompleter, because it's handy.
             import readline
-            history_path = os.path.expanduser('~/.shell_plus.history')
+            history_path = os.path.expanduser('~/.python_history')
             with open(history_path, 'a') as history_file:
                 pass
             readline.read_history_file(history_path)
