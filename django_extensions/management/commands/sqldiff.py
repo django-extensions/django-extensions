@@ -571,7 +571,7 @@ class SQLDiff:
             if func:
                 model_type, db_type = func(field, description, model_type, db_type)
 
-            if not self.strip_parameters(db_type) == self.strip_parameters(model_type):
+            if not self.strip_parameters(db_type) == self.strip_parameters(model_type) and (db_type, model_type) not in {('serial', 'integer'), ('bigserial', 'bigint')}:
                 self.add_difference('field-type-differ', table_name, field.name, model_type, db_type)
 
     def find_field_parameter_differ(self, meta, table_description, table_name, func=None):
