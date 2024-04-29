@@ -12,4 +12,4 @@ class ModelUserFieldPermissionMixin(UserPassesTestMixin):
         model_attr = self.get_model_permission_user_field()
         current_user = self.request.user
 
-        return current_user == getattr(self.get_queryset().first(), model_attr)
+        return current_user == getattr(self.get_object(), model_attr)
