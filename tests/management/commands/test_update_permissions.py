@@ -36,8 +36,8 @@ class UpdatePermissionsTests(TestCase):
                      stdout=out, verbosity=3)
 
         sys.stdout = original_stdout
-        self.assertNotIn('django_extensions | perm model | Can add perm model', out.getvalue())
-        self.assertIn('testapp | test model | Can add test model', out.getvalue())
+        self.assertNotIn('Django Extensions | perm model | Can add perm model', out.getvalue())
+        self.assertIn('Testapp | test model | Can add test model', out.getvalue())
 
     def test_should_reload_permission_only_for_all_apps(self):
         original_stdout = sys.stdout
@@ -46,15 +46,15 @@ class UpdatePermissionsTests(TestCase):
         call_command('update_permissions', verbosity=3)
 
         sys.stdout = original_stdout
-        self.assertIn('django_extensions | perm model | Can add perm model', out.getvalue())
-        self.assertIn('testapp | test model | Can add test model', out.getvalue())
+        self.assertIn('Django Extensions | perm model | Can add perm model', out.getvalue())
+        self.assertIn('Testapp | test model | Can add test model', out.getvalue())
 
     def test_should_update_permission_if_name_changed(self):
         original_stdout = sys.stdout
         out = sys.stdout = StringIO()
 
         call_command('update_permissions', verbosity=3, create_only=True)
-        self.assertIn('testapp | test model | testapp_permission', out.getvalue())
+        self.assertIn('Testapp | test model | testapp_permission', out.getvalue())
 
         testapp_permission = Permission.objects.get(name="testapp_permission")
         testapp_permission.name = "testapp_permission_wrong"
@@ -63,4 +63,4 @@ class UpdatePermissionsTests(TestCase):
         call_command('update_permissions', verbosity=3, update_only=True)
 
         sys.stdout = original_stdout
-        self.assertIn("'testapp | test model | testapp_permission_wrong' to 'testapp | test model | testapp_permission'", out.getvalue())
+        self.assertIn("'Testapp | test model | testapp_permission_wrong' to 'Testapp | test model | testapp_permission'", out.getvalue())
