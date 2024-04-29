@@ -5,12 +5,13 @@ import logging
 import importlib
 
 from django.conf import settings
-from django.core.management import call_command, find_commands, load_command_class
+from django.core.management import call_command, find_commands, load_command_class, BaseCommand
 from django.test import TestCase
 from io import StringIO
 
 from django_extensions.management.modelviz import use_model, generate_graph_data
 from django_extensions.management.commands.merge_model_instances import get_model_to_deduplicate, get_field_names, keep_first_or_last_instance
+from django_extensions.management.utils import signalcommand
 from . import force_color_support
 from .testapp.models import Person, Name, Note, Personality, Club, Membership, Permission
 from .testapp.jobs.hourly.test_hourly_job import HOURLY_JOB_MOCK
@@ -104,6 +105,38 @@ class CommandSignalTests(TestCase):
         self.assertIn('args', CommandSignalTests.post)
         self.assertIn('kwargs', CommandSignalTests.post)
         self.assertIn('outcome', CommandSignalTests.post)
+
+    def test_exception(self):
+        from django_extensions.management.signals import post_command, pre_command
+
+        exception = Exception()
+
+        class TestCommand(BaseCommand):
+            @signalcommand
+            def handle(self, *args, **options):
+                raise exception
+
+        def pre(sender, **kwargs):
+            CommandSignalTests.pre = dict(**kwargs)
+
+        def post(sender, **kwargs):
+            CommandSignalTests.post = dict(**kwargs)
+
+        pre_command.connect(pre, TestCommand)
+        post_command.connect(post, TestCommand)
+
+        out = StringIO()
+
+        with self.assertRaises(Exception) as e_info:
+            call_command(TestCommand(), stdout=out)
+        self.assertEqual(exception, e_info.exception)
+        self.assertIn('args', CommandSignalTests.pre)
+        self.assertIn('kwargs', CommandSignalTests.pre)
+
+        self.assertIn('args', CommandSignalTests.post)
+        self.assertIn('kwargs', CommandSignalTests.post)
+        self.assertIn('outcome', CommandSignalTests.post)
+        self.assertEqual(e_info.exception, CommandSignalTests.post["outcome"])
 
 
 class CommandClassTests(TestCase):
