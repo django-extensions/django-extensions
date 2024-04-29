@@ -107,6 +107,7 @@ setup(
     cmdclass=cmdclasses,
     package_data=package_data,
     python_requires=">=3.6",
+    setup_requires=["setuptools"],
     install_requires=["Django>=3.2"],
     extras_require={},
     classifiers=[
@@ -129,6 +130,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',

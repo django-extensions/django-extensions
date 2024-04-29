@@ -188,7 +188,10 @@ class CRTestCase(AutomaticShellPlusImportsTestCase):
     )
     def test_installed_apps_no_resolve_conflicts_function(self):
         exception_msg = "Can't instantiate abstract class CRNoFunction with abstract methods resolve_collisions"
-        if sys.version_info[:2] >= (3, 9):
+
+        if sys.version_info[:2] >= (3, 12):
+            exception_msg = "Can't instantiate abstract class CRNoFunction without an implementation for abstract method 'resolve_collisions'"
+        elif sys.version_info[:2] >= (3, 9):
             exception_msg = exception_msg.replace('methods', 'method')
         with self.assertRaisesRegex(TypeError, exception_msg):
             self._assert_models_present_under_names(

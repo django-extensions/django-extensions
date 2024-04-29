@@ -6,6 +6,7 @@ import sys
 
 import pip
 import pkg_resources
+import pytest
 from django.core.management import call_command
 from django.test import TestCase
 from io import StringIO
@@ -92,6 +93,7 @@ class PipCheckerTests(TestCase):
 
         self.assertTrue(value.endswith('repo is not frozen\n'), value)
 
+    @pytest.mark.skipif(sys.version_info >= (3, 12), reason="pip 20.1 is not compatible with Python 3.12+")
     def test_pipchecker_with_outdated_requirement_on_pip20_1(self):
         subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', 'pip==20.1'])
         importlib.reload(pip)
