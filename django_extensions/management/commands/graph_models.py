@@ -171,6 +171,12 @@ class Command(BaseCommand):
                 'dest': 'sort_fields',
                 'help': 'Do not sort fields',
             },
+            '--deterministic': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'deterministic',
+                'help': 'Output a deterministic dot file',
+            },
             '--hide-edge-labels': {
                 'action': 'store_true',
                 'default': False,

@@ -8,7 +8,8 @@ Based on:
   Adapted to be used with django-extensions
 """
 
-import datetime
+from collections import OrderedDict
+from datetime import datetime
 import os
 import re
 
@@ -105,6 +106,7 @@ class ModelGraph:
         self.rankdir = kwargs.get("rankdir")
         self.display_field_choices = kwargs.get("display_field_choices", False)
         self.ordering = kwargs.get("ordering")
+        self.deterministic = kwargs.get("deterministic", False)
 
     def generate_graph_data(self):
         self.process_apps()
@@ -121,9 +123,10 @@ class ModelGraph:
                             relation['needs_node'] = False
 
     def get_graph_data(self, as_json=False):
-        now = datetime.datetime.now()
+        date = datetime.fromtimestamp(0) if self.deterministic else datetime.now()
+
         graph_data = {
-            'created_at': now.strftime("%Y-%m-%d %H:%M"),
+            'created_at': date.strftime("%Y-%m-%d %H:%M"),
             'cli_options': self.cli_options,
             'disable_fields': self.disable_fields,
             'disable_abstract_fields': self.disable_abstract_fields,
@@ -223,7 +226,7 @@ class ModelGraph:
                 abstract_model for abstract_model in appmodel.__bases__
                 if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract
             ]
-        abstract_models = list(set(abstract_models))  # remove duplicates
+        abstract_models = list(OrderedDict.fromkeys(abstract_models))  # remove duplicates while keeping order
         return abstract_models
 
     def get_app_context(self, app):
