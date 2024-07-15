@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import sys
-from aiosmtpd.controller import Controller
+
+try:
+    from aiosmtpd.controller import Controller
+except ImportError:
+    raise ImportError("Please install 'aiosmtpd' library to use mail_debug command.")
+
 from logging import getLogger
 from typing import List
 
