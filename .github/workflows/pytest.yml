@@ -19,6 +19,7 @@ jobs:
           - 3.9
           - "3.10"
           - "3.11"
+          - "3.12"
           # 2023-06-05: disabled pypy3.9 due to asgiref typing error
           # - "pypy3.9"
         tox-django-version:
@@ -29,18 +30,20 @@ jobs:
           # GH Actions don't support something like allow-failure ?
           # - "master"
         exclude:
+          - python-version: "3.12"
+            tox-django-version: "32"
           - python-version: "3.7"
+            tox-django-version: "40"
+          - python-version: "3.12"
             tox-django-version: "40"
           - python-version: "pypy3.9"
             tox-django-version: "40"
-          - python-version: "3.6"
-            tox-django-version: "41"
           - python-version: "3.7"
+            tox-django-version: "41"
+          - python-version: "3.12"
             tox-django-version: "41"
           - python-version: "pypy3.9"
             tox-django-version: "41"
-          - python-version: "3.6"
-            tox-django-version: "42"
           - python-version: "3.7"
             tox-django-version: "42"
           - python-version: "pypy3.9"
