@@ -80,6 +80,11 @@ def find_job_module(app_name: str, when: Optional[str] = None) -> str:
         parts.append(when)
     module_name = ".".join(parts)
     module = importlib.import_module(module_name)
+
+    if not hasattr(module, "__path__"):
+        # module here is a non-package module, eg jobs.py
+        raise ImportError
+
     return module.__path__[0]
 
 
