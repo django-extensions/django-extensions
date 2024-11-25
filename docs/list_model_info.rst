@@ -44,8 +44,8 @@ You can configure the output in a number of ways.
 
 ::
 
-  # Output only information for a single model, specifying the app and model using dot notation
-  $ ./manage.py list_model_info --model users.User
+  # Output only information for specific models, specifying the app and model using dot notation. Separate with a comma when targetting multiple models:
+  $ ./manage.py list_model_info --models users.User,appname.ModelName
 
 
 You can combine arguments. for instance, to list all methods and show the method signatures for the User model within the users app::
