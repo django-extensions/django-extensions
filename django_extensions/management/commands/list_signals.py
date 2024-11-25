@@ -7,6 +7,7 @@ import inspect
 import weakref
 from collections import defaultdict
 
+import django
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db.models.signals import (
@@ -16,7 +17,7 @@ from django.db.models.signals import (
 from django.utils.encoding import force_str
 
 
-MSG = '{module}.{name} #{line}'
+MSG = '{module}.{name} #{line}{is_async}'
 
 SIGNAL_NAMES = {
     pre_init: 'pre_init',
@@ -44,8 +45,11 @@ class Command(BaseCommand):
         for signal in signals:
             signal_name = SIGNAL_NAMES.get(signal, 'unknown')
             for receiver in signal.receivers:
-                # TODO: Determine what to do with is_async for Django 5.0
-                lookup, receiver, is_async = receiver
+                if django.VERSION >= (5, 0):
+                    lookup, receiver, is_async = receiver
+                else:
+                    lookup, receiver = receiver
+                    is_async = False
                 if isinstance(receiver, weakref.ReferenceType):
                     receiver = receiver()
                 if receiver is None:
@@ -57,6 +61,7 @@ class Command(BaseCommand):
                     models[model][signal_name].append(MSG.format(
                         name=receiver.__name__,
                         module=receiver.__module__,
+                        is_async=" (async)" if is_async else "",
                         line=inspect.getsourcelines(receiver)[1],
                         path=inspect.getsourcefile(receiver))
                     )
