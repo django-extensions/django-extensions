@@ -75,7 +75,7 @@ DEFAULT_POLLER_RELOADER_INTERVAL = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOA
 DEFAULT_POLLER_RELOADER_TYPE = getattr(settings, 'RUNSERVERPLUS_POLLER_RELOADER_TYPE', 'auto')
 
 logger = logging.getLogger(__name__)
-_error_files = set()  # type: Set[str]
+_error_files: Set[str] = set()
 
 
 def get_all_template_files() -> Set[str]:
