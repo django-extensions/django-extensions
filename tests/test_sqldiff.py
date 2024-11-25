@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import unittest
 from unittest import mock
+
+import django
 import pytest
 from io import StringIO
 
@@ -55,7 +58,8 @@ class SqlDiffTests(TestCase):
         expected_field_name = ['name', 'email', 'address']
         self.assertEqual(instance.format_field_names(['Name', 'EMAIL', 'aDDress']), expected_field_name)
 
-    def test_get_index_together(self):
+    @unittest.skipIf(django.VERSION >= (5, 1), "Meta.index_together is removed in Django 5.1")
+    def test_get_index_together_legacy(self):
         instance = MySQLDiff(
             apps.get_models(include_auto_created=True),
             vars(self.options),
@@ -63,6 +67,14 @@ class SqlDiffTests(TestCase):
             stderr=self.tmp_err,
         )
         self.assertEqual(instance.get_index_together(SqlDiff._meta), [('number', 'creator')])
+
+    def test_get_index_together_from_indexes(self):
+        instance = MySQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
         self.assertEqual(instance.get_index_together(SqlDiffIndexes._meta), [('first', 'second')])
 
     def test_get_unique_together(self):
