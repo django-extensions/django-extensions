@@ -142,11 +142,16 @@ def test_shell_plus_plain_loading_django_extensions_modules(monkeypatch):
     assert 'RandomCharTestModel' in imported_objects
 
 
-def assert_should_models_be_imported(should_be, cli_arguments=None):
+def get_imported_models(cli_arguments=None):
     command = shell_plus.Command()
     objs = command.get_imported_objects(cli_arguments or {})
     imported_models = filter(lambda imported: inspect.isclass(imported) and issubclass(imported, Model), objs.values())
-    assert bool(list(imported_models)) == should_be
+    imported_model_names = [f'{m.__module__}.{m.__name__}' for m in imported_models]
+    return list(imported_model_names)
+
+def assert_should_models_be_imported(should_be, cli_arguments=None):
+    imported_models = get_imported_models(cli_arguments=cli_arguments)
+    assert bool(imported_models) == should_be
 
 
 def test_shell_plus_loading_models():
@@ -160,3 +165,19 @@ def test_shell_plus_skipping_models_import_cli():
 @override_settings(SHELL_PLUS_DONT_LOAD=['*'])
 def test_shell_plus_skipping_models_import_settings():
     assert_should_models_be_imported(False)
+
+TEST_MODEL = 'tests.testapp.models.Club'
+
+def test_shell_plus_load_every_model():
+    imported_models = get_imported_models()
+    assert TEST_MODEL in imported_models
+
+@override_settings(SHELL_PLUS_DONT_LOAD=['testapp.Cl*'])
+def test_shell_plus_dont_load_glob():
+    imported_models = get_imported_models()
+    assert TEST_MODEL not in imported_models
+
+@override_settings(SHELL_PLUS_DONT_LOAD=['test???'])
+def test_shell_plus_dont_load_module_glob():
+    imported_models = get_imported_models()
+    assert TEST_MODEL not in imported_models
