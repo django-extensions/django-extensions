@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Based entirely on Django's own ``setup.py``.
-"""
-import os
-import sys
-import setuptools
-from distutils.command.install import INSTALL_SCHEMES
-from distutils.command.install_data import install_data
 from setuptools import setup
 
+<<<<<<< HEAD
 
 class osx_install_data(install_data):
     # On MacOS, the platform-specific lib dir is at:
@@ -142,3 +135,6 @@ setup(
         "Tracker": "https://github.com/django-extensions/django-extensions/issues",
     },
 )
+=======
+setup()
+>>>>>>> 3bf156e6 (migrate to setup.cfg)
