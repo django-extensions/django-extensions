@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
+from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
 
-try:
-    from django.contrib.auth.base_user import BaseUserManager
-except ImportError:
-    from django.contrib.auth.models import BaseUserManager
-from django.core.management.base import BaseCommand
 from django_extensions.management.utils import signalcommand
 
 
