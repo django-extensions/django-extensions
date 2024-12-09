@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
+from django.utils.crypto import get_random_string
+
 try:
     from django.contrib.auth.base_user import BaseUserManager
 except ImportError:
@@ -10,21 +12,16 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    help = "Generates a new password that can be used for a user password. This uses Django core's default password generator `BaseUserManager.make_random_password()`."
+    help = "Generates a new password that can be used for a user password. This uses Django `get_random_string`."
 
     requires_system_checks: List[str] = []
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--length', nargs='?', type=int,
-            help='Password length.')
+            help='Password length.', default=10)
 
     @signalcommand
     def handle(self, *args, **options):
         length = options['length']
-        manager = BaseUserManager()
-
-        if length:
-            return manager.make_random_password(length)
-        else:
-            return manager.make_random_password()
+        return get_random_string(length)
