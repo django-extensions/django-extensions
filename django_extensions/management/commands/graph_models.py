@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import loader
 
-from django_extensions.management.modelviz import ModelGraph, generate_dot
+from django_extensions.management.modelviz import EnhancedModelGraph, ModelGraph, generate_dot
 from django_extensions.management.utils import signalcommand
 
 try:
@@ -85,6 +85,17 @@ class Command(BaseCommand):
                 'default': False,
                 'dest': 'display_field_choices',
                 'help': 'Display choices instead of field type',
+            '--hide-abstract-models': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'hide_abstract_models',
+                'help': 'Do not show the abstract models',
+            },
+            '--hide-proxy-models': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'hide_proxy_models',
+                'help': 'Do not show the proxy models',
             },
             '--group-models -g': {
                 'action': 'store_true',
@@ -120,6 +131,24 @@ class Command(BaseCommand):
                 'default': False,
                 'dest': 'verbose_names',
                 'help': 'Use verbose_name of models and fields',
+            },
+            '--both-names -b': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'both_names',
+                'help': 'Use verbose_name and field name on fields',
+            },
+            '--db-table-names': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'db_table_names',
+                'help': 'Show db table name along object name',
+            },
+            '--db-column-names': {
+                'action': 'store_true',
+                'default': False,
+                'dest': 'db_column_names',
+                'help': 'Use db column names instead of field name',
             },
             '--language -L': {
                 'action': 'store',
@@ -265,7 +294,7 @@ class Command(BaseCommand):
             raise CommandError("An output file (--output) must be specified when --pydot or --pygraphviz are set.")
 
         cli_options = ' '.join(sys.argv[2:])
-        graph_models = ModelGraph(args, cli_options=cli_options, **options)
+        graph_models = EnhancedModelGraph(args, cli_options=cli_options, **options)
         graph_models.generate_graph_data()
 
         if output == "json":
