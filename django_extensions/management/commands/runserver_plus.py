@@ -492,15 +492,15 @@ class Command(BaseCommand):
 
     @classmethod
     def _get_directory(cls, file_path):
-        return os.path.split(file_path)[0]
+        return os.path.split(os.path.expandvars(file_path))[0]
 
     @classmethod
     def _get_file_name(cls, file_path):
-        return os.path.splitext(os.path.split(file_path)[1])[0]
+        return os.path.splitext(os.path.split(os.path.expandvars(file_path))[1])[0]
 
     @classmethod
     def _get_extension(cls, file_path):
-        return os.path.splitext(file_path)[1]
+        return os.path.splitext(os.path.expandvars(file_path))[1]
 
 
 def set_werkzeug_log_color():
