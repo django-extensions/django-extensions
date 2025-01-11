@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import pytest
 from django.core.management import call_command
 from django_extensions.management.commands import runserver_plus
@@ -17,3 +18,10 @@ def test_initialize_runserver_plus():
 def test_get_directory_expands_vars():
     assert "/user/home" == runserver_plus.Command._get_directory("/user/home/file.txt")
     assert os.path.split(os.getcwd())[0] == runserver_plus.Command._get_directory("$PWD")
+
+
+def test_get_directory_expands_vars():
+    assert "/user/home" == runserver_plus.Command._get_directory("/user/home/file.txt")
+    assert os.path.split(os.getcwd())[0] == runserver_plus.Command._get_directory("$PWD")
+    assert os.path.split(pathlib.Path.home())[0] == runserver_plus.Command._get_directory("~")
+
