@@ -41,6 +41,12 @@ FMTR = {
     'pretty-json': ''
 }
 
+def filter_tuples_by_elements(tuples_list, filter_list):
+    filtered_tuples = []
+    for tup in tuples_list:
+        if any(any(str(element).find(substring) != -1 for substring in filter_list) for element in tup):
+            filtered_tuples.append(tup)
+    return filtered_tuples
 
 class Command(BaseCommand):
     help = "Displays all of the url matching routes for the project."
@@ -66,6 +72,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
             help="Set the settings URL conf variable to use"
+        )
+
+        parser.add_argument(
+            "--extract", "-e", dest="extract", default="",
+            help="Only show urls that contain the pattern"
         )
 
     @signalcommand
@@ -111,6 +122,11 @@ class Command(BaseCommand):
             raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
 
         view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
+
+        if options['extract']:
+            pattern = options['extract'].split()
+            view_functions = filter_tuples_by_elements(view_functions, pattern)
+
         for (func, regex, url_name) in view_functions:
             if hasattr(func, '__globals__'):
                 func_globals = func.__globals__
@@ -151,6 +167,7 @@ class Command(BaseCommand):
 
         if not options['unsorted'] and format_style != 'json':
             views = sorted(views)
+
 
         if format_style == 'aligned':
             views = [row.split(',', 3) for row in views]
@@ -236,4 +253,5 @@ class Command(BaseCommand):
                 views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
             else:
                 raise TypeError("%s does not appear to be a urlpattern object" % p)
+
         return views
