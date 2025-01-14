@@ -4,6 +4,7 @@ import traceback
 import warnings
 import importlib
 
+from fnmatch import fnmatchcase
 from typing import (  # NOQA
     Dict,
     List,
@@ -32,6 +33,53 @@ SHELL_PLUS_DJANGO_IMPORTS = [
 
 class ObjectImportError(Exception):
     pass
+
+
+class PathList(list):
+    """
+    A list for matching path names.
+
+    Allows storing and testing for file globs.
+    Uses the Python built-in (case sensitive) file-name matcher to allow defining
+    more complex file name patterns.
+
+    From https://docs.python.org/3/library/fnmatch.html#module-fnmatch
+        +---------+----------------------------------+
+        | Pattern | Meaning                          |
+        +---------+----------------------------------+
+        | *       | matches everything               |
+        | ?       | matches any single character     |
+        | [seq]   | matches any character in seq     |
+        | [!seq]  | matches any character not in seq |
+        +--------------------------------------------+
+    For a literal match, wrap the meta-characters in brackets.
+    For example, '[?]' matches the character '?'.
+
+
+    >>> 'foo' in PathList(['f*', 'bar'])
+    True
+
+    >>> PathList(['*']).matches_everything
+    True
+
+    Behaves just like a list when there's no special characters
+
+    >>> 'foo' in PathList(['foo', 'bar'])
+    True
+
+    """
+    @property
+    def matches_everything(self):
+        # Recast as a list for checking literals to avoid strange behavior
+        # if one of the items were to match single characters.
+        return '*' in list(self)
+
+    def __contains__(self, value):
+        # Use the filename matcher when checking for `item in PathList`
+        for path in self:
+            if fnmatchcase(value, path):
+                return True
+        return False
 
 
 def get_app_name(mod_name):
@@ -182,8 +230,8 @@ def import_objects(options, style):
 
     dont_load_cli = options.get('dont_load', [])
     dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
-    dont_load = dont_load_cli + dont_load_conf
-    dont_load_any_models = '*' in dont_load
+    dont_load = PathList(dont_load_cli + dont_load_conf)
+    dont_load_any_models = dont_load.matches_everything
     quiet_load = options.get('quiet_load')
     model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
     app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
