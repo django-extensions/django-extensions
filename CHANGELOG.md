@@ -3,7 +3,7 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
-3.2.2
+3.2.3
 -----
 
 Changes:
