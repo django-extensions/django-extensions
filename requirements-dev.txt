@@ -7,7 +7,7 @@ pytest-django
 pytest-cov
 factory-boy
 requests
-pygments
+pygments<2.18
 vobject
 
 types-pyOpenSSL
