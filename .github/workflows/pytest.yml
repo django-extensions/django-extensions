@@ -14,9 +14,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version:
-          - 3.7
-          - 3.8
-          - 3.9
+          - "3.9"
           - "3.10"
           - "3.11"
           # 2023-06-05: disabled pypy3.9 due to asgiref typing error
@@ -29,20 +27,10 @@ jobs:
           # GH Actions don't support something like allow-failure ?
           # - "master"
         exclude:
-          - python-version: "3.7"
-            tox-django-version: "40"
           - python-version: "pypy3.9"
             tox-django-version: "40"
-          - python-version: "3.6"
-            tox-django-version: "41"
-          - python-version: "3.7"
-            tox-django-version: "41"
           - python-version: "pypy3.9"
             tox-django-version: "41"
-          - python-version: "3.6"
-            tox-django-version: "42"
-          - python-version: "3.7"
-            tox-django-version: "42"
           - python-version: "pypy3.9"
             tox-django-version: "42"
         include:
