@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
-import asyncore
+import asyncio
 import sys
+
+try:
+    from aiosmtpd.controller import Controller
+except ImportError:
+    raise ImportError("Please install 'aiosmtpd' library to use mail_debug command.")
+
 from logging import getLogger
-from smtpd import SMTPServer
 from typing import List
 
 from django.core.management.base import BaseCommand, CommandError
@@ -12,14 +17,12 @@ from django_extensions.management.utils import setup_logger, signalcommand
 logger = getLogger(__name__)
 
 
-class ExtensionDebuggingServer(SMTPServer):
-    """Duplication of smtpd.DebuggingServer, but using logging instead of print."""
-
-    # Do something with the gathered message
-    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
+class CustomHandler:
+    async def handle_DATA(self, server, session, envelope):
         """Output will be sent to the module logger at INFO level."""
+        peer = session.peer
         inheaders = 1
-        lines = data.split('\n')
+        lines = envelope.content.decode('utf8', errors='replace').splitlines()
         logger.info('---------- MESSAGE FOLLOWS ----------')
         for line in lines:
             # headers first
@@ -28,6 +31,7 @@ class ExtensionDebuggingServer(SMTPServer):
                 inheaders = 0
             logger.info(line)
         logger.info('------------ END MESSAGE ------------')
+        return '250 OK'
 
 
 class Command(BaseCommand):
@@ -78,8 +82,11 @@ class Command(BaseCommand):
         def inner_run():
             quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
             print("Now accepting mail at %s:%s -- use %s to quit" % (addr, port, quit_command))
-            ExtensionDebuggingServer((addr, port), None, decode_data=True)
-            asyncore.loop()
+            handler = CustomHandler()
+            controller = Controller(handler, hostname=addr, port=port)
+            controller.start()
+            loop = asyncio.get_event_loop()
+            loop.run_forever()
 
         try:
             inner_run()
