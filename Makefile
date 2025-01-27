@@ -35,7 +35,7 @@ compile-catalog:
 	done
 
 test:
-	pytest django_extensions tests
+	pytest -v django_extensions tests
 
 coverage: test
 	coverage report -i -m
