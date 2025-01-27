@@ -52,8 +52,13 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
         app_label = opts.app_label
         model_name = opts.object_name.lower()
         related_url = reverse('admin:%s_%s_changelist' % (app_label, model_name))
+        opts_url = self.rel.field.model._meta
+        app_label_url = opts_url.app_label
+        model_name_url = opts_url.object_name.lower()
+        search_url = reverse('admin:%s_%s_changelist' % (app_label_url, model_name_url))
+        search_url = search_url.strip('/')
         if not self.search_path:
-            self.search_path = urllib.parse.urljoin(related_url, 'foreignkey_autocomplete/')
+            self.search_path = urllib.parse.urljoin(search_url, 'foreignkey_autocomplete/')
         params = self.url_parameters()
         if params:
             url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
