@@ -7,8 +7,8 @@ import inspect
 import weakref
 from collections import defaultdict
 
-from django.apps import apps
 from django.core.management.base import BaseCommand
+from django.db.models import Model
 from django.db.models.signals import (
     ModelSignal, pre_init, post_init, pre_save, post_save, pre_delete,
     post_delete, m2m_changed, pre_migrate, post_migrate
@@ -31,12 +31,27 @@ SIGNAL_NAMES = {
 }
 
 
+def get_all_models():
+    """
+    Returns set of all models defined in all apps.
+
+    This implementation is required because apps.get_models() is an internal API and
+    doesn't return abstract models.
+    """
+    result = set()
+    generation = {Model}
+    while generation:
+        generation = {sc for c in generation for sc in c.__subclasses__()}
+        result.update(generation)
+
+    return result
+
+
 class Command(BaseCommand):
     help = 'List all signals by model and signal type'
 
     def handle(self, *args, **options):
-        all_models = apps.get_models(include_auto_created=True, include_swapped=True)
-        model_lookup = {id(m): m for m in all_models}
+        model_lookup = {id(m): m for m in get_all_models()}
 
         signals = [obj for obj in gc.get_objects() if isinstance(obj, ModelSignal)]
         models = defaultdict(lambda: defaultdict(list))
