@@ -101,7 +101,7 @@ class Command(BaseCommand):
             '--output -o': {
                 'action': 'store',
                 'dest': 'outputfile',
-                'help': 'Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.',
+                'help': 'Render output file. Type of output dependend on file extensions. Use png, jpg, or svg to render graph to image.',
             },
             '--layout -l': {
                 'action': 'store',
