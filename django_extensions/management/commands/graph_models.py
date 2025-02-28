@@ -197,6 +197,13 @@ class Command(BaseCommand):
                 'choices': ['TB', 'BT', 'LR', 'RL'],
                 'help': 'Set direction of graph layout. Supported directions: "TB", "LR", "BT", "RL", corresponding to directed graphs drawn from top to bottom, from left to right, from bottom to top, and from right to left, respectively. Default is TB.'
             },
+            '--ordering': {
+                'action': 'store',
+                'default': None,
+                'dest': 'ordering',
+                'choices': ['in', 'out'],
+                'help': 'Controls how the edges are arranged. Supported orderings: "in" (incoming relations first), "out" (outgoing relations first). Default is None.'
+            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
