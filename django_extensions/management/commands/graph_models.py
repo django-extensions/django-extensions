@@ -264,6 +264,9 @@ class Command(BaseCommand):
 
         if options.get('rankdir') != 'TB' and output not in ["pydot", "pygraphviz", "dot"]:
             raise CommandError("--rankdir is not supported for the chosen output format")
+        
+        if options.get('ordering') and output not in ["pydot", "pygraphviz", "dot"]:
+            raise CommandError("--ordering is not supported for the chosen output format")
 
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
