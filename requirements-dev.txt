@@ -2,7 +2,7 @@ shortuuid
 werkzeug
 django_pdb
 python-dateutil
-pytest<8
+pytest
 pytest-django
 pytest-cov
 factory-boy
