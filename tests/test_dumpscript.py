@@ -81,19 +81,18 @@ class DumpScriptTests(TestCase):
         dumpscript_path = './django_extensions/scripts'
 
         os.mkdir(dumpscript_path)
-        open(dumpscript_path + '/__init__.py', 'w').close()  # for python 2.7
+        try:
+            # This script will have a dateutil codes.
+            # e.g. importer.locate_object(...,
+            # 'date_joined': dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00")
+            with open(dumpscript_path + '/test.py', 'wt') as test:
+                call_command('dumpscript', 'django_extensions', stdout=test)
 
-        # This script will have a dateutil codes.
-        # e.g. importer.locate_object(...,
-        # 'date_joined': dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00")
-        with open(dumpscript_path + '/test.py', 'wt') as test:
-            call_command('dumpscript', 'django_extensions', stdout=test)
-
-        # Check dumpscript without exception
-        call_command('runscript', 'test')
-
-        # Delete dumpscript
-        shutil.rmtree(dumpscript_path)
+            # Check dumpscript without exception
+            call_command('runscript', 'test')
+        finally:
+            # Delete dumpscript
+            shutil.rmtree(dumpscript_path)
 
         # Check if Note is duplicated
         self.assertEqual(Note.objects.filter(note='Django Tips').count(), 2)
