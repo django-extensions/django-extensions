@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import ast
-import os
 import shutil
 import sys
 
 from io import StringIO
+from pathlib import Path
+
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -78,21 +79,20 @@ class DumpScriptTests(TestCase):
             club=django,
         )
 
-        dumpscript_path = './django_extensions/scripts'
+        dumpscript_path = Path(__file__).parent.parent / 'django_extensions' / 'scripts'
+        dumpscript_path.mkdir(parents=True, exist_ok=True)
 
-        os.mkdir(dumpscript_path)
-        try:
-            # This script will have a dateutil codes.
-            # e.g. importer.locate_object(...,
-            # 'date_joined': dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00")
-            with open(dumpscript_path + '/test.py', 'wt') as test:
-                call_command('dumpscript', 'django_extensions', stdout=test)
+        # Delete dumpscript at the end of the test
+        self.addCleanup(shutil.rmtree, dumpscript_path)
 
-            # Check dumpscript without exception
-            call_command('runscript', 'test')
-        finally:
-            # Delete dumpscript
-            shutil.rmtree(dumpscript_path)
+        # This script will have a dateutil codes.
+        # e.g. importer.locate_object(...,
+        # 'date_joined': dateutil.parser.parse("2019-05-20T03:32:27.144586+09:00")
+        with (dumpscript_path / 'test.py').open('wt') as test:
+            call_command('dumpscript', 'django_extensions', stdout=test)
+
+        # Check dumpscript without exception
+        call_command('runscript', 'test')
 
         # Check if Note is duplicated
         self.assertEqual(Note.objects.filter(note='Django Tips').count(), 2)
