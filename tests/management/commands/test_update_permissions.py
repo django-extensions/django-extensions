@@ -16,6 +16,7 @@ else:
     DJANGO_EXTENSIONS_NAME = "django_extensions"
     TESTAPP_NAME = "testapp"
 
+
 class UpdatePermissionsTests(TestCase):
 
     def setUp(self):
