@@ -16,6 +16,7 @@ Command Extensions
    graph_models
    list_model_info
    list_signals
+   mail_debug
    managestate
    merge_model_instances
    print_settings
@@ -82,8 +83,8 @@ Command Extensions
   This is helpful when you don't remember how to refer to a related field or want to quickly identify
   the fields and methods available in a particular model.
 
-* *mail_debug* - Starts a mail server which echos out the contents of the email
-  instead of sending it.
+* :doc:`mail_debug` - Starts a mail server which echos out the contents of the email
+  instead of sending it. Requires `aiosmtpd`_ to be installed.
 
 * :doc:`merge_model_instances` - Merges duplicate model instances by
   reassigning related model references to a chosen primary model instance.
@@ -91,9 +92,6 @@ Command Extensions
 * *notes* - Show all annotations like TODO, FIXME, BUG, HACK, WARNING, NOTE or XXX in your py and HTML files.
 
 * *passwd* - DEPRECATED: Use Django's ``changepassword``.
-
-* *pipchecker* - Scan pip requirement file(s)s for out-of-date packages. Similar to
-  ``pip list -o`` which used installed packages (in virtualenv) instead of requirements file(s).
 
 * `print_settings`_ - Similar to ``diffsettings`` but shows *selected*
   active Django settings or *all* if no args passed.
@@ -169,3 +167,4 @@ Command Extensions
 .. _`sync_s3`: sync_s3.html
 .. _GraphViz: https://www.graphviz.org/
 .. _Werkzeug: https://werkzeug.palletsprojects.com/
+.. _`aiosmtpd`: https://github.com/aio-libs/aiosmtpd

@@ -197,6 +197,13 @@ class Command(BaseCommand):
                 'choices': ['TB', 'BT', 'LR', 'RL'],
                 'help': 'Set direction of graph layout. Supported directions: "TB", "LR", "BT", "RL", corresponding to directed graphs drawn from top to bottom, from left to right, from bottom to top, and from right to left, respectively. Default is TB.'
             },
+            '--ordering': {
+                'action': 'store',
+                'default': None,
+                'dest': 'ordering',
+                'choices': ['in', 'out'],
+                'help': 'Controls how the edges are arranged. Supported orderings: "in" (incoming relations first), "out" (outgoing relations first). Default is None.'
+            },
         }
 
         defaults = getattr(settings, 'GRAPH_MODELS', None)
@@ -257,6 +264,9 @@ class Command(BaseCommand):
 
         if options.get('rankdir') != 'TB' and output not in ["pydot", "pygraphviz", "dot"]:
             raise CommandError("--rankdir is not supported for the chosen output format")
+
+        if options.get('ordering') and output not in ["pydot", "pygraphviz", "dot"]:
+            raise CommandError("--ordering is not supported for the chosen output format")
 
         # Consistency check: Abort if --pygraphviz or --pydot options are set
         # but no outputfile is specified. Before 2.1.4 this silently fell back
@@ -342,9 +352,9 @@ class Command(BaseCommand):
         formats = [
             'bmp', 'canon', 'cmap', 'cmapx', 'cmapx_np', 'dot', 'dia', 'emf',
             'em', 'fplus', 'eps', 'fig', 'gd', 'gd2', 'gif', 'gv', 'imap',
-            'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf',
-            'pic', 'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg',
-            'svgz', 'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'xdot',
+            'imap_np', 'ismap', 'jpe', 'jpeg', 'jpg', 'metafile', 'pdf', 'pic',
+            'plain', 'plain-ext', 'png', 'pov', 'ps', 'ps2', 'svg', 'svgz',
+            'tif', 'tiff', 'tk', 'vml', 'vmlz', 'vrml', 'wbmp', 'webp', 'xdot',
         ]
         ext = output_file[output_file.rfind('.') + 1:]
         format_ = ext if ext in formats else 'raw'

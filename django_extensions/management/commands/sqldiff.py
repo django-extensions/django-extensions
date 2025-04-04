@@ -25,8 +25,6 @@ import importlib
 import sys
 import argparse
 from typing import Dict, Union, Callable, Optional  # NOQA
-
-import django
 from django.apps import apps
 from django.core.management import BaseCommand, CommandError
 from django.core.management.base import OutputWrapper
@@ -385,10 +383,11 @@ class SQLDiff:
         return field_type
 
     def get_index_together(self, meta):
-        if django.VERSION >= (5, 1):
-            indexes_normalized = []
-        else:
-            indexes_normalized = list(normalize_together(meta.index_together))
+        indexes_normalized = []
+
+        if hasattr(meta, 'index_together'):
+            # Django 4.2 deprecated index_together
+            indexes_normalized += list(normalize_together(meta.index_together))
 
         for idx in meta.indexes:
             indexes_normalized.append(idx.fields)
