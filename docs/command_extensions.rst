@@ -12,7 +12,6 @@ Command Extensions
    dumpscript
    runscript
    export_emails
-   generate_password
    graph_models
    list_model_info
    list_signals
