@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-l', '--length', nargs='?', type=int,
+            '-l', '--length', nargs='?', type=int, default=16,
             help='Password length.')
         parser.add_argument(
             '-c', '--complex', action=argparse.BooleanOptionalAction,
@@ -23,7 +23,9 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        length = options['length'] or 16
+        length = options['length']
 
-        alphabet = string.ascii_letters + string.digits + string.punctuation
+        alphabet = string.ascii_letters + string.digits
+        if options['complex']:
+            alphabet += string.punctuation
         return ''.join(secrets.choice(alphabet) for i in range(length))
