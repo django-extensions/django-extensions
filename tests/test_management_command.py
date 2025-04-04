@@ -4,7 +4,6 @@ from unittest import mock
 import logging
 import importlib
 
-from django.conf import settings
 from django.core.management import call_command, find_commands, load_command_class
 from django.test import TestCase
 from io import StringIO
