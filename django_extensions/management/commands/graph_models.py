@@ -264,7 +264,7 @@ class Command(BaseCommand):
 
         if options.get('rankdir') != 'TB' and output not in ["pydot", "pygraphviz", "dot"]:
             raise CommandError("--rankdir is not supported for the chosen output format")
-        
+
         if options.get('ordering') and output not in ["pydot", "pygraphviz", "dot"]:
             raise CommandError("--ordering is not supported for the chosen output format")
 
