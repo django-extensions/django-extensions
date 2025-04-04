@@ -45,6 +45,7 @@ __contributors__ = [
     "Mikkel Munch Mortensen <https://www.detfalskested.dk/>",
     "Andrzej Bistram <andrzej.bistram@gmail.com>",
     "Daniel Lipsitt <danlipsitt@gmail.com>",
+    "Florian Anceau <flow.gunso@gmail.com>"
 ]
 
 
@@ -103,6 +104,7 @@ class ModelGraph:
             self.app_labels = app_labels
         self.rankdir = kwargs.get("rankdir")
         self.display_field_choices = kwargs.get("display_field_choices", False)
+        self.ordering = kwargs.get("ordering")
 
     def generate_graph_data(self):
         self.process_apps()
@@ -128,6 +130,7 @@ class ModelGraph:
             'display_field_choices': self.display_field_choices,
             'use_subgraph': self.use_subgraph,
             'rankdir': self.rankdir,
+            'ordering': self.ordering,
         }
 
         if as_json:

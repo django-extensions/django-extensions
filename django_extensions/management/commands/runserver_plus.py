@@ -478,8 +478,8 @@ class Command(BaseCommand):
 
     @classmethod
     def determine_ssl_files_paths(cls, options):
-        key_file_path = options.get('key_file_path') or ""
-        cert_path = options.get('cert_path') or ""
+        key_file_path = os.path.expanduser(options.get('key_file_path') or "")
+        cert_path = os.path.expanduser(options.get('cert_path') or "")
         cert_file = cls._determine_path_for_file(cert_path, key_file_path, cls.DEFAULT_CRT_EXTENSION)
         key_file = cls._determine_path_for_file(key_file_path, cert_path, cls.DEFAULT_KEY_EXTENSION)
         return cert_file, key_file

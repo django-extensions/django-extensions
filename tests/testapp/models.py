@@ -475,7 +475,9 @@ class SqlDiff(models.Model):
     creator = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
-        index_together = ['number', 'creator']
+        indexes = [
+            models.Index(fields=['number', 'creator'])
+        ]
 
 
 class SqlDiffIndexes(models.Model):
