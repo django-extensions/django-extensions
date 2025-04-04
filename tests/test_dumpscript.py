@@ -81,7 +81,6 @@ class DumpScriptTests(TestCase):
 
         dumpscript_path = Path(__file__).parent.parent / 'django_extensions' / 'scripts'
         dumpscript_path.mkdir(parents=True, exist_ok=True)
-        (dumpscript_path / '__init__.py').touch()
 
         # Delete dumpscript at the end of the test
         self.addCleanup(shutil.rmtree, dumpscript_path)

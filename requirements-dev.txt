@@ -9,6 +9,7 @@ factory-boy
 requests
 pygments<2.18
 vobject
+aiosmtpd
 
 types-pyOpenSSL
 types-PyYAML

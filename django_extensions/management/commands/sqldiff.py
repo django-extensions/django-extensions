@@ -383,7 +383,11 @@ class SQLDiff:
         return field_type
 
     def get_index_together(self, meta):
-        indexes_normalized = list(normalize_together(meta.index_together))
+        indexes_normalized = []
+
+        if hasattr(meta, 'index_together'):
+            # Django 4.2 deprecated index_together
+            indexes_normalized += list(normalize_together(meta.index_together))
 
         for idx in meta.indexes:
             indexes_normalized.append(idx.fields)
