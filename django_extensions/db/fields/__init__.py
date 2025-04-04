@@ -539,10 +539,10 @@ class UUIDFieldMixin:
 
         return value
 
-    def formfield(self, **kwargs):
+    def formfield(self, form_class=None, choices_form_class=None, **kwargs):
         if self.auto:
             return None
-        return super().formfield(**kwargs)
+        return super().formfield(form_class, choices_form_class, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()

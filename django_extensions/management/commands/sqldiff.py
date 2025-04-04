@@ -36,7 +36,7 @@ from django.db.models.options import normalize_together
 
 from django_extensions.management.utils import signalcommand
 
-ORDERING_FIELD = IntegerField('_order', null=True)
+ORDERING_FIELD: IntegerField[int, int] = IntegerField('_order', null=True)
 
 
 def flatten(lst, ltypes=(list, tuple)):
