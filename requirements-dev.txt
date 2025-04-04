@@ -7,7 +7,7 @@ pytest-django
 pytest-cov
 factory-boy
 requests
-pygments<2.18
+pygments
 vobject
 aiosmtpd
 
