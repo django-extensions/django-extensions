@@ -1234,6 +1234,7 @@ class PostgresqlSQLDiff(SQLDiff):
                 return introspect_db_type
 
             if field.primary_key and isinstance(field, AutoField):
+                # TODO: from Django>4.1 uses int/bigint with identity columns instead of serial/bigserial
                 if db_type == 'integer':
                     db_type = 'serial'
                 elif db_type == 'bigint':
