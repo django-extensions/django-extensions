@@ -66,9 +66,9 @@ jobs:
       max-parallel: 4
       matrix:
         python-version:
-          - "3.10"
+          - "3.13"
         tox-django-version:
-          - "32"
+          - "52"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
