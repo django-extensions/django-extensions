@@ -59,8 +59,13 @@ def signalcommand(func):
 
     def inner(self, *args, **kwargs):
         pre_command.send(self.__class__, args=args, kwargs=kwargs)
-        ret = func(self, *args, **kwargs)
-        post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
+        try:
+            ret = func(self, *args, **kwargs)
+        except Exception as e:
+            post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=e)
+            raise
+        else:
+            post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
         return ret
     return inner
 
