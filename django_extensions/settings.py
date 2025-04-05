@@ -9,10 +9,12 @@ REPLACEMENTS = getattr(settings, 'EXTENSIONS_REPLACEMENTS', {})
 DEFAULT_SQLITE_ENGINES = (
     'django.db.backends.sqlite3',
     'django.db.backends.spatialite',
+    'django_prometheus.db.backends.sqlite3',
 )
 DEFAULT_MYSQL_ENGINES = (
     'django.db.backends.mysql',
     'django.contrib.gis.db.backends.mysql',
+    'django_prometheus.db.backends.mysql',
     'mysql.connector.django',
 )
 DEFAULT_POSTGRESQL_ENGINES = (
@@ -23,6 +25,8 @@ DEFAULT_POSTGRESQL_ENGINES = (
     'psqlextra.backend',
     'django_zero_downtime_migrations.backends.postgres',
     'django_zero_downtime_migrations.backends.postgis',
+    'django_prometheus.db.backends.postgresql',
+    'django_prometheus.db.backends.postgis',
     'django_tenants.postgresql_backend',
 )
 
