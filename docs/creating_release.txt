@@ -14,7 +14,7 @@ Get a fresh copy::
 
 Run tests::
 
-  $ flake8 django_extensions
+  $ ruff check
   $ tox --recreate
 
 Change version numbers in django_extensions/__init__.py and docs/conf.py::
@@ -31,9 +31,13 @@ Remove old build directory (if exists)::
 
   $ rm -r build dist
 
-Prepare the release tarball::
+Install build dependency::
 
-  $ python ./setup.py sdist bdist_wheel
+  $ pip install build
+
+Prepare the release tarballs::
+
+  $ python -m build
 
 Upload release to pypi::
 

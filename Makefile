@@ -31,7 +31,7 @@ clean-test:
 
 compile-catalog:
 	for loc in django_extensions/locale/*; do \
-		python setup.py compile_catalog --directory django_extensions/locale/ --locale $$(basename $$loc) --domain django || exit 1; \
+		pybabel compile --directory django_extensions/locale/ --locale $$(basename $$loc) --domain django --statistics || exit 1; \
 	done
 
 test:
@@ -42,4 +42,4 @@ coverage: test
 	coverage html
 
 install: clean
-	python setup.py install
+	python -m pip install .
