@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "django-extensions"
+dynamic = ["version"]
+description = "Extensions for Django"
+readme = "README.rst"
+license = "MIT License"
+requires-python = ">=3.9"
+authors = [
+    { name = "Michael Trier", email = "mtrier@gmail.com" },
+]
+maintainers = [
+    { name = "Bas van Oostveen", email = "v.oostveen@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 5.2",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "Django>=4.2",
+]
+
+[project.optional-dependencies]
+
+[project.urls]
+Changelog = "https://github.com/django-extensions/django-extensions/blob/main/CHANGELOG.md"
+Documentation = "https://django-extensions.readthedocs.io/"
+Homepage = "https://github.com/django-extensions/django-extensions"
+Source = "https://github.com/django-extensions/django-extensions"
+Tracker = "https://github.com/django-extensions/django-extensions/issues"
+
+[tool.hatch.version]
+path = "django_extensions/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/django_extensions",
+]
