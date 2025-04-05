@@ -49,7 +49,7 @@ urls.Tracker = "https://github.com/django-extensions/django-extensions/issues"
 version = { attr = "django_extensions.__version__" }
 
 [tool.ruff]
-line-length = 256
+line-length = 88
 lint.ignore = [ "E731" ]
 
 [tool.pytest.ini_options]
