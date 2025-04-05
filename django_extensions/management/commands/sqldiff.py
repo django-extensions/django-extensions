@@ -36,7 +36,7 @@ from django.db.models.options import normalize_together
 
 from django_extensions.management.utils import signalcommand
 
-ORDERING_FIELD = IntegerField('_order', null=True)
+ORDERING_FIELD: IntegerField = IntegerField('_order', null=True)
 
 
 def flatten(lst, ltypes=(list, tuple)):
@@ -383,7 +383,11 @@ class SQLDiff:
         return field_type
 
     def get_index_together(self, meta):
-        indexes_normalized = list(normalize_together(meta.index_together))
+        indexes_normalized = []
+
+        if hasattr(meta, 'index_together'):
+            # Django 4.2 deprecated index_together
+            indexes_normalized += list(normalize_together(meta.index_together))
 
         for idx in meta.indexes:
             indexes_normalized.append(idx.fields)
@@ -571,7 +575,7 @@ class SQLDiff:
             if func:
                 model_type, db_type = func(field, description, model_type, db_type)
 
-            if not self.strip_parameters(db_type) == self.strip_parameters(model_type):
+            if not self.strip_parameters(db_type) == self.strip_parameters(model_type) and (db_type, model_type) not in {('serial', 'integer'), ('bigserial', 'bigint')}:
                 self.add_difference('field-type-differ', table_name, field.name, model_type, db_type)
 
     def find_field_parameter_differ(self, meta, table_description, table_name, func=None):
@@ -1230,6 +1234,7 @@ class PostgresqlSQLDiff(SQLDiff):
                 return introspect_db_type
 
             if field.primary_key and isinstance(field, AutoField):
+                # TODO: from Django>4.1 uses int/bigint with identity columns instead of serial/bigserial
                 if db_type == 'integer':
                     db_type = 'serial'
                 elif db_type == 'bigint':

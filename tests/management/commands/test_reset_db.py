@@ -95,6 +95,7 @@ class ResetDbMysqlTests(TestCase):
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_with_characterset_utf8_and_print_success_messsage(self, m_stdout):
         m_database = mock.MagicMock()
+        m_database.__spec__ = mock.Mock()
         m_connection = mock.Mock()
         m_database.connect.return_value = m_connection
         expected_calls = [
@@ -122,6 +123,7 @@ class ResetDbMysqlTests(TestCase):
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_without_characterset_and_print_success_messsage(self, m_stdout):
         m_database = mock.MagicMock()
+        m_database.__spec__ = mock.Mock()
         m_connection = mock.Mock()
         m_database.connect.return_value = m_connection
         expected_calls = [
@@ -160,6 +162,7 @@ class ResetDbPostgresqlTests(TestCase):
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_and_create_database_and_print_success_messsage(self, m_stdout):
         m_database = mock.MagicMock()
+        m_database.__spec__ = mock.Mock()
         m_cursor = mock.Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         expected_calls = [
@@ -183,6 +186,7 @@ class ResetDbPostgresqlTests(TestCase):
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_should_drop_create_database_close_sessions_and_print_success_messsage(self, m_stdout):
         m_database = mock.MagicMock()
+        m_database.__spec__ = mock.Mock()
         m_cursor = mock.Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         expected_calls = [

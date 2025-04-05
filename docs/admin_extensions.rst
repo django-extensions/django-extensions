@@ -13,7 +13,7 @@ Admin Extensions
   in the same fashion of the *ForeignKeyAutocompleteAdmin* these two classes
   enable a search input field for ForeignKey fields in AdminInline classes.
 
-Depreciation
+Deprecation
 ------------
 
 Django 2.0 now contains similar functionality as *ForeignKeyAutocompleteAdmin* therefore we are deprecating this extension and highly encouraging everyone to update to it.

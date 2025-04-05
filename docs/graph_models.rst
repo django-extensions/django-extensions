@@ -144,6 +144,11 @@ image by using the *graph_models* command::
   # supported directions: "TB", "LR", "BT", "RL"
   $ ./manage.py graph_models -a --rankdir BT -o my_project_sans_foo_bar.png
 
+::
+
+  # Create a graph with different edges ordering,
+  # supported orders: "in", "out"
+  $ ./manage.py graph_models -a --ordering in -o my_project_sans_foo_bar.png
 
 
 .. _GraphViz: https://www.graphviz.org/

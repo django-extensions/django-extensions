@@ -171,6 +171,7 @@ class DropTestDatabaseTests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     def test_mysql_should_drop_database_with_host_and_port(self, m_stdout):
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         # Indicate that no clone databases exist
         # DROP queries return None while SELECT queries return a row count
         m_database.connect.return_value.cursor.return_value.execute.side_effect = (1, None, 0)
@@ -196,6 +197,7 @@ class DropTestDatabaseTests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     def test_mysql_should_drop_database_with_unix_socket(self, m_stdout):
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         # Indicate that no clone databases exist
         # DROP queries return None while SELECT queries return a row count
         m_database.connect.return_value.cursor.return_value.execute.side_effect = (1, None, 0)
@@ -221,6 +223,7 @@ class DropTestDatabaseTests(TestCase):
     def test_mysql_should_drop_all_existing_clone_databases(self):
         """Test cloned test databases created via 'manage.py test --parallel'."""
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         # Indicate that clone databases exist up to test_test_2
         # DROP queries return None while SELECT queries return a row count
         m_database.connect.return_value.cursor.return_value.execute.side_effect = \
@@ -247,6 +250,7 @@ class DropTestDatabaseTests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     def test_postgresql_should_drop_database(self, m_stdout):
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         m_cursor = Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         # Indicate that no clone databases exist
@@ -277,6 +281,7 @@ class DropTestDatabaseTests(TestCase):
     def test_postgresql_should_drop_all_existing_cloned_databases(self):
         """Test cloned test databases created via 'manage.py test --parallel'."""
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         m_cursor = Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         # Indicate that clone databases exist up to test_test_2
@@ -307,6 +312,7 @@ class DropTestDatabaseTests(TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     def test_postgresql_should_not_print_Reset_successful_when_exception_occured(self, m_stdout):
         m_database = MagicMock()
+        m_database.__spec__ = Mock()
         m_database.ProgrammingError = Exception
         m_cursor = Mock()
         m_cursor.execute.side_effect = m_database.ProgrammingError
