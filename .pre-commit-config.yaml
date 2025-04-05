@@ -27,6 +27,10 @@ repos:
     rev: '7.1.1'
     hooks:
     -   id: flake8
+-   repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.5.0
+    hooks:
+    -   id: pyproject-fmt
 -   repo: https://github.com/trbs/pre-commit-hooks-trbs.git
     rev: 1.2.4
     hooks:

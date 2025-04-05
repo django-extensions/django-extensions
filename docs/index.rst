@@ -25,11 +25,11 @@ You can get Django Extensions by using pip::
 
  $ pip install django-extensions
 
-If you want to install it from source, grab the git repository and run setup.py::
+If you want to install it from source, grab the git repository and install::
 
  $ git clone git://github.com/django-extensions/django-extensions.git
  $ cd django-extensions
- $ python setup.py install
+ $ pip install .
 
 Then you will need to add the *django_extensions* application to the
 ``INSTALLED_APPS`` setting of your Django project *settings.py* file.
