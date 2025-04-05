@@ -42,4 +42,4 @@ coverage: test
 	coverage html
 
 install: clean
-	python setup.py install
+	python -m pip install .
