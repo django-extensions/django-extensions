@@ -78,6 +78,25 @@ Note: These settings are only used inside shell_plus and will not affect your en
   # Dont load the 'sites' app, and skip the model 'pictures' in the app 'blog'
   SHELL_PLUS_DONT_LOAD = ['sites', 'blog.pictures']
 
+File expansion using `*`, `?` and `[]` is also supported.
+
++----------+----------------------------------+
+| Pattern  | Meaning                          |
++==========+==================================+
+| `*`      | matches everything               |
++----------+----------------------------------+
+| `?`      | matches any single character     |
++----------+----------------------------------+
+| `[seq]`  | matches any character in seq     |
++----------+----------------------------------+
+| `[!seq]` | matches any character not in seq |
++----------+----------------------------------+
+
+::
+
+  # Dont load any model from the 'blog' app that starts with 'Tagulous', modelA, modelB nor modelC
+  SHELL_PLUS_DONT_LOAD = ['blog.Tagulous*', 'blog.model[ABC]']
+
 
 ::
 
