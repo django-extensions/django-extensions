@@ -31,9 +31,13 @@ Remove old build directory (if exists)::
 
   $ rm -r build dist
 
-Prepare the release tarball::
+Install build dependency::
 
-  $ python ./setup.py sdist bdist_wheel
+  $ pip install build
+
+Prepare the release tarballs::
+
+  $ python -m build
 
 Upload release to pypi::
 
