@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-extensions"
@@ -49,10 +49,5 @@ Homepage = "https://github.com/django-extensions/django-extensions"
 Source = "https://github.com/django-extensions/django-extensions"
 Tracker = "https://github.com/django-extensions/django-extensions/issues"
 
-[tool.hatch.version]
-path = "django_extensions/__init__.py"
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/django_extensions",
-]
+[tool.setuptools.dynamic]
+version = { attr = "django_extensions.__version__" }
