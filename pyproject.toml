@@ -52,9 +52,7 @@ version = { attr = "django_extensions.__version__" }
 line-length = 88
 indent-width = 4
 
-[tool.ruff.lint]
-ignore = [ "E731" ]
-select = [
+lint.select = [
   # "ANN", # flake8-annotations
   # "ARG", # flake8-arguments
   # "B",   # flake8-bugbear
@@ -63,9 +61,9 @@ select = [
   # "D",   # pydocstyle
   # "DJ",  # flake8-django
   # "DTZ", # flake8-datetimez
-  "E",   # pycodestyle
+  "E", # pycodestyle
   # "EM",  # flake8-errmsg
-  "F",   # flake8
+  "F", # flake8
   # "G",   # flake8-logging-format
   # "I",   # isort
   # "ISC", # flake8-implicit-str-concat
@@ -83,9 +81,8 @@ select = [
   # "TRY", # tryceratops
   # "UP",  # pyupgrade
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = [ "E501" ]
+lint.ignore = [ "E731" ]
+lint.per-file-ignores."tests/**/test_*.py" = [ "E501" ]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
