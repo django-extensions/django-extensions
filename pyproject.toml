@@ -40,8 +40,6 @@ dependencies = [
     "Django>=4.2",
 ]
 
-[project.optional-dependencies]
-
 [project.urls]
 Changelog = "https://github.com/django-extensions/django-extensions/blob/main/CHANGELOG.md"
 Documentation = "https://django-extensions.readthedocs.io/"
