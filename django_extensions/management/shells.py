@@ -112,7 +112,7 @@ def import_items(import_directives, style, quiet_load=False):
                                 else:
                                     imported_objects[asname] = getattr(imported_object, name.name)
                             except AttributeError as exc:
-                                print(dir(imported_object))
+                                print(f"Couldn't find {name.name} in {body.module}. Only found: {dir(imported_object)}")
                                 # raise
                                 raise ImportError(exc)
             else:

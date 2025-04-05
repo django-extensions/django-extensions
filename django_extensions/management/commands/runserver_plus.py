@@ -16,6 +16,7 @@ from django.core.management.base import BaseCommand, CommandError, SystemCheckEr
 from django.core.management.color import color_style
 from django.core.servers.basehttp import get_internal_wsgi_application
 from django.dispatch import Signal
+from django.template.autoreload import get_template_directories, reset_loaders
 from django.utils.autoreload import file_changed, get_reloader
 from django.views import debug as django_views_debug
 
@@ -77,17 +78,43 @@ logger = logging.getLogger(__name__)
 _error_files = set()  # type: Set[str]
 
 
+def get_all_template_files() -> Set[str]:
+    template_list = set()
+
+    for template_dir in get_template_directories():
+        for base_dir, _, filenames in os.walk(template_dir):
+            for filename in filenames:
+                template_list.add(os.path.join(base_dir, filename))
+
+    return template_list
+
+
 if HAS_WERKZEUG:
     # Monkey patch the reloader to support adding more files to extra_files
     for name, reloader_loop_klass in _reloader.reloader_loops.items():
         class WrappedReloaderLoop(reloader_loop_klass):  # type: ignore
             def __init__(self, *args, **kwargs):
+                self._template_files: Set[str] = get_all_template_files()
                 super().__init__(*args, **kwargs)
                 self._extra_files = self.extra_files
 
             @property
             def extra_files(self):
-                return self._extra_files.union(_error_files, {"*.html"})
+                template_files = get_all_template_files()
+
+                # reset loaders if there are new files detected
+                if len(self._template_files) != len(template_files):
+
+                    changed = template_files.difference(self._template_files)
+                    for filename in changed:
+                        _log("info", f" * New file {filename} added, reset template loaders")
+                        self.register_file_changed(filename)
+
+                    reset_loaders()
+
+                self._template_files = template_files
+
+                return self._extra_files.union(_error_files, template_files)
 
             @extra_files.setter
             def extra_files(self, extra_files):
@@ -98,6 +125,14 @@ if HAS_WERKZEUG:
                 results = file_changed.send(sender=self, file_path=path)
                 if not any(res[1] for res in results):
                     super().trigger_reload(filename)
+                else:
+                    _log("info", f" * Detected change in {filename!r}, reset template loaders")
+                    self.register_file_changed(filename)
+
+            def register_file_changed(self, filename):
+                if hasattr(self, "mtimes"):
+                    mtime = os.stat(filename).st_mtime
+                    self.mtimes[filename] = mtime
 
         _reloader.reloader_loops[name] = WrappedReloaderLoop
 
@@ -318,7 +353,7 @@ class Command(BaseCommand):
 
     def inner_run(self, options):
         if not HAS_WERKZEUG:
-            raise CommandError("Werkzeug is required to use runserver_plus.  Please visit http://werkzeug.pocoo.org/ or install via pip. (pip install Werkzeug)")
+            raise CommandError("Werkzeug is required to use runserver_plus. Please visit https://werkzeug.palletsprojects.com/ or install via pip. (pip install Werkzeug)")
 
         # Set colored output
         if settings.DEBUG:
@@ -393,7 +428,7 @@ class Command(BaseCommand):
         if self.show_startup_messages:
             print("\nDjango version %s, using settings %r" % (django.get_version(), settings.SETTINGS_MODULE))
             print("Development server is running at %s" % (bind_url,))
-            print("Using the Werkzeug debugger (http://werkzeug.pocoo.org/)")
+            print("Using the Werkzeug debugger (https://werkzeug.palletsprojects.com/)")
             print("Quit the server with %s." % quit_command)
 
         if open_browser:
@@ -438,8 +473,8 @@ class Command(BaseCommand):
 
     @classmethod
     def determine_ssl_files_paths(cls, options):
-        key_file_path = options.get('key_file_path') or ""
-        cert_path = options.get('cert_path') or ""
+        key_file_path = os.path.expanduser(options.get('key_file_path') or "")
+        cert_path = os.path.expanduser(options.get('cert_path') or "")
         cert_file = cls._determine_path_for_file(cert_path, key_file_path, cls.DEFAULT_CRT_EXTENSION)
         key_file = cls._determine_path_for_file(key_file_path, cert_path, cls.DEFAULT_KEY_EXTENSION)
         return cert_file, key_file

@@ -139,7 +139,7 @@ class ForeignKeyAutocompleteAdminMixin:
             return _('Use the left field to do %(model_name)s lookups in the fields %(field_list)s.') % help_kwargs
         return ''
 
-    def formfield_for_dbfield(self, db_field, **kwargs):
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
         """
         Override the default widget for Foreignkey fields if they are
         specified in the related_search_fields class attribute.
@@ -150,7 +150,7 @@ class ForeignKeyAutocompleteAdminMixin:
                 help_text = str('%s %s') % (kwargs['help_text'], help_text)
             kwargs['widget'] = ForeignKeySearchInput(db_field.remote_field, self.related_search_fields[db_field.name])
             kwargs['help_text'] = help_text
-        return super().formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 class ForeignKeyAutocompleteAdmin(ForeignKeyAutocompleteAdminMixin, admin.ModelAdmin):

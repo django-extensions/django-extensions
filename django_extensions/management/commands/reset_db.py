@@ -2,8 +2,9 @@
 """
 reset_db command
 
-originally from http://www.djangosnippets.org/snippets/828/ by dnordberg
+originally from https://www.djangosnippets.org/snippets/828/ by dnordberg
 """
+import importlib.util
 import os
 import logging
 import warnings
@@ -141,9 +142,13 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
             logging.info('Executing... "%s"', create_query)
             connection.query(create_query.strip())
         elif engine in POSTGRESQL_ENGINES:
-            import psycopg2 as Database  # NOQA
+            has_psycopg3 = importlib.util.find_spec("psycopg")
+            if has_psycopg3:
+                import psycopg as Database  # NOQA
+            else:
+                import psycopg2 as Database  # NOQA
 
-            conn_params = {'database': 'template1'}
+            conn_params = {'dbname': 'template1'}
             if user:
                 conn_params['user'] = user
             if password:
@@ -154,7 +159,10 @@ Type 'yes' to continue, or 'no' to cancel: """ % (database_name,))
                 conn_params['port'] = database_port
 
             connection = Database.connect(**conn_params)
-            connection.set_isolation_level(0)  # autocommit false
+            if has_psycopg3:
+                connection.autocommit = True
+            else:
+                connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
 
             if options['close_sessions']:

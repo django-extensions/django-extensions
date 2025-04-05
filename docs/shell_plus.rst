@@ -48,6 +48,10 @@ uses a web browser as its user interface, as an alternative shell::
 
     $ ./manage.py shell_plus --notebook
 
+Or with JupyterLab (a more feature-rich variant of Jupyter Notebook)::
+
+    $ ./manage.py shell_plus --lab
+
 In addition to being savable, IPython Notebooks can be updated (while running) to reflect changes in a Django application's code with the menu command `Kernel > Restart`.
 
 
@@ -382,7 +386,7 @@ notebook extension or copy its auto-loading code into your own extension.
 Note that the IPython Notebook feature doesn't currently honor the
 ``--dont-load`` option.
 
-.. _`IPython Notebook`: http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
+.. _`IPython Notebook`: https://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
 
 
 

@@ -32,7 +32,7 @@ class HighlightTagTests(TestCase):
 def need_food(self):
     print("Love is colder than death")
 {% endhighlight %}"""
-        expected_result = '''<div class="predesc"><span>Excerpt: blah.py</span></div><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">need_food</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        expected_result = '''<div class="predesc"><span>Excerpt: blah.py</span></div><div class="highlight"><pre><span></span><span class="k">def</span> <span class="w"> </span><span class="nf">need_food</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Love is colder than death&quot;</span><span class="p">)</span>
 </pre></div>'''
         result = Template(content).render(self.ctx)
@@ -44,7 +44,7 @@ def need_food(self):
 {% highlight 'bash' %}
 echo "Hello $1"
 {% endhighlight %}"""
-        expected_result = '''<div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;Hello </span><span class="nv">$1</span><span class="s2">&quot;</span>
+        expected_result = '''<div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Hello </span><span class="nv">$1</span><span class="s2">&quot;</span>
 </pre></div>'''
 
         result = Template(content).render(self.ctx)

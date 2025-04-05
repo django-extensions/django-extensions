@@ -333,24 +333,9 @@ class Command(BaseCommand):
     def get_plain(self, options):
         # Using normal Python shell
         import code
+
+        # Set up a dictionary to serve as the environment for the shell.
         imported_objects = self.get_imported_objects(options)
-        try:
-            # Try activating rlcompleter, because it's handy.
-            import readline
-        except ImportError:
-            pass
-        else:
-            # We don't have to wrap the following import in a 'try', because
-            # we already know 'readline' was imported successfully.
-            import rlcompleter
-            readline.set_completer(rlcompleter.Completer(imported_objects).complete)
-            # Enable tab completion on systems using libedit (e.g. macOS).
-            # These lines are copied from Lib/site.py on Python 3.4.
-            readline_doc = getattr(readline, '__doc__', '')
-            if readline_doc is not None and 'libedit' in readline_doc:
-                readline.parse_and_bind("bind ^I rl_complete")
-            else:
-                readline.parse_and_bind("tab:complete")
 
         use_pythonrc = options['use_pythonrc']
         no_startup = options['no_startup']
@@ -373,6 +358,43 @@ class Command(BaseCommand):
                     traceback.print_exc()
                     if self.tests_mode:
                         raise
+
+        # By default, this will set up readline to do tab completion and to read and
+        # write history to the .python_history file, but this can be overridden by
+        # $PYTHONSTARTUP or ~/.pythonrc.py.
+        try:
+            hook = sys.__interactivehook__
+        except AttributeError:
+            # Match the behavior of the cpython shell where a missing
+            # sys.__interactivehook__ is ignored.
+            pass
+        else:
+            try:
+                hook()
+            except Exception:
+                # Match the behavior of the cpython shell where an error in
+                # sys.__interactivehook__ prints a warning and the exception
+                # and continues.
+                print("Failed calling sys.__interactivehook__")
+                traceback.print_exc()
+
+        try:
+            # Try activating rlcompleter, because it's handy.
+            import readline
+        except ImportError:
+            pass
+        else:
+            # We don't have to wrap the following import in a 'try', because
+            # we already know 'readline' was imported successfully.
+            import rlcompleter
+            readline.set_completer(rlcompleter.Completer(imported_objects).complete)
+            # Enable tab completion on systems using libedit (e.g. macOS).
+            # These lines are copied from Lib/site.py on Python 3.4.
+            readline_doc = getattr(readline, '__doc__', '')
+            if readline_doc is not None and 'libedit' in readline_doc:
+                readline.parse_and_bind("bind ^I rl_complete")
+            else:
+                readline.parse_and_bind("tab:complete")
 
         def run_plain():
             code.interact(local=imported_objects)
@@ -484,7 +506,7 @@ for k, m in shells.import_objects({}, no_style()).items():
         Use the fallback_application_name to let the user override
         it with PGAPPNAME env variable
 
-        http://www.postgresql.org/docs/9.4/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
+        https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS  # noqa
         """
         supported_backends = (
             'django.db.backends.postgresql',

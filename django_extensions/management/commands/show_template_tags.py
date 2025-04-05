@@ -38,7 +38,7 @@ def format_block(block, nlspaces=0):
     The purpose is to let us list a code block as a multiline,
     triple-quoted Python string, taking care of
     indentation concerns.
-    http://code.activestate.com/recipes/145672/
+    https://code.activestate.com/recipes/145672/
     """
     # separate block into lines
     lines = smart_str(block).split('\n')

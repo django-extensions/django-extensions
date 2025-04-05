@@ -3,6 +3,21 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
+3.2.3
+-----
+
+Changes:
+
+- Improvement: Add support for psycopg3 (#1814)
+- Improvement: runserver_plus, autoreload on template change (#1796)
+- Improvement: highlighting, test_should_highlight_bash_syntax_without_name to include whitespace spans (#1797)
+- Improvement: tests, add Python 3.11 to tox and actions to formally support python 3.11 (#1786)
+- Improvement: runserver_plus, Send the file_changed event when a reload is triggered (#1775)
+- Improvement: runserver_plus, Add REMOTE_USER to werkzeug environment (#1708)
+- Improvement: pipchecker, force pip to use pkg_resources as backend for resolving distributions (#1782)
+- Fix: Fix error with lack of PosixPath support (#1785)
+- Fix: Cleanup http: links (#1798)
+
 3.2.1
 -----
 

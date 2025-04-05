@@ -116,4 +116,4 @@ A function to use to create a full name based on the database fields selected by
 https://github.com/django-extensions/django-extensions/blob/master/django_extensions/management/commands/export_emails.py#L23
 
 
-.. _`LinkedIn Groups`: http://www.linkedin.com/static?key=groups_info
+.. _`LinkedIn Groups`: https://www.linkedin.com/static?key=groups_info

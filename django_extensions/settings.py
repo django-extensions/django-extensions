@@ -14,8 +14,8 @@ DEFAULT_SQLITE_ENGINES = (
 DEFAULT_MYSQL_ENGINES = (
     'django.db.backends.mysql',
     'django.contrib.gis.db.backends.mysql',
-    'mysql.connector.django',
     'django_prometheus.db.backends.mysql',
+    'mysql.connector.django',
 )
 DEFAULT_POSTGRESQL_ENGINES = (
     'django.db.backends.postgresql',
@@ -27,6 +27,7 @@ DEFAULT_POSTGRESQL_ENGINES = (
     'django_zero_downtime_migrations.backends.postgis',
     'django_prometheus.db.backends.postgresql',
     'django_prometheus.db.backends.postgis',
+    'django_tenants.postgresql_backend',
 )
 
 SQLITE_ENGINES = getattr(settings, 'DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES', DEFAULT_SQLITE_ENGINES)

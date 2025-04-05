@@ -22,7 +22,8 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     # Set this to the patch of the search view
     search_path = None
 
-    def _media(self):
+    @property
+    def media(self):
         js_files = [
             static('django_extensions/js/jquery.bgiframe.js'),
             static('django_extensions/js/jquery.ajaxQueue.js'),
@@ -33,7 +34,6 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
             css={'all': (static('django_extensions/css/jquery.autocomplete.css'), )},
             js=js_files,
         )
-    media = property(_media)
 
     def label_for_value(self, value):
         key = self.rel.get_related_field().name

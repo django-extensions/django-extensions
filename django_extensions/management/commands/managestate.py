@@ -6,6 +6,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
+from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.recorder import MigrationRecorder
 from django.utils import timezone
@@ -18,12 +19,13 @@ DEFAULT_STATE = 'default'
 
 class Command(BaseCommand):
     help = 'Manage database state in the convenient way.'
-    conn = database = None
     _applied_migrations = None
     migrate_args: dict
     migrate_options: dict
     filename: str
     verbosity: int
+    database: str
+    conn: BaseDatabaseWrapper
 
     def add_arguments(self, parser):
         parser.add_argument(

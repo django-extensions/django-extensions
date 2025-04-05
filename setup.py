@@ -48,7 +48,7 @@ def fullsplit(path, result=None):
 
 # Tell distutils to put the data_files in platform-specific installation
 # locations. See here for an explanation:
-# http://groups.google.com/group/comp.lang.python/browse_thread/thread/35ec7b2fed36eaec/2105ee4d9e8042cb
+# https://groups.google.com/group/comp.lang.python/browse_thread/thread/35ec7b2fed36eaec/2105ee4d9e8042cb
 for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
@@ -77,6 +77,7 @@ for dirpath, dirnames, filenames in os.walk(extensions_dir):
         path = os.path.join(*relative_path)
         package_files = package_data.setdefault('.'.join(parts), [])
         package_files.extend([os.path.join(path, f) for f in filenames])
+package_data['django_extensions'].append('py.typed')
 
 
 version = __import__('django_extensions').__version__
@@ -86,7 +87,7 @@ if int(setuptools.__version__.split(".", 1)[0]) < 18:
 
 long_description = """django-extensions bundles several useful
 additions for Django projects. See the project page for more information:
-  http://github.com/django-extensions/django-extensions"""
+  https://github.com/django-extensions/django-extensions"""
 if os.path.isfile("README.rst"):
     with open("README.rst") as f:
         long_description = f.read()
@@ -100,34 +101,33 @@ setup(
     author_email='mtrier@gmail.com',
     maintainer='Bas van Oostveen',
     maintainer_email='v.oostveen@gmail.com',
-    url='http://github.com/django-extensions/django-extensions',
+    url='https://github.com/django-extensions/django-extensions',
     license='MIT License',
     platforms=['any'],
     packages=packages,
     cmdclass=cmdclasses,
     package_data=package_data,
-    python_requires=">=3.6",
-    install_requires=["Django>=3.2"],
+    python_requires=">=3.9",
+    setup_requires=["setuptools"],
+    install_requires=["Django>=4.2"],
     extras_require={},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 3.2',
-        'Framework :: Django :: 4.0',
-        'Framework :: Django :: 4.1',
+        'Framework :: Django :: 4.2',
+        'Framework :: Django :: 5.1',
+        'Framework :: Django :: 5.2',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Utilities',

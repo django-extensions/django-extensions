@@ -2,14 +2,18 @@ shortuuid
 werkzeug
 django_pdb
 python-dateutil
+pytest<8
 pytest-django
 pytest-cov
 factory-boy
 requests
 pygments
 vobject
+aiosmtpd
 
 types-pyOpenSSL
 types-PyYAML
 types-boto
 types-requests
+
+setuptools

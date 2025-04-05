@@ -2,7 +2,7 @@
 """
       Title: Dumpscript management command
     Project: Hardytools (queryset-refactor version)
-     Author: Will Hardy (http://willhardy.com.au)
+     Author: Will Hardy
        Date: June 2008
       Usage: python manage.py dumpscript appname > scripts/scriptname.py
   $Revision: 217 $
@@ -502,7 +502,7 @@ class Script(Code):
 # Instead of changing it, create a file called import_helper.py
 # and put there a class called ImportHelper(object) in it.
 #
-# This class will be specially casted so that instead of extending object,
+# This class will be specially cast so that instead of extending object,
 # it will actually extend the class BasicImportHelper()
 #
 # That means you just have to overload the methods you want to
