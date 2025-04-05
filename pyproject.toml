@@ -1,6 +1,5 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-
 requires = [ "setuptools>=61.2" ]
 
 [project]
@@ -48,3 +47,18 @@ urls.Tracker = "https://github.com/django-extensions/django-extensions/issues"
 
 [tool.setuptools.dynamic]
 version = { attr = "django_extensions.__version__" }
+
+[tool.ruff]
+line-length = 256
+lint.ignore = [ "E731" ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
+norecursedirs = "venv* .tox .eggs build dist django_extensions.egg-info django_extensions/mongodb"
+addopts = "--doctest-modules --doctest-ignore-import-errors --nomigrations --cov=django_extensions --cov-report html --cov-report term"
+
+[tool.mypy]
+plugins = [ "mypy_django_plugin.main" ]
+
+[tool.django-stubs]
+django_settings_module = "django_extensions.settings"
