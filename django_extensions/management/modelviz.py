@@ -460,6 +460,121 @@ class ModelGraph:
         return False
 
 
+class EnhancedModelGraph(ModelGraph):
+    def __init__(self, app_labels, **kwargs):
+        super().__init__(app_labels, **kwargs)
+
+        self.both_names = kwargs.get('both_names', False)
+        self.db_table_names = kwargs.get('db_table_names', False)
+        self.db_field_names = kwargs.get('db_field_names', False)
+        self.hide_abstract_models = kwargs.get('hide_abstract_models', False)
+        self.hide_proxy_models = kwargs.get('hide_proxy_models', False)
+
+    def get_graph_data(self, as_json=False):
+        graph_data = super().get_graph_data(as_json)
+        graph_data['both_names'] = self.both_names
+
+        return graph_data
+
+    def get_appmodel_context(self, appmodel, appmodel_abstracts):
+        context = super().get_appmodel_context(appmodel, appmodel_abstracts)
+        context['db_name'] = (
+            appmodel._meta.db_table if self.db_table_names
+            else None
+        )
+
+        return context
+
+    def add_attributes(self, field, abstract_fields):
+        if field.verbose_name:
+            verbose_name = force_str(field.verbose_name)
+            if verbose_name.islower():
+                verbose_name = verbose_name.capitalize()
+        else:
+            verbose_name = field.name.replace('_', ' ').strip().capitalize()
+
+        if self.verbose_names and not self.both_names:
+            label = verbose_name
+        elif self.db_field_names:
+            label = field.column
+        else:
+            label = field.name
+
+        if not self.both_names:
+            verbose_name = None
+
+        t = type(field).__name__
+        if isinstance(field, (OneToOneField, ForeignKey)):
+            t += " ({0})".format(field.remote_field.field_name)
+        # TODO: ManyToManyField, GenericRelation
+
+        return {
+            'field': field,
+            'name': field.name,
+            'label': label,
+            'verbose_name': verbose_name,
+            'type': t,
+            'blank': field.blank,
+            'abstract': any(
+                field.creation_counter == abstract_field.creation_counter
+                for abstract_field in abstract_fields
+            ),
+            'relation': isinstance(field, RelatedField),
+            'primary_key': field.primary_key,
+        }
+
+    def process_apps(self):
+        for app_label in self.app_labels:
+            app = apps.get_app_config(app_label)
+            if not app:
+                continue
+            app_graph = self.get_app_context(app)
+            app_models = self.get_models(app)
+            abstract_models = self.get_abstract_models(app_models)
+            app_models = abstract_models + app_models
+
+            for appmodel in app_models:
+                if not self.use_model(appmodel._meta.object_name):
+                    continue
+
+                if self.hide_abstract_models and appmodel._meta.abstract:
+                    continue
+
+                if self.hide_proxy_models and appmodel._meta.proxy:
+                    continue
+
+                appmodel_abstracts = self.get_appmodel_abstracts(appmodel)
+                abstract_fields = self.get_bases_abstract_fields(appmodel)
+                model = self.get_appmodel_context(appmodel, appmodel_abstracts)
+                attributes = self.get_appmodel_attributes(appmodel)
+
+                # find primary key and print it first, ignoring implicit id if other pk exists
+                pk = appmodel._meta.pk
+                if pk and not appmodel._meta.abstract and pk in attributes:
+                    model['fields'].append(self.add_attributes(pk, abstract_fields))
+
+                for field in attributes:
+                    model = self.process_attributes(field, model, pk, abstract_fields)
+
+                if self.sort_fields:
+                    model = self.sort_model_fields(model)
+
+                for field in appmodel._meta.local_fields:
+                    model = self.process_local_fields(field, model, abstract_fields)
+
+                for field in appmodel._meta.local_many_to_many:
+                    model = self.process_local_many_to_many(field, model)
+
+                if self.inheritance:
+                    # add inheritance arrows
+                    for parent in appmodel.__bases__:
+                        model = self.process_parent(parent, appmodel, model)
+
+                app_graph['models'].append(model)
+            if app_graph['models']:
+                self.graphs.append(app_graph)
+
+
 def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
     if isinstance(template, str):
         template = loader.get_template(template)
