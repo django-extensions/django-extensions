@@ -13,7 +13,7 @@ class AdminGeneratorTests(TestCase):
         self.out = StringIO()
 
     def test_command(self):
-        call_command('admin_generator', 'django_extensions', stdout=self.out)
+        call_command("admin_generator", "django_extensions", stdout=self.out)
         output = self.out.getvalue()
         self.assertIn("@admin.register(Secret)", output)
         self.assertIn("class SecretAdmin(admin.ModelAdmin):", output)
@@ -21,18 +21,18 @@ class AdminGeneratorTests(TestCase):
         self.assertIn("search_fields = ('name',)", output)
 
     def test_should_print_warning_if_given_app_is_not_installed(self):
-        expected_output = '''This command requires an existing app name as argument
+        expected_output = """This command requires an existing app name as argument
 Available apps:
-    admin'''
-        call_command('admin_generator', 'invalid_app', stderr=self.out)
+    admin"""
+        call_command("admin_generator", "invalid_app", stderr=self.out)
 
         for expected_line in expected_output.splitlines():
             self.assertIn(expected_line, self.out.getvalue())
 
     def test_should_print_admin_class_for_User_model_only(self):
-        call_command('admin_generator', 'auth', 'Group', stdout=self.out)
+        call_command("admin_generator", "auth", "Group", stdout=self.out)
 
-        self.assertIn('from .models import Group', self.out.getvalue())
+        self.assertIn("from .models import Group", self.out.getvalue())
 
     def test_should_print_admin_class_with_date_hierarchy(self):
         class TestAdminModel(models.Model):
@@ -40,9 +40,8 @@ Available apps:
             title = models.CharField(max_length=50)
 
             class Meta:
-                app_label = 'testapp'
+                app_label = "testapp"
 
-        call_command('admin_generator', 'testapp', 'TestAdminModel',
-                     stdout=self.out)
+        call_command("admin_generator", "testapp", "TestAdminModel", stdout=self.out)
 
         self.assertIn("date_hierarchy = 'created_at'", self.out.getvalue())

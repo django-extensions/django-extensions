@@ -16,9 +16,9 @@ class Job(DailyJob):
     help = "Cache (db) cleanup Job"
 
     def execute(self):
-        if hasattr(settings, 'CACHES'):
+        if hasattr(settings, "CACHES"):
             for cache_name, cache_options in settings.CACHES.items():
-                if cache_options['BACKEND'].endswith("DatabaseCache"):
+                if cache_options["BACKEND"].endswith("DatabaseCache"):
                     cache = caches[cache_name]
                     cache.clear()
             return

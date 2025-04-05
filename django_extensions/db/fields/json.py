@@ -10,6 +10,7 @@ more information.
  class LOL(models.Model):
      extra = json.JSONField()
 """
+
 import json
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -51,7 +52,7 @@ class JSONField(models.TextField):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs['default'] = kwargs.get('default', dict)
+        kwargs["default"] = kwargs.get("default", dict)
         models.TextField.__init__(self, *args, **kwargs)
 
     def get_default(self):
@@ -66,7 +67,7 @@ class JSONField(models.TextField):
 
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
-        if value is None or value == '':
+        if value is None or value == "":
             return {}
 
         if isinstance(value, str):
@@ -102,6 +103,6 @@ class JSONField(models.TextField):
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
-        if self.default == '{}':
-            del kwargs['default']
+        if self.default == "{}":
+            del kwargs["default"]
         return name, path, args, kwargs

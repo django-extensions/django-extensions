@@ -18,28 +18,48 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    args = ''
+    args = ""
     help = "Validate templates on syntax and compile errors"
-    ignores = set([
-        ".DS_Store",
-        "*.swp",
-        "*~",
-    ])
+    ignores = set(
+        [
+            ".DS_Store",
+            "*.swp",
+            "*~",
+        ]
+    )
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--no-apps', action='store_true', dest='no_apps',
-            default=False, help="Do not automatically include apps.")
+            "--no-apps",
+            action="store_true",
+            dest="no_apps",
+            default=False,
+            help="Do not automatically include apps.",
+        )
         parser.add_argument(
-            '--break', '-b', action='store_true', dest='break',
-            default=False, help="Break on first error.")
+            "--break",
+            "-b",
+            action="store_true",
+            dest="break",
+            default=False,
+            help="Break on first error.",
+        )
         parser.add_argument(
-            '--include', '-i', action='append', dest='includes',
-            default=[], help="Append these paths to TEMPLATE DIRS")
+            "--include",
+            "-i",
+            action="append",
+            dest="includes",
+            default=[],
+            help="Append these paths to TEMPLATE DIRS",
+        )
         parser.add_argument(
-            '--ignore-app', action='append', dest='ignore_apps',
-            default=[], help="Ignore these apps")
+            "--ignore-app",
+            action="append",
+            dest="ignore_apps",
+            default=[],
+            help="Ignore these apps",
+        )
 
     def ignore_filename(self, filename):
         filename = os.path.basename(filename)
@@ -50,26 +70,28 @@ class Command(BaseCommand):
 
     @signalcommand
     def handle(self, *args, **options):
-        if hasattr(settings, 'VALIDATE_TEMPLATES_IGNORES'):
-            self.ignores = getattr(settings, 'VALIDATE_TEMPLATES_IGNORES')
+        if hasattr(settings, "VALIDATE_TEMPLATES_IGNORES"):
+            self.ignores = getattr(settings, "VALIDATE_TEMPLATES_IGNORES")
 
         style = color_style()
-        template_dirs = set(get_template_setting('DIRS', []))
-        template_dirs |= set(options['includes'])
-        template_dirs |= set(getattr(settings, 'VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS', []))
+        template_dirs = set(get_template_setting("DIRS", []))
+        template_dirs |= set(options["includes"])
+        template_dirs |= set(
+            getattr(settings, "VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS", [])
+        )
 
-        if not options['no_apps']:
-            ignore_apps = options['ignore_apps']
-            if not ignore_apps and hasattr(settings, 'VALIDATE_TEMPLATES_IGNORE_APPS'):
-                ignore_apps = getattr(settings, 'VALIDATE_TEMPLATES_IGNORE_APPS')
+        if not options["no_apps"]:
+            ignore_apps = options["ignore_apps"]
+            if not ignore_apps and hasattr(settings, "VALIDATE_TEMPLATES_IGNORE_APPS"):
+                ignore_apps = getattr(settings, "VALIDATE_TEMPLATES_IGNORE_APPS")
             for app in apps.get_app_configs():
                 if app.name in ignore_apps:
                     continue
-                app_template_dir = os.path.join(app.path, 'templates')
+                app_template_dir = os.path.join(app.path, "templates")
                 if os.path.isdir(app_template_dir):
                     template_dirs.add(app_template_dir)
 
-        settings.TEMPLATES[0]['DIRS'] = list(template_dirs)
+        settings.TEMPLATES[0]["DIRS"] = list(template_dirs)
         settings.TEMPLATE_DEBUG = True
         verbosity = options["verbosity"]
         errors = 0
@@ -87,8 +109,14 @@ class Command(BaseCommand):
                         get_template(filepath)
                     except Exception as e:
                         errors += 1
-                        self.stdout.write("%s: %s" % (filepath, style.ERROR("%s %s" % (e.__class__.__name__, str(e)))))
-                    if errors and options['break']:
+                        self.stdout.write(
+                            "%s: %s"
+                            % (
+                                filepath,
+                                style.ERROR("%s %s" % (e.__class__.__name__, str(e))),
+                            )
+                        )
+                    if errors and options["break"]:
                         raise CommandError("Errors found")
 
         if errors:

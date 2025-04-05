@@ -4,7 +4,7 @@ import sys
 from django.core.management.base import BaseCommand
 from logging import getLogger
 
-logger = getLogger('django.commands')
+logger = getLogger("django.commands")
 
 
 class LoggingBaseCommand(BaseCommand):
@@ -49,5 +49,5 @@ class LoggingBaseCommand(BaseCommand):
         try:
             super().execute(*args, **options)
         except Exception as e:
-            logger.error(e, exc_info=sys.exc_info(), extra={'status_code': 500})
+            logger.error(e, exc_info=sys.exc_info(), extra={"status_code": 500})
             raise

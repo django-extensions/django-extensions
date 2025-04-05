@@ -8,7 +8,7 @@ class Note(models.Model):
     creation_date = models.DateField(auto_now_add=True)
 
     class Meta:
-        app_label = 'collisions'
+        app_label = "collisions"
 
 
 class UniqueModel(models.Model):
@@ -16,7 +16,7 @@ class UniqueModel(models.Model):
     global_hash_id = models.CharField(max_length=32)
 
     class Meta:
-        app_label = 'collisions'
+        app_label = "collisions"
 
 
 class Group(models.Model):
@@ -31,7 +31,7 @@ class Name(models.Model):
     number_of_users_having_this_name = models.IntegerField()
 
     class Meta:
-        app_label = 'collisions'
+        app_label = "collisions"
 
 
 class SystemUser(models.Model):

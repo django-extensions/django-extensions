@@ -25,47 +25,69 @@ from django.db import models
 from django_extensions.management.utils import signalcommand
 
 # Configurable constants
-MAX_LINE_WIDTH = getattr(settings, 'MAX_LINE_WIDTH', 78)
-INDENT_WIDTH = getattr(settings, 'INDENT_WIDTH', 4)
-LIST_FILTER_THRESHOLD = getattr(settings, 'LIST_FILTER_THRESHOLD', 25)
-RAW_ID_THRESHOLD = getattr(settings, 'RAW_ID_THRESHOLD', 100)
+MAX_LINE_WIDTH = getattr(settings, "MAX_LINE_WIDTH", 78)
+INDENT_WIDTH = getattr(settings, "INDENT_WIDTH", 4)
+LIST_FILTER_THRESHOLD = getattr(settings, "LIST_FILTER_THRESHOLD", 25)
+RAW_ID_THRESHOLD = getattr(settings, "RAW_ID_THRESHOLD", 100)
 
-LIST_FILTER = getattr(settings, 'LIST_FILTER', (
-    models.DateField,
-    models.DateTimeField,
-    models.ForeignKey,
-    models.BooleanField,
-))
+LIST_FILTER = getattr(
+    settings,
+    "LIST_FILTER",
+    (
+        models.DateField,
+        models.DateTimeField,
+        models.ForeignKey,
+        models.BooleanField,
+    ),
+)
 
-SEARCH_FIELD_NAMES = getattr(settings, 'SEARCH_FIELD_NAMES', (
-    'name',
-    'slug',
-))
+SEARCH_FIELD_NAMES = getattr(
+    settings,
+    "SEARCH_FIELD_NAMES",
+    (
+        "name",
+        "slug",
+    ),
+)
 
-DATE_HIERARCHY_NAMES = getattr(settings, 'DATE_HIERARCHY_NAMES', (
-    'joined_at',
-    'updated_at',
-    'created_at',
-))
+DATE_HIERARCHY_NAMES = getattr(
+    settings,
+    "DATE_HIERARCHY_NAMES",
+    (
+        "joined_at",
+        "updated_at",
+        "created_at",
+    ),
+)
 
-PREPOPULATED_FIELD_NAMES = getattr(settings, 'PREPOPULATED_FIELD_NAMES', (
-    'slug=name',
-))
+PREPOPULATED_FIELD_NAMES = getattr(settings, "PREPOPULATED_FIELD_NAMES", ("slug=name",))
 
-PRINT_IMPORTS = getattr(settings, 'PRINT_IMPORTS', '''# -*- coding: utf-8 -*-
+PRINT_IMPORTS = getattr(
+    settings,
+    "PRINT_IMPORTS",
+    """# -*- coding: utf-8 -*-
 from django.contrib import admin
 
 from .models import %(models)s
-''')
+""",
+)
 
-PRINT_ADMIN_CLASS = getattr(settings, 'PRINT_ADMIN_CLASS', '''
+PRINT_ADMIN_CLASS = getattr(
+    settings,
+    "PRINT_ADMIN_CLASS",
+    """
 
 @admin.register(%(name)s)
 class %(name)sAdmin(admin.ModelAdmin):%(class_)s
-''')
+""",
+)
 
-PRINT_ADMIN_PROPERTY = getattr(settings, 'PRINT_ADMIN_PROPERTY', '''
-    %(key)s = %(value)s''')
+PRINT_ADMIN_PROPERTY = getattr(
+    settings,
+    "PRINT_ADMIN_PROPERTY",
+    """
+    %(key)s = %(value)s""",
+)
 
 
 class UnicodeMixin:
@@ -98,11 +120,11 @@ class AdminApp(UnicodeMixin):
             yield admin_model
 
     def __unicode__(self):
-        return ''.join(self._unicode_generator())
+        return "".join(self._unicode_generator())
 
     def _unicode_generator(self):
         models_list = [admin_model.name for admin_model in self]
-        yield PRINT_IMPORTS % dict(models=', '.join(models_list))
+        yield PRINT_IMPORTS % dict(models=", ".join(models_list))
 
         admin_model_names = []
         for admin_model in self:
@@ -113,7 +135,7 @@ class AdminApp(UnicodeMixin):
             admin_model_names.append(admin_model.name)
 
     def __repr__(self):
-        return '<%s[%s]>' % (
+        return "<%s[%s]>" % (
             self.__class__.__name__,
             self.app.name,
         )
@@ -121,19 +143,24 @@ class AdminApp(UnicodeMixin):
 
 class AdminModel(UnicodeMixin):
     PRINTABLE_PROPERTIES = (
-        'list_display',
-        'list_filter',
-        'raw_id_fields',
-        'search_fields',
-        'prepopulated_fields',
-        'date_hierarchy',
+        "list_display",
+        "list_filter",
+        "raw_id_fields",
+        "search_fields",
+        "prepopulated_fields",
+        "date_hierarchy",
     )
 
-    def __init__(self, model, raw_id_threshold=RAW_ID_THRESHOLD,
-                 list_filter_threshold=LIST_FILTER_THRESHOLD,
-                 search_field_names=SEARCH_FIELD_NAMES,
-                 date_hierarchy_names=DATE_HIERARCHY_NAMES,
-                 prepopulated_field_names=PREPOPULATED_FIELD_NAMES, **options):
+    def __init__(
+        self,
+        model,
+        raw_id_threshold=RAW_ID_THRESHOLD,
+        list_filter_threshold=LIST_FILTER_THRESHOLD,
+        search_field_names=SEARCH_FIELD_NAMES,
+        date_hierarchy_names=DATE_HIERARCHY_NAMES,
+        prepopulated_field_names=PREPOPULATED_FIELD_NAMES,
+        **options,
+    ):
         self.model = model
         self.list_display = []
         self.list_filter = []
@@ -148,7 +175,7 @@ class AdminModel(UnicodeMixin):
         self.prepopulated_field_names = prepopulated_field_names
 
     def __repr__(self):
-        return '<%s[%s]>' % (
+        return "<%s[%s]>" % (
             self.__class__.__name__,
             self.name,
         )
@@ -160,8 +187,10 @@ class AdminModel(UnicodeMixin):
     def _process_many_to_many(self, meta):
         raw_id_threshold = self.raw_id_threshold
         for field in meta.local_many_to_many:
-            if hasattr(field, 'remote_field'):
-                related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
+            if hasattr(field, "remote_field"):
+                related_model = getattr(
+                    field.remote_field, "related_model", field.remote_field.model
+                )
             else:
                 raise CommandError("Unable to process ManyToMany relation")
             related_objects = related_model.objects.all()
@@ -179,8 +208,10 @@ class AdminModel(UnicodeMixin):
         raw_id_threshold = self.raw_id_threshold
         list_filter_threshold = self.list_filter_threshold
         max_count = max(list_filter_threshold, raw_id_threshold)
-        if hasattr(field, 'remote_field'):
-            related_model = getattr(field.remote_field, 'related_model', field.remote_field.model)
+        if hasattr(field, "remote_field"):
+            related_model = getattr(
+                field.remote_field, "related_model", field.remote_field.model
+            )
         else:
             raise CommandError("Unable to process ForeignKey relation")
         related_count = related_model.objects.all()
@@ -213,7 +244,7 @@ class AdminModel(UnicodeMixin):
         return field_name
 
     def __unicode__(self):
-        return ''.join(self._unicode_generator())
+        return "".join(self._unicode_generator())
 
     def _yield_value(self, key, value):
         if isinstance(value, (list, set, tuple)):
@@ -223,7 +254,7 @@ class AdminModel(UnicodeMixin):
         elif isinstance(value, str):
             return self._yield_string(key, value)
         else:  # pragma: no cover
-            raise TypeError('%s is not supported in %r' % (type(value), value))
+            raise TypeError("%s is not supported in %r" % (type(value), value))
 
     def _yield_string(self, key, value, converter=repr):
         return PRINT_ADMIN_PROPERTY % dict(
@@ -235,12 +266,12 @@ class AdminModel(UnicodeMixin):
         row_parts = []
         row = self._yield_string(key, value)
         if len(row) > MAX_LINE_WIDTH:
-            row_parts.append(self._yield_string(key, '{', str))
+            row_parts.append(self._yield_string(key, "{", str))
             for k, v in value.items():
-                row_parts.append('%s%r: %r' % (2 * INDENT_WIDTH * ' ', k, v))
+                row_parts.append("%s%r: %r" % (2 * INDENT_WIDTH * " ", k, v))
 
-            row_parts.append(INDENT_WIDTH * ' ' + '}')
-            row = '\n'.join(row_parts)
+            row_parts.append(INDENT_WIDTH * " " + "}")
+            row = "\n".join(row_parts)
 
         return row
 
@@ -248,12 +279,12 @@ class AdminModel(UnicodeMixin):
         row_parts = []
         row = self._yield_string(key, value)
         if len(row) > MAX_LINE_WIDTH:
-            row_parts.append(self._yield_string(key, '(', str))
+            row_parts.append(self._yield_string(key, "(", str))
             for v in value:
-                row_parts.append(2 * INDENT_WIDTH * ' ' + repr(v) + ',')
+                row_parts.append(2 * INDENT_WIDTH * " " + repr(v) + ",")
 
-            row_parts.append(INDENT_WIDTH * ' ' + ')')
-            row = '\n'.join(row_parts)
+            row_parts.append(INDENT_WIDTH * " " + ")")
+            row = "\n".join(row_parts)
 
         return row
 
@@ -276,8 +307,8 @@ class AdminModel(UnicodeMixin):
                 break
 
         for k in sorted(self.prepopulated_field_names):
-            k, vs = k.split('=', 1)
-            vs = vs.split(',')
+            k, vs = k.split("=", 1)
+            vs = vs.split(",")
             if k in field_names:
                 incomplete = False
                 for v in vs:
@@ -292,56 +323,73 @@ class AdminModel(UnicodeMixin):
 
 
 class Command(LabelCommand):
-    help = '''Generate a `admin.py` file for the given app (models)'''
+    help = """Generate a `admin.py` file for the given app (models)"""
     # args = "[app_name]"
     can_import_settings = True
 
     def add_arguments(self, parser):
-        parser.add_argument('app_name')
-        parser.add_argument('model_name', nargs='*')
+        parser.add_argument("app_name")
+        parser.add_argument("model_name", nargs="*")
         parser.add_argument(
-            '-s', '--search-field', action='append',
+            "-s",
+            "--search-field",
+            action="append",
             default=SEARCH_FIELD_NAMES,
-            help='Fields named like this will be added to `search_fields`'
-            ' [default: %(default)s]')
+            help="Fields named like this will be added to `search_fields`"
+            " [default: %(default)s]",
+        )
         parser.add_argument(
-            '-d', '--date-hierarchy', action='append',
+            "-d",
+            "--date-hierarchy",
+            action="append",
             default=DATE_HIERARCHY_NAMES,
-            help='A field named like this will be set as `date_hierarchy`'
-            ' [default: %(default)s]')
+            help="A field named like this will be set as `date_hierarchy`"
+            " [default: %(default)s]",
+        )
         parser.add_argument(
-            '-p', '--prepopulated-fields', action='append',
+            "-p",
+            "--prepopulated-fields",
+            action="append",
             default=PREPOPULATED_FIELD_NAMES,
-            help='These fields will be prepopulated by the other field.'
-            'The field names can be specified like `spam=eggA,eggB,eggC`'
-            ' [default: %(default)s]')
+            help="These fields will be prepopulated by the other field."
+            "The field names can be specified like `spam=eggA,eggB,eggC`"
+            " [default: %(default)s]",
+        )
         parser.add_argument(
-            '-l', '--list-filter-threshold', type=int,
-            default=LIST_FILTER_THRESHOLD, metavar='LIST_FILTER_THRESHOLD',
-            help='If a foreign key has less than LIST_FILTER_THRESHOLD items '
-            'it will be added to `list_filter` [default: %(default)s]')
+            "-l",
+            "--list-filter-threshold",
+            type=int,
+            default=LIST_FILTER_THRESHOLD,
+            metavar="LIST_FILTER_THRESHOLD",
+            help="If a foreign key has less than LIST_FILTER_THRESHOLD items "
+            "it will be added to `list_filter` [default: %(default)s]",
+        )
         parser.add_argument(
-            '-r', '--raw-id-threshold', type=int,
-            default=RAW_ID_THRESHOLD, metavar='RAW_ID_THRESHOLD',
-            help='If a foreign key has more than RAW_ID_THRESHOLD items '
-            'it will be added to `list_filter` [default: %(default)s]')
+            "-r",
+            "--raw-id-threshold",
+            type=int,
+            default=RAW_ID_THRESHOLD,
+            metavar="RAW_ID_THRESHOLD",
+            help="If a foreign key has more than RAW_ID_THRESHOLD items "
+            "it will be added to `list_filter` [default: %(default)s]",
+        )
 
     @signalcommand
     def handle(self, *args, **options):
-        app_name = options['app_name']
+        app_name = options["app_name"]
 
         try:
             app = apps.get_app_config(app_name)
         except LookupError:
-            self.stderr.write('This command requires an existing app name as argument')
-            self.stderr.write('Available apps:')
+            self.stderr.write("This command requires an existing app name as argument")
+            self.stderr.write("Available apps:")
             app_labels = [app.label for app in apps.get_app_configs()]
             for label in sorted(app_labels):
-                self.stderr.write('    %s' % label)
+                self.stderr.write("    %s" % label)
             return
 
         model_res = []
-        for arg in options['model_name']:
+        for arg in options["model_name"]:
             model_res.append(re.compile(arg, re.IGNORECASE))
 
         self.stdout.write(AdminApp(app, model_res, **options).__str__())

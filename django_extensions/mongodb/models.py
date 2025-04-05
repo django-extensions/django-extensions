@@ -6,7 +6,11 @@ from mongoengine.document import Document
 from mongoengine.fields import DateTimeField, IntField, StringField
 from mongoengine.queryset import QuerySetManager
 
-from django_extensions.mongodb.fields import AutoSlugField, CreationDateTimeField, ModificationDateTimeField
+from django_extensions.mongodb.fields import (
+    AutoSlugField,
+    CreationDateTimeField,
+    ModificationDateTimeField,
+)
 
 
 class TimeStampedModel(Document):
@@ -33,7 +37,7 @@ class TitleSlugDescriptionModel(Document):
     """
 
     title = StringField(max_length=255)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from="title")
     description = StringField(blank=True, null=True)
 
     class Meta:
@@ -44,7 +48,8 @@ class ActivatorModelManager(QuerySetManager):
     """
     ActivatorModelManager
 
-    Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
+    Manager to return instances of ActivatorModel:
+        SomeModel.objects.active() / .inactive()
     """
 
     def active(self):
@@ -72,12 +77,16 @@ class ActivatorModel(Document):
     """
 
     STATUS_CHOICES = (
-        (0, _('Inactive')),
-        (1, _('Active')),
+        (0, _("Inactive")),
+        (1, _("Active")),
     )
     status = IntField(choices=STATUS_CHOICES, default=1)
-    activate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for an immediate activation'))
-    deactivate_date = DateTimeField(blank=True, null=True, help_text=_('keep empty for indefinite activation'))
+    activate_date = DateTimeField(
+        blank=True, null=True, help_text=_("keep empty for an immediate activation")
+    )
+    deactivate_date = DateTimeField(
+        blank=True, null=True, help_text=_("keep empty for indefinite activation")
+    )
     objects = ActivatorModelManager()
 
     class Meta:

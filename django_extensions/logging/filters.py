@@ -12,8 +12,8 @@ class RateLimiterFilter(logging.Filter):
         from django.core.cache import cache
 
         # Rate is specified as 1 messages logged per N seconds. (aka cache timeout)
-        rate = getattr(settings, 'RATE_LIMITER_FILTER_RATE', 10)
-        prefix = getattr(settings, 'RATE_LIMITER_FILTER_PREFIX', 'ratelimiterfilter')
+        rate = getattr(settings, "RATE_LIMITER_FILTER_RATE", 10)
+        prefix = getattr(settings, "RATE_LIMITER_FILTER_PREFIX", "ratelimiterfilter")
 
         subject = record.getMessage()
         cache_key = "%s:%s" % (prefix, md5(subject).hexdigest())

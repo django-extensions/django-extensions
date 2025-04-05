@@ -19,6 +19,7 @@ def load_tag_library(libname):
     """
     from django.template.backends.django import get_installed_libraries
     from django.template.library import InvalidTemplateLibrary
+
     try:
         lib = get_installed_libraries()[libname]
         lib = importlib.import_module(lib).register
@@ -28,8 +29,8 @@ def load_tag_library(libname):
 
 
 def get_template_setting(template_key, default=None):
-    """ Read template settings """
-    templates_var = getattr(settings, 'TEMPLATES', None)
+    """Read template settings"""
+    templates_var = getattr(settings, "TEMPLATES", None)
     if templates_var:
         for tdict in templates_var:
             if template_key in tdict:

@@ -24,8 +24,8 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
-            assert settings.TIME_ZONE == 'UTC'
-            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+            assert settings.TIME_ZONE == "UTC"
+            return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
         return json.JSONEncoder.default(self, obj)
 
 
@@ -57,12 +57,12 @@ class JSONField(StringField):
     """
 
     def __init__(self, *args, **kwargs):
-        if 'default' not in kwargs:
-            kwargs['default'] = '{}'
+        if "default" not in kwargs:
+            kwargs["default"] = "{}"
         StringField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
-        """ Convert our string value to JSON after we load it from the DB """
+        """Convert our string value to JSON after we load it from the DB"""
         if not value:
             return {}
         elif isinstance(value, str):
@@ -73,7 +73,7 @@ class JSONField(StringField):
             return value
 
     def get_db_prep_save(self, value):
-        """ Convert our JSON object to a string before we save """
+        """Convert our JSON object to a string before we save"""
         if not value:
             return super().get_db_prep_save("")
         else:

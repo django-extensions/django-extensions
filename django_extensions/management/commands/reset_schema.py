@@ -24,53 +24,74 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--noinput', '--no-input', action='store_false',
-            dest='interactive', default=True,
-            help='Tells Django to NOT prompt the user for input of any kind.'
+            "--noinput",
+            "--no-input",
+            action="store_false",
+            dest="interactive",
+            default=True,
+            help="Tells Django to NOT prompt the user for input of any kind.",
         )
         parser.add_argument(
-            '-R', '--router', action='store', dest='router', default=DEFAULT_DB_ALIAS,
-            help='Use this router-database instead of the one defined in settings.py'
+            "-R",
+            "--router",
+            action="store",
+            dest="router",
+            default=DEFAULT_DB_ALIAS,
+            help="Use this router-database instead of the one defined in settings.py",
         )
         parser.add_argument(
-            '--database', default=DEFAULT_DB_ALIAS,
-            help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
+            "--database",
+            default=DEFAULT_DB_ALIAS,
+            help='Nominates a database to run command for. Defaults to the "%s".'
+            % DEFAULT_DB_ALIAS,
         )
         parser.add_argument(
-            '-S', '--schema', action='store', dest='schema', default='public',
-            help='Drop this schema instead of "public"'
+            "-S",
+            "--schema",
+            action="store",
+            dest="schema",
+            default="public",
+            help='Drop this schema instead of "public"',
         )
 
     def handle(self, *args, **options):
-        database = options['database']
-        if options['router'] != DEFAULT_DB_ALIAS:
-            warnings.warn("--router is deprecated. You should use --database.", RemovedInNextVersionWarning, stacklevel=2)
-            database = options['router']
+        database = options["database"]
+        if options["router"] != DEFAULT_DB_ALIAS:
+            warnings.warn(
+                "--router is deprecated. You should use --database.",
+                RemovedInNextVersionWarning,
+                stacklevel=2,
+            )
+            database = options["router"]
 
         dbinfo = settings.DATABASES.get(database)
         if dbinfo is None:
             raise CommandError("Unknown database %s" % database)
 
-        engine = dbinfo.get('ENGINE')
+        engine = dbinfo.get("ENGINE")
         if engine not in POSTGRESQL_ENGINES:
-            raise CommandError('This command can be used only with PostgreSQL databases.')
+            raise CommandError(
+                "This command can be used only with PostgreSQL databases."
+            )
 
-        database_name = dbinfo['NAME']
+        database_name = dbinfo["NAME"]
 
-        schema = options['schema']
+        schema = options["schema"]
 
-        if options['interactive']:
-            confirm = input("""
+        if options["interactive"]:
+            confirm = input(
+                """
 You have requested a database schema reset.
 This will IRREVERSIBLY DESTROY ALL data
 in the "{}" schema of database "{}".
 Are you sure you want to do this?
 
-Type 'yes' to continue, or 'no' to cancel: """.format(schema, database_name))
+Type 'yes' to continue, or 'no' to cancel: """.format(schema, database_name)
+            )
         else:
-            confirm = 'yes'
+            confirm = "yes"
 
-        if confirm != 'yes':
+        if confirm != "yes":
             print("Reset cancelled.")
             return
 

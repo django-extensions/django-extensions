@@ -32,13 +32,13 @@ class ActivatorModelTestCase(TestCase):
         post.delete()
 
     def test_active_is_chainable(self):
-        post = Post.objects.create(title='Foo', status=ActivatorModel.ACTIVE_STATUS)
-        specific_post = Post.objects.filter(title='Foo').active()
+        post = Post.objects.create(title="Foo", status=ActivatorModel.ACTIVE_STATUS)
+        specific_post = Post.objects.filter(title="Foo").active()
         self.assertIn(post, specific_post)
         post.delete()
 
     def test_inactive_is_chainable(self):
-        post = Post.objects.create(title='Foo', status=ActivatorModel.INACTIVE_STATUS)
-        specific_post = Post.objects.filter(title='Foo').inactive()
+        post = Post.objects.create(title="Foo", status=ActivatorModel.INACTIVE_STATUS)
+        specific_post = Post.objects.filter(title="Foo").inactive()
         self.assertIn(post, specific_post)
         post.delete()

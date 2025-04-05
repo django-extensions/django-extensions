@@ -3,7 +3,7 @@ from django_extensions.management.email_notifications import EmailNotificationCo
 
 
 class Command(EmailNotificationCommand):
-    help = 'Just for email_notifications testing purpose'
+    help = "Just for email_notifications testing purpose"
 
     def handle(self, *args, **kwargs):
         raise Exception()

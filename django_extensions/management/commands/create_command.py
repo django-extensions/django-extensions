@@ -11,7 +11,8 @@ from django_extensions.management.utils import _make_writeable, signalcommand
 
 
 class Command(AppCommand):
-    help = "Creates a Django management command directory structure for the given app name in the app's directory."
+    help = "Creates a Django management command directory structure for the given app "
+    "name in the app's directory."
 
     requires_system_checks: List[str] = []
     # Can't import settings during this command, because they haven't
@@ -21,24 +22,33 @@ class Command(AppCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--name', '-n', action='store', dest='command_name',
-            default='sample',
-            help='The name to use for the management command'
+            "--name",
+            "-n",
+            action="store",
+            dest="command_name",
+            default="sample",
+            help="The name to use for the management command",
         )
         parser.add_argument(
-            '--base', '-b', action='store', dest='base_command',
-            default='Base', help='The base class used for implementation of '
-            'this command. Should be one of Base, App, Label, or NoArgs'
+            "--base",
+            "-b",
+            action="store",
+            dest="base_command",
+            default="Base",
+            help="The base class used for implementation of "
+            "this command. Should be one of Base, App, Label, or NoArgs",
         )
         parser.add_argument(
-            '--dry-run', action='store_true', default=False,
-            help='Do not actually create any files'
+            "--dry-run",
+            action="store_true",
+            default=False,
+            help="Do not actually create any files",
         )
 
     @signalcommand
     def handle_app_config(self, args, **options):
         app = args
-        copy_template('command_template', app.path, **options)
+        copy_template("command_template", app.path, **options)
 
 
 def copy_template(template_name, copy_to, **options):
@@ -46,29 +56,36 @@ def copy_template(template_name, copy_to, **options):
     import django_extensions
 
     style = color_style()
-    ERROR = getattr(style, 'ERROR', lambda x: x)
-    SUCCESS = getattr(style, 'SUCCESS', lambda x: x)
+    ERROR = getattr(style, "ERROR", lambda x: x)
+    SUCCESS = getattr(style, "SUCCESS", lambda x: x)
 
-    command_name, base_command = options['command_name'], '%sCommand' % options['base_command']
-    dry_run = options['dry_run']
+    command_name, base_command = (
+        options["command_name"],
+        "%sCommand" % options["base_command"],
+    )
+    dry_run = options["dry_run"]
     verbosity = options["verbosity"]
 
-    template_dir = os.path.join(django_extensions.__path__[0], 'conf', template_name)
+    template_dir = os.path.join(django_extensions.__path__[0], "conf", template_name)
 
     # walk the template structure and copies it
     for d, subdirs, files in os.walk(template_dir):
-        relative_dir = d[len(template_dir) + 1:]
+        relative_dir = d[len(template_dir) + 1 :]
         if relative_dir and not os.path.exists(os.path.join(copy_to, relative_dir)):
             if not dry_run:
                 os.mkdir(os.path.join(copy_to, relative_dir))
         for i, subdir in enumerate(subdirs):
-            if subdir.startswith('.'):
+            if subdir.startswith("."):
                 del subdirs[i]
         for f in files:
-            if f.endswith(('.pyc', '.pyo')) or f.startswith(('.DS_Store', '__pycache__')):
+            if f.endswith((".pyc", ".pyo")) or f.startswith(
+                (".DS_Store", "__pycache__")
+            ):
                 continue
             path_old = os.path.join(d, f)
-            path_new = os.path.join(copy_to, relative_dir, f.replace('sample', command_name)).rstrip(".tmpl")
+            path_new = os.path.join(
+                copy_to, relative_dir, f.replace("sample", command_name)
+            ).rstrip(".tmpl")
             if os.path.exists(path_new):
                 path_new = os.path.join(copy_to, relative_dir, f).rstrip(".tmpl")
                 if os.path.exists(path_new):
@@ -77,16 +94,19 @@ def copy_template(template_name, copy_to, **options):
                     continue
             if verbosity > 1:
                 print(SUCCESS("%s" % path_new))
-            with open(path_old, 'r') as fp_orig:
+            with open(path_old, "r") as fp_orig:
                 data = fp_orig.read()
-                data = data.replace('{{ command_name }}', command_name)
-                data = data.replace('{{ base_command }}', base_command)
+                data = data.replace("{{ command_name }}", command_name)
+                data = data.replace("{{ base_command }}", base_command)
                 if not dry_run:
-                    with open(path_new, 'w') as fp_new:
+                    with open(path_new, "w") as fp_new:
                         fp_new.write(data)
             if not dry_run:
                 try:
                     shutil.copymode(path_old, path_new)
                     _make_writeable(path_new)
                 except OSError:
-                    sys.stderr.write("Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n" % path_new)
+                    sys.stderr.write(
+                        "Notice: Couldn't set permission bits on %s. You're probably using an uncommon filesystem setup. No problem.\n"  # noqa: E501
+                        % path_new
+                    )

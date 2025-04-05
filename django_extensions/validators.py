@@ -30,15 +30,15 @@ class NoControlCharactersValidator:
             if whitelist and character in whitelist:
                 continue
             if category(character)[0] == "C":
-                params = {'value': value, 'whitelist': whitelist}
+                params = {"value": value, "whitelist": whitelist}
                 raise ValidationError(self.message, code=self.code, params=params)
 
     def __eq__(self, other):
         return (
-            isinstance(other, NoControlCharactersValidator) and
-            (self.whitelist == other.whitelist) and
-            (self.message == other.message) and
-            (self.code == other.code)
+            isinstance(other, NoControlCharactersValidator)
+            and (self.whitelist == other.whitelist)
+            and (self.message == other.message)
+            and (self.code == other.code)
         )
 
 
@@ -56,55 +56,69 @@ class NoWhitespaceValidator:
     def __call__(self, value):
         value = force_str(value)
         if value != value.strip():
-            params = {'value': value}
+            params = {"value": value}
             raise ValidationError(self.message, code=self.code, params=params)
 
     def __eq__(self, other):
         return (
-            isinstance(other, NoWhitespaceValidator) and
-            (self.message == other.message) and
-            (self.code == other.code)
+            isinstance(other, NoWhitespaceValidator)
+            and (self.message == other.message)
+            and (self.code == other.code)
         )
 
 
 @deconstructible
 class HexValidator:
     messages = {
-        'invalid': _("Only a hex string is allowed."),
-        'length': _("Invalid length. Must be %(length)d characters."),
-        'min_length': _("Ensure that there are more than %(min)s characters."),
-        'max_length': _("Ensure that there are no more than %(max)s characters."),
+        "invalid": _("Only a hex string is allowed."),
+        "length": _("Invalid length. Must be %(length)d characters."),
+        "min_length": _("Ensure that there are more than %(min)s characters."),
+        "max_length": _("Ensure that there are no more than %(max)s characters."),
     }
     code = "hex_only"
 
-    def __init__(self, length=None, min_length=None, max_length=None, message=None, code=None):
+    def __init__(
+        self, length=None, min_length=None, max_length=None, message=None, code=None
+    ):
         self.length = length
         self.min_length = min_length
         self.max_length = max_length
         if message:
             self.message = message
         else:
-            self.message = self.messages['invalid']
+            self.message = self.messages["invalid"]
         if code:
             self.code = code
 
     def __call__(self, value):
         value = force_str(value)
         if self.length and len(value) != self.length:
-            raise ValidationError(self.messages['length'], code='hex_only_length', params={'length': self.length})
+            raise ValidationError(
+                self.messages["length"],
+                code="hex_only_length",
+                params={"length": self.length},
+            )
         if self.min_length and len(value) < self.min_length:
-            raise ValidationError(self.messages['min_length'], code='hex_only_min_length', params={'min': self.min_length})
+            raise ValidationError(
+                self.messages["min_length"],
+                code="hex_only_min_length",
+                params={"min": self.min_length},
+            )
         if self.max_length and len(value) > self.max_length:
-            raise ValidationError(self.messages['max_length'], code='hex_only_max_length', params={'max': self.max_length})
+            raise ValidationError(
+                self.messages["max_length"],
+                code="hex_only_max_length",
+                params={"max": self.max_length},
+            )
 
         try:
             binascii.unhexlify(value)
         except (TypeError, binascii.Error):
-            raise ValidationError(self.messages['invalid'], code='hex_only')
+            raise ValidationError(self.messages["invalid"], code="hex_only")
 
     def __eq__(self, other):
         return (
-            isinstance(other, HexValidator) and
-            (self.message == other.message) and
-            (self.code == other.code)
+            isinstance(other, HexValidator)
+            and (self.message == other.message)
+            and (self.code == other.code)
         )

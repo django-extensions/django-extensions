@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 
 
 class ModelUserFieldPermissionMixin(UserPassesTestMixin):
-    model_permission_user_field = 'user'
+    model_permission_user_field = "user"
 
     def get_model_permission_user_field(self):
         return self.model_permission_user_field

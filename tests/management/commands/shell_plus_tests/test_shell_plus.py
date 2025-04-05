@@ -13,10 +13,12 @@ from django_extensions.management.commands import shell_plus
 
 
 def test_shell_plus_command(capsys):
-    script = dedent('''\
+    script = dedent(
+        """\
         def _fn(x): return x * 2
         print([_fn(i) for i in range(10)])
-        ''')
+        """
+    )
     call_command("shell_plus", "--command=" + script)
     out, err = capsys.readouterr()
 
@@ -29,9 +31,15 @@ def test_shell_plus_print_sql(capsys):
     try:
         from django.db import connection
         from django.db.backends import utils
+
         CursorDebugWrapper = utils.CursorDebugWrapper
         force_debug_cursor = True if connection.force_debug_cursor else False
-        call_command("shell_plus", "--plain", "--print-sql", "--command=User.objects.all().exists()")
+        call_command(
+            "shell_plus",
+            "--plain",
+            "--print-sql",
+            "--command=User.objects.all().exists()",
+        )
     finally:
         utils.CursorDebugWrapper = CursorDebugWrapper
         connection.force_debug_cursor = force_debug_cursor
@@ -47,9 +55,16 @@ def test_shell_plus_print_sql_truncate(capsys):
     try:
         from django.db import connection
         from django.db.backends import utils
+
         CursorDebugWrapper = utils.CursorDebugWrapper
         force_debug_cursor = True if connection.force_debug_cursor else False
-        call_command("shell_plus", "--plain", "--print-sql", "--truncate-sql=0", "--command=User.objects.all().exists()")
+        call_command(
+            "shell_plus",
+            "--plain",
+            "--print-sql",
+            "--truncate-sql=0",
+            "--command=User.objects.all().exists()",
+        )
     finally:
         utils.CursorDebugWrapper = CursorDebugWrapper
         connection.force_debug_cursor = force_debug_cursor
@@ -61,9 +76,16 @@ def test_shell_plus_print_sql_truncate(capsys):
     try:
         from django.db import connection
         from django.db.backends import utils
+
         CursorDebugWrapper = utils.CursorDebugWrapper
         force_debug_cursor = True if connection.force_debug_cursor else False
-        call_command("shell_plus", "--plain", "--print-sql", "--truncate-sql=4", "--command=User.objects.all().exists()")
+        call_command(
+            "shell_plus",
+            "--plain",
+            "--print-sql",
+            "--truncate-sql=4",
+            "--command=User.objects.all().exists()",
+        )
     finally:
         utils.CursorDebugWrapper = CursorDebugWrapper
         connection.force_debug_cursor = force_debug_cursor
@@ -95,17 +117,19 @@ def test_shell_plus_plain_startup_with_pythonrc(monkeypatch):
     args = ["--plain", "--use-pythonrc"]
     options = parser.parse_args(args=args)
 
-    tests_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-    pythonrc_file = os.path.join(tests_dir, 'pythonrc.py')
+    tests_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    )
+    pythonrc_file = os.path.join(tests_dir, "pythonrc.py")
     assert os.path.isfile(pythonrc_file)
-    monkeypatch.setenv('PYTHONSTARTUP', pythonrc_file)
+    monkeypatch.setenv("PYTHONSTARTUP", pythonrc_file)
 
     retcode = command.handle(**vars(options))
     assert retcode == 130
 
     imported_objects = command.tests_imported_objects
-    assert 'pythonrc_test_func' in imported_objects
-    assert imported_objects['pythonrc_test_func']() == "pythonrc was loaded"
+    assert "pythonrc_test_func" in imported_objects
+    assert imported_objects["pythonrc_test_func"]() == "pythonrc was loaded"
 
 
 def test_shell_plus_plain_loading_standard_django_imports(monkeypatch):
@@ -120,9 +144,9 @@ def test_shell_plus_plain_loading_standard_django_imports(monkeypatch):
     assert retcode == 130
 
     imported_objects = command.tests_imported_objects
-    assert 'get_user_model' in imported_objects
-    assert 'settings' in imported_objects
-    assert 'timezone' in imported_objects
+    assert "get_user_model" in imported_objects
+    assert "settings" in imported_objects
+    assert "timezone" in imported_objects
 
 
 def test_shell_plus_plain_loading_django_extensions_modules(monkeypatch):
@@ -137,15 +161,18 @@ def test_shell_plus_plain_loading_django_extensions_modules(monkeypatch):
     assert retcode == 130
 
     imported_objects = command.tests_imported_objects
-    assert 'Club' in imported_objects
-    assert 'UniqueTestAppModel' in imported_objects
-    assert 'RandomCharTestModel' in imported_objects
+    assert "Club" in imported_objects
+    assert "UniqueTestAppModel" in imported_objects
+    assert "RandomCharTestModel" in imported_objects
 
 
 def assert_should_models_be_imported(should_be, cli_arguments=None):
     command = shell_plus.Command()
     objs = command.get_imported_objects(cli_arguments or {})
-    imported_models = filter(lambda imported: inspect.isclass(imported) and issubclass(imported, Model), objs.values())
+    imported_models = filter(
+        lambda imported: inspect.isclass(imported) and issubclass(imported, Model),
+        objs.values(),
+    )
     assert bool(list(imported_models)) == should_be
 
 
@@ -154,9 +181,9 @@ def test_shell_plus_loading_models():
 
 
 def test_shell_plus_skipping_models_import_cli():
-    assert_should_models_be_imported(False, cli_arguments={'dont_load': ['*']})
+    assert_should_models_be_imported(False, cli_arguments={"dont_load": ["*"]})
 
 
-@override_settings(SHELL_PLUS_DONT_LOAD=['*'])
+@override_settings(SHELL_PLUS_DONT_LOAD=["*"])
 def test_shell_plus_skipping_models_import_settings():
     assert_should_models_be_imported(False)
