@@ -50,7 +50,42 @@ version = { attr = "django_extensions.__version__" }
 
 [tool.ruff]
 line-length = 88
-lint.ignore = [ "E731" ]
+indent-width = 4
+
+[tool.ruff.lint]
+ignore = [ "E731" ]
+select = [
+  # "ANN", # flake8-annotations
+  # "ARG", # flake8-arguments
+  # "B",   # flake8-bugbear
+  # "C4",  # flake8-comprehensions
+  # "C90", # mccabe complexity
+  # "D",   # pydocstyle
+  # "DJ",  # flake8-django
+  # "DTZ", # flake8-datetimez
+  "E",   # pycodestyle
+  # "EM",  # flake8-errmsg
+  "F",   # flake8
+  # "G",   # flake8-logging-format
+  # "I",   # isort
+  # "ISC", # flake8-implicit-str-concat
+  # "LOG", # flake8-logging
+  # "N",   # pep8-naming
+  # "PIE", # flake8-pie
+  # "PT",  # flake8-pytest-style
+  # "PTH", # flake8-use-pathlib
+  # "RET", # flake8-return
+  # "RUF", # ruff-specific rules
+  # "Q",   # flake8-quotes
+  # "SIM", # flake8-simplify
+  # "T10", # flake8-print
+  # "TCH", # flake8-type-checking
+  # "TRY", # tryceratops
+  # "UP",  # pyupgrade
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/test_*.py" = [ "E501" ]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
