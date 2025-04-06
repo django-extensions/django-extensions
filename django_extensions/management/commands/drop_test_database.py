@@ -22,68 +22,104 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--noinput', '--no-input', action='store_false', dest='interactive',
-            default=True, help='Tells Django to NOT prompt the user for input of any kind.'
+            "--noinput",
+            "--no-input",
+            action="store_false",
+            dest="interactive",
+            default=True,
+            help="Tells Django to NOT prompt the user for input of any kind.",
         )
         parser.add_argument(
-            '-U', '--user', action='store', dest='user', default=None,
-            help='Use another user for the database then defined in settings.py'
+            "-U",
+            "--user",
+            action="store",
+            dest="user",
+            default=None,
+            help="Use another user for the database then defined in settings.py",
         )
         parser.add_argument(
-            '-P', '--password', action='store', dest='password', default=None,
-            help='Use another password for the database then defined in settings.py'
+            "-P",
+            "--password",
+            action="store",
+            dest="password",
+            default=None,
+            help="Use another password for the database then defined in settings.py",
         )
         parser.add_argument(
-            '-D', '--dbname', action='store', dest='dbname', default=None,
-            help='Use another database name then defined in settings.py'
+            "-D",
+            "--dbname",
+            action="store",
+            dest="dbname",
+            default=None,
+            help="Use another database name then defined in settings.py",
         )
         parser.add_argument(
-            '-R', '--router', action='store', dest='router', default=DEFAULT_DB_ALIAS,
-            help='Use this router-database other then defined in settings.py'
+            "-R",
+            "--router",
+            action="store",
+            dest="router",
+            default=DEFAULT_DB_ALIAS,
+            help="Use this router-database other then defined in settings.py",
         )
         parser.add_argument(
-            '--database', default=DEFAULT_DB_ALIAS,
-            help='Nominates a database to run command for. Defaults to the "%s" database.' % DEFAULT_DB_ALIAS,
+            "--database",
+            default=DEFAULT_DB_ALIAS,
+            help=(
+                "Nominates a database to run command for. "
+                'Defaults to the "%s" database.'
+            )
+            % DEFAULT_DB_ALIAS,
         )
 
     @signalcommand
     def handle(self, *args, **options):
         """Drop test database for this project."""
-        database = options['database']
-        if options['router'] != DEFAULT_DB_ALIAS:
-            warnings.warn("--router is deprecated. You should use --database.", RemovedInNextVersionWarning, stacklevel=2)
-            database = options['router']
+        database = options["database"]
+        if options["router"] != DEFAULT_DB_ALIAS:
+            warnings.warn(
+                "--router is deprecated. You should use --database.",
+                RemovedInNextVersionWarning,
+                stacklevel=2,
+            )
+            database = options["router"]
 
         dbinfo = settings.DATABASES.get(database)
         if dbinfo is None:
             raise CommandError("Unknown database %s" % database)
 
-        engine = dbinfo.get('ENGINE')
+        engine = dbinfo.get("ENGINE")
 
-        user = password = database_name = database_host = database_port = ''
-        if engine == 'mysql':
-            (user, password, database_name, database_host, database_port) = parse_mysql_cnf(dbinfo)
+        user = password = database_name = database_host = database_port = ""
+        if engine == "mysql":
+            (user, password, database_name, database_host, database_port) = (
+                parse_mysql_cnf(dbinfo)
+            )
 
-        user = options['user'] or dbinfo.get('USER') or user
-        password = options['password'] or dbinfo.get('PASSWORD') or password
+        user = options["user"] or dbinfo.get("USER") or user
+        password = options["password"] or dbinfo.get("PASSWORD") or password
 
         try:
-            database_name = dbinfo['TEST']['NAME']
+            database_name = dbinfo["TEST"]["NAME"]
         except KeyError:
             database_name = None
 
         if database_name is None:
-            database_name = TEST_DATABASE_PREFIX + (options['dbname'] or dbinfo.get('NAME'))
+            database_name = TEST_DATABASE_PREFIX + (
+                options["dbname"] or dbinfo.get("NAME")
+            )
 
-        if database_name is None or database_name == '':
-            raise CommandError("You need to specify DATABASE_NAME in your Django settings file.")
+        if database_name is None or database_name == "":
+            raise CommandError(
+                "You need to specify DATABASE_NAME in your Django settings file."
+            )
 
-        database_host = dbinfo.get('HOST') or database_host
-        database_port = dbinfo.get('PORT') or database_port
+        database_host = dbinfo.get("HOST") or database_host
+        database_port = dbinfo.get("PORT") or database_port
 
         verbosity = options["verbosity"]
-        if options['interactive']:
-            confirm = input("""
+        if options["interactive"]:
+            confirm = input(
+                """
 You have requested to drop all test databases.
 This will IRREVERSIBLY DESTROY
 ALL data in the database "{db_name}"
@@ -92,11 +128,12 @@ the "--parallel" flag (these are sequentially
 named "{db_name}_1", "{db_name}_2", etc.).
 Are you sure you want to do this?
 
-Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
+Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name)
+            )
         else:
-            confirm = 'yes'
+            confirm = "yes"
 
-        if confirm != 'yes':
+        if confirm != "yes":
             print("Reset cancelled.")
             return
 
@@ -128,7 +165,7 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
                 # replicated here. If fixed in Django, this code should be
                 # updated accordingly.
                 # Reference: https://code.djangoproject.com/ticket/32582
-                return '{}_{}.{}'.format(filename, number, ext)
+                return "{}_{}.{}".format(filename, number, ext)
 
             try:
                 for db_name in get_database_names(format_filename):
@@ -141,29 +178,31 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
 
         elif engine in MYSQL_ENGINES:
             import MySQLdb as Database
+
             kwargs = {
-                'user': user,
-                'passwd': password,
+                "user": user,
+                "passwd": password,
             }
-            if database_host.startswith('/'):
-                kwargs['unix_socket'] = database_host
+            if database_host.startswith("/"):
+                kwargs["unix_socket"] = database_host
             else:
-                kwargs['host'] = database_host
+                kwargs["host"] = database_host
 
             if database_port:
-                kwargs['port'] = int(database_port)
+                kwargs["port"] = int(database_port)
 
             connection = Database.connect(**kwargs)
             cursor = connection.cursor()
 
-            for db_name in get_database_names('{}_{}'.format):
-                exists_query = \
-                    "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='%s';" \
-                    % db_name
+            for db_name in get_database_names("{}_{}".format):
+                exists_query = (
+                    "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA "
+                    "WHERE SCHEMA_NAME='%s';" % db_name
+                )
                 row_count = cursor.execute(exists_query)
                 if row_count < 1:
                     break
-                drop_query = 'DROP DATABASE IF EXISTS `%s`' % db_name
+                drop_query = "DROP DATABASE IF EXISTS `%s`" % db_name
                 logging.info('Executing: "' + drop_query + '"')
                 cursor.execute(drop_query)
 
@@ -174,15 +213,15 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
             else:
                 import psycopg2 as Database  # NOQA
 
-            conn_params = {'dbname': 'template1'}
+            conn_params = {"dbname": "template1"}
             if user:
-                conn_params['user'] = user
+                conn_params["user"] = user
             if password:
-                conn_params['password'] = password
+                conn_params["password"] = password
             if database_host:
-                conn_params['host'] = database_host
+                conn_params["host"] = database_host
             if database_port:
-                conn_params['port'] = database_port
+                conn_params["port"] = database_port
 
             connection = Database.connect(**conn_params)
             if has_psycopg3:
@@ -191,16 +230,18 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
                 connection.set_isolation_level(0)  # autocommit false
             cursor = connection.cursor()
 
-            for db_name in get_database_names('{}_{}'.format):
-                exists_query = "SELECT datname FROM pg_catalog.pg_database WHERE datname='%s';" \
+            for db_name in get_database_names("{}_{}".format):
+                exists_query = (
+                    "SELECT datname FROM pg_catalog.pg_database WHERE datname='%s';"
                     % db_name
+                )
                 try:
                     cursor.execute(exists_query)
-                    # NOTE: Unlike MySQLdb, the psycopg2 cursor does not return the row count
-                    # however both cursors provide it as a property
+                    # NOTE: Unlike MySQLdb, the psycopg2 cursor does not return the row
+                    # count however both cursors provide it as a property
                     if cursor.rowcount < 1:
                         break
-                    drop_query = "DROP DATABASE IF EXISTS \"%s\";" % db_name
+                    drop_query = 'DROP DATABASE IF EXISTS "%s";' % db_name
                     logging.info('Executing: "' + drop_query + '"')
                     cursor.execute(drop_query)
                 except Database.ProgrammingError as e:
@@ -209,5 +250,5 @@ Type 'yes' to continue, or 'no' to cancel: """.format(db_name=database_name))
         else:
             raise CommandError("Unknown database engine %s" % engine)
 
-        if verbosity >= 2 or options['interactive']:
+        if verbosity >= 2 or options["interactive"]:
             print("Reset successful.")

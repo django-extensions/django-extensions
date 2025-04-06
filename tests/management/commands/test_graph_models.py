@@ -39,21 +39,27 @@ class GraphModelsOutputTests(TestCase):
     def test_graph_models_no_output_options(self):
         # Given no output-related options, default to output a Dotfile
         stdout = StringIO()
-        call_command('graph_models', all_applications=True, stdout=stdout)
+        call_command("graph_models", all_applications=True, stdout=stdout)
         assert_looks_like_dotfile(stdout.getvalue())
 
     def test_graph_models_dot_option_to_stdout(self):
         # --dot set but --output not set
         stdout = StringIO()
-        call_command('graph_models', all_applications=True, dot=True, stdout=stdout)
+        call_command("graph_models", all_applications=True, dot=True, stdout=stdout)
         assert_looks_like_dotfile(stdout.getvalue())
 
     def test_graph_models_dot_option_to_file(self):
         # --dot set and --output set
         stdout = StringIO()
         with temp_output_file(".dot") as tmpfname:
-            call_command('graph_models', all_applications=True, dot=True, output=tmpfname, stdout=stdout)
-            with open(tmpfname, 'r') as outfile:
+            call_command(
+                "graph_models",
+                all_applications=True,
+                dot=True,
+                output=tmpfname,
+                stdout=stdout,
+            )
+            with open(tmpfname, "r") as outfile:
                 foutput = outfile.read()
         assert_looks_like_dotfile(foutput)
         assert stdout.getvalue() == ""
@@ -62,8 +68,10 @@ class GraphModelsOutputTests(TestCase):
         # --dot not set and --output set
         stdout = StringIO()
         with temp_output_file(".dot") as tmpfname:
-            call_command('graph_models', all_applications=True, output=tmpfname, stdout=stdout)
-            with open(tmpfname, 'r') as outfile:
+            call_command(
+                "graph_models", all_applications=True, output=tmpfname, stdout=stdout
+            )
+            with open(tmpfname, "r") as outfile:
                 foutput = outfile.read()
         assert_looks_like_dotfile(foutput)
         assert stdout.getvalue() == ""
@@ -73,8 +81,14 @@ class GraphModelsOutputTests(TestCase):
         # assert that --dot option trumps .json file extension
         stdout = StringIO()
         with temp_output_file(".json") as tmpfname:
-            call_command('graph_models', all_applications=True, dot=True, output=tmpfname, stdout=stdout)
-            with open(tmpfname, 'r') as outfile:
+            call_command(
+                "graph_models",
+                all_applications=True,
+                dot=True,
+                output=tmpfname,
+                stdout=stdout,
+            )
+            with open(tmpfname, "r") as outfile:
                 foutput = outfile.read()
         assert_looks_like_dotfile(foutput)
         assert stdout.getvalue() == ""
@@ -82,7 +96,7 @@ class GraphModelsOutputTests(TestCase):
     def test_graph_models_json_option_to_stdout(self):
         # --json set but --output not set
         out = StringIO()
-        call_command('graph_models', all_applications=True, json=True, stdout=out)
+        call_command("graph_models", all_applications=True, json=True, stdout=out)
         output = out.getvalue()
         assert_looks_like_jsonfile(output)
 
@@ -90,8 +104,14 @@ class GraphModelsOutputTests(TestCase):
         # --dot set and --output set
         stdout = StringIO()
         with temp_output_file(".json") as tmpfname:
-            call_command('graph_models', all_applications=True, json=True, output=tmpfname, stdout=stdout)
-            with open(tmpfname, 'r') as outfile:
+            call_command(
+                "graph_models",
+                all_applications=True,
+                json=True,
+                output=tmpfname,
+                stdout=stdout,
+            )
+            with open(tmpfname, "r") as outfile:
                 foutput = outfile.read()
         assert_looks_like_jsonfile(foutput)
         assert stdout.getvalue() == ""
@@ -99,29 +119,41 @@ class GraphModelsOutputTests(TestCase):
     def test_graph_models_pydot_without_file(self):
         # use of --pydot requires specifying output file
         with self.assertRaises(CommandError):
-            call_command('graph_models', all_applications=True, pydot=True)
+            call_command("graph_models", all_applications=True, pydot=True)
 
     def test_graph_models_pygraphviz_without_file(self):
         # use of --pygraphviz requires specifying output file
         with self.assertRaises(CommandError):
-            call_command('graph_models', all_applications=True, pygraphviz=True)
+            call_command("graph_models", all_applications=True, pygraphviz=True)
 
     def test_graph_models_relation_fields_only(self):
         # use of --relation-fields-only ignores all non-relation-fields
         stdout = StringIO()
-        call_command('graph_models', all_applications=True, stdout=stdout, json=True)
+        call_command("graph_models", all_applications=True, stdout=stdout, json=True)
         with_no_flag = json.loads(stdout.getvalue())
 
         stdout = StringIO()
-        call_command('graph_models', all_applications=True, relation_fields_only=True, stdout=stdout, json=True)
+        call_command(
+            "graph_models",
+            all_applications=True,
+            relation_fields_only=True,
+            stdout=stdout,
+            json=True,
+        )
         with_flag = json.loads(stdout.getvalue())
 
         # delete all entries for fields that do not display relations
         for graph_idx, graph in reversed(list(enumerate(with_no_flag["graphs"]))):
             for model_idx, model in reversed(list(enumerate(graph["models"]))):
                 for field_idx, field in reversed(list(enumerate(model["fields"]))):
-                    if field["type"] not in ["ForeignKey (id)", "AutoField", "OneToOneField (id)"] and not field["primary_key"]:
-                        del with_no_flag["graphs"][graph_idx]["models"][model_idx]["fields"][field_idx]
+                    if (
+                        field["type"]
+                        not in ["ForeignKey (id)", "AutoField", "OneToOneField (id)"]
+                        and not field["primary_key"]
+                    ):
+                        del with_no_flag["graphs"][graph_idx]["models"][model_idx][
+                            "fields"
+                        ][field_idx]
 
         # assert that manually deleting all non-relation-fields is same as using the flag
         self.assertEqual(with_no_flag, with_flag)
@@ -130,51 +162,57 @@ class GraphModelsOutputTests(TestCase):
 def test_disable_abstract_fields_not_active():
     out = StringIO()
     call_command(
-        'graph_models',
-        'django_extensions',
-        include_models=['AbstractInheritanceTestModelChild'],
+        "graph_models",
+        "django_extensions",
+        include_models=["AbstractInheritanceTestModelChild"],
         disable_abstract_fields=False,
         stdout=out,
     )
 
     output = out.getvalue()
-    assert 'my_field_that_my_child_will_inherit' in output
+    assert "my_field_that_my_child_will_inherit" in output
 
 
 def test_disable_abstract_fields_active():
     out = StringIO()
     call_command(
-        'graph_models',
-        'django_extensions',
-        include_models=['AbstractInheritanceTestModelChild'],
+        "graph_models",
+        "django_extensions",
+        include_models=["AbstractInheritanceTestModelChild"],
         disable_abstract_fields=True,
         stdout=out,
     )
 
     output = out.getvalue()
-    assert 'my_field_that_my_child_will_inherit' not in output
+    assert "my_field_that_my_child_will_inherit" not in output
 
 
 def test_exclude_models_hides_relationships():
-    """ Expose bug #1229 where excluded models appear in relationships.
+    """Expose bug #1229 where excluded models appear in relationships.
 
     They are replaced with an underscore, but the relationship is still there.
     """
     out = StringIO()
     call_command(
-        'graph_models',
-        'django_extensions',
-        exclude_models=['Personality', 'Note'],
+        "graph_models",
+        "django_extensions",
+        exclude_models=["Personality", "Note"],
         stdout=out,
     )
 
     output = out.getvalue()
-    assert 'tests_testapp_models_Person -> tests_testapp_models_Name' in output
-    assert 'tests_testapp_models_Person -> _' not in output
+    assert "tests_testapp_models_Person -> tests_testapp_models_Name" in output
+    assert "tests_testapp_models_Person -> _" not in output
 
 
 def test_hide_edge_labels():
     out = StringIO()
-    call_command('graph_models', 'django_extensions', all_applications=True, hide_edge_labels=True, stdout=out)
+    call_command(
+        "graph_models",
+        "django_extensions",
+        all_applications=True,
+        hide_edge_labels=True,
+        stdout=out,
+    )
     output = out.getvalue()
     assert not re.search(r'\[label=\"[a-zA-Z]+"\]', output)

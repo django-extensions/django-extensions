@@ -26,7 +26,9 @@ class ModificationDatetimeFieldTest(TestCase):
         self.assertNotEqual(m.custom_modified, current_updated_time)
 
     def test_disabled_update_modification_field(self):
-        m = DisabledUpdateModelModificationDateTimeField.objects.create(modified=datetime.now())
+        m = DisabledUpdateModelModificationDateTimeField.objects.create(
+            modified=datetime.now()
+        )
         current_updated_time = m.modified
         m.field_to_update = False
         m.save()

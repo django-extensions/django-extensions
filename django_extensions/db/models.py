@@ -3,7 +3,11 @@ from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
-from django_extensions.db.fields import AutoSlugField, CreationDateTimeField, ModificationDateTimeField
+from django_extensions.db.fields import (
+    AutoSlugField,
+    CreationDateTimeField,
+    ModificationDateTimeField,
+)
 
 
 class TimeStampedModel(models.Model):
@@ -14,15 +18,17 @@ class TimeStampedModel(models.Model):
     "modified" fields.
     """
 
-    created = CreationDateTimeField(_('created'))
-    modified = ModificationDateTimeField(_('modified'))
+    created = CreationDateTimeField(_("created"))
+    modified = ModificationDateTimeField(_("modified"))
 
     def save(self, **kwargs):
-        self.update_modified = kwargs.pop('update_modified', getattr(self, 'update_modified', True))
+        self.update_modified = kwargs.pop(
+            "update_modified", getattr(self, "update_modified", True)
+        )
         super().save(**kwargs)
 
     class Meta:
-        get_latest_by = 'modified'
+        get_latest_by = "modified"
         abstract = True
 
 
@@ -33,8 +39,8 @@ class TitleDescriptionModel(models.Model):
     An abstract base class model that provides title and description fields.
     """
 
-    title = models.CharField(_('title'), max_length=255)
-    description = models.TextField(_('description'), blank=True, null=True)
+    title = models.CharField(_("title"), max_length=255)
+    description = models.TextField(_("description"), blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -55,7 +61,7 @@ class TitleSlugDescriptionModel(TitleDescriptionModel):
         See :py:class:`AutoSlugField` for more details.
     """
 
-    slug = AutoSlugField(_('slug'), populate_from='title')
+    slug = AutoSlugField(_("slug"), populate_from="title")
 
     class Meta:
         abstract = True
@@ -69,11 +75,11 @@ class ActivatorQuerySet(models.query.QuerySet):
     """
 
     def active(self):
-        """ Return active query set """
+        """Return active query set"""
         return self.filter(status=ActivatorModel.ACTIVE_STATUS)
 
     def inactive(self):
-        """ Return inactive query set """
+        """Return inactive query set"""
         return self.filter(status=ActivatorModel.INACTIVE_STATUS)
 
 
@@ -81,11 +87,12 @@ class ActivatorModelManager(models.Manager):
     """
     ActivatorModelManager
 
-    Manager to return instances of ActivatorModel: SomeModel.objects.active() / .inactive()
+    Manager to return instances of ActivatorModel:
+        SomeModel.objects.active() / .inactive()
     """
 
     def get_queryset(self):
-        """ Use ActivatorQuerySet for all results """
+        """Use ActivatorQuerySet for all results"""
         return ActivatorQuerySet(model=self.model, using=self._db)
 
     def active(self):
@@ -116,16 +123,25 @@ class ActivatorModel(models.Model):
     ACTIVE_STATUS = 1
 
     STATUS_CHOICES = (
-        (INACTIVE_STATUS, _('Inactive')),
-        (ACTIVE_STATUS, _('Active')),
+        (INACTIVE_STATUS, _("Inactive")),
+        (ACTIVE_STATUS, _("Active")),
     )
-    status = models.IntegerField(_('status'), choices=STATUS_CHOICES, default=ACTIVE_STATUS)
-    activate_date = models.DateTimeField(blank=True, null=True, help_text=_('keep empty for an immediate activation'))
-    deactivate_date = models.DateTimeField(blank=True, null=True, help_text=_('keep empty for indefinite activation'))
+    status = models.IntegerField(
+        _("status"), choices=STATUS_CHOICES, default=ACTIVE_STATUS
+    )
+    activate_date = models.DateTimeField(
+        blank=True, null=True, help_text=_("keep empty for an immediate activation")
+    )
+    deactivate_date = models.DateTimeField(
+        blank=True, null=True, help_text=_("keep empty for indefinite activation")
+    )
     objects = ActivatorModelManager()
 
     class Meta:
-        ordering = ('status', '-activate_date',)
+        ordering = (
+            "status",
+            "-activate_date",
+        )
         abstract = True
 
     def save(self, *args, **kwargs):

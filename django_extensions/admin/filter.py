@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class NullFieldListFilter(FieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
-        self.lookup_kwarg = '{0}__isnull'.format(field_path)
+        self.lookup_kwarg = "{0}__isnull".format(field_path)
         super().__init__(field, request, params, model, model_admin, field_path)
         lookup_choices = self.lookups(request, model_admin)
         self.lookup_choices = () if lookup_choices is None else list(lookup_choices)
@@ -19,23 +19,27 @@ class NullFieldListFilter(FieldListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('1', _('Yes')),
-            ('0', _('No')),
+            ("1", _("Yes")),
+            ("0", _("No")),
         )
 
     def choices(self, cl):
         yield {
-            'selected': self.value() is None,
-            'query_string': cl.get_query_string({}, [self.lookup_kwarg]),
-            'display': _('All'),
+            "selected": self.value() is None,
+            "query_string": cl.get_query_string({}, [self.lookup_kwarg]),
+            "display": _("All"),
         }
         for lookup, title in self.lookup_choices:
             yield {
-                'selected': self.value() == prepare_lookup_value(self.lookup_kwarg, lookup),
-                'query_string': cl.get_query_string({
-                    self.lookup_kwarg: lookup,
-                }, []),
-                'display': title,
+                "selected": self.value()
+                == prepare_lookup_value(self.lookup_kwarg, lookup),
+                "query_string": cl.get_query_string(
+                    {
+                        self.lookup_kwarg: lookup,
+                    },
+                    [],
+                ),
+                "display": title,
             }
 
     def queryset(self, request, queryset):
@@ -48,6 +52,6 @@ class NullFieldListFilter(FieldListFilter):
 class NotNullFieldListFilter(NullFieldListFilter):
     def lookups(self, request, model_admin):
         return (
-            ('0', _('Yes')),
-            ('1', _('No')),
+            ("0", _("Yes")),
+            ("1", _("No")),
         )

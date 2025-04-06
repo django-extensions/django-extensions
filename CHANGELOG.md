@@ -3,7 +3,29 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
-3.2.2
+3.2.4
+-----
+
+Changes:
+
+- Improvement: Support for Python 3.12 and 3.13
+- Improvement: Support for Django 5.x
+- Improvement: Switch from setup.{cfg,py} to pyproject.toml
+- Improvement: graph_models, Add option to display field choices in graph_models (#1854)
+- Improvement: graph_models, Add webp support (#1857)
+- Improvement: graph_models, Support for ordering edges on pydot/dot/graphviz (#1914)
+- Improvement: mail_debug, Update mail_debug command to use aiosmtpd (#1880)
+- Improvement: shell_plus, Improve error message for missing import (#1898)
+- Improvement: reset_db, Add reset_db support for django_tenants (#1855)
+- Improvement: docs, various improvements (#1852, #1888, #1882, #1901, #1912, #1913)
+- Improvement: jobs, Handle non-package modules when looking for job definitions (#1887)
+- Improvement: Add django-prometheus DB backends support (#1800)
+- Improvement: Call post_command when the command raises an unhandled exception (#1837)
+- Fix: sqldiff, do not consider ('serial', 'integer') nor ('bigserial', 'bigint') as a `field-type-differ` (#1867)
+- Fix: shell_plus, Fix start up order and add history (#1869)
+- Remove pipchecker and associated tests (#1906)
+
+3.2.3
 -----
 
 Changes:

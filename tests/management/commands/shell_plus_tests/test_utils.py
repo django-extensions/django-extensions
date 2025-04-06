@@ -33,7 +33,9 @@ class AutomaticShellPlusImportsTestCase(TestCase):
         :param model_class: class to assert availability.
         :param names_under_model_is_available: names under which class should be available.
         """
-        self.assertSetEqual(self.get_all_names_for_class(model_class), names_under_model_is_available)
+        self.assertSetEqual(
+            self.get_all_names_for_class(model_class), names_under_model_is_available
+        )
         imports_output = self.output.split("from ")
         for line in imports_output:
             if line.startswith(model_class.__module__):
@@ -43,7 +45,7 @@ class AutomaticShellPlusImportsTestCase(TestCase):
                         expected_output = name
                     else:
                         expected_output = "%s (as %s)" % (model_class.__name__, name)
-                    line = line.replace(expected_output, '', 1)
+                    line = line.replace(expected_output, "", 1)
                 self.assertNotIn(line, model_class.__name__)
 
     def run_shell_plus(self):

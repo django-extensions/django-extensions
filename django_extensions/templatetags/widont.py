@@ -6,8 +6,11 @@ from django.utils.encoding import force_str
 
 
 register = Library()
-re_widont = re.compile(r'\s+(\S+\s*)$')
-re_widont_html = re.compile(r'([^<>\s])\s+([^<>\s]+\s*)(</?(?:address|blockquote|br|dd|div|dt|fieldset|form|h[1-6]|li|noscript|p|td|th)[^>]*>|$)', re.IGNORECASE)
+re_widont = re.compile(r"\s+(\S+\s*)$")
+re_widont_html = re.compile(
+    r"([^<>\s])\s+([^<>\s]+\s*)(</?(?:address|blockquote|br|dd|div|dt|fieldset|form|h[1-6]|li|noscript|p|td|th)[^>]*>|$)",
+    re.IGNORECASE,
+)
 
 
 @register.filter
@@ -27,8 +30,10 @@ def widont(value, count=1):
     >>> print(widont('NoEffect'))
     NoEffect
     """
+
     def replace(matchobj):
-        return force_str('&nbsp;%s' % matchobj.group(1))
+        return force_str("&nbsp;%s" % matchobj.group(1))
+
     for i in range(count):
         value = re_widont.sub(replace, force_str(value))
     return value
@@ -51,14 +56,19 @@ def widont_html(value):
 
     >>> print(widont_html('leading text  <p>test me out</p>  trailing text'))
     leading&nbsp;text  <p>test me&nbsp;out</p>  trailing&nbsp;text
-    """
+    """  # noqa: E501
+
     def replace(matchobj):
-        return force_str('%s&nbsp;%s%s' % matchobj.groups())
+        return force_str("%s&nbsp;%s%s" % matchobj.groups())
+
     return re_widont_html.sub(replace, force_str(value))
 
 
 if __name__ == "__main__":
+
     def _test():
         import doctest
+
         doctest.testmod()
+
     _test()

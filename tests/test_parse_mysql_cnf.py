@@ -24,44 +24,53 @@ class ParseMysqlCnfTests(TestCase):
 
         result = parse_mysql_cnf(dbinfo)
 
-        self.assertEqual(result, ('', '', '', '', ''))
+        self.assertEqual(result, ("", "", "", "", ""))
 
     def test_should_parse_my_cnf_and_retun_connection_settings(self):
-        my_cnf_path = os.path.join(self.tmpdir, 'my.cnf')
-        with open(my_cnf_path, 'w') as f:
-            f.write("""[client]
+        my_cnf_path = os.path.join(self.tmpdir, "my.cnf")
+        with open(my_cnf_path, "w") as f:
+            f.write(
+                """[client]
 database = test_name
 user = test_user
 password = test_password
 host = localhost
 port = 3306
 socket = /var/lib/mysqld/mysql.sock
-""")
+"""
+            )
 
         dbinfo = {
-            'ENGINE': 'django.db.backends.mysql',
-            'OPTIONS': {
-                'read_default_file': my_cnf_path,
-            }
+            "ENGINE": "django.db.backends.mysql",
+            "OPTIONS": {
+                "read_default_file": my_cnf_path,
+            },
         }
 
         result = parse_mysql_cnf(dbinfo)
 
-        self.assertEqual(result,
-                         ('test_user', 'test_password', 'test_name',
-                          '/var/lib/mysqld/mysql.sock', '3306'))
+        self.assertEqual(
+            result,
+            (
+                "test_user",
+                "test_password",
+                "test_name",
+                "/var/lib/mysqld/mysql.sock",
+                "3306",
+            ),
+        )
 
     def test_should_return_empty_strings_if_NoSectionError_exception_occured(self):
-        my_cnf_path = os.path.join(self.tmpdir, 'my.cnf')
-        with open(my_cnf_path, 'w') as f:
+        my_cnf_path = os.path.join(self.tmpdir, "my.cnf")
+        with open(my_cnf_path, "w") as f:
             f.write("")
 
         dbinfo = {
-            'ENGINE': 'django.db.backends.mysql',
-            'OPTIONS': {
-                'read_default_file': my_cnf_path,
-            }
+            "ENGINE": "django.db.backends.mysql",
+            "OPTIONS": {
+                "read_default_file": my_cnf_path,
+            },
         }
         result = parse_mysql_cnf(dbinfo)
 
-        self.assertEqual(result, ('', '', '', '', ''))
+        self.assertEqual(result, ("", "", "", "", ""))

@@ -11,15 +11,25 @@ from django_extensions.settings import DEFAULT_PRINT_SQL_TRUNCATE_CHARS
 
 
 @contextmanager
-def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, truncate=None, logger=print, confprefix="DJANGO_EXTENSIONS"):
+def monkey_patch_cursordebugwrapper(
+    print_sql=None,
+    print_sql_location=False,
+    truncate=None,
+    logger=print,
+    confprefix="DJANGO_EXTENSIONS",
+):
     if not print_sql:
         yield
     else:
         if truncate is None:
-            truncate = getattr(settings, '%s_PRINT_SQL_TRUNCATE' % confprefix, DEFAULT_PRINT_SQL_TRUNCATE_CHARS)
+            truncate = getattr(
+                settings,
+                "%s_PRINT_SQL_TRUNCATE" % confprefix,
+                DEFAULT_PRINT_SQL_TRUNCATE_CHARS,
+            )
 
         sqlparse = None
-        if getattr(settings, '%s_SQLPARSE_ENABLED' % confprefix, True):
+        if getattr(settings, "%s_SQLPARSE_ENABLED" % confprefix, True):
             try:
                 import sqlparse
 
@@ -27,18 +37,28 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
                     reindent_aligned=True,
                     truncate_strings=500,
                 )
-                sqlparse_format_kwargs = getattr(settings, '%s_SQLPARSE_FORMAT_KWARGS' % confprefix, sqlparse_format_kwargs_defaults)
+                sqlparse_format_kwargs = getattr(
+                    settings,
+                    "%s_SQLPARSE_FORMAT_KWARGS" % confprefix,
+                    sqlparse_format_kwargs_defaults,
+                )
             except ImportError:
                 sqlparse = None
 
         pygments = None
-        if getattr(settings, '%s_PYGMENTS_ENABLED' % confprefix, True):
+        if getattr(settings, "%s_PYGMENTS_ENABLED" % confprefix, True):
             try:
                 import pygments.lexers
                 import pygments.formatters
 
-                pygments_formatter = getattr(settings, '%s_PYGMENTS_FORMATTER' % confprefix, pygments.formatters.TerminalFormatter)
-                pygments_formatter_kwargs = getattr(settings, '%s_PYGMENTS_FORMATTER_KWARGS' % confprefix, {})
+                pygments_formatter = getattr(
+                    settings,
+                    "%s_PYGMENTS_FORMATTER" % confprefix,
+                    pygments.formatters.TerminalFormatter,
+                )
+                pygments_formatter_kwargs = getattr(
+                    settings, "%s_PYGMENTS_FORMATTER_KWARGS" % confprefix, {}
+                )
             except ImportError:
                 pass
 
@@ -64,10 +84,13 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
                         )
 
                     logger(raw_sql)
-                    logger("Execution time: %.6fs [Database: %s]" % (execution_time, self.db.alias))
+                    logger(
+                        "Execution time: %.6fs [Database: %s]"
+                        % (execution_time, self.db.alias)
+                    )
                     if print_sql_location:
                         logger("Location of SQL Call:")
-                        logger(''.join(traceback.format_stack()))
+                        logger("".join(traceback.format_stack()))
 
         _CursorDebugWrapper = utils.CursorDebugWrapper
 
@@ -76,9 +99,12 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
 
         try:
             from django.db import connections
+
             _force_debug_cursor = {}
             for connection_name in connections:
-                _force_debug_cursor[connection_name] = connections[connection_name].force_debug_cursor
+                _force_debug_cursor[connection_name] = connections[
+                    connection_name
+                ].force_debug_cursor
         except Exception:
             connections = None
 
@@ -87,9 +113,12 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
         postgresql_base = None
         try:
             from django.db.backends.postgresql import base as postgresql_base
+
             _PostgreSQLCursorDebugWrapper = postgresql_base.CursorDebugWrapper
 
-            class PostgreSQLPrintCursorDebugWrapper(PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper):
+            class PostgreSQLPrintCursorDebugWrapper(
+                PrintQueryWrapperMixin, _PostgreSQLCursorDebugWrapper
+            ):
                 pass
         except (ImproperlyConfigured, TypeError):
             postgresql_base = None
@@ -110,4 +139,6 @@ def monkey_patch_cursordebugwrapper(print_sql=None, print_sql_location=False, tr
 
         if connections:
             for connection_name in connections:
-                connections[connection_name].force_debug_cursor = _force_debug_cursor[connection_name]
+                connections[connection_name].force_debug_cursor = _force_debug_cursor[
+                    connection_name
+                ]

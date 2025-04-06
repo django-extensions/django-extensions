@@ -56,6 +56,7 @@ TODO:
  * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
 
 """
+
 import datetime
 import email
 import gzip
@@ -81,148 +82,189 @@ else:
 
 class Command(BaseCommand):
     # Extra variables to avoid passing these around
-    AWS_ACCESS_KEY_ID = ''
-    AWS_SECRET_ACCESS_KEY = ''
-    AWS_BUCKET_NAME = ''
-    AWS_CLOUDFRONT_DISTRIBUTION = ''
-    SYNC_S3_RENAME_GZIP_EXT = ''
+    AWS_ACCESS_KEY_ID = ""
+    AWS_SECRET_ACCESS_KEY = ""
+    AWS_BUCKET_NAME = ""
+    AWS_CLOUDFRONT_DISTRIBUTION = ""
+    SYNC_S3_RENAME_GZIP_EXT = ""
 
-    DIRECTORIES = ''
-    FILTER_LIST = ['.DS_Store', '.svn', '.hg', '.git', 'Thumbs.db']
+    DIRECTORIES = ""
+    FILTER_LIST = [".DS_Store", ".svn", ".hg", ".git", "Thumbs.db"]
     GZIP_CONTENT_TYPES = (
-        'text/css',
-        'application/javascript',
-        'application/x-javascript',
-        'text/javascript'
+        "text/css",
+        "application/javascript",
+        "application/x-javascript",
+        "text/javascript",
     )
 
     uploaded_files = []  # type: List[str]
     upload_count = 0
     skip_count = 0
 
-    help = 'Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name.'
-    args = 'bucket_name'
+    help = "Syncs the complete MEDIA_ROOT structure and files to S3 into the given bucket name."  # noqa: E501
+    args = "bucket_name"
 
     can_import_settings = True
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '-p', '--prefix',
-            dest='prefix',
-            default=getattr(settings, 'SYNC_S3_PREFIX', ''),
-            help="The prefix to prepend to the path on S3."
+            "-p",
+            "--prefix",
+            dest="prefix",
+            default=getattr(settings, "SYNC_S3_PREFIX", ""),
+            help="The prefix to prepend to the path on S3.",
         )
         parser.add_argument(
-            '-d', '--dir',
-            dest='dir',
-            help="Custom static root directory to use"
+            "-d", "--dir", dest="dir", help="Custom static root directory to use"
         )
         parser.add_argument(
-            '--s3host',
-            dest='s3host',
-            default=getattr(settings, 'AWS_S3_HOST', ''),
-            help="The s3 host (enables connecting to other providers/regions)"
+            "--s3host",
+            dest="s3host",
+            default=getattr(settings, "AWS_S3_HOST", ""),
+            help="The s3 host (enables connecting to other providers/regions)",
         )
         parser.add_argument(
-            '--acl',
-            dest='acl',
-            default=getattr(settings, 'AWS_DEFAULT_ACL', 'public-read'),
-            help="Enables to override default acl (public-read)."
+            "--acl",
+            dest="acl",
+            default=getattr(settings, "AWS_DEFAULT_ACL", "public-read"),
+            help="Enables to override default acl (public-read).",
         )
         parser.add_argument(
-            '--gzip',
-            action='store_true', dest='gzip', default=False,
-            help="Enables gzipping CSS and Javascript files."
+            "--gzip",
+            action="store_true",
+            dest="gzip",
+            default=False,
+            help="Enables gzipping CSS and Javascript files.",
         )
         parser.add_argument(
-            '--renamegzip',
-            action='store_true', dest='renamegzip', default=False,
-            help="Enables renaming of gzipped assets to have '.gz' appended to the filename."
+            "--renamegzip",
+            action="store_true",
+            dest="renamegzip",
+            default=False,
+            help=(
+                "Enables renaming of gzipped assets to have '.gz' "
+                "appended to the filename."
+            ),
         )
         parser.add_argument(
-            '--expires',
-            action='store_true', dest='expires', default=False,
-            help="Enables setting a far future expires header."
+            "--expires",
+            action="store_true",
+            dest="expires",
+            default=False,
+            help="Enables setting a far future expires header.",
         )
         parser.add_argument(
-            '--force',
-            action='store_true', dest='force', default=False,
-            help="Skip the file mtime check to force upload of all files."
+            "--force",
+            action="store_true",
+            dest="force",
+            default=False,
+            help="Skip the file mtime check to force upload of all files.",
         )
         parser.add_argument(
-            '--filter-list', dest='filter_list',
-            action='store', default='',
-            help="Override default directory and file exclusion filters. (enter as comma seperated line)"
+            "--filter-list",
+            dest="filter_list",
+            action="store",
+            default="",
+            help=(
+                "Override default directory and file exclusion filters. "
+                "(enter as comma separated line)"
+            ),
         )
         parser.add_argument(
-            '--invalidate', dest='invalidate', default=False,
-            action='store_true',
-            help='Invalidates the associated objects in CloudFront'
+            "--invalidate",
+            dest="invalidate",
+            default=False,
+            action="store_true",
+            help="Invalidates the associated objects in CloudFront",
         )
         parser.add_argument(
-            '--media-only', dest='media_only', default='',
-            action='store_true',
-            help="Only MEDIA_ROOT files will be uploaded to S3"
+            "--media-only",
+            dest="media_only",
+            default="",
+            action="store_true",
+            help="Only MEDIA_ROOT files will be uploaded to S3",
         )
         parser.add_argument(
-            '--static-only', dest='static_only', default='',
-            action='store_true',
-            help="Only STATIC_ROOT files will be uploaded to S3"
+            "--static-only",
+            dest="static_only",
+            default="",
+            action="store_true",
+            help="Only STATIC_ROOT files will be uploaded to S3",
         )
 
     @signalcommand
     def handle(self, *args, **options):
         if not HAS_BOTO:
-            raise CommandError("Please install the 'boto' Python library. ($ pip install boto)")
+            raise CommandError(
+                "Please install the 'boto' Python library. ($ pip install boto)"
+            )
 
         # Check for AWS keys in settings
-        if not hasattr(settings, 'AWS_ACCESS_KEY_ID') or not hasattr(settings, 'AWS_SECRET_ACCESS_KEY'):
-            raise CommandError('Missing AWS keys from settings file.  Please supply both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
+        if not hasattr(settings, "AWS_ACCESS_KEY_ID") or not hasattr(
+            settings, "AWS_SECRET_ACCESS_KEY"
+        ):
+            raise CommandError(
+                (
+                    "Missing AWS keys from settings file. Please supply both "
+                    "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+                )
+            )
         else:
             self.AWS_ACCESS_KEY_ID = settings.AWS_ACCESS_KEY_ID
             self.AWS_SECRET_ACCESS_KEY = settings.AWS_SECRET_ACCESS_KEY
 
-        if not hasattr(settings, 'AWS_BUCKET_NAME'):
-            raise CommandError('Missing bucket name from settings file. Please add the AWS_BUCKET_NAME to your settings file.')
+        if not hasattr(settings, "AWS_BUCKET_NAME"):
+            raise CommandError(
+                (
+                    "Missing bucket name from settings file. Please add the "
+                    "AWS_BUCKET_NAME to your settings file."
+                )
+            )
         else:
             if not settings.AWS_BUCKET_NAME:
-                raise CommandError('AWS_BUCKET_NAME cannot be empty.')
+                raise CommandError("AWS_BUCKET_NAME cannot be empty.")
         self.AWS_BUCKET_NAME = settings.AWS_BUCKET_NAME
 
-        if not hasattr(settings, 'MEDIA_ROOT'):
-            raise CommandError('MEDIA_ROOT must be set in your settings.')
+        if not hasattr(settings, "MEDIA_ROOT"):
+            raise CommandError("MEDIA_ROOT must be set in your settings.")
         else:
             if not settings.MEDIA_ROOT:
-                raise CommandError('MEDIA_ROOT must be set in your settings.')
+                raise CommandError("MEDIA_ROOT must be set in your settings.")
 
-        self.AWS_CLOUDFRONT_DISTRIBUTION = getattr(settings, 'AWS_CLOUDFRONT_DISTRIBUTION', '')
+        self.AWS_CLOUDFRONT_DISTRIBUTION = getattr(
+            settings, "AWS_CLOUDFRONT_DISTRIBUTION", ""
+        )
 
-        self.SYNC_S3_RENAME_GZIP_EXT = \
-            getattr(settings, 'SYNC_S3_RENAME_GZIP_EXT', '.gz')
+        self.SYNC_S3_RENAME_GZIP_EXT = getattr(
+            settings, "SYNC_S3_RENAME_GZIP_EXT", ".gz"
+        )
 
         self.verbosity = options["verbosity"]
-        self.prefix = options['prefix']
-        self.do_gzip = options['gzip']
-        self.rename_gzip = options['renamegzip']
-        self.do_expires = options['expires']
-        self.do_force = options['force']
-        self.invalidate = options['invalidate']
-        self.DIRECTORIES = options['dir']
-        self.s3host = options['s3host']
-        self.default_acl = options['acl']
-        self.FILTER_LIST = getattr(settings, 'FILTER_LIST', self.FILTER_LIST)
-        filter_list = options['filter_list']
+        self.prefix = options["prefix"]
+        self.do_gzip = options["gzip"]
+        self.rename_gzip = options["renamegzip"]
+        self.do_expires = options["expires"]
+        self.do_force = options["force"]
+        self.invalidate = options["invalidate"]
+        self.DIRECTORIES = options["dir"]
+        self.s3host = options["s3host"]
+        self.default_acl = options["acl"]
+        self.FILTER_LIST = getattr(settings, "FILTER_LIST", self.FILTER_LIST)
+        filter_list = options["filter_list"]
         if filter_list:
             # command line option overrides default filter_list and
             # settings.filter_list
-            self.FILTER_LIST = filter_list.split(',')
+            self.FILTER_LIST = filter_list.split(",")
 
-        self.media_only = options['media_only']
-        self.static_only = options['static_only']
+        self.media_only = options["media_only"]
+        self.static_only = options["static_only"]
         # Get directories
         if self.media_only and self.static_only:
-            raise CommandError("Can't use --media-only and --static-only together. Better not use anything...")
+            raise CommandError(
+                "Can't use --media-only and --static-only together. "
+                "Better not use anything..."
+            )
         elif self.media_only:
             self.DIRECTORIES = [settings.MEDIA_ROOT]
         elif self.static_only:
@@ -248,14 +290,16 @@ class Command(BaseCommand):
     def open_cf(self):
         """Return an open connection to CloudFront"""
         return boto.connect_cloudfront(
-            self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY)
+            self.AWS_ACCESS_KEY_ID, self.AWS_SECRET_ACCESS_KEY
+        )
 
     def invalidate_objects_cf(self):
         """Split the invalidation request in groups of 1000 objects"""
         if not self.AWS_CLOUDFRONT_DISTRIBUTION:
             raise CommandError(
-                'An object invalidation was requested but the variable '
-                'AWS_CLOUDFRONT_DISTRIBUTION is not present in your settings.')
+                "An object invalidation was requested but the variable "
+                "AWS_CLOUDFRONT_DISTRIBUTION is not present in your settings."
+            )
 
         # We can't send more than 1000 objects in the same invalidation
         # request.
@@ -266,24 +310,25 @@ class Command(BaseCommand):
 
         # Splitting the object list
         objs = self.uploaded_files
-        chunks = [objs[i:i + chunk] for i in range(0, len(objs), chunk)]
+        chunks = [objs[i : i + chunk] for i in range(0, len(objs), chunk)]
 
         # Invalidation requests
         for paths in chunks:
-            conn.create_invalidation_request(
-                self.AWS_CLOUDFRONT_DISTRIBUTION, paths)
+            conn.create_invalidation_request(self.AWS_CLOUDFRONT_DISTRIBUTION, paths)
 
     def sync_s3(self):
         """Walk the media/static directories and syncs files to S3"""
         bucket, key = self.open_s3()
         for directory in self.DIRECTORIES:
             for root, dirs, files in os.walk(directory):
-                self.upload_s3((bucket, key, self.AWS_BUCKET_NAME, directory), root, files, dirs)
+                self.upload_s3(
+                    (bucket, key, self.AWS_BUCKET_NAME, directory), root, files, dirs
+                )
 
     def compress_string(self, s):
         """Gzip a given string."""
         zbuf = StringIO()
-        zfile = gzip.GzipFile(mode='wb', compresslevel=6, fileobj=zbuf)
+        zfile = gzip.GzipFile(mode="wb", compresslevel=6, fileobj=zbuf)
         zfile.write(s)
         zfile.close()
         return zbuf.getvalue()
@@ -292,7 +337,7 @@ class Command(BaseCommand):
         """Return connection kwargs as a dict"""
         kwargs = {}
         if self.s3host:
-            kwargs['host'] = self.s3host
+            kwargs["host"] = self.s3host
         return kwargs
 
     def open_s3(self):
@@ -300,7 +345,8 @@ class Command(BaseCommand):
         conn = boto.connect_s3(
             self.AWS_ACCESS_KEY_ID,
             self.AWS_SECRET_ACCESS_KEY,
-            **self.get_s3connection_kwargs())
+            **self.get_s3connection_kwargs(),
+        )
         try:
             bucket = conn.get_bucket(self.AWS_BUCKET_NAME)
         except boto.exception.S3ResponseError:
@@ -311,7 +357,10 @@ class Command(BaseCommand):
         bucket, key, bucket_name, root_dir = arg
 
         # Skip directories we don't want to sync
-        if os.path.basename(dirname) in self.FILTER_LIST and os.path.dirname(dirname) in self.DIRECTORIES:
+        if (
+            os.path.basename(dirname) in self.FILTER_LIST
+            and os.path.dirname(dirname) in self.DIRECTORIES
+        ):
             # prevent walk from processing subfiles/subdirs below the ignored one
             del dirs[:]
             return
@@ -330,22 +379,29 @@ class Command(BaseCommand):
             if os.path.isdir(filename):
                 continue  # Don't try to upload directories
 
-            file_key = filename[len(root_dir):]
+            file_key = filename[len(root_dir) :]
             if self.prefix:
-                file_key = '%s/%s' % (self.prefix, file_key)
+                file_key = "%s/%s" % (self.prefix, file_key)
 
             # Check if file on S3 is older than local file, if so, upload
             if not self.do_force:
                 s3_key = bucket.get_key(file_key)
                 if s3_key:
-                    s3_datetime = datetime.datetime(*time.strptime(
-                        s3_key.last_modified, '%a, %d %b %Y %H:%M:%S %Z')[0:6])
+                    s3_datetime = datetime.datetime(
+                        *time.strptime(
+                            s3_key.last_modified, "%a, %d %b %Y %H:%M:%S %Z"
+                        )[0:6]
+                    )
                     local_datetime = datetime.datetime.utcfromtimestamp(
-                        os.stat(filename).st_mtime)
+                        os.stat(filename).st_mtime
+                    )
                     if local_datetime < s3_datetime:
                         self.skip_count += 1
                         if self.verbosity > 1:
-                            print("File %s hasn't been modified since last being uploaded" % file_key)
+                            print(
+                                "File %s hasn't been modified since last being uploaded"
+                                % file_key
+                            )
                         continue
 
             # File is newer, let's process and upload
@@ -354,11 +410,11 @@ class Command(BaseCommand):
 
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
-                headers['Content-Type'] = content_type
+                headers["Content-Type"] = content_type
             else:
-                headers['Content-Type'] = 'application/octet-stream'
+                headers["Content-Type"] = "application/octet-stream"
 
-            file_obj = open(filename, 'rb')
+            file_obj = open(filename, "rb")
             file_size = os.fstat(file_obj.fileno()).st_size
             filedata = file_obj.read()
             if self.do_gzip:
@@ -370,24 +426,36 @@ class Command(BaseCommand):
                         # If rename_gzip is True, then rename the file
                         # by appending an extension (like '.gz)' to
                         # original filename.
-                        file_key = '%s.%s' % (
-                            file_key, self.SYNC_S3_RENAME_GZIP_EXT)
-                    headers['Content-Encoding'] = 'gzip'
+                        file_key = "%s.%s" % (file_key, self.SYNC_S3_RENAME_GZIP_EXT)
+                    headers["Content-Encoding"] = "gzip"
                     if self.verbosity > 1:
-                        print("\tgzipped: %dk to %dk" % (file_size / 1024, len(filedata) / 1024))
+                        print(
+                            "\tgzipped: %dk to %dk"
+                            % (file_size / 1024, len(filedata) / 1024)
+                        )
             if self.do_expires:
                 # HTTP/1.0
-                headers['Expires'] = '%s GMT' % (email.Utils.formatdate(time.mktime((datetime.datetime.now() + datetime.timedelta(days=365 * 2)).timetuple())))
+                headers["Expires"] = "%s GMT" % (
+                    email.Utils.formatdate(
+                        time.mktime(
+                            (
+                                datetime.datetime.now()
+                                + datetime.timedelta(days=365 * 2)
+                            ).timetuple()
+                        )
+                    )
+                )
                 # HTTP/1.1
-                headers['Cache-Control'] = 'max-age %d' % (3600 * 24 * 365 * 2)
+                headers["Cache-Control"] = "max-age %d" % (3600 * 24 * 365 * 2)
                 if self.verbosity > 1:
-                    print("\texpires: %s" % headers['Expires'])
-                    print("\tcache-control: %s" % headers['Cache-Control'])
+                    print("\texpires: %s" % headers["Expires"])
+                    print("\tcache-control: %s" % headers["Cache-Control"])
 
             try:
                 key.name = file_key
-                key.set_contents_from_string(filedata, headers, replace=True,
-                                             policy=self.default_acl)
+                key.set_contents_from_string(
+                    filedata, headers, replace=True, policy=self.default_acl
+                )
             except boto.exception.S3CreateError as e:
                 print("Failed: %s" % e)
             except Exception as e:

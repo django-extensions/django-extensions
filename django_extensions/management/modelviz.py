@@ -15,10 +15,14 @@ import re
 from django.apps import apps
 from django.db.models import deletion
 from django.db.models.fields.related import (
-    ForeignKey, ManyToManyField, OneToOneField, RelatedField,
+    ForeignKey,
+    ManyToManyField,
+    OneToOneField,
+    RelatedField,
 )
 from django.db.models.fields.reverse_related import (
-    OneToOneRel, ManyToOneRel,
+    OneToOneRel,
+    ManyToOneRel,
 )
 from django.contrib.contenttypes.fields import GenericRelation
 from django.template import Context, Template, loader
@@ -29,10 +33,9 @@ from django.utils.translation import activate as activate_language
 
 __version__ = "1.1"
 __license__ = "Python"
-__author__ = "Bas van Oostveen <v.oostveen@gmail.com>",
+__author__ = ("Bas van Oostveen <v.oostveen@gmail.com>",)
 __contributors__ = [
-    "Antonio Cavedoni <https://cavedoni.com/>"
-    "Stefano J. Attardi <https://attardi.org/>",
+    "Antonio Cavedoni <https://cavedoni.com/>Stefano J. Attardi <https://attardi.org/>",
     "limodou",
     "Carlo C8E Miron",
     "Andre Campos <cahenan@gmail.com>",
@@ -45,17 +48,18 @@ __contributors__ = [
     "Mikkel Munch Mortensen <https://www.detfalskested.dk/>",
     "Andrzej Bistram <andrzej.bistram@gmail.com>",
     "Daniel Lipsitt <danlipsitt@gmail.com>",
+    "Florian Anceau <flow.gunso@gmail.com>",
 ]
 
 
 ON_DELETE_COLORS = {
-    deletion.CASCADE: 'red',
-    deletion.PROTECT: 'blue',
-    deletion.SET_NULL: 'orange',
-    deletion.SET_DEFAULT: 'green',
-    deletion.SET: 'yellow',
-    deletion.DO_NOTHING: 'grey',
-    deletion.RESTRICT: 'purple',
+    deletion.CASCADE: "red",
+    deletion.PROTECT: "blue",
+    deletion.SET_NULL: "orange",
+    deletion.SET_DEFAULT: "green",
+    deletion.SET: "yellow",
+    deletion.DO_NOTHING: "grey",
+    deletion.RESTRICT: "purple",
 }
 
 
@@ -64,37 +68,31 @@ def parse_file_or_list(arg):
         return []
     if isinstance(arg, (list, tuple, set)):
         return arg
-    if ',' not in arg and os.path.isfile(arg):
+    if "," not in arg and os.path.isfile(arg):
         return [e.strip() for e in open(arg).readlines()]
-    return [e.strip() for e in arg.split(',')]
+    return [e.strip() for e in arg.split(",")]
 
 
 class ModelGraph:
     def __init__(self, app_labels, **kwargs):
         self.graphs = []
-        self.cli_options = kwargs.get('cli_options', None)
-        self.disable_fields = kwargs.get('disable_fields', False)
-        self.disable_abstract_fields = kwargs.get('disable_abstract_fields', False)
-        self.include_models = parse_file_or_list(
-            kwargs.get('include_models', "")
-        )
-        self.all_applications = kwargs.get('all_applications', False)
-        self.use_subgraph = kwargs.get('group_models', False)
-        self.verbose_names = kwargs.get('verbose_names', False)
-        self.inheritance = kwargs.get('inheritance', True)
+        self.cli_options = kwargs.get("cli_options", None)
+        self.disable_fields = kwargs.get("disable_fields", False)
+        self.disable_abstract_fields = kwargs.get("disable_abstract_fields", False)
+        self.include_models = parse_file_or_list(kwargs.get("include_models", ""))
+        self.all_applications = kwargs.get("all_applications", False)
+        self.use_subgraph = kwargs.get("group_models", False)
+        self.verbose_names = kwargs.get("verbose_names", False)
+        self.inheritance = kwargs.get("inheritance", True)
         self.relations_as_fields = kwargs.get("relations_as_fields", True)
         self.relation_fields_only = kwargs.get("relation_fields_only", False)
         self.sort_fields = kwargs.get("sort_fields", True)
-        self.language = kwargs.get('language', None)
+        self.language = kwargs.get("language", None)
         if self.language is not None:
             activate_language(self.language)
-        self.exclude_columns = parse_file_or_list(
-            kwargs.get('exclude_columns', "")
-        )
-        self.exclude_models = parse_file_or_list(
-            kwargs.get('exclude_models', "")
-        )
-        self.hide_edge_labels = kwargs.get('hide_edge_labels', False)
+        self.exclude_columns = parse_file_or_list(kwargs.get("exclude_columns", ""))
+        self.exclude_models = parse_file_or_list(kwargs.get("exclude_models", ""))
+        self.hide_edge_labels = kwargs.get("hide_edge_labels", False)
         self.arrow_shape = kwargs.get("arrow_shape")
         self.color_code_deletions = kwargs.get("color_code_deletions", False)
         if self.all_applications:
@@ -102,43 +100,48 @@ class ModelGraph:
         else:
             self.app_labels = app_labels
         self.rankdir = kwargs.get("rankdir")
+        self.display_field_choices = kwargs.get("display_field_choices", False)
+        self.ordering = kwargs.get("ordering")
 
     def generate_graph_data(self):
         self.process_apps()
 
         nodes = []
         for graph in self.graphs:
-            nodes.extend([e['name'] for e in graph['models']])
+            nodes.extend([e["name"] for e in graph["models"]])
 
         for graph in self.graphs:
-            for model in graph['models']:
-                for relation in model['relations']:
+            for model in graph["models"]:
+                for relation in model["relations"]:
                     if relation is not None:
-                        if relation['target'] in nodes:
-                            relation['needs_node'] = False
+                        if relation["target"] in nodes:
+                            relation["needs_node"] = False
 
     def get_graph_data(self, as_json=False):
         now = datetime.datetime.now()
         graph_data = {
-            'created_at': now.strftime("%Y-%m-%d %H:%M"),
-            'cli_options': self.cli_options,
-            'disable_fields': self.disable_fields,
-            'disable_abstract_fields': self.disable_abstract_fields,
-            'use_subgraph': self.use_subgraph,
-            'rankdir': self.rankdir,
+            "created_at": now.strftime("%Y-%m-%d %H:%M"),
+            "cli_options": self.cli_options,
+            "disable_fields": self.disable_fields,
+            "disable_abstract_fields": self.disable_abstract_fields,
+            "display_field_choices": self.display_field_choices,
+            "use_subgraph": self.use_subgraph,
+            "rankdir": self.rankdir,
+            "ordering": self.ordering,
         }
 
         if as_json:
-            # We need to remove the model and field class because it is not JSON serializable
+            # We need to remove the model and field class
+            # because it is not JSON serializable
             graphs = [context.flatten() for context in self.graphs]
             for context in graphs:
-                for model_data in context['models']:
-                    model_data.pop('model')
-                    for field_data in model_data['fields']:
-                        field_data.pop('field')
-            graph_data['graphs'] = graphs
+                for model_data in context["models"]:
+                    model_data.pop("model")
+                    for field_data in model_data["fields"]:
+                        field_data.pop("field")
+            graph_data["graphs"] = graphs
         else:
-            graph_data['graphs'] = self.graphs
+            graph_data["graphs"] = self.graphs
 
         return graph_data
 
@@ -153,20 +156,23 @@ class ModelGraph:
         t = type(field).__name__
         if isinstance(field, (OneToOneField, ForeignKey)):
             t += " ({0})".format(field.remote_field.field_name)
+        if self.display_field_choices and field.choices is not None:
+            choices = {c for c, _ in field.choices}
+            t = str(choices)
         # TODO: ManyToManyField, GenericRelation
 
         return {
-            'field': field,
-            'name': field.name,
-            'label': label,
-            'type': t,
-            'blank': field.blank,
-            'abstract': any(
+            "field": field,
+            "name": field.name,
+            "label": label,
+            "type": t,
+            "blank": field.blank,
+            "abstract": any(
                 field.creation_counter == abstract_field.creation_counter
                 for abstract_field in abstract_fields
             ),
-            'relation': isinstance(field, RelatedField),
-            'primary_key': field.primary_key,
+            "relation": isinstance(field, RelatedField),
+            "primary_key": field.primary_key,
         }
 
     def add_relation(self, field, model, extras="", color=None):
@@ -178,21 +184,21 @@ class ModelGraph:
             label = field.name
 
         # show related field name
-        if hasattr(field, 'related_query_name'):
+        if hasattr(field, "related_query_name"):
             related_query_name = field.related_query_name()
             if self.verbose_names and related_query_name.islower():
-                related_query_name = related_query_name.replace('_', ' ').capitalize()
-            label = u'{} ({})'.format(label, force_str(related_query_name))
+                related_query_name = related_query_name.replace("_", " ").capitalize()
+            label = "{} ({})".format(label, force_str(related_query_name))
         if self.hide_edge_labels:
-            label = ''
+            label = ""
 
         # handle self-relationships and lazy-relationships
         if isinstance(field.remote_field.model, str):
-            if field.remote_field.model == 'self':
+            if field.remote_field.model == "self":
                 target_model = field.model
             else:
-                if '.' in field.remote_field.model:
-                    app_label, model_name = field.remote_field.model.split('.', 1)
+                if "." in field.remote_field.model:
+                    app_label, model_name = field.remote_field.model.split(".", 1)
                 else:
                     app_label = field.model._meta.app_label
                     model_name = field.remote_field.model
@@ -201,67 +207,75 @@ class ModelGraph:
             target_model = field.remote_field.model
 
         if color:
-            extras = '[{}, color={}]'.format(extras[1:-1], color)
+            extras = "[{}, color={}]".format(extras[1:-1], color)
 
         _rel = self.get_relation_context(target_model, field, label, extras)
 
-        if _rel not in model['relations'] and self.use_model(_rel['target']):
+        if _rel not in model["relations"] and self.use_model(_rel["target"]):
             return _rel
 
     def get_abstract_models(self, appmodels):
         abstract_models = []
         for appmodel in appmodels:
             abstract_models += [
-                abstract_model for abstract_model in appmodel.__bases__
-                if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract
+                abstract_model
+                for abstract_model in appmodel.__bases__
+                if hasattr(abstract_model, "_meta") and abstract_model._meta.abstract
             ]
         abstract_models = list(set(abstract_models))  # remove duplicates
         return abstract_models
 
     def get_app_context(self, app):
-        return Context({
-            'name': '"%s"' % app.name,
-            'app_name': "%s" % app.name,
-            'cluster_app_name': "cluster_%s" % app.name.replace(".", "_"),
-            'models': []
-        })
+        return Context(
+            {
+                "name": '"%s"' % app.name,
+                "app_name": "%s" % app.name,
+                "cluster_app_name": "cluster_%s" % app.name.replace(".", "_"),
+                "models": [],
+            }
+        )
 
     def get_appmodel_attributes(self, appmodel):
         if self.relations_as_fields:
             attributes = [field for field in appmodel._meta.local_fields]
         else:
-            # Find all the 'real' attributes. Relations are depicted as graph edges instead of attributes
-            attributes = [field for field in appmodel._meta.local_fields if not
-                          isinstance(field, RelatedField)]
+            # Find all the 'real' attributes. Relations are depicted as graph edges
+            # instead of attributes
+            attributes = [
+                field
+                for field in appmodel._meta.local_fields
+                if not isinstance(field, RelatedField)
+            ]
         return attributes
 
     def get_appmodel_abstracts(self, appmodel):
         return [
-            abstract_model.__name__ for abstract_model in appmodel.__bases__
-            if hasattr(abstract_model, '_meta') and abstract_model._meta.abstract
+            abstract_model.__name__
+            for abstract_model in appmodel.__bases__
+            if hasattr(abstract_model, "_meta") and abstract_model._meta.abstract
         ]
 
     def get_appmodel_context(self, appmodel, appmodel_abstracts):
         context = {
-            'model': appmodel,
-            'app_name': appmodel.__module__.replace(".", "_"),
-            'name': appmodel.__name__,
-            'abstracts': appmodel_abstracts,
-            'fields': [],
-            'relations': []
+            "model": appmodel,
+            "app_name": appmodel.__module__.replace(".", "_"),
+            "name": appmodel.__name__,
+            "abstracts": appmodel_abstracts,
+            "fields": [],
+            "relations": [],
         }
 
         if self.verbose_names and appmodel._meta.verbose_name:
-            context['label'] = force_str(appmodel._meta.verbose_name)
+            context["label"] = force_str(appmodel._meta.verbose_name)
         else:
-            context['label'] = context['name']
+            context["label"] = context["name"]
 
         return context
 
     def get_bases_abstract_fields(self, c):
         _abstract_fields = []
         for e in c.__bases__:
-            if hasattr(e, '_meta') and e._meta.abstract:
+            if hasattr(e, "_meta") and e._meta.abstract:
                 _abstract_fields.extend(e._meta.fields)
                 _abstract_fields.extend(self.get_bases_abstract_fields(e))
         return _abstract_fields
@@ -274,15 +288,15 @@ class ModelGraph:
             label = "proxy"
         label += r"\ninheritance"
         if self.hide_edge_labels:
-            label = ''
+            label = ""
         return {
-            'target_app': parent.__module__.replace(".", "_"),
-            'target': parent.__name__,
-            'type': "inheritance",
-            'name': "inheritance",
-            'label': label,
-            'arrows': '[arrowhead=empty, arrowtail=none, dir=both]',
-            'needs_node': True,
+            "target_app": parent.__module__.replace(".", "_"),
+            "target": parent.__name__,
+            "type": "inheritance",
+            "name": "inheritance",
+            "label": label,
+            "arrows": "[arrowhead=empty, arrowtail=none, dir=both]",
+            "needs_node": True,
         }
 
     def get_models(self, app):
@@ -291,20 +305,20 @@ class ModelGraph:
 
     def get_relation_context(self, target_model, field, label, extras):
         return {
-            'target_app': target_model.__module__.replace('.', '_'),
-            'target': target_model.__name__,
-            'type': type(field).__name__,
-            'name': field.name,
-            'label': label,
-            'arrows': extras,
-            'needs_node': True
+            "target_app": target_model.__module__.replace(".", "_"),
+            "target": target_model.__name__,
+            "type": type(field).__name__,
+            "name": field.name,
+            "label": label,
+            "arrows": extras,
+            "needs_node": True,
         }
 
     def process_attributes(self, field, model, pk, abstract_fields):
         newmodel = model.copy()
         if self.skip_field(field) or pk and field == pk:
             return newmodel
-        newmodel['fields'].append(self.add_attributes(field, abstract_fields))
+        newmodel["fields"].append(self.add_attributes(field, abstract_fields))
         return newmodel
 
     def process_apps(self):
@@ -325,10 +339,11 @@ class ModelGraph:
                 model = self.get_appmodel_context(appmodel, appmodel_abstracts)
                 attributes = self.get_appmodel_attributes(appmodel)
 
-                # find primary key and print it first, ignoring implicit id if other pk exists
+                # find primary key and print it first
+                # ignoring implicit id if other pk exists
                 pk = appmodel._meta.pk
                 if pk and not appmodel._meta.abstract and pk in attributes:
-                    model['fields'].append(self.add_attributes(pk, abstract_fields))
+                    model["fields"].append(self.add_attributes(pk, abstract_fields))
 
                 for field in attributes:
                     model = self.process_attributes(field, model, pk, abstract_fields)
@@ -347,39 +362,42 @@ class ModelGraph:
                     for parent in appmodel.__bases__:
                         model = self.process_parent(parent, appmodel, model)
 
-                app_graph['models'].append(model)
-            if app_graph['models']:
+                app_graph["models"].append(model)
+            if app_graph["models"]:
                 self.graphs.append(app_graph)
 
     def process_local_fields(self, field, model, abstract_fields):
         newmodel = model.copy()
-        if field.attname.endswith('_ptr_id') or field in abstract_fields or self.skip_field(field):
+        if (
+            field.attname.endswith("_ptr_id")
+            or field in abstract_fields
+            or self.skip_field(field)
+        ):
             # excluding field redundant with inheritance relation
-            # excluding fields inherited from abstract classes. they too show as local_fields
+            # excluding fields inherited from abstract classes.
+            # they too show as local_fields
             return newmodel
 
         color = None
         if self.color_code_deletions and isinstance(field, (OneToOneField, ForeignKey)):
-            field_on_delete = getattr(field.remote_field, 'on_delete', None)
+            field_on_delete = getattr(field.remote_field, "on_delete", None)
             color = ON_DELETE_COLORS.get(field_on_delete)
 
         if isinstance(field, OneToOneField):
             relation = self.add_relation(
-                field, newmodel, '[arrowhead=none, arrowtail=none, dir=both]', color
+                field, newmodel, "[arrowhead=none, arrowtail=none, dir=both]", color
             )
         elif isinstance(field, ForeignKey):
             relation = self.add_relation(
                 field,
                 newmodel,
-                '[arrowhead=none, arrowtail={}, dir=both]'.format(
-                    self.arrow_shape
-                ),
-                color
+                "[arrowhead=none, arrowtail={}, dir=both]".format(self.arrow_shape),
+                color,
             )
         else:
             relation = None
         if relation is not None:
-            newmodel['relations'].append(relation)
+            newmodel["relations"].append(relation)
         return newmodel
 
     def process_local_many_to_many(self, field, model):
@@ -388,32 +406,49 @@ class ModelGraph:
             return newmodel
         relation = None
         if isinstance(field, ManyToManyField):
-            if hasattr(field.remote_field.through, '_meta') and field.remote_field.through._meta.auto_created:
+            if (
+                hasattr(field.remote_field.through, "_meta")
+                and field.remote_field.through._meta.auto_created
+            ):
                 relation = self.add_relation(
                     field,
                     newmodel,
-                    '[arrowhead={} arrowtail={}, dir=both]'.format(
+                    "[arrowhead={} arrowtail={}, dir=both]".format(
                         self.arrow_shape, self.arrow_shape
                     ),
                 )
         elif isinstance(field, GenericRelation):
-            relation = self.add_relation(field, newmodel, mark_safe('[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'))
+            relation = self.add_relation(
+                field,
+                newmodel,
+                mark_safe(
+                    '[style="dotted", arrowhead=normal, arrowtail=normal, dir=both]'
+                ),
+            )
         if relation is not None:
-            newmodel['relations'].append(relation)
+            newmodel["relations"].append(relation)
         return newmodel
 
     def process_parent(self, parent, appmodel, model):
         newmodel = model.copy()
         if hasattr(parent, "_meta"):  # parent is a model
             _rel = self.get_inheritance_context(appmodel, parent)
-            # TODO: seems as if abstract models aren't part of models.getModels, which is why they are printed by this without any attributes.
-            if _rel not in newmodel['relations'] and self.use_model(_rel['target']):
-                newmodel['relations'].append(_rel)
+            # TODO: seems as if abstract models aren't part of models.getModels,
+            #       which is why they are printed by this without any attributes.
+            if _rel not in newmodel["relations"] and self.use_model(_rel["target"]):
+                newmodel["relations"].append(_rel)
         return newmodel
 
     def sort_model_fields(self, model):
         newmodel = model.copy()
-        newmodel['fields'] = sorted(newmodel['fields'], key=lambda field: (not field['primary_key'], not field['relation'], field['label']))
+        newmodel["fields"] = sorted(
+            newmodel["fields"],
+            key=lambda field: (
+                not field["primary_key"],
+                not field["relation"],
+                field["label"],
+            ),
+        )
         return newmodel
 
     def use_model(self, model_name):
@@ -424,13 +459,13 @@ class ModelGraph:
         # Check against include list.
         if self.include_models:
             for model_pattern in self.include_models:
-                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
+                model_pattern = "^%s$" % model_pattern.replace("*", ".*")
                 if re.search(model_pattern, model_name):
                     return True
         # Check against exclude list.
         if self.exclude_models:
             for model_pattern in self.exclude_models:
-                model_pattern = '^%s$' % model_pattern.replace('*', '.*')
+                model_pattern = "^%s$" % model_pattern.replace("*", ".*")
                 if re.search(model_pattern, model_name):
                     return False
         # Return `True` if `include_models` is falsey, otherwise return `False`.
@@ -446,20 +481,31 @@ class ModelGraph:
         if self.relation_fields_only:
             if not isinstance(
                 field,
-                (ForeignKey, ManyToManyField, OneToOneField, RelatedField, OneToOneRel, ManyToOneRel)
+                (
+                    ForeignKey,
+                    ManyToManyField,
+                    OneToOneField,
+                    RelatedField,
+                    OneToOneRel,
+                    ManyToOneRel,
+                ),
             ):
                 return True
         return False
 
 
-def generate_dot(graph_data, template='django_extensions/graph_models/digraph.dot'):
+def generate_dot(graph_data, template="django_extensions/graph_models/digraph.dot"):
     if isinstance(template, str):
         template = loader.get_template(template)
 
-    if not isinstance(template, Template) and not (hasattr(template, 'template') and isinstance(template.template, Template)):
-        raise Exception("Default Django template loader isn't used. "
-                        "This can lead to the incorrect template rendering. "
-                        "Please, check the settings.")
+    if not isinstance(template, Template) and not (
+        hasattr(template, "template") and isinstance(template.template, Template)
+    ):
+        raise Exception(
+            "Default Django template loader isn't used. "
+            "This can lead to the incorrect template rendering. "
+            "Please, check the settings."
+        )
 
     c = Context(graph_data).flatten()
     dot = template.render(c)
@@ -474,5 +520,7 @@ def generate_graph_data(*args, **kwargs):
 
 
 def use_model(model, include_models, exclude_models):
-    generator = ModelGraph([], include_models=include_models, exclude_models=exclude_models)
+    generator = ModelGraph(
+        [], include_models=include_models, exclude_models=exclude_models
+    )
     return generator.use_model(model)

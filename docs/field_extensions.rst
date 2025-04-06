@@ -3,30 +3,31 @@ Field Extensions
 
 :synopsis: Field Extensions
 
+Database model field extensions.
 
-Current Database Model Field Extensions
----------------------------------------
+AutoSlugField
+-------------
 
-* *AutoSlugField* - AutoSlugField will automatically create a unique slug
-  incrementing an appended number on the slug until it is unique. Inspired by
-  SmileyChris' Unique Slugify snippet.
+AutoSlugField will automatically create a unique slug
+incrementing an appended number on the slug until it is unique. Inspired by
+SmileyChris' Unique Slugify snippet.
 
-  AutoSlugField takes a `populate_from` argument that specifies which field, list of
-  fields, or model method the slug will be populated from, for instance::
+AutoSlugField takes a `populate_from` argument that specifies which field, list of
+fields, or model method the slug will be populated from, for instance::
 
     slug = AutoSlugField(populate_from=['title', 'description', 'get_author_name'])
 
-  `populate_from` can traverse a ForeignKey relationship by using Django ORM syntax::
+`populate_from` can traverse a ForeignKey relationship by using Django ORM syntax::
 
     slug = AutoSlugField(populate_from=['related_model__title', 'related_model__get_readable_name'])
 
-  AutoSlugField uses Django's slugify_ function by default to "slugify" ``populate_from`` field.
+AutoSlugField uses Django's slugify_ function by default to "slugify" ``populate_from`` field.
 
-  .. _slugify: https://docs.djangoproject.com/en/dev/ref/utils/#django.utils.text.slugify
+.. _slugify: https://docs.djangoproject.com/en/dev/ref/utils/#django.utils.text.slugify
 
-  To provide custom "slugify" function you could either provide the function as
-  an argument to :py:class:`~AutoSlugField` or define your ``slugify_function``
-  method within a model.
+To provide custom "slugify" function you could either provide the function as
+an argument to :py:class:`~AutoSlugField` or define your ``slugify_function``
+method within a model.
 
 1. ``slugify_function`` as an argument to :py:class:`~AutoSlugField`.
 
@@ -72,11 +73,14 @@ Current Database Model Field Extensions
   pass ``slugify_function`` to :py:class:`~AutoSlugField` field,
   then model's ``slugify_function`` method will take precedence.
 
-* *RandomCharField* - AutoRandomCharField will automatically create a
-  unique random character field with the specified length. By default
-  upper/lower case and digits are included as possible characters. Given
-  a length of 8 that yields 3.4 million possible combinations. A 12
-  character field would yield about 2 billion. Below are some examples::
+RandomCharField
+---------------
+
+AutoRandomCharField will automatically create a
+unique random character field with the specified length. By default
+upper/lower case and digits are included as possible characters. Given
+a length of 8 that yields 3.4 million possible combinations. A 12
+character field would yield about 2 billion. Below are some examples::
 
     >>> RandomCharField(length=8, unique=True)
     BVm9GEaE
@@ -90,13 +94,18 @@ Current Database Model Field Extensions
     >>> RandomCharField(length=12, lowercase=True, include_digits=False)
     pzolbemetmok
 
-* *CreationDateTimeField* - DateTimeField that will automatically set its date
-  when the object is first saved to the database. Works in the same way as the
-  auto_now_add keyword.
+CreationDateTimeField
+---------------------
 
-* *ModificationDateTimeField* - DateTimeField that will automatically set its
-  date when an object is saved to the database. Works in the same way as the
-  auto_now keyword. It is possible to preserve the current timestamp by setting update_modified to False::
+A ``DateTimeField`` that will automatically set its date when the object is first
+saved to the database. Works in the same way as the auto_now_add keyword.
+
+ModificationDateTimeField
+-------------------------
+
+A ``DateTimeField`` that will automatically set its date when an object is saved
+to the database. Works in the same way as the auto_now keyword. It is possible
+to preserve the current timestamp by setting update_modified to False::
 
     >>> example = MyTimeStampedModel.objects.get(pk=1)
 
@@ -113,8 +122,9 @@ Current Database Model Field Extensions
     >>> print example.modified
     datetime.datetime(2016, 4, 8, 14, 25, 43, 123456, tzinfo=<UTC>)
 
-  It is also possible to set the attribute directly on the model,
-  for example when you don't use the TimeStampedModel provided in this package, or when you are in a migration::
+It is also possible to set the attribute directly on the model, for example
+when you don't use the TimeStampedModel provided in this package, or when you
+are in a migration::
 
     >>> example = MyCustomModel.objects.get(pk=1)
 
@@ -128,6 +138,18 @@ Current Database Model Field Extensions
     >>> print example.modified
     datetime.datetime(2016, 3, 18, 10, 3, 39, 740349, tzinfo=<UTC>)
 
-* *ShortUUIDField* - CharField which transparently generates a UUID and pass it to base57. It result in shorter 22 characters values useful e.g. for concise, unambiguous URLS. It's possible to get shorter values with length parameter: they are not Universal Unique any more but probability of collision is still low
+ShortUUIDField
+---------------
 
-* *JSONField* - a generic TextField that neatly serializes/unserializes JSON objects seamlessly. Django 1.9 introduces a native JSONField for PostgreSQL, which is preferred for PostgreSQL users on Django 1.9 and above.
+A ``CharField`` which transparently generates a UUID and pass it to base57.
+It result in shorter 22 characters values useful e.g. for concise, unambiguous
+URLS. It's possible to get shorter values with length parameter: they are
+not Universal Unique any more but probability of collision is still low.
+
+JSONField
+---------
+
+A generic ``TextField`` that neatly serializes/unserializes JSON
+objects seamlessly. Django 1.9 introduces a native JSONField for
+PostgreSQL, which is preferred for PostgreSQL users on Django
+1.9 and above.

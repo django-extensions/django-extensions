@@ -9,18 +9,18 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    help = ("print the user information for the provided session key. "
-            "this is very helpful when trying to track down the person who "
-            "experienced a site crash.")
+    help = (
+        "print the user information for the provided session key. "
+        "this is very helpful when trying to track down the person who "
+        "experienced a site crash."
+    )
 
     def add_arguments(self, parser):
-        parser.add_argument('session_id', nargs='+', type=str,
-                            help='user session id')
+        parser.add_argument("session_id", nargs="+", type=str, help="user session id")
 
     @signalcommand
     def handle(self, *args, **options):
-
-        key = options['session_id'][0]
+        key = options["session_id"][0]
 
         if not set(key).issubset(set(VALID_KEY_CHARS)):
             raise CommandError("malformed session key")
@@ -34,20 +34,20 @@ class Command(BaseCommand):
         session = engine.SessionStore(key)
         data = session.load()
 
-        print('Session to Expire: %s' % session.get_expiry_date())
-        print('Raw Data: %s' % data)
+        print("Session to Expire: %s" % session.get_expiry_date())
+        print("Raw Data: %s" % data)
         uid = data.get(SESSION_KEY, None)
         backend_path = data.get(BACKEND_SESSION_KEY, None)
 
         if backend_path is None:
-            print('No authentication backend associated with session')
+            print("No authentication backend associated with session")
             return
 
         if uid is None:
-            print('No user associated with session')
+            print("No user associated with session")
             return
 
-        print(u"User id: %s" % uid)
+        print("User id: %s" % uid)
 
         backend = load_backend(backend_path)
         user = backend.get_user(user_id=uid)
@@ -59,5 +59,5 @@ class Command(BaseCommand):
         print("full name: %s" % user.get_full_name())
         print("short name: %s" % user.get_short_name())
         print("username: %s" % user.get_username())
-        if hasattr(user, 'email'):
+        if hasattr(user, "email"):
             print("email: %s" % user.email)

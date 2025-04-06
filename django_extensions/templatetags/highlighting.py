@@ -28,7 +28,11 @@ Example:
 
 from django import template
 from django.template import (
-    Context, Node, Template, TemplateSyntaxError, Variable,
+    Context,
+    Node,
+    Template,
+    TemplateSyntaxError,
+    Variable,
 )
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
@@ -37,6 +41,7 @@ try:
     from pygments import highlight as pyghighlight
     from pygments.lexers import get_lexer_by_name
     from pygments.formatters import HtmlFormatter
+
     HAS_PYGMENTS = True
 except ImportError:  # pragma: no cover
     HAS_PYGMENTS = False
@@ -51,7 +56,7 @@ def parse_template(value):
 
 
 class CodeNode(Node):
-    def __init__(self, language, nodelist, name=''):
+    def __init__(self, language, nodelist, name=""):
         self.language = Variable(language)
         self.nodelist = nodelist
         if name:
@@ -91,7 +96,7 @@ def highlight(parser, token):
     """
     if not HAS_PYGMENTS:  # pragma: no cover
         raise ImportError("Please install 'pygments' library to use highlighting.")
-    nodelist = parser.parse(('endhighlight',))
+    nodelist = parser.parse(("endhighlight",))
     parser.delete_first_token()
     bits = token.split_contents()[1:]
     if len(bits) < 1:

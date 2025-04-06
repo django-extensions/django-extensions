@@ -2,8 +2,7 @@
 """
 MongoDB model fields emulating Django Extensions' additional model fields
 
-These fields are essentially identical to existing Extensions fields, but South hooks have been removed (since mongo requires no schema migration)
-
+These fields are essentially identical to existing Extensions fields.
 """
 
 import re
@@ -21,17 +20,17 @@ class SlugField(StringField):
     description = _("String (up to %(max_length)s)")
 
     def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = kwargs.get('max_length', 50)
+        kwargs["max_length"] = kwargs.get("max_length", 50)
         # Set db_index=True unless it's been set manually.
-        if 'db_index' not in kwargs:
-            kwargs['db_index'] = True
+        if "db_index" not in kwargs:
+            kwargs["db_index"] = True
         super().__init__(*args, **kwargs)
 
     def get_internal_type(self):
         return "SlugField"
 
     def formfield(self, **kwargs):
-        defaults = {'form_class': forms.SlugField}
+        defaults = {"form_class": forms.SlugField}
         defaults.update(kwargs)
         return super().formfield(**defaults)
 
@@ -60,18 +59,18 @@ class AutoSlugField(SlugField):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('blank', True)
-        kwargs.setdefault('editable', False)
+        kwargs.setdefault("blank", True)
+        kwargs.setdefault("editable", False)
 
-        populate_from = kwargs.pop('populate_from', None)
+        populate_from = kwargs.pop("populate_from", None)
         if populate_from is None:
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
 
-        self.slugify_function = kwargs.pop('slugify_function', slugify)
-        self.separator = kwargs.pop('separator', str('-'))
-        self.overwrite = kwargs.pop('overwrite', False)
+        self.slugify_function = kwargs.pop("slugify_function", slugify)
+        self.separator = kwargs.pop("separator", str("-"))
+        self.overwrite = kwargs.pop("overwrite", False)
         super().__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -82,9 +81,9 @@ class AutoSlugField(SlugField):
         If an alternate separator is used, it will also replace any instances
         of the default '-' separator with the new separator.
         """
-        re_sep = '(?:-|%s)' % re.escape(self.separator)
-        value = re.sub('%s+' % re_sep, self.separator, value)
-        return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
+        re_sep = "(?:-|%s)" % re.escape(self.separator)
+        value = re.sub("%s+" % re_sep, self.separator, value)
+        return re.sub(r"^%s+|%s+$" % (re_sep, re_sep), "", value)
 
     def slugify_func(self, content):
         return self.slugify_function(content)
@@ -92,12 +91,14 @@ class AutoSlugField(SlugField):
     def create_slug(self, model_instance, add):
         # get fields to populate from and slug field to set
         if not isinstance(self._populate_from, (list, tuple)):
-            self._populate_from = (self._populate_from, )
+            self._populate_from = (self._populate_from,)
         slug_field = model_instance._meta.get_field(self.attname)
 
         if add or self.overwrite:
             # slugify the original field content and set next step to 2
-            slug_for_field = lambda lookup_value: self.slugify_func(self.get_slug_fields(model_instance, lookup_value))
+            slug_for_field = lambda lookup_value: self.slugify_func(
+                self.get_slug_fields(model_instance, lookup_value)
+            )
             slug = self.separator.join(map(slug_for_field, self._populate_from))
             next = 2
         else:
@@ -137,12 +138,12 @@ class AutoSlugField(SlugField):
         # depending on the given slug, clean-up
         while not slug or queryset.filter(**kwargs):
             slug = original_slug
-            end = '%s%s' % (self.separator, next)
+            end = "%s%s" % (self.separator, next)
             end_len = len(end)
             if slug_len and len(slug) + end_len > slug_len:
-                slug = slug[:slug_len - end_len]
+                slug = slug[: slug_len - end_len]
                 slug = self._slug_strip(slug)
-            slug = '%s%s' % (slug, end)
+            slug = "%s%s" % (slug, end)
             kwargs[self.attname] = slug
             next += 1
         return slug
@@ -155,8 +156,10 @@ class AutoSlugField(SlugField):
                 attr = getattr(attr, elem)
             except AttributeError:
                 raise AttributeError(
-                    "value {} in AutoSlugField's 'populate_from' argument {} returned an error - {} has no attribute {}".format(
-                        elem, lookup_value, attr, elem))
+                    "value {} in AutoSlugField's 'populate_from' argument {} returned an error - {} has no attribute {}".format(  # noqa: E501
+                        elem, lookup_value, attr, elem
+                    )
+                )
 
         if callable(attr):
             return "%s" % attr()
@@ -180,7 +183,7 @@ class CreationDateTimeField(DateTimeField):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('default', datetime.datetime.now)
+        kwargs.setdefault("default", datetime.datetime.now)
         DateTimeField.__init__(self, *args, **kwargs)
 
     def get_internal_type(self):
@@ -217,10 +220,20 @@ class UUIDField(StringField):
 
     The field support all uuid versions which are natively supported by the uuid python module.
     For more information see: https://docs.python.org/lib/module-uuid.html
-    """
+    """  # noqa: E501
 
-    def __init__(self, verbose_name=None, name=None, auto=True, version=1, node=None, clock_seq=None, namespace=None, **kwargs):
-        kwargs['max_length'] = 36
+    def __init__(
+        self,
+        verbose_name=None,
+        name=None,
+        auto=True,
+        version=1,
+        node=None,
+        clock_seq=None,
+        namespace=None,
+        **kwargs,
+    ):
+        kwargs["max_length"] = 36
         self.auto = auto
         self.version = version
         if version == 1:
@@ -234,7 +247,10 @@ class UUIDField(StringField):
 
     def contribute_to_class(self, cls, name):
         if self.primary_key:
-            assert not cls._meta.has_auto_field, "A model can't have more than one AutoField: %s %s %s; have %s" % (self, cls, name, cls._meta.auto_field)
+            assert not cls._meta.has_auto_field, (
+                "A model can't have more than one AutoField: %s %s %s; have %s"
+                % (self, cls, name, cls._meta.auto_field)
+            )
             super().contribute_to_class(cls, name)
             cls._meta.has_auto_field = True
             cls._meta.auto_field = self

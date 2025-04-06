@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class PytestTestRunner:
     """Runs pytest to discover and run tests."""
 
@@ -17,15 +18,15 @@ class PytestTestRunner:
 
         argv = []
         if self.verbosity == 0:
-            argv.append('--quiet')
+            argv.append("--quiet")
         if self.verbosity == 2:
-            argv.append('--verbose')
+            argv.append("--verbose")
         if self.verbosity == 3:
-            argv.append('-vv')
+            argv.append("-vv")
         if self.failfast:
-            argv.append('--exitfirst')
+            argv.append("--exitfirst")
         if self.keepdb:
-            argv.append('--reuse-db')
+            argv.append("--reuse-db")
 
         argv.extend(test_labels)
         return pytest.main(argv)

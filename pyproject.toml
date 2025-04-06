@@ -1,0 +1,96 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=61.2" ]
+
+[project]
+name = "django-extensions"
+description = "Extensions for Django"
+readme = "README.rst"
+license = "MIT"
+maintainers = [
+  { name = "Bas van Oostveen", email = "v.oostveen@gmail.com" },
+]
+authors = [
+  { name = "Michael Trier", email = "mtrier@gmail.com" },
+]
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Framework :: Django :: 4.2",
+  "Framework :: Django :: 5.1",
+  "Framework :: Django :: 5.2",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Utilities",
+]
+dynamic = [ "version" ]
+dependencies = [
+  "django>=4.2",
+]
+
+urls.Changelog = "https://github.com/django-extensions/django-extensions/blob/main/CHANGELOG.md"
+urls.Documentation = "https://django-extensions.readthedocs.io/"
+urls.Homepage = "https://github.com/django-extensions/django-extensions"
+urls.Source = "https://github.com/django-extensions/django-extensions"
+urls.Tracker = "https://github.com/django-extensions/django-extensions/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "django_extensions.__version__" }
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+lint.select = [
+  # "ANN", # flake8-annotations
+  # "ARG", # flake8-arguments
+  # "B",   # flake8-bugbear
+  # "C4",  # flake8-comprehensions
+  # "C90", # mccabe complexity
+  # "D",   # pydocstyle
+  # "DJ",  # flake8-django
+  # "DTZ", # flake8-datetimez
+  "E", # pycodestyle
+  # "EM",  # flake8-errmsg
+  "F", # flake8
+  # "G",   # flake8-logging-format
+  # "I",   # isort
+  # "ISC", # flake8-implicit-str-concat
+  # "LOG", # flake8-logging
+  # "N",   # pep8-naming
+  # "PIE", # flake8-pie
+  # "PT",  # flake8-pytest-style
+  # "PTH", # flake8-use-pathlib
+  # "RET", # flake8-return
+  # "RUF", # ruff-specific rules
+  # "Q",   # flake8-quotes
+  # "SIM", # flake8-simplify
+  # "T10", # flake8-print
+  # "TCH", # flake8-type-checking
+  # "TRY", # tryceratops
+  # "UP",  # pyupgrade
+]
+lint.ignore = [ "E731" ]
+lint.per-file-ignores."tests/**/test_*.py" = [ "E501" ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
+norecursedirs = "venv* .tox .eggs build dist django_extensions.egg-info django_extensions/mongodb"
+addopts = "--doctest-modules --doctest-ignore-import-errors --nomigrations --cov=django_extensions --cov-report html --cov-report term"
+
+[tool.mypy]
+plugins = [ "mypy_django_plugin.main" ]
+
+[tool.django-stubs]
+django_settings_module = "django_extensions.settings"

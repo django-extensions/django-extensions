@@ -58,7 +58,7 @@ def my_import(name):
     except ImportError as err:
         raise JobError("Failed to import %s with error %s" % (name, err))
 
-    mods = name.split('.')
+    mods = name.split(".")
     if len(mods) > 1:
         for mod in mods[1:]:
             imp = getattr(imp, mod)
@@ -67,19 +67,30 @@ def my_import(name):
 
 def find_jobs(jobs_dir):
     try:
-        return sorted([f[:-3] for f in os.listdir(jobs_dir) if not f.startswith('_') and f.endswith(".py")])
+        return sorted(
+            [
+                f[:-3]
+                for f in os.listdir(jobs_dir)
+                if not f.startswith("_") and f.endswith(".py")
+            ]
+        )
     except OSError:
         return []
 
 
 def find_job_module(app_name: str, when: Optional[str] = None) -> str:
     """Find the directory path to a job module."""
-    parts = app_name.split('.')
-    parts.append('jobs')
+    parts = app_name.split(".")
+    parts.append("jobs")
     if when:
         parts.append(when)
     module_name = ".".join(parts)
     module = importlib.import_module(module_name)
+
+    if not hasattr(module, "__path__"):
+        # module here is a non-package module, eg jobs.py
+        raise ImportError
+
     return module.__path__[0]
 
 
@@ -90,7 +101,9 @@ def import_job(app_name, name, when=None):
     try:
         job = job_mod.Job
     except AttributeError:
-        raise JobError("Job module %s does not contain class instance named 'Job'" % jobmodule)
+        raise JobError(
+            "Job module %s does not contain class instance named 'Job'" % jobmodule
+        )
     if when and not (job.when == when or job.when is None):
         raise JobError("Job %s is not a %s job." % (jobmodule, when))
     return job
@@ -112,7 +125,16 @@ def get_jobs(when=None, only_scheduled=False):
     _jobs = {}
 
     for app_name in [app.name for app in apps.get_app_configs()]:
-        scandirs = (None, 'minutely', 'quarter_hourly', 'hourly', 'daily', 'weekly', 'monthly', 'yearly')
+        scandirs = (
+            None,
+            "minutely",
+            "quarter_hourly",
+            "hourly",
+            "daily",
+            "weekly",
+            "monthly",
+            "yearly",
+        )
         if when:
             scandirs = None, when
         for subdir in scandirs:
@@ -147,7 +169,13 @@ def get_job(app_name, job_name):
         raise KeyError("Job not found: %s" % job_name)
 
 
-def print_jobs(when=None, only_scheduled=False, show_when=True, show_appname=False, show_header=True):
+def print_jobs(
+    when=None,
+    only_scheduled=False,
+    show_when=True,
+    show_appname=False,
+    show_header=True,
+):
     jobmap = get_jobs(when, only_scheduled=only_scheduled)
     print("Job List: %i jobs" % len(jobmap))
     jlist = sorted(jobmap.keys())

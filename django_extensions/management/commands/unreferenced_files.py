@@ -11,11 +11,11 @@ from django_extensions.management.utils import signalcommand
 
 
 class Command(BaseCommand):
-    help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."
+    help = "Prints a list of all files in MEDIA_ROOT that are not referenced in the database."  # noqa: E501
 
     @signalcommand
     def handle(self, *args, **options):
-        if not getattr(settings, 'MEDIA_ROOT'):
+        if not getattr(settings, "MEDIA_ROOT"):
             raise CommandError("MEDIA_ROOT is not set, nothing to do")
 
         # Get a list of all files under MEDIA_ROOT

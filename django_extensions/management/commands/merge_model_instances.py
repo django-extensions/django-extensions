@@ -13,7 +13,9 @@ def get_model_to_deduplicate():
     for model in models:
         print("%s. %s" % (iterator, model.__name__))
         iterator += 1
-    model_choice = int(input("Enter the number of the model you would like to de-duplicate:"))
+    model_choice = int(
+        input("Enter the number of the model you would like to de-duplicate:")
+    )
     model_to_deduplicate = models[model_choice - 1]
     return model_to_deduplicate
 
@@ -26,7 +28,11 @@ def get_field_names(model):
         iterator += 1
     validated = False
     while not validated:
-        first_field = int(input("Enter the number of the (first) field you would like to de-duplicate."))
+        first_field = int(
+            input(
+                "Enter the number of the (first) field you would like to de-duplicate."
+            )
+        )
         if first_field in range(1, iterator):
             validated = True
         else:
@@ -35,9 +41,7 @@ def get_field_names(model):
 
     done = False
     while not done:
-        available_fields = [
-            f for f in fields if f not in fields_to_deduplicate
-        ]
+        available_fields = [f for f in fields if f not in fields_to_deduplicate]
         iterator = 1
         for field in available_fields:
             print("%s. %s" % (iterator, field))
@@ -47,7 +51,7 @@ def get_field_names(model):
         validated = False
         while not validated:
             print("You are currently deduplicating on the following fields:")
-            print('\n'.join(fields_to_deduplicate) + '\n')
+            print("\n".join(fields_to_deduplicate) + "\n")
 
             additional_field = input("""
                 Enter the number of the field you would like to de-duplicate.
@@ -109,9 +113,7 @@ class Command(BaseCommand):
             kwargs = {}
             for field_name in field_names:
                 instance_field_value = instance.__getattribute__(field_name)
-                kwargs.update({
-                    field_name: instance_field_value
-                })
+                kwargs.update({field_name: instance_field_value})
             try:
                 model.objects.get(**kwargs)
             except model.MultipleObjectsReturned:
@@ -123,10 +125,16 @@ class Command(BaseCommand):
                     primary_object = instances.last()
                     alias_objects = instances.exclude(pk=primary_object.pk)
 
-                primary_object, deleted_objects, deleted_objects_count = self.merge_model_instances(primary_object, alias_objects)
+                primary_object, deleted_objects, deleted_objects_count = (
+                    self.merge_model_instances(primary_object, alias_objects)
+                )
                 total_deleted_objects_count += deleted_objects_count
 
-        print("Successfully deleted {} model instances.".format(total_deleted_objects_count))
+        print(
+            "Successfully deleted {} model instances.".format(
+                total_deleted_objects_count
+            )
+        )
 
     @transaction.atomic()
     def merge_model_instances(self, primary_object, alias_objects):
@@ -138,15 +146,15 @@ class Command(BaseCommand):
         generic_fields = get_generic_fields()
 
         # get related fields
-        related_fields = list(filter(
-            lambda x: x.is_relation is True,
-            primary_object._meta.get_fields()))
+        related_fields = list(
+            filter(lambda x: x.is_relation is True, primary_object._meta.get_fields())
+        )
 
-        many_to_many_fields = list(filter(
-            lambda x: x.many_to_many is True, related_fields))
+        many_to_many_fields = list(
+            filter(lambda x: x.many_to_many is True, related_fields)
+        )
 
-        related_fields = list(filter(
-            lambda x: x.many_to_many is False, related_fields))
+        related_fields = list(filter(lambda x: x.many_to_many is False, related_fields))
 
         # Loop through all alias objects and migrate their references to the
         # primary object
@@ -178,7 +186,8 @@ class Command(BaseCommand):
                             setattr(
                                 instance,
                                 many_to_many_field.m2m_field_name(),
-                                primary_object)
+                                primary_object,
+                            )
                             instance.save()
                             # TODO: Here, try to delete duplicate instances that are
                             # disallowed by a unique_together constraint
@@ -199,8 +208,11 @@ class Command(BaseCommand):
                         setattr(primary_object, alias_varname, related_object)
                         primary_object.save()
                     elif related_field.one_to_one:
-                        self.stdout.write("Deleted {} with id {}\n".format(
-                            related_object, related_object.id))
+                        self.stdout.write(
+                            "Deleted {} with id {}\n".format(
+                                related_object, related_object.id
+                            )
+                        )
                         related_object.delete()
 
             for field in generic_fields:
@@ -214,8 +226,9 @@ class Command(BaseCommand):
 
             if alias_object.id:
                 deleted_objects += [alias_object]
-                self.stdout.write("Deleted {} with id {}\n".format(
-                    alias_object, alias_object.id))
+                self.stdout.write(
+                    "Deleted {} with id {}\n".format(alias_object, alias_object.id)
+                )
                 alias_object.delete()
                 deleted_objects_count += 1
 

@@ -37,7 +37,7 @@ tsd = {
 }
 
 # convert varchar -> CharField
-v2c = re.compile(r'varchar\((\d+)\)')
+v2c = re.compile(r"varchar\((\d+)\)")
 
 
 def find_index(fks, id_):
@@ -68,13 +68,18 @@ def addparentstofks(rels, fks):
 
 
 def dia2django(archivo):
-    models_txt = ''
+    models_txt = ""
     f = codecs.open(archivo, "rb")
     # dia files are gzipped
     data = gzip.GzipFile(fileobj=f).read()
     ppal = parseString(data)
-    # diagram -> layer -> object -> UML - Class -> name, (attribs : composite -> name,type)
-    datos = ppal.getElementsByTagName("dia:diagram")[0].getElementsByTagName("dia:layer")[0].getElementsByTagName("dia:object")
+    # diagram -> layer -> object -> UML - Class -> name,
+    #   (attribs : composite -> name,type)
+    datos = (
+        ppal.getElementsByTagName("dia:diagram")[0]
+        .getElementsByTagName("dia:layer")[0]
+        .getElementsByTagName("dia:object")
+    )
     clases = {}
     herit = []
     imports = str("")
@@ -85,7 +90,11 @@ def dia2django(archivo):
             for j in i.childNodes:
                 if j.nodeType == Node.ELEMENT_NODE and j.hasAttributes():
                     if j.getAttribute("name") == "name":
-                        actclas = j.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
+                        actclas = (
+                            j.getElementsByTagName("dia:string")[0]
+                            .childNodes[0]
+                            .data[1:-1]
+                        )
                         myname = "\nclass %s(models.Model) :\n" % actclas
                         clases[actclas] = [[], myid, myname, 0]
                     if j.getAttribute("name") == "attributes":
@@ -94,21 +103,49 @@ def dia2django(archivo):
                                 # Look for the attribute name and type
                                 for k in ll.getElementsByTagName("dia:attribute"):
                                     if k.getAttribute("name") == "name":
-                                        nc = k.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
+                                        nc = (
+                                            k.getElementsByTagName("dia:string")[0]
+                                            .childNodes[0]
+                                            .data[1:-1]
+                                        )
                                     elif k.getAttribute("name") == "type":
-                                        tc = k.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
+                                        tc = (
+                                            k.getElementsByTagName("dia:string")[0]
+                                            .childNodes[0]
+                                            .data[1:-1]
+                                        )
                                     elif k.getAttribute("name") == "value":
-                                        val = k.getElementsByTagName("dia:string")[0].childNodes[0].data[1:-1]
-                                        if val == '##':
-                                            val = ''
-                                    elif k.getAttribute("name") == "visibility" and k.getElementsByTagName("dia:enum")[0].getAttribute("val") == "2":
-                                        if tc.replace(" ", "").lower().startswith("manytomanyfield("):
-                                            # If we find a class not in our model that is marked as being to another model
+                                        val = (
+                                            k.getElementsByTagName("dia:string")[0]
+                                            .childNodes[0]
+                                            .data[1:-1]
+                                        )
+                                        if val == "##":
+                                            val = ""
+                                    elif (
+                                        k.getAttribute("name") == "visibility"
+                                        and k.getElementsByTagName("dia:enum")[
+                                            0
+                                        ].getAttribute("val")
+                                        == "2"
+                                    ):
+                                        if (
+                                            tc.replace(" ", "")
+                                            .lower()
+                                            .startswith("manytomanyfield(")
+                                        ):
+                                            # If we find a class not in our model that
+                                            # is marked as being to another model
                                             newc = tc.replace(" ", "")[16:-1]
                                             if dependclasses.count(newc) == 0:
                                                 dependclasses.append(newc)
-                                        if tc.replace(" ", "").lower().startswith("foreignkey("):
-                                            # If we find a class not in our model that is marked as being to another model
+                                        if (
+                                            tc.replace(" ", "")
+                                            .lower()
+                                            .startswith("foreignkey(")
+                                        ):
+                                            # If we find a class not in our model that
+                                            # is marked as being to another model
                                             newc = tc.replace(" ", "")[11:-1]
                                             if dependclasses.count(newc) == 0:
                                                 dependclasses.append(newc)
@@ -123,14 +160,17 @@ def dia2django(archivo):
                                     elif clases[actclas][0].count(myfor) == 0:
                                         # Adding related class
                                         if myfor not in dependclasses:
-                                            # In case we are using Auth classes or external via protected dia visibility
+                                            # In case we are using Auth classes or
+                                            # external via protected dia visibility
                                             clases[actclas][0].append(myfor)
                                     tc = "models." + tc
                                     if len(val) > 0:
                                         tc = tc.replace(")", "," + val + ")")
                                 elif tc.find("Field") != -1:
                                     if tc.count("()") > 0 and len(val) > 0:
-                                        tc = "models.%s" % tc.replace(")", "," + val + ")")
+                                        tc = "models.%s" % tc.replace(
+                                            ")", "," + val + ")"
+                                        )
                                     else:
                                         tc = "models.%s(%s)" % (tc, val)
                                 elif tc.replace(" ", "").startswith("ForeignKey("):
@@ -147,34 +187,46 @@ def dia2django(archivo):
                                     if len(val) > 0:
                                         tc = tc.replace(")", "," + val + ")")
                                 elif varch is None:
-                                    tc = "models." + tsd[tc.strip().lower()] + "(" + val + ")"
+                                    tc = (
+                                        "models."
+                                        + tsd[tc.strip().lower()]
+                                        + "("
+                                        + val
+                                        + ")"
+                                    )
                                 else:
-                                    tc = "models.CharField(max_length=" + varch.group(1) + ")"
+                                    tc = (
+                                        "models.CharField(max_length="
+                                        + varch.group(1)
+                                        + ")"
+                                    )
                                     if len(val) > 0:
                                         tc = tc.replace(")", ", " + val + " )")
                                 if not (nc == "id" and tc == "AutoField()"):
                                     clases[actclas][2] += "    %s = %s\n" % (nc, tc)
         elif i.getAttribute("type") == "UML - Generalization":
-            mycons = ['A', 'A']
+            mycons = ["A", "A"]
             a = i.getElementsByTagName("dia:connection")
             for j in a:
                 if len(j.getAttribute("to")):
                     mycons[int(j.getAttribute("handle"))] = j.getAttribute("to")
             print(mycons)
-            if 'A' not in mycons:
+            if "A" not in mycons:
                 herit.append(mycons)
         elif i.getAttribute("type") == "UML - SmallPackage":
             a = i.getElementsByTagName("dia:string")
             for j in a:
                 if len(j.childNodes[0].data[1:-1]):
-                    imports += str("from %s.models import *" % j.childNodes[0].data[1:-1])
+                    imports += str(
+                        "from %s.models import *" % j.childNodes[0].data[1:-1]
+                    )
 
     addparentstofks(herit, clases)
     # Ordering the appearance of classes
     # First we make a list of the classes each classs is related to.
     ordered = []
     for j, k in clases.items():
-        k[2] += "\n    def __str__(self):\n        return u\"\"\n"
+        k[2] += '\n    def __str__(self):\n        return u""\n'
         for fk in k[0]:
             if fk not in dependclasses:
                 clases[fk][3] += 1
@@ -191,10 +243,13 @@ def dia2django(archivo):
         if mark == i:
             i += 1
         else:
-            # swap %s in %s" % ( ordered[i] , ordered[mark]) to make ordered[i] to be at the end
+            # swap ( ordered[i] , ordered[mark]) to make ordered[i] to be at the end
             if ordered[i][0] in ordered[mark][1] and ordered[mark][0] in ordered[i][1]:
                 # Resolving simplistic circular ForeignKeys
-                print("Not able to resolve circular ForeignKeys between %s and %s" % (ordered[i][1], ordered[mark][0]))
+                print(
+                    "Not able to resolve circular ForeignKeys between %s and %s"
+                    % (ordered[i][1], ordered[mark][0])
+                )
                 break
             a = ordered[i]
             ordered[i] = ordered[mark]
@@ -205,12 +260,12 @@ def dia2django(archivo):
     if imports:
         models_txt = str(imports)
     for i in ordered:
-        models_txt += '%s\n' % str(i[3])
+        models_txt += "%s\n" % str(i[3])
 
     return models_txt
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) == 2:
         dia2django(sys.argv[1])
     else:

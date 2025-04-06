@@ -7,6 +7,7 @@ set_fake_passwords.py
     setting.DEBUG is True.
 
 """
+
 from typing import List
 
 from django.conf import settings
@@ -15,41 +16,48 @@ from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import signalcommand
 
-DEFAULT_FAKE_PASSWORD = 'password'
+DEFAULT_FAKE_PASSWORD = "password"
 
 
 class Command(BaseCommand):
-    help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (DEFAULT_FAKE_PASSWORD, )
+    help = 'DEBUG only: sets all user passwords to a common value ("%s" by default)' % (
+        DEFAULT_FAKE_PASSWORD,
+    )
     requires_system_checks: List[str] = []
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--prompt', dest='prompt_passwd', default=False,
-            action='store_true',
-            help='Prompts for the new password to apply to all users'
+            "--prompt",
+            dest="prompt_passwd",
+            default=False,
+            action="store_true",
+            help="Prompts for the new password to apply to all users",
         )
         parser.add_argument(
-            '--password', dest='default_passwd', default=DEFAULT_FAKE_PASSWORD,
-            help='Use this as default password.'
+            "--password",
+            dest="default_passwd",
+            default=DEFAULT_FAKE_PASSWORD,
+            help="Use this as default password.",
         )
 
     @signalcommand
     def handle(self, *args, **options):
         if not settings.DEBUG:
-            raise CommandError('Only available in debug mode')
+            raise CommandError("Only available in debug mode")
 
-        if options['prompt_passwd']:
+        if options["prompt_passwd"]:
             from getpass import getpass
-            passwd = getpass('Password: ')
+
+            passwd = getpass("Password: ")
             if not passwd:
-                raise CommandError('You must enter a valid password')
+                raise CommandError("You must enter a valid password")
         else:
-            passwd = options['default_passwd']
+            passwd = options["default_passwd"]
 
         User = get_user_model()
         user = User()
         user.set_password(passwd)
         count = User.objects.all().update(password=user.password)
 
-        print('Reset %d passwords' % count)
+        print("Reset %d passwords" % count)

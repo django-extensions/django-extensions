@@ -47,7 +47,7 @@ minutes Eric walks you through a half a dozen command extensions. There is also 
 Requirements
 ============
 
-Django Extensions requires Django 3.2 or later.
+Django Extensions requires Django 4.2 or later.
 
 
 Getting It
@@ -57,11 +57,11 @@ You can get Django Extensions by using pip::
 
     $ pip install django-extensions
 
-If you want to install it from source, grab the git repository from GitHub and run setup.py::
+If you want to install it from source, grab the git repository from GitHub::
 
     $ git clone git://github.com/django-extensions/django-extensions.git
     $ cd django-extensions
-    $ python setup.py install
+    $ pip install .
 
 
 Installing It

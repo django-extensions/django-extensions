@@ -4,7 +4,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import UniqueConstraint
 from django.db.models.signals import pre_save
 
-from django_extensions.db.fields import AutoSlugField, ModificationDateTimeField, RandomCharField, ShortUUIDField
+from django_extensions.db.fields import (
+    AutoSlugField,
+    ModificationDateTimeField,
+    RandomCharField,
+    ShortUUIDField,
+)
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import ActivatorModel, TimeStampedModel
 
@@ -16,14 +21,14 @@ class Secret(models.Model):
     text = models.TextField(blank=True, null=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Name(models.Model):
     name = models.CharField(max_length=50)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Personality(models.Model):
@@ -40,39 +45,39 @@ class Note(models.Model):
     club = models.ForeignKey(Club, null=True, on_delete=models.CASCADE)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Neighborhood(models.Model):
     name = models.CharField(max_length=50)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Bank(models.Model):
     name = models.CharField(max_length=50)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Person(models.Model):
     name = models.ForeignKey(Name, on_delete=models.CASCADE)
     age = models.PositiveIntegerField()
-    children = models.ManyToManyField('self')
+    children = models.ManyToManyField("self")
     notes = models.ManyToManyField(Note)
     personality = models.OneToOneField(
         Personality,
         null=True,
         on_delete=models.CASCADE,
     )
-    clubs = models.ManyToManyField(Club, through='testapp.Membership')
+    clubs = models.ManyToManyField(Club, through="testapp.Membership")
     neighborhood = models.ForeignKey(Neighborhood, on_delete=models.SET_NULL, null=True)
     current_bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class Membership(models.Model):
@@ -85,31 +90,28 @@ class Post(ActivatorModel):
     title = models.CharField(max_length=255)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class PostWithTitleOrdering(Post):
     class Meta:
         proxy = True
-        ordering = ['title']
+        ordering = ["title"]
 
 
 class DummyRelationModel(models.Model):
-
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class SecondDummyRelationModel(models.Model):
-
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ThirdDummyRelationModel(models.Model):
-
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class PostWithUniqFieldCompat(models.Model):
@@ -118,101 +120,118 @@ class PostWithUniqFieldCompat(models.Model):
     introduced Meta.constraints and suggests using it instead of Meta.unique_together
     this is left only to ensure compatibility with Meta.unique_together
     """
+
     uniq_field = UniqField(
-        max_length=255,
-        boolean_attr=True,
-        non_boolean_attr='non_boolean_attr'
+        max_length=255, boolean_attr=True, non_boolean_attr="non_boolean_attr"
     )
     common_field = models.CharField(max_length=10)
     another_common_field = models.CharField(max_length=10)
     many_to_one_field = models.ForeignKey(DummyRelationModel, on_delete=models.CASCADE)
-    one_to_one_field = models.OneToOneField(SecondDummyRelationModel, on_delete=models.CASCADE)
-    many_to_many_field = models.ManyToManyField(ThirdDummyRelationModel, related_name='posts_with_uniq')
+    one_to_one_field = models.OneToOneField(
+        SecondDummyRelationModel, on_delete=models.CASCADE
+    )
+    many_to_many_field = models.ManyToManyField(
+        ThirdDummyRelationModel, related_name="posts_with_uniq"
+    )
 
     class Meta:
-        app_label = 'django_extensions'
-        unique_together = ('common_field', 'uniq_field',)
+        app_label = "django_extensions"
+        unique_together = (
+            "common_field",
+            "uniq_field",
+        )
 
 
 class ReverseModelCompat(models.Model):
-    post_field = models.ForeignKey(PostWithUniqFieldCompat, related_name='reverse_models', on_delete=models.CASCADE)
+    post_field = models.ForeignKey(
+        PostWithUniqFieldCompat, related_name="reverse_models", on_delete=models.CASCADE
+    )
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class InheritedFromPostWithUniqFieldCompat(PostWithUniqFieldCompat):
     new_field = models.CharField(max_length=10)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class PostWithUniqField(models.Model):
     uniq_field = UniqField(
-        max_length=255,
-        boolean_attr=True,
-        non_boolean_attr='non_boolean_attr'
+        max_length=255, boolean_attr=True, non_boolean_attr="non_boolean_attr"
     )
     common_field = models.CharField(max_length=10)
     another_common_field = models.CharField(max_length=10)
     many_to_one_field = models.ForeignKey(DummyRelationModel, on_delete=models.CASCADE)
-    one_to_one_field = models.OneToOneField(SecondDummyRelationModel, on_delete=models.CASCADE)
-    many_to_many_field = models.ManyToManyField(ThirdDummyRelationModel, related_name='posts22_with_uniq')
+    one_to_one_field = models.OneToOneField(
+        SecondDummyRelationModel, on_delete=models.CASCADE
+    )
+    many_to_many_field = models.ManyToManyField(
+        ThirdDummyRelationModel, related_name="posts22_with_uniq"
+    )
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
         constraints = [
-            models.UniqueConstraint(fields=('common_field', 'uniq_field'), name='unique_common_uniq_pair'),
-            models.CheckConstraint(check=~models.Q(common_field=models.F("another_common_field")), name='common_and_another_common_differ'),
+            models.UniqueConstraint(
+                fields=("common_field", "uniq_field"), name="unique_common_uniq_pair"
+            ),
+            models.CheckConstraint(
+                check=~models.Q(common_field=models.F("another_common_field")),
+                name="common_and_another_common_differ",
+            ),
         ]
 
 
 class ReverseModel(models.Model):
-    post_field = models.ForeignKey(PostWithUniqField, related_name='reverse_models', on_delete=models.CASCADE)
+    post_field = models.ForeignKey(
+        PostWithUniqField, related_name="reverse_models", on_delete=models.CASCADE
+    )
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class InheritedFromPostWithUniqField(PostWithUniqField):
     new_field = models.CharField(max_length=10)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class AbstractInheritanceTestModelParent(models.Model):
     my_field_that_my_child_will_inherit = models.BooleanField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
         abstract = True
 
 
 class AbstractInheritanceTestModelChild(AbstractInheritanceTestModelParent):
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class SluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from="title")
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class SluggedWithConstraintsTestModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from="title")
     category = models.CharField(max_length=20, null=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
         constraints = [
             UniqueConstraint(
-                fields=['slug', 'category'],
+                fields=["slug", "category"],
                 name="unique_slug_and_category",
             ),
         ]
@@ -220,12 +239,12 @@ class SluggedWithConstraintsTestModel(models.Model):
 
 class SluggedWithUniqueTogetherTestModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from="title")
     category = models.CharField(max_length=20, null=True)
 
     class Meta:
-        app_label = 'django_extensions'
-        unique_together = ['slug', 'category']
+        app_label = "django_extensions"
+        unique_together = ["slug", "category"]
 
 
 class OverridedFindUniqueAutoSlugField(AutoSlugField):
@@ -236,19 +255,18 @@ class OverridedFindUniqueAutoSlugField(AutoSlugField):
 
 class OverridedFindUniqueModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = OverridedFindUniqueAutoSlugField(populate_from='title')
+    slug = OverridedFindUniqueAutoSlugField(populate_from="title")
 
 
 class CustomFuncSluggedTestModel(models.Model):
-
     def slugify_function(self, content):
         return content.upper()
 
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from="title")
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class CustomFuncPrecedenceSluggedTestModel(models.Model):
@@ -261,23 +279,23 @@ class CustomFuncPrecedenceSluggedTestModel(models.Model):
     slugify_function = custom_slug_one
 
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title', slugify_function=custom_slug_two)
+    slug = AutoSlugField(populate_from="title", slugify_function=custom_slug_two)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ChildSluggedTestModel(SluggedTestModel):
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class SluggedTestNoOverwriteOnAddModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='title', overwrite_on_add=False)
+    slug = AutoSlugField(populate_from="title", overwrite_on_add=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 def get_readable_title(instance):
@@ -286,10 +304,10 @@ def get_readable_title(instance):
 
 class ModelMethodSluggedTestModel(models.Model):
     title = models.CharField(max_length=42)
-    slug = AutoSlugField(populate_from='get_readable_title')
+    slug = AutoSlugField(populate_from="get_readable_title")
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
     def get_readable_title(self):
         return get_readable_title(self)
@@ -300,7 +318,7 @@ class FunctionSluggedTestModel(models.Model):
     slug = AutoSlugField(populate_from=get_readable_title)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class FKSluggedTestModel(models.Model):
@@ -308,15 +326,17 @@ class FKSluggedTestModel(models.Model):
     slug = AutoSlugField(populate_from="related_field__title")
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class FKSluggedTestModelCallable(models.Model):
-    related_field = models.ForeignKey(ModelMethodSluggedTestModel, on_delete=models.CASCADE)
+    related_field = models.ForeignKey(
+        ModelMethodSluggedTestModel, on_delete=models.CASCADE
+    )
     slug = AutoSlugField(populate_from="related_field__get_readable_title")
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class JSONFieldTestModel(models.Model):
@@ -324,7 +344,7 @@ class JSONFieldTestModel(models.Model):
     j_field = JSONField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ShortUUIDTestModel_field(models.Model):
@@ -332,93 +352,93 @@ class ShortUUIDTestModel_field(models.Model):
     uuid_field = ShortUUIDField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ShortUUIDTestModel_pk(models.Model):
     uuid_field = ShortUUIDField(primary_key=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ShortUUIDTestAgregateModel(ShortUUIDTestModel_pk):
     a = models.IntegerField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ShortUUIDTestManyToManyModel(ShortUUIDTestModel_pk):
     many = models.ManyToManyField(ShortUUIDTestModel_field)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModel(models.Model):
     random_char_field = RandomCharField(length=8, unique=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelUnique(models.Model):
     random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelAlphaDigits(models.Model):
     random_char_field = RandomCharField(length=8, unique=True)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelLowercaseAlphaDigits(models.Model):
     random_char_field = RandomCharField(length=8, lowercase=True)
 
     class Meta:
-        app_label = 'django_extensions'
-        verbose_name = 'lowercase alpha digits'
+        app_label = "django_extensions"
+        verbose_name = "lowercase alpha digits"
 
 
 class RandomCharTestModelUppercaseAlphaDigits(models.Model):
     random_char_field = RandomCharField(length=8, uppercase=True)
 
     class Meta:
-        app_label = 'django_extensions'
-        verbose_name = 'uppercase alpha digits'
+        app_label = "django_extensions"
+        verbose_name = "uppercase alpha digits"
 
 
 class RandomCharTestModelLowercase(models.Model):
     random_char_field = RandomCharField(length=8, lowercase=True, include_digits=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelUppercase(models.Model):
     random_char_field = RandomCharField(length=8, uppercase=True, include_digits=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelAlpha(models.Model):
     random_char_field = RandomCharField(length=8, include_digits=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelDigits(models.Model):
     random_char_field = RandomCharField(length=8, include_alpha=False)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelPunctuation(models.Model):
@@ -430,7 +450,7 @@ class RandomCharTestModelPunctuation(models.Model):
     )
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class RandomCharTestModelUniqueTogether(models.Model):
@@ -438,27 +458,27 @@ class RandomCharTestModelUniqueTogether(models.Model):
     common_field = models.CharField(max_length=10)
 
     class Meta:
-        app_label = 'django_extensions'
-        unique_together = ('random_char_field', 'common_field')
+        app_label = "django_extensions"
+        unique_together = ("random_char_field", "common_field")
 
 
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class UnicodeVerboseNameModel(models.Model):
-    cafe = models.IntegerField(verbose_name=u'café')
+    cafe = models.IntegerField(verbose_name="café")
     parent_cafe = models.ForeignKey(
-        'self',
-        related_name='children',
+        "self",
+        related_name="children",
         on_delete=models.CASCADE,
-        verbose_name='café latte',
+        verbose_name="café latte",
     )
 
     class Meta:
-        app_label = 'django_extensions'
-        verbose_name = u'café unicode model'
+        app_label = "django_extensions"
+        verbose_name = "café unicode model"
 
 
 class Permission(models.Model):
@@ -471,20 +491,20 @@ class UniqueTestAppModel(models.Model):
 
 
 class SqlDiff(models.Model):
-    number = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
+    number = models.CharField(max_length=40, null=True, verbose_name="Chargennummer")
     creator = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
-        index_together = ['number', 'creator']
+        indexes = [models.Index(fields=["number", "creator"])]
 
 
 class SqlDiffIndexes(models.Model):
-    first = models.CharField(max_length=40, null=True, verbose_name='Chargennummer')
+    first = models.CharField(max_length=40, null=True, verbose_name="Chargennummer")
     second = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         indexes = [
-            models.Index(fields=['first', 'second']),
+            models.Index(fields=["first", "second"]),
         ]
 
 
@@ -493,7 +513,7 @@ class SqlDiffUniqueTogether(models.Model):
     bbb = models.CharField(max_length=20)
 
     class Meta:
-        unique_together = ['aaa', 'bbb']
+        unique_together = ["aaa", "bbb"]
 
 
 class Photo(models.Model):
@@ -505,7 +525,7 @@ class CustomModelModificationDateTimeField(models.Model):
     custom_modified = ModificationDateTimeField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class ModelModificationDateTimeField(models.Model):
@@ -513,7 +533,7 @@ class ModelModificationDateTimeField(models.Model):
     modified = ModificationDateTimeField()
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class DisabledUpdateModelModificationDateTimeField(models.Model):
@@ -523,7 +543,7 @@ class DisabledUpdateModelModificationDateTimeField(models.Model):
     update_modified = False
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class HasOwnerModel(models.Model):
@@ -531,7 +551,7 @@ class HasOwnerModel(models.Model):
     owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 class MultipleFieldsAndMethods(models.Model):
@@ -551,11 +571,11 @@ class MultipleFieldsAndMethods(models.Model):
     def has_args_kwargs(self, *args, **kwargs):
         pass
 
-    def has_defaults(self, one=1, two='Two', true=True, false=False, none=None):
+    def has_defaults(self, one=1, two="Two", true=True, false=False, none=None):
         pass
 
     class Meta:
-        app_label = 'django_extensions'
+        app_label = "django_extensions"
 
 
 def dummy_handler(sender, instance, **kwargs):

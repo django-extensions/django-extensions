@@ -23,10 +23,11 @@ def null_technical_500_response(request, exc_type, exc_value, tb, status_code=50
     Runserver_plus only needs needs traceback frames relevant to WSGIHandler Middleware objects, so
     only store the traceback if it is for a WSGIHandler. If an exception is not raised here, Django
     eventually throws an error for not getting a valid response object for its debug view.
-    """
+    """  # noqa: E501
     try:
-        # Store the most recent tb for WSGI requests. The class can be found in the second frame of the tb
-        if isinstance(tb.tb_next.tb_frame.f_locals.get('self'), WSGIHandler):
+        # Store the most recent tb for WSGI requests.
+        # The class can be found in the second frame of the tb
+        if isinstance(tb.tb_next.tb_frame.f_locals.get("self"), WSGIHandler):
             tld.wsgi_tb = tb
         elif tld.wsgi_tb:
             tb = tld.wsgi_tb

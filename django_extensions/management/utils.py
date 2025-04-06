@@ -12,7 +12,8 @@ def _make_writeable(filename):
     read-only.
     """
     import stat
-    if sys.platform.startswith('java'):
+
+    if sys.platform.startswith("java"):
         # On Jython there is no os.access()
         return
     if not os.access(filename, os.W_OK):
@@ -37,7 +38,9 @@ def setup_logger(logger, stream, filename=None, fmt=None):
         if filename:
             outfile = logging.FileHandler(filename)
             outfile.setLevel(logging.INFO)
-            outfile.setFormatter(logging.Formatter("%(asctime)s " + (fmt if fmt else '%(message)s')))
+            outfile.setFormatter(
+                logging.Formatter("%(asctime)s " + (fmt if fmt else "%(message)s"))
+            )
             logger.addHandler(outfile)
 
 
@@ -45,7 +48,6 @@ class RedirectHandler(logging.Handler):
     """Redirect logging sent to one logger (name) to another."""
 
     def __init__(self, name, level=logging.DEBUG):
-        # Contemplate feasibility of copying a destination (allow original handler) and redirecting.
         logging.Handler.__init__(self, level)
         self.name = name
         self.logger = logging.getLogger(name)
@@ -55,13 +57,19 @@ class RedirectHandler(logging.Handler):
 
 
 def signalcommand(func):
-    """Python decorator for management command handle defs that sends out a pre/post signal."""
+    """decorator for management command handle defs that sends out a pre/post signal."""
 
     def inner(self, *args, **kwargs):
         pre_command.send(self.__class__, args=args, kwargs=kwargs)
-        ret = func(self, *args, **kwargs)
-        post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
+        try:
+            ret = func(self, *args, **kwargs)
+        except Exception as e:
+            post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=e)
+            raise
+        else:
+            post_command.send(self.__class__, args=args, kwargs=kwargs, outcome=ret)
         return ret
+
     return inner
 
 
@@ -69,6 +77,7 @@ def has_ipdb():
     try:
         import ipdb  # noqa
         import IPython  # noqa
+
         return True
     except ImportError:
         return False

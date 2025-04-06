@@ -19,14 +19,14 @@ from django_extensions.utils.deprecation import RemovedInNextVersionWarning
 
 
 SHELL_PLUS_DJANGO_IMPORTS = [
-    'from django.core.cache import cache',
-    'from django.conf import settings',
-    'from django.contrib.auth import get_user_model',
-    'from django.db import transaction',
-    'from django.db.models import Avg, Case, Count, F, Max, Min, Prefetch, Q, Sum, When',
-    'from django.utils import timezone',
-    'from django.urls import reverse',
-    'from django.db.models import Exists, OuterRef, Subquery',
+    "from django.core.cache import cache",
+    "from django.conf import settings",
+    "from django.contrib.auth import get_user_model",
+    "from django.db import transaction",
+    "from django.db.models import Avg, Case, Count, F, Max, Min, Prefetch, Q, Sum, When",  # noqa: E501
+    "from django.utils import timezone",
+    "from django.urls import reverse",
+    "from django.db.models import Exists, OuterRef, Subquery",
 ]
 
 
@@ -51,7 +51,7 @@ def get_app_name(mod_name):
     >>> get_app_name('some.testapp.foo')
     'testapp'
     """
-    rparts = list(reversed(mod_name.split('.')))
+    rparts = list(reversed(mod_name.split(".")))
     try:
         try:
             return rparts[rparts.index(MODELS_MODULE_NAME) + 1]
@@ -74,23 +74,31 @@ def import_items(import_directives, style, quiet_load=False):
         * a simple 'module.submodule' which indicates 'import module.submodule'.
 
     Returns a dict mapping the names to the imported items
-    """
+    """  # noqa: E501
     imported_objects = {}
 
     for directive in import_directives:
         if isinstance(directive, str):
             directive = directive.strip()
         try:
-            if isinstance(directive, str) and directive.startswith(("from ", "import ")):
+            if isinstance(directive, str) and directive.startswith(
+                ("from ", "import ")
+            ):
                 try:
                     node = ast.parse(directive)
                 except Exception as exc:
                     if not quiet_load:
                         print(style.ERROR("Error parsing: %r %s" % (directive, exc)))
                         continue
-                if not all(isinstance(body, (ast.Import, ast.ImportFrom)) for body in node.body):
+                if not all(
+                    isinstance(body, (ast.Import, ast.ImportFrom)) for body in node.body
+                ):
                     if not quiet_load:
-                        print(style.ERROR("Only specify import statements: %r" % directive))
+                        print(
+                            style.ERROR(
+                                "Only specify import statements: %r" % directive
+                            )
+                        )
                     continue
 
                 if not quiet_load:
@@ -100,38 +108,66 @@ def import_items(import_directives, style, quiet_load=False):
                     if isinstance(body, ast.Import):
                         for name in body.names:
                             asname = name.asname or name.name
-                            imported_objects[asname] = importlib.import_module(name.name)
+                            imported_objects[asname] = importlib.import_module(
+                                name.name
+                            )
                     if isinstance(body, ast.ImportFrom):
-                        imported_object = importlib.__import__(body.module, {}, {}, [name.name for name in body.names])
+                        imported_object = importlib.__import__(
+                            body.module, {}, {}, [name.name for name in body.names]
+                        )
                         for name in body.names:
                             asname = name.asname or name.name
                             try:
                                 if name.name == "*":
                                     for k in dir(imported_object):
-                                        imported_objects[k] = getattr(imported_object, k)
+                                        imported_objects[k] = getattr(
+                                            imported_object, k
+                                        )
                                 else:
-                                    imported_objects[asname] = getattr(imported_object, name.name)
+                                    imported_objects[asname] = getattr(
+                                        imported_object, name.name
+                                    )
                             except AttributeError as exc:
-                                print(dir(imported_object))
+                                print(
+                                    (
+                                        f"Couldn't find {name.name} in {body.module}. "
+                                        f"Only found: {dir(imported_object)}"
+                                    )
+                                )
                                 # raise
                                 raise ImportError(exc)
             else:
-                warnings.warn("Old style import definitions are deprecated. You should use the new style which is similar to normal Python imports. ", RemovedInNextVersionWarning, stacklevel=2)
+                warnings.warn(
+                    "Old style import definitions are deprecated. You should use the new style which is similar to normal Python imports. ",  # noqa: E501
+                    RemovedInNextVersionWarning,
+                    stacklevel=2,
+                )
 
                 if isinstance(directive, str):
                     imported_object = __import__(directive)
-                    imported_objects[directive.split('.')[0]] = imported_object
+                    imported_objects[directive.split(".")[0]] = imported_object
                     if not quiet_load:
                         print(style.SQL_COLTYPE("import %s" % directive))
                     continue
                 elif isinstance(directive, (list, tuple)) and len(directive) == 2:
                     if not isinstance(directive[0], str):
                         if not quiet_load:
-                            print(style.ERROR("Unable to import %r: module name must be of type string" % directive[0]))
+                            print(
+                                style.ERROR(
+                                    (
+                                        "Unable to import %r: module name must be of "
+                                        "type string"
+                                    )
+                                    % directive[0]
+                                )
+                            )
                         continue
 
-                    if isinstance(directive[1], (list, tuple)) and all(isinstance(e, str) for e in directive[1]):
-                        # Try the ('module.submodule', ('classname1', 'classname2')) form
+                    if isinstance(directive[1], (list, tuple)) and all(
+                        isinstance(e, str) for e in directive[1]
+                    ):
+                        # Try the form of:
+                        #   ('module.submodule', ('classname1', 'classname2'))
                         imported_object = __import__(directive[0], {}, {}, directive[1])
                         imported_names = []
                         for name in directive[1]:
@@ -139,31 +175,63 @@ def import_items(import_directives, style, quiet_load=False):
                                 imported_objects[name] = getattr(imported_object, name)
                             except AttributeError:
                                 if not quiet_load:
-                                    print(style.ERROR("Unable to import %r from %r: %r does not exist" % (name, directive[0], name)))
+                                    print(
+                                        style.ERROR(
+                                            "Unable to import %r from %r: %r does not "
+                                            "exist" % (name, directive[0], name)
+                                        )
+                                    )
                             else:
                                 imported_names.append(name)
                         if not quiet_load:
-                            print(style.SQL_COLTYPE("from %s import %s" % (directive[0], ', '.join(imported_names))))
+                            print(
+                                style.SQL_COLTYPE(
+                                    "from %s import %s"
+                                    % (directive[0], ", ".join(imported_names))
+                                )
+                            )
                     elif isinstance(directive[1], str):
-                        # If it is a tuple, but the second item isn't a list, so we have something like ('module.submodule', 'classname1')
+                        # If it is a tuple, but the second item isn't a list, so we have
+                        # something like ('module.submodule', 'classname1')
                         # Check for the special '*' to import all
-                        if directive[1] == '*':
-                            imported_object = __import__(directive[0], {}, {}, directive[1])
+                        if directive[1] == "*":
+                            imported_object = __import__(
+                                directive[0], {}, {}, directive[1]
+                            )
                             for k in dir(imported_object):
                                 imported_objects[k] = getattr(imported_object, k)
                             if not quiet_load:
-                                print(style.SQL_COLTYPE("from %s import *" % directive[0]))
+                                print(
+                                    style.SQL_COLTYPE("from %s import *" % directive[0])
+                                )
                         else:
-                            imported_object = getattr(__import__(directive[0], {}, {}, [directive[1]]), directive[1])
+                            imported_object = getattr(
+                                __import__(directive[0], {}, {}, [directive[1]]),
+                                directive[1],
+                            )
                             imported_objects[directive[1]] = imported_object
                             if not quiet_load:
-                                print(style.SQL_COLTYPE("from %s import %s" % (directive[0], directive[1])))
+                                print(
+                                    style.SQL_COLTYPE(
+                                        "from %s import %s"
+                                        % (directive[0], directive[1])
+                                    )
+                                )
                     else:
                         if not quiet_load:
-                            print(style.ERROR("Unable to import %r from %r: names must be of type string" % (directive[1], directive[0])))
+                            print(
+                                style.ERROR(
+                                    "Unable to import %r from %r: names must be strings"
+                                    % (directive[1], directive[0])
+                                )
+                            )
                 else:
                     if not quiet_load:
-                        print(style.ERROR("Unable to import %r: names must be of type string" % directive))
+                        print(
+                            style.ERROR(
+                                "Unable to import %r: names must be strings" % directive
+                            )
+                        )
         except ImportError:
             if not quiet_load:
                 print(style.ERROR("Unable to import %r" % directive))
@@ -180,14 +248,14 @@ def import_objects(options, style):
 
     from django.conf import settings
 
-    dont_load_cli = options.get('dont_load', [])
-    dont_load_conf = getattr(settings, 'SHELL_PLUS_DONT_LOAD', [])
+    dont_load_cli = options.get("dont_load", [])
+    dont_load_conf = getattr(settings, "SHELL_PLUS_DONT_LOAD", [])
     dont_load = dont_load_cli + dont_load_conf
-    dont_load_any_models = '*' in dont_load
-    quiet_load = options.get('quiet_load')
-    model_aliases = getattr(settings, 'SHELL_PLUS_MODEL_ALIASES', {})
-    app_prefixes = getattr(settings, 'SHELL_PLUS_APP_PREFIXES', {})
-    SHELL_PLUS_PRE_IMPORTS = getattr(settings, 'SHELL_PLUS_PRE_IMPORTS', {})
+    dont_load_any_models = "*" in dont_load
+    quiet_load = options.get("quiet_load")
+    model_aliases = getattr(settings, "SHELL_PLUS_MODEL_ALIASES", {})
+    app_prefixes = getattr(settings, "SHELL_PLUS_APP_PREFIXES", {})
+    SHELL_PLUS_PRE_IMPORTS = getattr(settings, "SHELL_PLUS_PRE_IMPORTS", {})
 
     imported_objects = {}
     load_models = {}
@@ -199,7 +267,7 @@ def import_objects(options, style):
         This dictionary is used by collision resolver.
         At this phase we can't import any models, because collision resolver can change results.
         :return: Dict[str, List[str]]. Key is name, value is list of full model's path's.
-        """
+        """  # noqa: E501
         models_to_import = {}  # type: Dict[str, List[str]]
         for app_mod, models in sorted(load_models.items()):
             app_name = get_app_name(app_mod)
@@ -223,19 +291,23 @@ def import_objects(options, style):
         return models_to_import
 
     def import_subclasses():
-        base_classes_to_import = getattr(settings, 'SHELL_PLUS_SUBCLASSES_IMPORT', [])  # type: List[Union[str, type]]
+        base_classes_to_import = getattr(settings, "SHELL_PLUS_SUBCLASSES_IMPORT", [])  # type: List[Union[str, type]]
         if base_classes_to_import:
             if not quiet_load:
                 print(style.SQL_TABLE("# Shell Plus Subclasses Imports"))
-            perform_automatic_imports(SubclassesFinder(base_classes_to_import).collect_subclasses())
+            perform_automatic_imports(
+                SubclassesFinder(base_classes_to_import).collect_subclasses()
+            )
 
     def import_models():
         """
         Perform collision resolving and imports all models.
         When collisions are resolved we can perform imports and print information's, because it is last phase.
         This function updates imported_objects dictionary.
-        """
-        modules_to_models = CollisionResolvingRunner().run_collision_resolver(get_dict_from_names_to_possible_models())
+        """  # noqa: E501
+        modules_to_models = CollisionResolvingRunner().run_collision_resolver(
+            get_dict_from_names_to_possible_models()
+        )
         perform_automatic_imports(modules_to_models)
 
     def perform_automatic_imports(modules_to_classes):  # type: (Dict[str, List[Tuple[str, str]]]) -> ()
@@ -247,9 +319,11 @@ def import_objects(options, style):
         """
         for full_module_path, models in modules_to_classes.items():
             model_labels = []
-            for (model_name, alias) in sorted(models):
+            for model_name, alias in sorted(models):
                 try:
-                    imported_objects[alias] = import_string("%s.%s" % (full_module_path, model_name))
+                    imported_objects[alias] = import_string(
+                        "%s.%s" % (full_module_path, model_name)
+                    )
                     if model_name == alias:
                         model_labels.append(model_name)
                     else:
@@ -257,11 +331,20 @@ def import_objects(options, style):
                 except ImportError as e:
                     if options.get("traceback"):
                         traceback.print_exc()
-                    if not options.get('quiet_load'):
-                        print(style.ERROR(
-                            "Failed to import '%s' from '%s' reason: %s" % (model_name, full_module_path, str(e))))
-            if not options.get('quiet_load'):
-                print(style.SQL_COLTYPE("from %s import %s" % (full_module_path, ", ".join(model_labels))))
+                    if not options.get("quiet_load"):
+                        print(
+                            style.ERROR(
+                                "Failed to import '%s' from '%s' reason: %s"
+                                % (model_name, full_module_path, str(e))
+                            )
+                        )
+            if not options.get("quiet_load"):
+                print(
+                    style.SQL_COLTYPE(
+                        "from %s import %s"
+                        % (full_module_path, ", ".join(model_labels))
+                    )
+                )
 
     def get_apps_and_models():
         for app in apps.get_app_configs():
@@ -271,6 +354,7 @@ def import_objects(options, style):
     mongoengine = False
     try:
         from mongoengine.base import _document_registry
+
         mongoengine = True
     except ImportError:
         pass
@@ -285,7 +369,7 @@ def import_objects(options, style):
 
     if mongoengine and not dont_load_any_models:
         for name, mod in _document_registry.items():
-            name = name.split('.')[-1]
+            name = name.split(".")[-1]
             app_name = get_app_name(mod.__module__)
             if app_name in dont_load or ("%s.%s" % (app_name, name)) in dont_load:
                 continue
@@ -313,19 +397,22 @@ def import_objects(options, style):
 
     import_subclasses()
     if not quiet_load:
-        print(style.SQL_TABLE("# Shell Plus Model Imports%s") % (' SKIPPED' if dont_load_any_models else ''))
+        print(
+            style.SQL_TABLE("# Shell Plus Model Imports%s")
+            % (" SKIPPED" if dont_load_any_models else "")
+        )
 
     import_models()
 
     # Imports often used from Django
-    if getattr(settings, 'SHELL_PLUS_DJANGO_IMPORTS', True):
+    if getattr(settings, "SHELL_PLUS_DJANGO_IMPORTS", True):
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus Django Imports"))
         imports = import_items(SHELL_PLUS_DJANGO_IMPORTS, style, quiet_load=quiet_load)
         for k, v in imports.items():
             imported_objects[k] = v
 
-    SHELL_PLUS_IMPORTS = getattr(settings, 'SHELL_PLUS_IMPORTS', {})
+    SHELL_PLUS_IMPORTS = getattr(settings, "SHELL_PLUS_IMPORTS", {})
     if SHELL_PLUS_IMPORTS:
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus User Imports"))
@@ -334,7 +421,7 @@ def import_objects(options, style):
             imported_objects[k] = v
 
     # Perform post-imports after any other imports
-    SHELL_PLUS_POST_IMPORTS = getattr(settings, 'SHELL_PLUS_POST_IMPORTS', {})
+    SHELL_PLUS_POST_IMPORTS = getattr(settings, "SHELL_PLUS_POST_IMPORTS", {})
     if SHELL_PLUS_POST_IMPORTS:
         if not quiet_load:
             print(style.SQL_TABLE("# Shell Plus User Post Imports"))
