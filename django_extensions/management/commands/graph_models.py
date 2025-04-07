@@ -116,20 +116,16 @@ class Command(BaseCommand):
                 "action": "store",
                 "dest": "layout",
                 "default": "dot",
-                "help":
-                    "Layout to be used by GraphViz for visualization. Layouts: "
-                    "circo dot fdp neato nop nop1 nop2 twopi"
-                ,
+                "help": "Layout to be used by GraphViz for visualization. Layouts: "
+                "circo dot fdp neato nop nop1 nop2 twopi",
             },
             "--theme -t": {
                 "action": "store",
                 "dest": "theme",
                 "default": "django2018",
-                "help":
-                    "Theme to use. Supplied are 'original' and 'django2018'. "
-                    "You can create your own by creating dot templates in "
-                    "'django_extentions/graph_models/themename/' template directory."
-                ,
+                "help": "Theme to use. Supplied are 'original' and 'django2018'. "
+                "You can create your own by creating dot templates in "
+                "'django_extentions/graph_models/themename/' template directory.",
             },
             "--verbose-names -n": {
                 "action": "store_true",
@@ -145,25 +141,20 @@ class Command(BaseCommand):
             "--exclude-columns -x": {
                 "action": "store",
                 "dest": "exclude_columns",
-                "help":
-                    "Exclude specific column(s) from the graph. "
-                    "Can also load exclude list from file."
-                ,
+                "help": "Exclude specific column(s) from the graph. "
+                "Can also load exclude list from file.",
             },
             "--exclude-models -X": {
                 "action": "store",
                 "dest": "exclude_models",
-                "help":
-                    "Exclude specific model(s) from the graph. Can also load exclude "
-                    "list from file. Wildcards (*) are allowed."
-                ,
+                "help": "Exclude specific model(s) from the graph. Can also load "
+                "exclude list from file. Wildcards (*) are allowed.",
             },
             "--include-models -I": {
                 "action": "store",
                 "dest": "include_models",
-                "help":
-                    "Restrict the graph to specified models. Wildcards (*) are allowed."
-                ,
+                "help": "Restrict the graph to specified models. "
+                "Wildcards (*) are allowed.",
             },
             "--inheritance -e": {
                 "action": "store_true",
@@ -218,45 +209,37 @@ class Command(BaseCommand):
                     "tee",
                     "vee",
                 ],
-                "help":
-                    "Arrow shape to use for relations. Default is dot. "
-                    "Available shapes: box, crow, curve, icurve, diamond, dot, inv, "
-                    "none, normal, tee, vee."
-                ,
+                "help": "Arrow shape to use for relations. Default is dot. "
+                "Available shapes: box, crow, curve, icurve, diamond, dot, inv, "
+                "none, normal, tee, vee.",
             },
             "--color-code-deletions": {
                 "action": "store_true",
                 "default": False,
                 "dest": "color_code_deletions",
-                "help":
-                    "Color the relations according to their on_delete setting, "
-                    "where it is applicable. The colors are: red (CASCADE), "
-                    "orange (SET_NULL), green (SET_DEFAULT), yellow (SET), "
-                    "blue (PROTECT), grey (DO_NOTHING), and purple (RESTRICT)."
-                ,
+                "help": "Color the relations according to their on_delete setting, "
+                "where it is applicable. The colors are: red (CASCADE), "
+                "orange (SET_NULL), green (SET_DEFAULT), yellow (SET), "
+                "blue (PROTECT), grey (DO_NOTHING), and purple (RESTRICT).",
             },
             "--rankdir": {
                 "action": "store",
                 "default": "TB",
                 "dest": "rankdir",
                 "choices": ["TB", "BT", "LR", "RL"],
-                "help":
-                    "Set direction of graph layout. Supported directions: "
-                    "TB, LR, BT and RL. Corresponding to directed graphs drawn from "
-                    "top to bottom, from left to right, from bottom to top, and from "
-                    "right to left, respectively. Default is TB."
-                ,
+                "help": "Set direction of graph layout. Supported directions: "
+                "TB, LR, BT and RL. Corresponding to directed graphs drawn from "
+                "top to bottom, from left to right, from bottom to top, and from "
+                "right to left, respectively. Default is TB.",
             },
             "--ordering": {
                 "action": "store",
                 "default": None,
                 "dest": "ordering",
                 "choices": ["in", "out"],
-                "help":
-                    "Controls how the edges are arranged. Supported orderings: "
-                    '"in" (incoming relations first), "out" (outgoing relations first). '
-                    "Default is None."
-                ,
+                "help": "Controls how the edges are arranged. Supported orderings: "
+                '"in" (incoming relations first), "out" (outgoing relations first). '
+                "Default is None.",
             },
         }
 
