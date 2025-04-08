@@ -38,8 +38,9 @@ class ShowPermissionsTests(TestCase):
         auth_verbose = apps.get_app_config("auth").verbose_name
         user_verbose = apps.get_model("auth", "user")._meta.verbose_name
         self.assertNotIn(
-            f"Permissions for {auth_verbose} | {user_verbose}", output,
-            "Should not list auth permissions without --all flag"
+            f"Permissions for {auth_verbose} | {user_verbose}",
+            output,
+            "Should not list auth permissions without --all flag",
         )
         self.assertNotIn("auth.add_user", output)
 

@@ -13,17 +13,14 @@ class Command(BaseCommand):
         parser.add_argument(
             "app_label_model",
             nargs="*",
-            help="[app_label.]model(s) to show permissions for."
+            help="[app_label.]model(s) to show permissions for.",
         )
         parser.add_argument(
             "--all",
             action="store_true",
-            help="Include results for admin, auth, contenttypes, and sessions."
+            help="Include results for admin, auth, contenttypes, and sessions.",
         )
-        parser.add_argument(
-            "--app-label",
-            help="App label to dump permissions for."
-        )
+        parser.add_argument("--app-label", help="App label to dump permissions for.")
 
     def handle(self, *args, **options):
         app_label_models = options["app_label_model"]
@@ -50,9 +47,7 @@ class Command(BaseCommand):
             for value in app_label_models:
                 if "." in value:
                     app_label, model = value.split(".")
-                    qs = ContentType.objects.filter(
-                        app_label=app_label, model=model
-                    )
+                    qs = ContentType.objects.filter(app_label=app_label, model=model)
                 else:
                     qs = ContentType.objects.filter(model=value)
 
@@ -63,6 +58,4 @@ class Command(BaseCommand):
         for ct in content_types:
             self.stdout.write(f"Permissions for {ct}")
             for perm in ct.permission_set.all():
-                self.stdout.write(
-                    f"    {ct.app_label}.{perm.codename} | {perm.name}"
-                )
+                self.stdout.write(f"    {ct.app_label}.{perm.codename} | {perm.name}")
