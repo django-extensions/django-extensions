@@ -1,6 +1,9 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = [ "setuptools>=61.2" ]
+requires = [
+  "setuptools>=61.2",
+  "django>=4.2",
+ ]
 
 [project]
 name = "django-extensions"
