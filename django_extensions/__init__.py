@@ -1,20 +1,6 @@
 # -*- coding: utf-8 -*-
-VERSION = (3, 2, 4, "DEV")
+from django.utils.version import get_version
 
-
-def get_version(version):
-    """Dynamically calculate the version based on VERSION tuple."""
-    if len(version) > 2 and version[2] is not None:
-        if len(version) == 4:
-            str_version = "%s.%s.%s.%s" % version
-        elif isinstance(version[2], int):
-            str_version = "%s.%s.%s" % version[:3]
-        else:
-            str_version = "%s.%s_%s" % version[:3]
-    else:
-        str_version = "%s.%s" % version[:2]
-
-    return str_version
-
+VERSION = (4, 0, 0, "rc", 1)
 
 __version__ = get_version(VERSION)
