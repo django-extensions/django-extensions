@@ -3,6 +3,13 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
+4.1-dev
+-------
+
+Changes:
+
+- Add: show_permissions command
+
 4.0
 ---
 
