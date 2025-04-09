@@ -1,5 +1,5 @@
 managestate
-==========
+===========
 
 :synopsis: Saves current applied migrations to a file or applies migrations from this file.
 
@@ -50,7 +50,7 @@ To change the filename use `-f` or `--filename` flag.
 When you load a state from a file, you may also use all arguments defined for the `migrate` command.
 
 Examples
-----
+--------
 
 Save an initial database state of the branch "master/main" before developing features::
 

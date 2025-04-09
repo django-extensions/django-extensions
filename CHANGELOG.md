@@ -3,8 +3,15 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
-3.2.4
------
+4.1-dev
+-------
+
+Changes:
+
+- Add: show_permissions command
+
+4.0
+---
 
 Changes:
 
@@ -24,6 +31,7 @@ Changes:
 - Fix: sqldiff, do not consider ('serial', 'integer') nor ('bigserial', 'bigint') as a `field-type-differ` (#1867)
 - Fix: shell_plus, Fix start up order and add history (#1869)
 - Remove pipchecker and associated tests (#1906)
+- Following Django's release numbering style more closely (see https://docs.djangoproject.com/en/5.2/internals/release-process/ )
 
 3.2.3
 -----
