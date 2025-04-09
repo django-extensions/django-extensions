@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
-
-from .testapp.models import JSONFieldTestModel
 from django_extensions.db.fields.json import dumps, loads, JSONField, JSONDict, JSONList
+from .testapp.models import JSONFieldTestModel
 
 
 class JsonFieldTest(TestCase):
@@ -127,3 +126,12 @@ class JsonFieldTest(TestCase):
         self.assertEqual(loads('[{"a": 1}]'), j_field.to_python('[{"a": 1}]'))
 
         self.assertEqual(loads('[{"a": "1"}]'), j_field.to_python('[{"a": "1"}]'))
+
+    def test_bulk_update_custom_get_prep_value(self):
+        obj = JSONFieldTestModel.objects.create(a=1, j_field={"version": "1"})
+        obj.j_field["version"] = "1-alpha"
+        JSONFieldTestModel.objects.bulk_update([obj], ["j_field"])
+        self.assertSequenceEqual(
+            JSONFieldTestModel.objects.values("j_field"),
+            [{"j_field": {"version": "1-alpha"}}],
+        )
