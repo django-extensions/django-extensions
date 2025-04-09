@@ -282,7 +282,7 @@ class Command(BaseCommand):
                 "choices": ["in", "out"],
                 "help":
                     "Controls how the edges are arranged. Supported orderings: "
-                    '"in" (incoming relations first), "out" (outgoing relations first). '
+                    '"in" (incoming relations first), "out" (outgoing relations first).'
                     "Default is None."
                 ,
             },
