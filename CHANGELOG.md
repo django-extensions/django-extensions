@@ -3,12 +3,14 @@ Changelog
 
 See https://github.com/django-extensions/django-extensions/releases
 
-4.1-dev
--------
+4.1
+---
 
 Changes:
 
-- Add: show_permissions command
+- Add: show_permissions command (#1920)
+- Improvement: graph_models, style per app (#1848)
+- Fix: JSONField, bulk_update's (#1924)
 
 4.0
 ---
