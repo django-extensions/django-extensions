@@ -32,7 +32,7 @@ def retheme(graph_data, app_style={}):
     if isinstance(app_style, str):
         if os.path.exists(app_style):
             try:
-                with open(app_style, 'rt') as f:
+                with open(app_style, "rt") as f:
                     app_style = json.load(f)
             except Exception as e:
                 print(f"Invalid app style file {app_style}")
@@ -44,7 +44,7 @@ def retheme(graph_data, app_style={}):
         for g in gc:
             if "name" in g:
                 for m in g["models"]:
-                    app_name = g['app_name']
+                    app_name = g["app_name"]
                     if app_name in app_style:
                         m["style"] = app_style[app_name]
     return graph_data
@@ -73,7 +73,7 @@ class Command(BaseCommand):
                 "action": "store",
                 "help": "Path to style json to configure the style per app",
                 "dest": "app-style",
-                "default": ".app-style.json"
+                "default": ".app-style.json",
             },
             "--pygraphviz": {
                 "action": "store_true",
@@ -372,7 +372,7 @@ class Command(BaseCommand):
         )
         template = loader.get_template(template_name)
 
-        graph_data = retheme(graph_data, app_style=options['app-style'])
+        graph_data = retheme(graph_data, app_style=options["app-style"])
         dotdata = generate_dot(graph_data, template=template)
 
         if output == "pygraphviz":
