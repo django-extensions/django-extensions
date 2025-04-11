@@ -84,6 +84,34 @@ Documentation on how to create dot files can be found here: https://www.graphviz
   the Django app *django-template-minifier* this automatically removed the newlines before/after
   template tags even for non-HTML templates which leads to a malformed file.
 
+
+App-based Styling
+-----------------
+
+You can style models by app to visually distinguish them in the generated graph. This is useful when working with multiple apps that have interrelated models.
+
+To use this feature, provide a JSON file specifying styles for each app. You can either:
+
+- Place a `.app-style.json` file in the project root, or
+- Use the `--app-style` command line option to specify a path to the file::
+
+    $ ./manage.py graph_models -a --app-style path/to/style.json -o styled_output.png
+
+The JSON file should map app labels to style dictionaries. For example:
+
+.. code-block:: json
+
+    {
+      "app1": {"bg": "#341b56"},
+      "app2": {"bg": "#1b3956"},
+      "django.contrib.auth": {"bg": "#561b4c"}
+    }
+
+Currently, the supported style option is `bg` (background color), but the system is designed to be extended in the future with support for additional styling such as font, shape, or border.
+
+This feature allows you to generate a single graph that highlights model groupings by app while still showing relationships across apps.
+
+
 Example Usage
 -------------
 
@@ -97,6 +125,9 @@ image by using the *graph_models* command::
 
   # Create a PNG image file called my_project_visualized.png with application grouping
   $ ./manage.py graph_models -a -g -o my_project_visualized.png
+
+  # Create a PNG with per-app styling
+  $ ./manage.py graph_models -a --app-style path/to/style.json -o my_styled_project.png
 
   # Same example but with explicit selection of pygraphviz or pydot
   $ ./manage.py graph_models --pygraphviz -a -g -o my_project_visualized.png
