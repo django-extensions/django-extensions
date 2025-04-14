@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     self.process_template(filepath)
 
         if self.template_parse_errors > 0:
-            self.stdout.write("%s template parse errors found" % errors)
+            self.stdout.write(f"{self.template_parse_errors} template parse errors found")
 
     def collect_views(self, options):
         urlconf = options["urlconf"]
