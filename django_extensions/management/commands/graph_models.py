@@ -27,6 +27,8 @@ try:
 except ImportError:
     HAS_PYDOT = False
 
+DEFAULT_APP_STYLE_NAME = ".app-style.json"
+
 
 def retheme(graph_data, app_style={}):
     if isinstance(app_style, str):
@@ -37,6 +39,8 @@ def retheme(graph_data, app_style={}):
             except Exception as e:
                 print(f"Invalid app style file {app_style}")
                 raise Exception(e)
+        elif app_style.strip() != DEFAULT_APP_STYLE_NAME:
+            raise Exception(f"The file {app_style} is not found")
         else:
             return graph_data
 
