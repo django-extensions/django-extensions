@@ -18,8 +18,10 @@ from django_extensions.management.utils import signalcommand
 class RegexURLPattern:
     pass
 
+
 class RegexURLResolver:
     pass
+
 
 class LocaleRegexURLResolver:
     pass
@@ -74,13 +76,16 @@ class Command(BaseCommand):
             color = style.MODULE
             try:
                 view = self.views[name]
-                print(style.INFO(f"Name: {name} ({n} occurences, handled in {view[0]}, {view[1]})"))
+                print(
+                    style.INFO(
+                        f"Name: {name} ({n} occurences, handled in {view[0]}, {view[1]})"
+                    )
+                )
             except KeyError:
                 print(style.URL_NAME(f"Name: {name} ({n} occurences, UKNOWN VIEW)"))
-                color=style.URL_NAME
+                color = style.URL_NAME
             for item in self.names[name]:
                 print(color(f"* {item[0]}:{item[1]}"))
-
 
     def collect_templates(self, options):
         template_dirs = set(get_template_setting("DIRS", []))
@@ -106,7 +111,9 @@ class Command(BaseCommand):
                     self.process_template(filepath)
 
         if self.template_parse_errors > 0:
-            self.stdout.write(f"{self.template_parse_errors} template parse errors found")
+            self.stdout.write(
+                f"{self.template_parse_errors} template parse errors found"
+            )
 
     def collect_views(self, options):
         urlconf = options["urlconf"]
@@ -142,7 +149,6 @@ class Command(BaseCommand):
 
                 self.views[view] = (func_name, regex)
 
-
     def process_template(self, filepath):
         # print(f"Processing {filepath}")
         try:
@@ -162,7 +168,6 @@ class Command(BaseCommand):
         if name not in self.names:
             self.names[name] = []
         self.names[name].append((file, lineno))
-
 
     # copied from show_urls.py
     def extract_views_from_urlpatterns(self, urlpatterns, base="", namespace=None):
@@ -229,6 +234,7 @@ class Command(BaseCommand):
             else:
                 raise TypeError("%s does not appear to be a urlpattern object" % p)
         return views
+
 
 def describe_pattern(p):
     return str(p.pattern)
