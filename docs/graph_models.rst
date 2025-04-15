@@ -111,6 +111,8 @@ Currently, the supported style option is `bg` (background color), but the system
 
 This feature allows you to generate a single graph that highlights model groupings by app while still showing relationships across apps.
 
+*Note: an exception will be raised if the provided json file does not exist, except if the file is named `.app-style.json`*
+
 
 Example Usage
 -------------
