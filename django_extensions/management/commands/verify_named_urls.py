@@ -1,3 +1,4 @@
+from collections import defaultdict
 import fnmatch
 import functools
 import re
@@ -65,7 +66,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         style = no_style() if options["no_color"] else color_style()
 
-        self.names = {}
+        self.names = defaultdict(list)
         self.views = {}
 
         self.collect_templates(options)
@@ -150,7 +151,6 @@ class Command(BaseCommand):
                 self.views[view] = (func_name, regex)
 
     def process_template(self, filepath):
-        # print(f"Processing {filepath}")
         try:
             template = get_template(filepath)
         except Exception as e:
@@ -161,13 +161,8 @@ class Command(BaseCommand):
             lineno = 1
             for line in file:
                 for match in self.names_re.findall(line):
-                    self.add_name(match, filepath, lineno)
+                    self.names[match].append((filepath, lineno))
                 lineno += 1
-
-    def add_name(self, name, file, lineno):
-        if name not in self.names:
-            self.names[name] = []
-        self.names[name].append((file, lineno))
 
     # copied from show_urls.py
     def extract_views_from_urlpatterns(self, urlpatterns, base="", namespace=None):
