@@ -97,21 +97,24 @@ To use this feature, provide a JSON file specifying styles for each app. You can
 
     $ ./manage.py graph_models -a --app-style path/to/style.json -o styled_output.png
 
-The JSON file should map app labels to style dictionaries. For example:
+The JSON file should map app labels to style dictionaries. The app labels can be exact matches or use wildcards (e.g., `django.*`) where the last entry wins.
+For example:
 
 .. code-block:: json
 
     {
       "app1": {"bg": "#341b56"},
       "app2": {"bg": "#1b3956"},
-      "django.contrib.auth": {"bg": "#561b4c"}
+      "django.*": {"bg": "#561b4c"},
+      "django.contrib.auth": {"bg": "#c41e3a"}
     }
 
 Currently, the supported style option is `bg` (background color), but the system is designed to be extended in the future with support for additional styling such as font, shape, or border.
+*Note: help is wanted to update themes to support more style options*
 
 This feature allows you to generate a single graph that highlights model groupings by app while still showing relationships across apps.
 
-*Note: an exception will be raised if the provided json file does not exist, except if the file is named `.app-style.json`*
+*Note: an exception will be raised if the provided json file does not exist*
 
 
 Example Usage
