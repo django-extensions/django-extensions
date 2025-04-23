@@ -153,8 +153,8 @@ class Command(BaseCommand):
 
     def process_template(self, filepath):
         try:
-            template = get_template(filepath)
-        except Exception as e:
+            get_template(filepath)
+        except Exception:
             self.template_parse_errors += 1
             self.stdout.write(f"Error parsing template {filepath}")
 
