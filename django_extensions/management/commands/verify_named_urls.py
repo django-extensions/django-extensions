@@ -10,6 +10,7 @@ from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template
 from django.urls import URLPattern, URLResolver
+from django.utils import translation
 
 from django_extensions.compat import get_template_setting
 from django_extensions.management.color import color_style, no_style
