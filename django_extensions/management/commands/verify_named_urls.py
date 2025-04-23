@@ -77,14 +77,14 @@ class Command(BaseCommand):
             n = len(self.names[name])
             color = style.MODULE
             try:
-                view = self.views[name]
+                v = self.views[name]
                 print(
                     style.INFO(
-                        f"Name: {name} ({n} occurences, handled in {view[0]}, {view[1]})"
+                        f"Name: {name} ({n} occurences, handled in {v[0]}, {v[1]})"
                     )
                 )
             except KeyError:
-                print(style.URL_NAME(f"Name: {name} ({n} occurences, UKNOWN VIEW)"))
+                print(style.URL_NAME(f"Name: {name} ({n} occurences, UNKNOWN VIEW)"))
                 color = style.URL_NAME
             for item in self.names[name]:
                 print(color(f"* {item[0]}:{item[1]}"))
