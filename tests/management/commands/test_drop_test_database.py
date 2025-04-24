@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import importlib.util
 from io import StringIO
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch

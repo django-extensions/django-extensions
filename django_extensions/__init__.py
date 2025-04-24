@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.utils.version import get_version
 
 VERSION = (4, 2, 0, "alpha", 0)

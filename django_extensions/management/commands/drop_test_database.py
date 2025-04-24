@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import importlib.util
 from itertools import count
 import os

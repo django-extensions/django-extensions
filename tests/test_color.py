@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.test import SimpleTestCase
 from django_extensions.management import color
 from . import force_color_support

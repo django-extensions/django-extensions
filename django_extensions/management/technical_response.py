@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import threading
 
 from django.core.handlers.wsgi import WSGIHandler

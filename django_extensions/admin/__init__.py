@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Autocomplete feature for admin panel
 #

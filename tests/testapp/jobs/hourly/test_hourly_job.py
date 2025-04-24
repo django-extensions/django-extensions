@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django_extensions.management.jobs import HourlyJob
 
 from unittest import mock

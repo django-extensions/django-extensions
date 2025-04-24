@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: OmenApps. https://omenapps.com
 import inspect
 

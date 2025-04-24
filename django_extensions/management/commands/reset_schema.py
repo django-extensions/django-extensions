@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Recreates the public schema for current database (PostgreSQL only).
 Useful for Docker environments where you need to reset database

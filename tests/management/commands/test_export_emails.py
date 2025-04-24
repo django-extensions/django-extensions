@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.core.management import call_command
 
 from django_extensions.management.commands.export_emails import full_name

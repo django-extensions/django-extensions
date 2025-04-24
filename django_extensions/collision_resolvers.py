@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import inspect
 import sys
 from abc import abstractmethod, ABCMeta

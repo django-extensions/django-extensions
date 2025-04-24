@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.test import SimpleTestCase
 from django_extensions.management.modelviz import generate_graph_data, ON_DELETE_COLORS
 

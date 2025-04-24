@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.test import TestCase, RequestFactory
 from django.http import HttpResponse
 from django.views.generic import DetailView
