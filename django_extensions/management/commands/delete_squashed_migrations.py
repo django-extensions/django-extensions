@@ -1,3 +1,4 @@
+import difflib
 import os
 import inspect
 import re
@@ -6,7 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import AmbiguityError, MigrationLoader
 
-REPLACES_REGEX = re.compile(r"\s+replaces\s*=\s*\[[^\]]+\]\s*")
+REPLACES_REGEX = re.compile(r"^\s+replaces\s*=\s*\[[^\]]+\]\s*?$", flags=re.MULTILINE)
 PYC = ".pyc"
 
 
@@ -145,45 +146,36 @@ class Command(BaseCommand):
         if squashed_migration_fn.endswith(PYC):
             squashed_migration_fn = py_from_pyc(squashed_migration_fn)
         with open(squashed_migration_fn) as fp:
-            squashed_migration_lines = list(fp)
+            squashed_migration_content = fp.read()
 
-        delete_lines = []
-        for i, line in enumerate(squashed_migration_lines):
-            if REPLACES_REGEX.match(line):
-                delete_lines.append(i)
-                if i > 0 and squashed_migration_lines[i - 1].strip() == "":
-                    delete_lines.insert(0, i - 1)
-                break
-        if not delete_lines:
-            raise CommandError(
-                (
-                    "Couldn't find 'replaces =' line in file %s. "
-                    "Please finish cleaning up manually."
-                )
-                % (squashed_migration_fn,)
+        cleaned_migration_content = re.sub(
+            REPLACES_REGEX, "", squashed_migration_content
+        )
+
+        if (
+            self.verbosity > 0 or self.interactive
+        ) and cleaned_migration_content == squashed_migration_content:
+            # Print the differences between the original and new content
+            diff = difflib.unified_diff(
+                squashed_migration_content.splitlines(),
+                cleaned_migration_content.splitlines(),
+                lineterm="",
+                fromfile="Original",
+                tofile="Modified",
             )
-
-        if self.verbosity > 0 or self.interactive:
             self.stdout.write(
                 self.style.MIGRATE_HEADING(
-                    "Will delete line %s%s from file %s"
-                    % (
-                        delete_lines[0],
-                        " and " + str(delete_lines[1]) if len(delete_lines) > 1 else "",
-                        squashed_migration_fn,
-                    )
+                    "The squashed migrations file %s will be modified like this :\n\n%s"
+                    % (squashed_migration_fn, "\n".join(diff))
                 )
             )
 
             if not self.confirm():
                 return
 
-        for line_num in sorted(delete_lines, reverse=True):
-            del squashed_migration_lines[line_num]
-
-        with open(squashed_migration_fn, "w") as fp:
-            if not self.dry_run:
-                fp.write("".join(squashed_migration_lines))
+        if not self.dry_run:
+            with open(squashed_migration_fn, "w") as fp:
+                fp.write(cleaned_migration_content)
 
     def confirm(self):
         if self.interactive:
