@@ -151,10 +151,16 @@ class Command(BaseCommand):
         cleaned_migration_content = re.sub(
             REPLACES_REGEX, "", squashed_migration_content
         )
+        if cleaned_migration_content == squashed_migration_content:
+            raise CommandError(
+                (
+                    "Couldn't find 'replaces =' lines in file %s. "
+                    "Please finish cleaning up manually."
+                )
+                % (squashed_migration_fn,)
+            )
 
-        if (
-            self.verbosity > 0 or self.interactive
-        ) and cleaned_migration_content != squashed_migration_content:
+        if self.verbosity > 0 or self.interactive:
             # Print the differences between the original and new content
             diff = difflib.unified_diff(
                 squashed_migration_content.splitlines(),
@@ -163,10 +169,14 @@ class Command(BaseCommand):
                 fromfile="Original",
                 tofile="Modified",
             )
+
             self.stdout.write(
                 self.style.MIGRATE_HEADING(
                     "The squashed migrations file %s will be modified like this :\n\n%s"
-                    % (squashed_migration_fn, "\n".join(diff))
+                    % (
+                        squashed_migration_fn,
+                        "\n".join(diff),
+                    )
                 )
             )
 
