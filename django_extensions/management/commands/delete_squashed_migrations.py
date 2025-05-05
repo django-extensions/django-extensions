@@ -154,7 +154,7 @@ class Command(BaseCommand):
 
         if (
             self.verbosity > 0 or self.interactive
-        ) and cleaned_migration_content == squashed_migration_content:
+        ) and cleaned_migration_content != squashed_migration_content:
             # Print the differences between the original and new content
             diff = difflib.unified_diff(
                 squashed_migration_content.splitlines(),
