@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 SECRET_KEY = "dummy"
 
@@ -52,12 +53,16 @@ ROOT_URLCONF = "tests.testapp.urls"
 
 DEBUG = True
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 TEMPLATE_DEBUG = True
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / "test_templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "debug": TEMPLATE_DEBUG,
@@ -71,7 +76,6 @@ TEMPLATES = [
     },
 ]
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 STATIC_URL = "/static/"
 
 SHELL_PLUS_SUBCLASSES_IMPORT_MODULES_BLACKLIST = [
