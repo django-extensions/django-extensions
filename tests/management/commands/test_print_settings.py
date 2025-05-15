@@ -1,4 +1,3 @@
-
 import pytest
 from django.core.management import CommandError, call_command
 

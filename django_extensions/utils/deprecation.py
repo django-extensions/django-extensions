@@ -1,5 +1,3 @@
-
-
 class MarkedForDeprecationWarning(DeprecationWarning):
     pass
 
