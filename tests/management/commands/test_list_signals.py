@@ -25,5 +25,5 @@ tests.testapp.models.HasOwnerModel (has owner model)
         call_command("list_signals", stdout=self.out)
 
         # Strip line numbers to make the test less brittle
-        out = re.sub(r"(?<=#)\d+", "", self.out.getvalue(), re.M)
+        out = re.sub(r"(?<=#)\d+", "", self.out.getvalue(), flags=re.M)
         self.assertIn(expected_result, out)
