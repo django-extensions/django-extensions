@@ -201,6 +201,8 @@ to your settings::
 Other configuration options and their defaults include:
 
 ::
+  # Print SQL queries as they're executed
+  RUNSERVER_PLUS_PRINT_SQL = False
 
   # Truncate SQL queries to this many characters (None means no truncation)
   RUNSERVER_PLUS_PRINT_SQL_TRUNCATE = 1000
