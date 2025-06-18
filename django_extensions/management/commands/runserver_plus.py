@@ -497,10 +497,13 @@ class Command(BaseCommand):
             self.addr = "::1" if self.use_ipv6 else "127.0.0.1"
             self._raw_ipv6 = True
 
+        print_sql = (
+            getattr(settings, "RUNSERVER_PLUS_PRINT_SQL", False) or options["print_sql"]
+        )
         truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
 
         with monkey_patch_cursordebugwrapper(
-            print_sql=options["print_sql"],
+            print_sql=print_sql,
             print_sql_location=options["print_sql_location"],
             truncate=truncate,
             logger=logger.info,
