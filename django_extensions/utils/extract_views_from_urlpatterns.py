@@ -2,6 +2,7 @@ from django.core.exceptions import ViewDoesNotExist
 from django.urls import URLPattern, URLResolver
 from django.utils import translation
 
+
 class RegexURLPattern:  # type: ignore
     pass
 
