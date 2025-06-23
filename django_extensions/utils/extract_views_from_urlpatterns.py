@@ -1,17 +1,22 @@
-
 from django.core.exceptions import ViewDoesNotExist
 from django.urls import URLPattern, URLResolver
+
 
 class RegexURLPattern:  # type: ignore
     pass
 
+
 class RegexURLResolver:  # type: ignore
     pass
+
 
 class LocaleRegexURLResolver:  # type: ignore
     pass
 
-def extract_views_from_urlpatterns(urlpatterns, languages=((None, None),), base="", namespace=None):
+
+def extract_views_from_urlpatterns(
+    urlpatterns, languages=((None, None),), base="", namespace=None
+):
     """
     Return a list of views from a list of urlpatterns.
 
@@ -46,7 +51,10 @@ def extract_views_from_urlpatterns(urlpatterns, languages=((None, None),), base=
                     with translation.override(language[0]):
                         views.extend(
                             extract_views_from_urlpatterns(
-                                patterns, languages, base + pattern, namespace=_namespace
+                                patterns,
+                                languages,
+                                base + pattern,
+                                namespace=_namespace,
                             )
                         )
             else:
@@ -57,9 +65,7 @@ def extract_views_from_urlpatterns(urlpatterns, languages=((None, None),), base=
                 )
         elif hasattr(p, "_get_callback"):
             try:
-                views.append(
-                    (p._get_callback(), base + describe_pattern(p), p.name)
-                )
+                views.append((p._get_callback(), base + describe_pattern(p), p.name))
             except ViewDoesNotExist:
                 continue
         elif hasattr(p, "url_patterns") or hasattr(p, "_get_url_patterns"):
@@ -75,6 +81,7 @@ def extract_views_from_urlpatterns(urlpatterns, languages=((None, None),), base=
         else:
             raise TypeError("%s does not appear to be a urlpattern object" % p)
     return views
+
 
 def describe_pattern(p):
     return str(p.pattern)
