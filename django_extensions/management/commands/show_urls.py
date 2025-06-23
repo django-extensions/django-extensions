@@ -9,7 +9,9 @@ from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.utils.extract_views_from_urlpatterns import extract_views_from_urlpatterns
+from django_extensions.utils.extract_views_from_urlpatterns import (
+    extract_views_from_urlpatterns,
+)
 
 
 FMTR = {
@@ -118,7 +120,9 @@ class Command(BaseCommand):
                 % (getattr(settings, urlconf), str(e))
             )
 
-        view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns, self.LANGUAGES)
+        view_functions = extract_views_from_urlpatterns(
+            urlconf.urlpatterns, self.LANGUAGES
+        )
         for func, regex, url_name in view_functions:
             if hasattr(func, "__globals__"):
                 func_globals = func.__globals__

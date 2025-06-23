@@ -13,7 +13,9 @@ from django.urls import URLResolver
 from django_extensions.compat import get_template_setting
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
-from django_extensions.utils.extract_views_from_urlpatterns import extract_views_from_urlpatterns
+from django_extensions.utils.extract_views_from_urlpatterns import (
+    extract_views_from_urlpatterns,
+)
 
 
 class Command(BaseCommand):
