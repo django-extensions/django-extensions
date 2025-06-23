@@ -8,7 +8,6 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template
-from django.urls import URLResolver
 
 from django_extensions.compat import get_template_setting
 from django_extensions.management.color import color_style, no_style
