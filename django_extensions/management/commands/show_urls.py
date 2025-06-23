@@ -4,30 +4,12 @@ import re
 
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
-from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand
-
-from django.urls import URLPattern, URLResolver  # type: ignore
-
-
-class RegexURLPattern:  # type: ignore
-    pass
-
-
-class RegexURLResolver:  # type: ignore
-    pass
-
-
-class LocaleRegexURLResolver:  # type: ignore
-    pass
-
-
-def describe_pattern(p):
-    return str(p.pattern)
+from django_extensions.utils.extract_views_from_urlpatterns import extract_views_from_urlpatterns
 
 
 FMTR = {
@@ -136,7 +118,7 @@ class Command(BaseCommand):
                 % (getattr(settings, urlconf), str(e))
             )
 
-        view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
+        view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns, self.LANGUAGES)
         for func, regex, url_name in view_functions:
             if hasattr(func, "__globals__"):
                 func_globals = func.__globals__
@@ -236,68 +218,3 @@ class Command(BaseCommand):
             return json.dumps(views)
 
         return "\n".join([v for v in views]) + "\n"
-
-    def extract_views_from_urlpatterns(self, urlpatterns, base="", namespace=None):
-        """
-        Return a list of views from a list of urlpatterns.
-
-        Each object in the returned list is a three-tuple: (view_func, regex, name)
-        """
-        views = []
-        for p in urlpatterns:
-            if isinstance(p, (URLPattern, RegexURLPattern)):
-                try:
-                    if not p.name:
-                        name = p.name
-                    elif namespace:
-                        name = "{0}:{1}".format(namespace, p.name)
-                    else:
-                        name = p.name
-                    pattern = describe_pattern(p)
-                    views.append((p.callback, base + pattern, name))
-                except ViewDoesNotExist:
-                    continue
-            elif isinstance(p, (URLResolver, RegexURLResolver)):
-                try:
-                    patterns = p.url_patterns
-                except ImportError:
-                    continue
-                if namespace and p.namespace:
-                    _namespace = "{0}:{1}".format(namespace, p.namespace)
-                else:
-                    _namespace = p.namespace or namespace
-                pattern = describe_pattern(p)
-                if isinstance(p, LocaleRegexURLResolver):
-                    for language in self.LANGUAGES:
-                        with translation.override(language[0]):
-                            views.extend(
-                                self.extract_views_from_urlpatterns(
-                                    patterns, base + pattern, namespace=_namespace
-                                )
-                            )
-                else:
-                    views.extend(
-                        self.extract_views_from_urlpatterns(
-                            patterns, base + pattern, namespace=_namespace
-                        )
-                    )
-            elif hasattr(p, "_get_callback"):
-                try:
-                    views.append(
-                        (p._get_callback(), base + describe_pattern(p), p.name)
-                    )
-                except ViewDoesNotExist:
-                    continue
-            elif hasattr(p, "url_patterns") or hasattr(p, "_get_url_patterns"):
-                try:
-                    patterns = p.url_patterns
-                except ImportError:
-                    continue
-                views.extend(
-                    self.extract_views_from_urlpatterns(
-                        patterns, base + describe_pattern(p), namespace=namespace
-                    )
-                )
-            else:
-                raise TypeError("%s does not appear to be a urlpattern object" % p)
-        return views
