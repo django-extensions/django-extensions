@@ -68,9 +68,9 @@ by libraries like *pygraphviz* or *pydot*. You can extend or override the templa
 
 Templates used:
 
- - django_extensions/graph_models/digraph.dot
- - django_extensions/graph_models/label.dot
- - django_extensions/graph_models/relation.dot
+- django_extensions/graph_models/digraph.dot
+- django_extensions/graph_models/label.dot
+- django_extensions/graph_models/relation.dot
 
 Documentation on how to create dot files can be found here: https://www.graphviz.org/documentation/
 
@@ -95,7 +95,7 @@ To use this feature, provide a JSON file specifying styles for each app. You can
 - Place a `.app-style.json` file in the project root, or
 - Use the `--app-style` command line option to specify a path to the file::
 
-    $ ./manage.py graph_models -a --app-style path/to/style.json -o styled_output.png
+  $ ./manage.py graph_models -a --app-style path/to/style.json -o styled_output.png
 
 The JSON file should map app labels to style dictionaries. The app labels can be exact matches or use wildcards (e.g., `django.*`) where the last entry wins.
 For example:
@@ -126,31 +126,54 @@ image by using the *graph_models* command::
   # Create a dot file
   $ ./manage.py graph_models -a > my_project.dot
 
+Generate a PNG image with grouped models:
+
 ::
 
   # Create a PNG image file called my_project_visualized.png with application grouping
   $ ./manage.py graph_models -a -g -o my_project_visualized.png
 
-  # Create a PNG with per-app styling
+.. image:: images/graph_models/grouped_app.png
+   :alt: Grouped application model diagram
+   :width: 600px
+
+Generate a PNG with per-app styling:
+
+::
+
   $ ./manage.py graph_models -a --app-style path/to/style.json -o my_styled_project.png
 
-  # Same example but with explicit selection of pygraphviz or pydot
+.. image:: images/graph_models/styled_app.png
+   :alt: Styled application model diagram
+   :width: 600px
+
+Use a specific rendering backend:
+
+::
+
   $ ./manage.py graph_models --pygraphviz -a -g -o my_project_visualized.png
   $ ./manage.py graph_models --pydot -a -g -o my_project_visualized.png
 
+Graph specific apps:
+
 ::
 
-  # Create a dot file for only the 'foo' and 'bar' applications of your project
   $ ./manage.py graph_models foo bar > my_project.dot
 
+Only include specific models:
+
 ::
 
-  # Create a graph for only certain models
   $ ./manage.py graph_models -a -I Foo,Bar -o my_project_subsystem.png
 
+.. image:: images/graph_models/simple_app.png
+   :alt: Sample Foo and Bar models diagram
+   :width: 600px
+
+Exclude specific models:
+
 ::
 
-  # Create a graph excluding certain models
   $ ./manage.py graph_models -a -X Foo,Bar -o my_project_sans_foo_bar.png
 
 ::
