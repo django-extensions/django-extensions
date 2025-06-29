@@ -60,6 +60,8 @@ Contents
    permissions
    utilities
    validators
+   show_permissions
+   verify_named_urls
 
 
 Indices and tables
