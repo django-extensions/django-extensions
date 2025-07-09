@@ -480,6 +480,8 @@ class Command(BaseCommand):
                 "RUNSERVER_PLUS_SERVER_ADDRESS_PORT",
                 getattr(settings, "RUNSERVERPLUS_SERVER_ADDRESS_PORT", None),
             )
+            addrport = os.environ.get("RUNSERVERPLUS_SERVER_ADDRESS_PORT") or addrport
+
         if not addrport:
             self.addr = ""
             self.port = DEFAULT_PORT
