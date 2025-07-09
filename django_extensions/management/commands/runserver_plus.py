@@ -474,6 +474,7 @@ class Command(BaseCommand):
                 addrport = settings.RUNSERVERPLUS_SERVER_ADDRESS_PORT
             except AttributeError:
                 pass
+            addrport = os.environ.get("RUNSERVERPLUS_SERVER_ADDRESS_PORT")
         if not addrport:
             self.addr = ""
             self.port = DEFAULT_PORT
