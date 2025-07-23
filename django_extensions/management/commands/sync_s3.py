@@ -187,9 +187,9 @@ class Command(BaseCommand):
         self.static_only = options['static_only']
 
         if self.media_only and self.static_only:
-            raise ValueError(
-                'static_only and media_only '
-                'cannot be used at the same time'
+            raise CommandError(
+                '--static-only and --media-only options '
+                'cannot be used together'
             )
 
         if self.media_only:
