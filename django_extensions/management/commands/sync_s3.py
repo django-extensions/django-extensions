@@ -69,6 +69,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 from django_extensions.management.utils import signalcommand
 
+# https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-examples.html
+
 try:
     import boto3
     import boto3.exceptions
@@ -113,6 +115,7 @@ class Command(BaseCommand):
         self.verbosity = False
         self.gzip = False
         self.expires = False
+        self.skip_count = 0
         self.upload_count = 0
         self.uploaded_files = []  # type: list[str]
         self.request_cloudfront_invalidation = False
