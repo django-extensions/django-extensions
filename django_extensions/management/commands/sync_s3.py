@@ -56,6 +56,7 @@ TODO:
  * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
 
 """
+import datetime
 import email
 import gzip
 import mimetypes
@@ -368,8 +369,7 @@ class Command(BaseCommand):
 
     def _walk_folders(self):
         """Method used to walk the static and media folders
-        in order to discover the files that should be uploaded
-        to S3"""
+        in order to discover the files that should be uploaded to S3"""
         client, bucket = self._create_s3_connection()
 
         params = {
