@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 from io import StringIO
 from typing import Dict, Set, Type  # noqa

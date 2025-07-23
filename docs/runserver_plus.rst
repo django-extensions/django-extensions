@@ -85,10 +85,18 @@ An ajax based console appears in the pane and you can start debugging.
 Notice in the screenshot above I did a `print environ` to see what was in the
 environment parameter coming into the function.
 
-*WARNING*: This should *never* be used in any kind of production environment.
-Not even for a quick problem check.  I cannot emphasize this enough. The
-interactive debugger allows you to evaluate python code right against the
-server.  You've been warned.
+.. warning::
+
+    This should *never* be used in any kind of production environment.
+    Not even for a quick problem check.  I cannot emphasize this enough. The
+    interactive debugger allows you to evaluate python code right against the
+    server.  You've been warned.
+
+..  note::
+
+    If you're using Werkzeug 3.0.3 or later, by default, the debugger will only
+    be enabled if the hostname is one of ``[localhost, .localhost, 127.0.0.1]``.
+    You may allow more host names by setting the ``RUNSERVERPLUS_TRUSTED_HOSTS``.
 
 .. _`Werkzeug WSGI utilities`: https://werkzeug.palletsprojects.com/
 
@@ -208,6 +216,9 @@ Other configuration options and their defaults include:
 
   # Do not watch files matching any of these patterns
   RUNSERVER_PLUS_EXCLUDE_PATTERNS = []
+
+  # List of domains to allow requests to the debugger from
+  RUNSERVERPLUS_TRUSTED_HOSTS = [".localhost", "127.0.0.1"]
 
 
 IO Calls and CPU Usage

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Author Igor Támara igor@tamarapatino.org
 Use this little program as you wish, if you

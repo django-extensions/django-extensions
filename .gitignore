@@ -21,3 +21,4 @@ django-sample-app*/
 *.swp
 *.swo
 *.sqlite3
+.app-style.json

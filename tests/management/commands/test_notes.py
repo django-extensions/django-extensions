@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 
 from django.core.management import call_command
@@ -8,8 +7,9 @@ def test_without_args(capsys, settings):
     call_command("notes")
 
     out, err = capsys.readouterr()
+    print([out])
     assert (
-        "tests/testapp/file_without_utf8_notes.py:\n  * [  3] TODO  this is a test todo\n\n"
+        "tests/testapp/file_without_utf8_notes.py:\n  * [  1] TODO  this is a test todo\n\n"
         in out
     )
 
@@ -19,7 +19,7 @@ def test_with_utf8(capsys, settings):
 
     out, err = capsys.readouterr()
     assert (
-        "tests/testapp/file_with_utf8_notes.py:\n  * [  3] TODO  Russian text followed: Это техт на кириллице\n\n"
+        "tests/testapp/file_with_utf8_notes.py:\n  * [  1] TODO  Russian text followed: Это техт на кириллице\n\n"
         in out
     )
 

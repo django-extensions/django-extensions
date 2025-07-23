@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 import sys
 import json
 import os
 import tempfile
+import fnmatch
+from collections import OrderedDict
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -27,26 +28,21 @@ try:
 except ImportError:
     HAS_PYDOT = False
 
+DEFAULT_APP_STYLE_NAME = ".app-style.json"
 
-def retheme(graph_data, app_style={}):
-    if isinstance(app_style, str):
-        if os.path.exists(app_style):
-            try:
-                with open(app_style, "rt") as f:
-                    app_style = json.load(f)
-            except Exception as e:
-                print(f"Invalid app style file {app_style}")
-                raise Exception(e)
-        else:
-            return graph_data
+
+def retheme(graph_data: dict, app_style_filename: str):
+    with open(app_style_filename, "rt") as f:
+        app_style = json.load(f, object_pairs_hook=OrderedDict)
 
     for gc in graph_data["graphs"]:
         for g in gc:
             if "name" in g:
                 for m in g["models"]:
                     app_name = g["app_name"]
-                    if app_name in app_style:
-                        m["style"] = app_style[app_name]
+                    for pattern, style in app_style.items():
+                        if fnmatch.fnmatchcase(app_name, pattern):
+                            m["style"] = dict(style)
     return graph_data
 
 
@@ -73,7 +69,7 @@ class Command(BaseCommand):
                 "action": "store",
                 "help": "Path to style json to configure the style per app",
                 "dest": "app-style",
-                "default": ".app-style.json",
+                "default": "",
             },
             "--pygraphviz": {
                 "action": "store_true",
@@ -372,7 +368,21 @@ class Command(BaseCommand):
         )
         template = loader.get_template(template_name)
 
-        graph_data = retheme(graph_data, app_style=options["app-style"])
+        app_style_filename = options["app-style"]
+        if app_style_filename and not os.path.exists(app_style_filename):
+            raise CommandError(f"--app-style file {app_style_filename} not found")
+
+        if not app_style_filename:
+            # try default
+            default_app_style_filename = os.path.join(
+                settings.BASE_DIR, DEFAULT_APP_STYLE_NAME
+            )
+            if os.path.exists(default_app_style_filename):
+                app_style_filename = default_app_style_filename
+
+        if app_style_filename:
+            graph_data = retheme(graph_data, app_style_filename=app_style_filename)
+
         dotdata = generate_dot(graph_data, template=template)
 
         if output == "pygraphviz":

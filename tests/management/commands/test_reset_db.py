@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import importlib.util
 import os
 from io import StringIO

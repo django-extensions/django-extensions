@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
 import re
@@ -654,6 +653,11 @@ class Command(BaseCommand):
             if self.nopin:
                 os.environ["WERKZEUG_DEBUG_PIN"] = "off"
             handler = DebuggedApplication(handler, True)
+            # Set trusted_hosts (for Werkzeug 3.0.3+)
+            try:
+                handler.trusted_hosts = settings.RUNSERVERPLUS_TRUSTED_HOSTS
+            except AttributeError:
+                pass
 
         runserver_plus_started.send(sender=self)
         run_simple(

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 from django.contrib.auth.models import Group, Permission
 from django.test import override_settings

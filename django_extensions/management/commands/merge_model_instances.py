@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.management import BaseCommand

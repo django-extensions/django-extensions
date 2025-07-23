@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 MongoDB model fields emulating Django Extensions' additional model fields
 

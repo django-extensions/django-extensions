@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django_extensions.management.jobs import WeeklyJob
 
 from unittest import mock

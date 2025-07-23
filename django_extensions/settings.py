@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 
 from django.conf import settings
@@ -43,3 +42,5 @@ POSTGRESQL_ENGINES = getattr(
 )
 
 DEFAULT_PRINT_SQL_TRUNCATE_CHARS = 1000
+
+RUNSERVER_PLUS_EXCLUDE_PATTERNS = ["**/__pycache__/*"]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # django-extensions documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr  1 20:39:40 2009.

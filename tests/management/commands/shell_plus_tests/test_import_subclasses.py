@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Optional, Set  # noqa
 
 from django.conf import settings

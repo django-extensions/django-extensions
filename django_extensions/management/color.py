@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.core.management import color
 from django.utils import termcolors
 

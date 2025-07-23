@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 class PytestTestRunner:
     """Runs pytest to discover and run tests."""
 

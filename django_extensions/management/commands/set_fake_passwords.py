@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 set_fake_passwords.py
 

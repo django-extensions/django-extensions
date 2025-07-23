@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Based on https://gist.github.com/voldmar/1264102
 # and https://gist.github.com/runekaagaard/2eecf0a8367959dc634b7866694daf2c
 

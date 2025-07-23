@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
 
 from django_extensions.management.utils import signalcommand

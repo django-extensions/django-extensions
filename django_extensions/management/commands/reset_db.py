@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 reset_db command
 

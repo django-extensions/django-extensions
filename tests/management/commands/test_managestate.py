@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory

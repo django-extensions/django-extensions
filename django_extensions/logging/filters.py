@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import time
 import logging
 from hashlib import md5

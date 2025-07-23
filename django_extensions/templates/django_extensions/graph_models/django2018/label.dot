@@ -12,8 +12,8 @@
     style="rounded"{% endif %}
 {% indentby 2 if use_subgraph %}{% for model in graph.models %}
   {{ model.app_name }}_{{ model.name }} [label=<
-    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
-    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <TABLE BGCOLOR="white" BORDER="{{ model.style.table_border|default:"1" }}" CELLBORDER="{{ model.style.table_cellborder|default:"0" }}" CELLSPACING="{{ model.style.table_cellspacing|default:"0" }}">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="{{ model.style.align|default:"CENTER" }}" BGCOLOR="{{ model.style.bg|default:"#1b563f" }}">
     <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
     {{ model.label }}{% if model.abstracts %}<BR/>&lt;<FONT FACE="Roboto"><I>{{ model.abstracts|join:"," }}</I></FONT>&gt;{% endif %}
     </B></FONT></TD></TR>

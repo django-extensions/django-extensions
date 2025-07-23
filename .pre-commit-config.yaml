@@ -18,7 +18,6 @@ repos:
     -   id: mixed-line-ending
         args: [ '--fix=lf' ]
         description: Forces to replace line ending by the UNIX 'lf' character.
-    -   id: fix-encoding-pragma
     -   id: name-tests-test
         args:
         - --django

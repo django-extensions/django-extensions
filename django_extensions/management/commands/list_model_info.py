@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Author: OmenApps. https://omenapps.com
 import inspect
 
@@ -86,6 +85,9 @@ class Command(BaseCommand):
         )
 
         default_methods = [
+            "adelete",
+            "arefresh_from_db",
+            "asave",
             "check",
             "clean",
             "clean_fields",
@@ -94,6 +96,7 @@ class Command(BaseCommand):
             "from_db",
             "full_clean",
             "get_absolute_url",
+            "get_constraints",
             "get_deferred_fields",
             "prepare_database_save",
             "refresh_from_db",
@@ -101,6 +104,7 @@ class Command(BaseCommand):
             "save_base",
             "serializable_value",
             "unique_error_message",
+            "validate_constraints",
             "validate_unique",
         ]
 

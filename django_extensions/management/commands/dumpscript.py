@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
       Title: Dumpscript management command
     Project: Hardytools (queryset-refactor version)

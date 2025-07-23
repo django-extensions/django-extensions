@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The Django Admin Generator is a project which can automatically generate
 (scaffold) a Django Admin for you. By doing this it will introspect your
