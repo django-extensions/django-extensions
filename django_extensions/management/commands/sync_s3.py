@@ -249,8 +249,8 @@ class Command(BaseCommand):
     def _handle_upload(self, root, dirs, files, **params):
         """Function that uploads the directory and files to S3"""
         client = params.get('client')
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/bucket/index.html
         bucket = params.get('bucket')
-        bucket_key = params.get('bucket_key')
 
         root = pathlib.Path(root)
         if root.name in self.filter_list:
@@ -381,7 +381,6 @@ class Command(BaseCommand):
         params = {
             'client': client,
             'bucket': bucket,
-            'bucket_key': None,
             'directory': None
         }
 
