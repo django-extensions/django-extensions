@@ -294,8 +294,8 @@ class Command(BaseCommand):
                 # Get the parts of the path to the file
                 # and create a relative path to the file
                 # e.g. media/2010/01/01/file.txt
-                parts = list(root.parts)[
-                    list(root.parts).index(directory.name):]
+                list_parts = list(root.parts)
+                parts = list_parts[list_parts.index(directory.name):]
                 relative_path = '/'.join(parts)
 
                 # This creates the final key or path that
