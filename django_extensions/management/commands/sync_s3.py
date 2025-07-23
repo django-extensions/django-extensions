@@ -169,13 +169,13 @@ class Command(BaseCommand):
         if not has_access_keys:
             raise CommandError(
                 'Missing AWS_S3_ACCESS_KEY_ID and/or '
-                'AWS_S3_SECRET_ACCESS_KEY in the settings file'
+                'AWS_S3_SECRET_ACCESS_KEY in your settings file'
             )
 
         if not self.AWS_STORAGE_BUCKET_NAME:
             raise CommandError(
                 'Missing AWS_STORAGE_BUCKET_NAME '
-                'in the settings file'
+                'in your settings file'
             )
 
         media_root = getattr(settings, 'MEDIA_ROOT', None)
@@ -184,7 +184,7 @@ class Command(BaseCommand):
                 'MEDIA_ROOT should be set '
                 'in your settings file'
             )
-        
+
         self.media_only = options['media_only']
         self.static_only = options['static_only']
 
