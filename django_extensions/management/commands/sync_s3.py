@@ -273,6 +273,7 @@ class Command(BaseCommand):
             }
         )
 
+        # NOTE: filename is the string filepath
         for filename in files:
             if filename in self.filter_list:
                 continue
