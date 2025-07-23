@@ -358,7 +358,7 @@ class Command(BaseCommand):
                         'extra_args': extra_args
                     })
                 except boto3.exceptions.S3TransferFailedError as e:
-                    print('Failed')
+                    print(f'Failed to upload file: {filename}')
                 except Exception as e:
                     print(e)
                     raise
