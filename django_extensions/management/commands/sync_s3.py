@@ -296,6 +296,38 @@ class Command(BaseCommand):
             if self.prefix:
                 file_key = f'{self.prefix}/{file_key}'
 
+            # Checks if the file on S3 is older
+            # than the local files and if so uploads
+            # it to the bucket
+            if not self.force_upload:
+                result = client.head_object(
+                    Bucket=self.AWS_STORAGE_BUCKET_NAME, Key=file_key)
+                if result:
+                    # type: datetime.datetime
+                    s3_last_modified = result['LastModified']
+
+                    file_timestamp = os.stat(fullpath).st_mtime
+                    file_datetime = datetime.datetime.fromtimestamp(
+                        file_timestamp, tz=datetime.timezone.utc)
+
+                    if file_datetime < s3_last_modified:
+                        self.skip_count += 1
+                        print(
+                            f"File {file_key} has not been modified "
+                            "since last being uploaded"
+                        )
+                        continue
+
+            print(f'Uploading {filename}')
+
+            content_type = mimetypes.guess_type(filename)[0]
+            if content_type:
+                extra_args.update(**{'ContentType': content_type})
+
+            with open(fullpath, mode='rb') as f:
+                file_size = os.fstat(f.fileno()).st_size
+                file_data = f.read()
+
                 if self.gzip:
                     # Gzip only if file is large enough (>1K is recommended)
                     # and only if file is a common text type (not a binary file)
