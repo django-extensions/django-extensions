@@ -181,6 +181,9 @@ class Command(BaseCommand):
                 'MEDIA_ROOT should be set '
                 'in your settings file'
             )
+        
+        self.media_only = options['media_only']
+        self.static_only = options['static_only']
 
         if self.media_only and self.static_only:
             raise ValueError(
