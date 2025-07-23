@@ -280,38 +280,21 @@ class Command(BaseCommand):
             if fullpath.is_dir():
                 continue
 
-            # Checks if the file on S3 is older
-            # than the local files and if so uploads
-            # it to the bucket
-            if self.force_upload:
-                pass
+            # Get the parts of the path to the file
+            # and create a relative path to the file
+            # e.g. media/2010/01/01/file.txt
+            list_parts = list(root.parts)
+            parts = list_parts[list_parts.index(directory.name):]
+            relative_path = '/'.join(parts)
 
-            if self.verbosity > 1:
-                print(f'Uploading {filename}')
+            # This creates the final key or path that
+            # will be used to save the file in s3
+            file_key = f'{relative_path}/{filename}'
 
-            content_type = mimetypes.guess_type(filename)[0]
-            if content_type:
-                extra_args.update(**{'ContentType': content_type})
-
-            with open(fullpath, mode='rb') as f:
-                file_size = os.fstat(f.fileno()).st_size
-                file_data = f.read()
-
-                # Get the parts of the path to the file
-                # and create a relative path to the file
-                # e.g. media/2010/01/01/file.txt
-                list_parts = list(root.parts)
-                parts = list_parts[list_parts.index(directory.name):]
-                relative_path = '/'.join(parts)
-
-                # This creates the final key or path that
-                # will be used to save the file in s3
-                file_key = f'{relative_path}/{filename}'
-
-                # The files can be prefixed under a specific
-                # main directory for organization
-                if self.prefix:
-                    file_key = f'{self.prefix}/{file_key}'
+            # The files can be prefixed under a specific
+            # main directory for organization
+            if self.prefix:
+                file_key = f'{self.prefix}/{file_key}'
 
                 if self.gzip:
                     # Gzip only if file is large enough (>1K is recommended)
