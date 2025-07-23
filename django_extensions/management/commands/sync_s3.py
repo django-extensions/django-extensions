@@ -215,6 +215,7 @@ class Command(BaseCommand):
         self.expires = options['expires']
         self.renamegzip = options['renamegzip']
         self.s3host = options['s3host']
+        self.request_cloudfront_invalidation = options['invalidate']
 
         filter_list_from_settings = getattr(settings, 'AWS_S3_FILTER_LIST', [])
 
@@ -399,7 +400,28 @@ class Command(BaseCommand):
                 self._handle_upload(root, dirs, files, **params)
 
     def _call_cloudfront_invalidation(self):
-        pass
+        if not self.AWS_CLOUDFRONT_DISTRIBUTION:
+            raise CommandError(
+                "An object invalidation was requested but AWS_CLOUDFRONT_DISTRIBUTION "
+                "is not present in your settings"
+            )
+
+        connection = self._create_cloudfront_connection()
+
+        # We can't send more than 1000 objects in the
+        # same invalidation request
+        def chunked(items, size=1000):
+            for i in range(0, len(items), size):
+                yield items[i:i + size]
+
+        chunks = chunked(self.uploaded_files)
+
+        for chunk in chunks:
+            paths = list(chunk)
+            connection.create_invalidation(
+                DistributionId=self.AWS_CLOUDFRONT_DISTRIBUTION,
+                Paths={'Quantity': len(paths), 'Items': list(paths)}
+            )
 
     def _compress_string(self, content):
         """Helper function that Gzips a given
@@ -496,4 +518,11 @@ class Command(BaseCommand):
             dest='s3host',
             default=getattr(settings, 'AWS_S3_HOST', ''),
             help="The s3 host (enables connecting to other providers/regions)"
+        )
+        parser.add_argument(
+            "--invalidate",
+            dest="invalidate",
+            default=False,
+            action="store_true",
+            help="Invalidates the associated objects in CloudFront",
         )
