@@ -63,7 +63,7 @@ import os
 import pathlib
 import time
 from io import BytesIO
-import datetime
+
 import boto3
 import boto3.exceptions
 from boto3.s3 import transfer
