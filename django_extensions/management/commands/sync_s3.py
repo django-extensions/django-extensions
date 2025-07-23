@@ -159,6 +159,11 @@ class Command(BaseCommand):
             self.AWS_S3_SECRET_ACCESS_KEY is not None
         ])
 
+        if not HAS_BOTO:
+            raise CommandError(
+                "Please install the 'boto3' Python library. ($ pip install boto3)"
+            )
+
         if not has_access_keys:
             raise CommandError(
                 'Missing AWS_S3_ACCESS_KEY_ID and/or '
