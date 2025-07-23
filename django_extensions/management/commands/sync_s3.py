@@ -176,7 +176,8 @@ class Command(BaseCommand):
                 'in the settings file'
             )
 
-        if not getattr(settings, 'MEDIA_ROOT'):
+        media_root = getattr(settings, 'MEDIA_ROOT', None)
+        if not media_root:
             raise CommandError(
                 'MEDIA_ROOT should be set '
                 'in your settings file'
