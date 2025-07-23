@@ -107,17 +107,17 @@ class Command(BaseCommand):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.directories = []
+        self.directories = []  # type: list[str]
         self.media_only = False
         self.static_only = False
-        self.filter_list = []
+        self.filter_list = []  # type: list[str]
         self.prefix = None
         self.force_upload = False
         self.verbosity = False
         self.gzip = False
         self.expires = False
         self.upload_count = 0
-        self.uploaded_files = []
+        self.uploaded_files = []  # type: list[str]
         self.request_cloudfront_invalidation = False
         self.default_acl = None
         self.using_dir = None
