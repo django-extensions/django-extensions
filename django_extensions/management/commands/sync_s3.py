@@ -64,9 +64,6 @@ import pathlib
 import time
 from io import BytesIO
 
-import boto3
-import boto3.exceptions
-from boto3.s3 import transfer
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
