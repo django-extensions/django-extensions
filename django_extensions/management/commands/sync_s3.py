@@ -74,6 +74,8 @@ from django_extensions.management.utils import signalcommand
 
 try:
     import boto3
+    import boto3.exceptions
+    from boto3.s3 import transfer
 except ImportError:
     HAS_BOTO = False
 else:
