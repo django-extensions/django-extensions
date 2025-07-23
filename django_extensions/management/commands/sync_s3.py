@@ -208,8 +208,6 @@ class Command(BaseCommand):
         self.prefix = options['prefix']
         self.default_acl = options['acl']
         self.force_upload = options['force_upload']
-        self.media_only = options['media_only']
-        self.static_only = options['static_only']
         self.verbosity = options['verbosity']
         self.gzip = options['gzip']
         self.expires = options['expires']
