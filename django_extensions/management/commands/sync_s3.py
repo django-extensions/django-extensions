@@ -151,7 +151,7 @@ class Command(BaseCommand):
         self.SYNC_S3_RENAME_GZIP_EXT = getattr(
             settings,
             'SYNC_S3_RENAME_GZIP_EXT',
-            None
+            '.gz'
         )
 
         has_access_keys = all([
