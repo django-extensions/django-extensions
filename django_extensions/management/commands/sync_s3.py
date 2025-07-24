@@ -304,11 +304,21 @@ class Command(BaseCommand):
             # than the local files and if so uploads
             # it to the bucket
             if not self.force_upload:
-                result = client.head_object(
-                    Bucket=self.AWS_STORAGE_BUCKET_NAME, Key=file_key)
-                if result:
-                    # type: datetime.datetime
-                    s3_last_modified = result['LastModified']
+                try:
+                    result = client.head_object(
+                        Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                        Key=file_key
+                    )
+                except ClientError as e:
+                    # If the file does not exist in the bucket,
+                    # head_object will return a 404 error
+                    # we can safely ignore this and proceed
+                    # to upload the file anyways
+                    pass
+                else:
+                    if result:
+                        # type: datetime.datetime
+                        s3_last_modified = result['LastModified']
 
                     file_timestamp = os.stat(fullpath).st_mtime
                     file_datetime = datetime.datetime.fromtimestamp(
