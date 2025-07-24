@@ -50,6 +50,7 @@ Command options are:
   --s3host              Override default s3 host.
   --acl                 Override default ACL settings ('public-read' if
                         settings.AWS_DEFAULT_ACL is not defined).
+  --dry-run             Shows what would be uploaded without actually uploading it.
 
 TODO:
  * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
