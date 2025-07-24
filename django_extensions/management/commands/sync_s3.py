@@ -326,8 +326,8 @@ class Command(BaseCommand):
                             tz=datetime.timezone.utc
                         )
 
-                    if file_datetime < s3_last_modified:
-                        self.skip_count += 1
+                        if file_datetime < s3_last_modified:
+                            self.skip_count += 1
                             self.stdout.write(
                                 self.style.WARNING(
                                     f"    + File {file_key} has not been modified "
@@ -391,21 +391,38 @@ class Command(BaseCommand):
                             f"Cache control: {extra_args['CacheControl']}")
 
                 try:
-                    instance = transfer.S3Transfer(client=client)
-                    instance.upload_file(**{
-                        'filename': str(fullpath),
-                        'bucket': self.AWS_STORAGE_BUCKET_NAME,
-                        'key': file_key,
-                        'extra_args': extra_args
-                    })
-                except boto3.exceptions.S3TransferFailedError as e:
-                    print(f'Failed to upload file: {filename}')
+                    client.upload_file(
+                        Filename=str(fullpath),
+                        Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                        Key=file_key,
+                        ExtraArgs=extra_args
+                    )
+                except ClientError as e:
+                    self.stdout.write(self.style.ERROR(
+                        f"Failed to upload file: {filename}"))
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(str(e)))
                     raise
                 else:
                     self.upload_count += 1
                     self.uploaded_files.append(fullpath)
+
+                # try:
+                #     instance = transfer.S3Transfer(client=client)
+                #     instance.upload_file(**{
+                #         'filename': str(fullpath),
+                #         'bucket': self.AWS_STORAGE_BUCKET_NAME,
+                #         'key': file_key,
+                #         'extra_args': extra_args
+                #     })
+                # except boto3.exceptions.S3TransferFailedError as e:
+                #     print(f'Failed to upload file: {filename}')
+                # except Exception as e:
+                #     print(e)
+                #     raise
+                # else:
+                #     self.upload_count += 1
+                #     self.uploaded_files.append(fullpath)
 
     def _walk_folders(self):
         """Method used to walk the static and media folders
