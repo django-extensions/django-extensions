@@ -607,7 +607,7 @@ class Command(BaseCommand):
                     'CallerReference': f"sync-s3-{int(time.time())}"
                 }
                 # Paths={
-                #     'Quantity': len(paths), 
+                #     'Quantity': len(paths),
                 #     'Items': list(paths)
                 # }
             )
