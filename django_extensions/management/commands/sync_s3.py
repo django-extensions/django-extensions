@@ -246,8 +246,24 @@ class Command(BaseCommand):
 
         session = boto3.Session(**session_config)
 
-        client = session.client('s3')
-        resource = session.resource('s3')
+        client_config = {}
+
+        if self.s3host:
+            if not self.s3host.startswith(('http://', 'https://')):
+                self.s3host = f'https://{self.s3host}'
+
+            client_config['endpoint_url'] = self.s3host
+            # Configure for S3-compatible services
+            # that use path-style addressing
+            client_config['config'] = boto3.session.Config(
+                s3={
+                    'addressing_style': 'path'
+                }
+            )
+
+        client = session.client('s3', **client_config)
+        resource = session.resource('s3', **client_config)
+
         bucket = resource.Bucket(self.AWS_STORAGE_BUCKET_NAME)
         if bucket is None:
             bucket = client.create_bucket(Bucket=self.AWS_STORAGE_BUCKET_NAME)
@@ -618,7 +634,11 @@ class Command(BaseCommand):
             '--s3host',
             dest='s3host',
             default=getattr(settings, 'AWS_S3_HOST', ''),
-            help="The s3 host (enables connecting to other providers/regions)"
+            help=(
+                "Override the default S3 endpoint. Useful for S3-compatible services like "
+                "MinIO, DigitalOcean Spaces, etc. Example: --s3host=https://nyc3.digitaloceanspaces.com "
+                "or --s3host=minio.example.com:9000"
+            )
         )
         parser.add_argument(
             "--invalidate",
