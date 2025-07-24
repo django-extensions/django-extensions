@@ -496,7 +496,7 @@ class Command(BaseCommand):
                             f"Cache control: {extra_args['CacheControl']}")
 
                 try:
-                    if file_size > 100 * 1024 * 1024: # 100MB threshold
+                    if file_size > 100 * 1024 * 1024:  # 100MB threshold
                         config = transfer.TransferConfig(
                             multipart_threshold=1024 * 25,  # 25MB
                             max_concurrency=10,
