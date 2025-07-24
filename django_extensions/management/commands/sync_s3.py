@@ -320,9 +320,11 @@ class Command(BaseCommand):
                         # type: datetime.datetime
                         s3_last_modified = result['LastModified']
 
-                    file_timestamp = os.stat(fullpath).st_mtime
-                    file_datetime = datetime.datetime.fromtimestamp(
-                        file_timestamp, tz=datetime.timezone.utc)
+                        file_timestamp = os.stat(fullpath).st_mtime
+                        file_datetime = datetime.datetime.fromtimestamp(
+                            file_timestamp, 
+                            tz=datetime.timezone.utc
+                        )
 
                     if file_datetime < s3_last_modified:
                         self.skip_count += 1
