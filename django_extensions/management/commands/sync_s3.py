@@ -75,6 +75,7 @@ try:
     import boto3
     import boto3.exceptions
     from boto3.s3 import transfer
+    from botocore.exceptions import ClientError
 except ImportError:
     HAS_BOTO = False
 else:
