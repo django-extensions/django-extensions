@@ -572,6 +572,10 @@ class Command(BaseCommand):
 
             params['directory'] = directory
             for root, dirs, files in os.walk(directory):
+                if (len(files) > 0):
+                    self.stdout.write(
+                        f"\n  - Found {len(files)} files in {root} and {len(dirs)} directories"
+                    )
                 self._handle_upload(root, dirs, files, **params)
 
     def _call_cloudfront_invalidation(self):
