@@ -354,6 +354,11 @@ class Command(BaseCommand):
 
         root = pathlib.Path(root)
         if root.name in self.filter_list:
+            self.stdout.write(
+                self.style.NOTICE(
+                    f"    x Skipping directory: {root.name}"
+                )
+            )
             return
 
         # The main directory in which the file is located:
