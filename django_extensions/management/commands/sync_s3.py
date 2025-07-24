@@ -328,13 +328,15 @@ class Command(BaseCommand):
 
                     if file_datetime < s3_last_modified:
                         self.skip_count += 1
-                        print(
-                            f"File {file_key} has not been modified "
-                            "since last being uploaded"
-                        )
-                        continue
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"    + File {file_key} has not been modified "
+                                    "since last being uploaded"
+                                )
+                            )
+                            continue
 
-            print(f'Uploading {filename}')
+            self.stdout.write(self.style.SUCCESS(f"    + OK Uploaded {filename} to {file_key}"))
 
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
@@ -363,7 +365,7 @@ class Command(BaseCommand):
                     extra_args["ContentEncoding"] = 'gzip'
 
                     if self.verbosity > 1:
-                        print(
+                        self.stdout.write(
                             f"Gzipped file: {file_size / 1024} "
                             f"to {file_data / 1024}"
                         )
@@ -384,8 +386,9 @@ class Command(BaseCommand):
                     extra_args['CacheControl'] = f'max-age {3600 * 24 * 365 * 2}'
 
                     if self.verbosity > 1:
-                        print(f"Expires: {extra_args['expires']}")
-                        print(f"Cache control: {extra_args['Cache-Control']}")
+                        self.stdout.write(f"Expires: {extra_args['Expires']}")
+                        self.stdout.write(
+                            f"Cache control: {extra_args['CacheControl']}")
 
                 try:
                     instance = transfer.S3Transfer(client=client)
@@ -398,7 +401,7 @@ class Command(BaseCommand):
                 except boto3.exceptions.S3TransferFailedError as e:
                     print(f'Failed to upload file: {filename}')
                 except Exception as e:
-                    print(e)
+                    self.stdout.write(self.style.ERROR(str(e)))
                     raise
                 else:
                     self.upload_count += 1
@@ -407,6 +410,12 @@ class Command(BaseCommand):
     def _walk_folders(self):
         """Method used to walk the static and media folders
         in order to discover the files that should be uploaded to S3"""
+        self.stdout.write(
+            self.style.NOTICE(
+                f"Using S3 bucket: {self.AWS_STORAGE_BUCKET_NAME}"
+            )
+        )
+
         client, bucket = self._create_s3_connection()
 
         params = {
