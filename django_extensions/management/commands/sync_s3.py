@@ -554,12 +554,6 @@ class Command(BaseCommand):
     def _walk_folders(self, dry_run=False):
         """Method used to walk the static and media folders
         in order to discover the files that should be uploaded to S3"""
-        self.stdout.write(
-            self.style.NOTICE(
-                f"Using S3 bucket: {self.AWS_STORAGE_BUCKET_NAME}"
-            )
-        )
-
         client, bucket = self._create_s3_connection()
 
         params = {
