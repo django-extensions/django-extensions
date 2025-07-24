@@ -334,7 +334,7 @@ class Command(BaseCommand):
 
                         file_timestamp = os.stat(fullpath).st_mtime
                         file_datetime = datetime.datetime.fromtimestamp(
-                            file_timestamp, 
+                            file_timestamp,
                             tz=datetime.timezone.utc
                         )
 
@@ -348,7 +348,11 @@ class Command(BaseCommand):
                             )
                             continue
 
-            self.stdout.write(self.style.SUCCESS(f"    + OK Uploaded {filename} to {file_key}"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"    + OK Uploaded {filename} to {file_key}"
+                )
+            )
 
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
