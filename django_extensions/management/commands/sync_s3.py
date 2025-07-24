@@ -56,6 +56,7 @@ TODO:
  * Use fnmatch (or regex) to allow more complex FILTER_LIST rules.
 
 """
+import fnmatch
 import datetime
 import email
 import gzip
