@@ -407,12 +407,27 @@ class Command(BaseCommand):
                             f"Cache control: {extra_args['CacheControl']}")
 
                 try:
-                    client.upload_file(
-                        Filename=str(fullpath),
-                        Bucket=self.AWS_STORAGE_BUCKET_NAME,
-                        Key=file_key,
-                        ExtraArgs=extra_args
-                    )
+                    if file_size > 100 * 1024 * 1024: # 100MB threshold
+                        config = TransferConfig(
+                            multipart_threshold=1024 * 25,  # 25MB
+                            max_concurrency=10,
+                            multipart_chunksize=1024 * 25,
+                            use_threads=True
+                        )
+
+                        client.upload_file(
+                            Filename=str(fullpath),
+                            Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                            Key=file_key,
+                            ExtraArgs=extra_args
+                        )
+                    else:
+                        client.upload_file(
+                            Filename=str(fullpath),
+                            Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                            Key=file_key,
+                            ExtraArgs=extra_args
+                        )
                 except ClientError as e:
                     self.stdout.write(self.style.ERROR(
                         f"Failed to upload file: {filename}"))
