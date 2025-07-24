@@ -408,7 +408,7 @@ class Command(BaseCommand):
 
                 try:
                     if file_size > 100 * 1024 * 1024: # 100MB threshold
-                        config = TransferConfig(
+                        config = transfer.TransferConfig(
                             multipart_threshold=1024 * 25,  # 25MB
                             max_concurrency=10,
                             multipart_chunksize=1024 * 25,
@@ -419,7 +419,8 @@ class Command(BaseCommand):
                             Filename=str(fullpath),
                             Bucket=self.AWS_STORAGE_BUCKET_NAME,
                             Key=file_key,
-                            ExtraArgs=extra_args
+                            ExtraArgs=extra_args,
+                            Config=config
                         )
                     else:
                         client.upload_file(
@@ -505,7 +506,17 @@ class Command(BaseCommand):
             paths = list(chunk)
             connection.create_invalidation(
                 DistributionId=self.AWS_CLOUDFRONT_DISTRIBUTION,
-                Paths={'Quantity': len(paths), 'Items': list(paths)}
+                InvalidationBatch={
+                    'Paths': {
+                        'Quantity': len(paths),
+                        'Items': paths
+                    },
+                    'CallerReference': f"sync-s3-{int(time.time())}"
+                }
+                # Paths={
+                #     'Quantity': len(paths), 
+                #     'Items': list(paths)
+                # }
             )
 
     def _compress_string(self, content):
