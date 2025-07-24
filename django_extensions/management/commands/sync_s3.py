@@ -219,7 +219,7 @@ class Command(BaseCommand):
         self.s3host = options['s3host']
         self.request_cloudfront_invalidation = options['invalidate']
 
-        filter_list_from_settings = getattr(settings, 'AWS_S3_FILTER_LIST', [])
+        filter_list_from_settings = getattr(settings, 'AWS_S3_UPLOAD_FILTER_LIST', [])
 
         filter_list_from_cmd = options['filter_list']
         filter_list_from_cmd = filter_list_from_cmd.split(',')
