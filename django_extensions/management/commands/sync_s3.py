@@ -227,7 +227,7 @@ class Command(BaseCommand):
             filter_list_from_cmd + filter_list_from_settings
         )
 
-        self._walk_folders()
+        self._walk_folders(dry_run=options['dry_run'])
 
         if self.request_cloudfront_invalidation:
             self._call_cloudfront_invalidation()
@@ -274,6 +274,8 @@ class Command(BaseCommand):
             }
         )
 
+        is_dry_run = params.get('dry_run', False)
+
         # NOTE: filename is the string filepath
         for filename in files:
             if filename in self.filter_list:
@@ -295,6 +297,14 @@ class Command(BaseCommand):
             # This creates the final key or path that
             # will be used to save the file in s3
             file_key = f'{relative_path}/{filename}'
+
+            if is_dry_run:
+                self.stdout.write(
+                    self.style.NOTICE(
+                        f"    + Would upload {filename} to {file_key}"
+                    )
+                )
+                continue
 
             # The files can be prefixed under a specific
             # main directory for organization
@@ -425,7 +435,7 @@ class Command(BaseCommand):
                 #     self.upload_count += 1
                 #     self.uploaded_files.append(fullpath)
 
-    def _walk_folders(self):
+    def _walk_folders(self, dry_run=False):
         """Method used to walk the static and media folders
         in order to discover the files that should be uploaded to S3"""
         self.stdout.write(
@@ -439,7 +449,8 @@ class Command(BaseCommand):
         params = {
             'client': client,
             'bucket': bucket,
-            'directory': None
+            'directory': None,
+            'dry_run': dry_run
         }
 
         for directory in self.directories:
@@ -579,4 +590,11 @@ class Command(BaseCommand):
             default=False,
             action="store_true",
             help="Invalidates the associated objects in CloudFront",
+        )
+        parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            dest='dry_run',
+            default=False,
+            help="Shows what would be uploaded without actually uploading"
         )
