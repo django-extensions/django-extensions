@@ -235,11 +235,15 @@ class Command(BaseCommand):
 
     def _create_s3_connection(self):
         """Creates a new connection to S3"""
-        session = boto3.Session(**{
+        session_config = {
             'aws_access_key_id': self.AWS_S3_ACCESS_KEY_ID,
             'aws_secret_access_key': self.AWS_S3_SECRET_ACCESS_KEY,
-            'region_name': self.AWS_S3_REGION_NAME
-        })
+        }
+
+        if self.AWS_S3_REGION_NAME:
+            session_config['region_name'] = self.AWS_S3_REGION_NAME
+
+        session = boto3.Session(**session_config)
 
         client = session.client('s3')
         resource = session.resource('s3')
