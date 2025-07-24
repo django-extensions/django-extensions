@@ -75,7 +75,8 @@ try:
     import boto3
     import boto3.exceptions
     from boto3.s3 import transfer
-    from botocore.exceptions import ClientError
+    from botocore.exceptions import (BotoCoreError, ClientError,
+                                     NoCredentialsError)
 except ImportError:
     HAS_BOTO = False
 else:
@@ -411,7 +412,7 @@ class Command(BaseCommand):
                 except ClientError as e:
                     self.stdout.write(self.style.ERROR(
                         f"Failed to upload file: {filename}"))
-                except Exception as e:
+                except (ClientError, NoCredentialsError, BotoCoreError) as e:
                     self.stdout.write(self.style.ERROR(str(e)))
                     raise
                 else:
