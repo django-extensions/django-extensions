@@ -443,12 +443,6 @@ class Command(BaseCommand):
                             )
                             continue
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"    + OK Uploaded {filename} to {file_key}"
-                )
-            )
-
             content_type = mimetypes.guess_type(filename)[0]
             if content_type:
                 extra_args.update(**{'ContentType': content_type})
@@ -533,6 +527,12 @@ class Command(BaseCommand):
                 else:
                     self.upload_count += 1
                     self.uploaded_files.append(fullpath)
+
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"    + OK Uploaded {filename} to {file_key}"
+                        )
+                    )
 
                 # try:
                 #     instance = transfer.S3Transfer(client=client)
