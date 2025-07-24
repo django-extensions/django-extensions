@@ -264,9 +264,82 @@ class Command(BaseCommand):
         client = session.client('s3', **client_config)
         resource = session.resource('s3', **client_config)
 
+        # This is a trap because if always returns an object
+        # even if the bucket does not exist. We need to explicitly
+        # test if the bucket exists by calling head_bucket -- see below
         bucket = resource.Bucket(self.AWS_STORAGE_BUCKET_NAME)
-        if bucket is None:
-            bucket = client.create_bucket(Bucket=self.AWS_STORAGE_BUCKET_NAME)
+
+        try:
+            client.head_bucket(Bucket=self.AWS_STORAGE_BUCKET_NAME)
+
+            if self.verbosity > 1:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"✓ Connected to existing bucket: {self.AWS_STORAGE_BUCKET_NAME}")
+                )
+        except ClientError as e:
+            # If the bucket does not exist we receive
+            # a 404 code and that will be the trigger
+            # that will be using to create a new bucket
+            error_code = e.response['Error']['Code']
+
+            if error_code == '404':
+                if self.verbosity > 0:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Bucket {self.AWS_STORAGE_BUCKET_NAME} "
+                            "not found. Attempting to create..."
+                        )
+                    )
+
+                try:
+                    create_bucket_config = {}
+
+                    # For regions other than us-east-1, we need to specify LocationConstraint
+                    if self.AWS_S3_REGION_NAME and self.AWS_S3_REGION_NAME != 'us-east-1':
+                        create_bucket_config['CreateBucketConfiguration'] = {
+                            'LocationConstraint': self.AWS_S3_REGION_NAME
+                        }
+
+                    client.create_bucket(
+                        Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                        **create_bucket_config
+                    )
+
+                    waiter = client.get_waiter('bucket_exists')
+                    waiter.wait(
+                        Bucket=self.AWS_STORAGE_BUCKET_NAME,
+                        WaiterConfig={'Delay': 2, 'MaxAttempts': 30}
+                    )
+
+                    if self.verbosity > 0:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"✓ Created bucket: {self.AWS_STORAGE_BUCKET_NAME}"
+                            )
+                        )
+                except ClientError as creation_error:
+                    raise CommandError(
+                        f"Failed to create bucket '{self.AWS_STORAGE_BUCKET_NAME}': "
+                        f"{creation_error.response['Error']['Message']}"
+                    )
+            elif error_code == '403':
+                raise CommandError(
+                    f"Access denied to bucket '{self.AWS_STORAGE_BUCKET_NAME}'. "
+                    f"Check your AWS credentials and bucket permissions."
+                )
+            else:
+                raise CommandError(
+                    f"Failed to access bucket '{self.AWS_STORAGE_BUCKET_NAME}': "
+                    f"{e.response['Error']['Message']}"
+                )
+
+        self.stdout.write(
+            self.style.NOTICE(
+                f"Uploads will go to bucket: {bucket.name}"
+            )
+        )
+
         return client, bucket
 
     def _create_cloudfront_connection(self):
