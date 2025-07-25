@@ -85,10 +85,14 @@ ansi_escape = re.compile(
 )
 DEFAULT_PORT = "8000"
 DEFAULT_POLLER_RELOADER_INTERVAL = getattr(
-    settings, "RUNSERVERPLUS_POLLER_RELOADER_INTERVAL", 1
+    settings,
+    "RUNSERVER_PLUS_POLLER_RELOADER_INTERVAL",
+    getattr(settings, "RUNSERVERPLUS_POLLER_RELOADER_INTERVAL", 1),
 )
 DEFAULT_POLLER_RELOADER_TYPE = getattr(
-    settings, "RUNSERVERPLUS_POLLER_RELOADER_TYPE", "auto"
+    settings,
+    "RUNSERVER_PLUS_POLLER_RELOADER_TYPE",
+    getattr(settings, "RUNSERVERPLUS_POLLER_RELOADER_TYPE", "auto"),
 )
 
 logger = logging.getLogger(__name__)
@@ -470,10 +474,11 @@ class Command(BaseCommand):
             raise CommandError("Your Python does not support IPv6.")
         self._raw_ipv6 = False
         if not addrport:
-            try:
-                addrport = settings.RUNSERVERPLUS_SERVER_ADDRESS_PORT
-            except AttributeError:
-                pass
+            addrport = getattr(
+                settings,
+                "RUNSERVER_PLUS_SERVER_ADDRESS_PORT",
+                getattr(settings, "RUNSERVERPLUS_SERVER_ADDRESS_PORT", None),
+            )
         if not addrport:
             self.addr = ""
             self.port = DEFAULT_PORT
@@ -654,10 +659,11 @@ class Command(BaseCommand):
                 os.environ["WERKZEUG_DEBUG_PIN"] = "off"
             handler = DebuggedApplication(handler, True)
             # Set trusted_hosts (for Werkzeug 3.0.3+)
-            try:
-                handler.trusted_hosts = settings.RUNSERVERPLUS_TRUSTED_HOSTS
-            except AttributeError:
-                pass
+            handler.trusted_hosts = getattr(
+                settings,
+                "RUNSERVERPLUS_SERVER_ADDRESS_PORT",
+                getattr(settings, "RUNSERVERPLUS_TRUSTED_HOSTS", None),
+            )
 
         runserver_plus_started.send(sender=self)
         run_simple(
