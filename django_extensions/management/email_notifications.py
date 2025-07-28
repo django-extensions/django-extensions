@@ -8,7 +8,7 @@ from django.core.management import BaseCommand
 
 class EmailNotificationCommand(BaseCommand):
     """
-    A BaseCommand subclass which adds sending email fuctionality.
+    A BaseCommand subclass which adds sending email functionality.
 
     Subclasses will have an extra command line option ``--email-notification``
     and will be able to send emails by calling ``send_email_notification()``
@@ -63,13 +63,13 @@ class EmailNotificationCommand(BaseCommand):
         )
 
     def run_from_argv(self, argv):
-        """Overriden in order to access the command line arguments."""
+        """Overridden in order to access the command line arguments."""
         self.argv_string = " ".join(argv)
         super().run_from_argv(argv)
 
     def execute(self, *args, **options):
         """
-        Overriden in order to send emails on unhandled exception.
+        Overridden in order to send emails on unhandled exception.
 
         If an unhandled exception in ``def handle(self, *args, **options)``
         occurs and `--email-exception` is set or `self.email_exception` is

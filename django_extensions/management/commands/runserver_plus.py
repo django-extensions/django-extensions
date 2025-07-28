@@ -456,7 +456,7 @@ class Command(BaseCommand):
 
                     p = pdb
                 print(
-                    "Exception occured: %s, %s" % (exc_type, exc_value), file=sys.stderr
+                    "Exception occurred: %s, %s" % (exc_type, exc_value), file=sys.stderr
                 )
                 p.post_mortem(tb)
 

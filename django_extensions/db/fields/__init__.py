@@ -604,7 +604,7 @@ class UUIDFieldMixin:
 
 class ShortUUIDField(UUIDFieldMixin, CharField):
     """
-    ShortUUIDFied
+    ShortUUIDField
 
     Generates concise (22 characters instead of 36), unambiguous, URL-safe UUIDs.
 

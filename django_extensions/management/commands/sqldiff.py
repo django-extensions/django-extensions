@@ -11,7 +11,7 @@ TODO:
 
 KNOWN ISSUES:
  - MySQL has by far the most problems with introspection. Please be
-   carefull when using MySQL with sqldiff.
+   careful when using MySQL with sqldiff.
    - Booleans are reported back as Integers, so there's no way to know if
      there was a real change.
    - Varchar sizes are reported back without unicode support so their size
@@ -1242,7 +1242,7 @@ class SqliteSQLDiff(SQLDiff):
         pass
 
     # Unique does not seem to be implied on Sqlite for Primary_key's
-    # if this is more generic among databases this might be usefull
+    # if this is more generic among databases this might be useful
     # to add to the superclass's find_unique_missing_in_db method
     def find_unique_missing_in_db(
         self, meta, table_indexes, table_constraints, table_name, skip_list=None
@@ -1656,7 +1656,7 @@ to check/debug ur models compared to the real database tables and columns."""  #
             action="store_true",
             default=False,
             dest="all_applications",
-            help="Automaticly include all application from INSTALLED_APPS.",
+            help="Automatically include all application from INSTALLED_APPS.",
         )
         parser.add_argument(
             "--not-only-existing",
@@ -1677,7 +1677,7 @@ to check/debug ur models compared to the real database tables and columns."""  #
             default=False,
             help=(
                 "Shows the output in dense format, "
-                "normally output is spreaded over multiple lines."
+                "normally output is spread over multiple lines."
             ),
         )
         parser.add_argument(
