@@ -80,11 +80,11 @@ class Command(BaseCommand):
                 v = self.views[name]
                 print(
                     style.INFO(
-                        f"Name: {name} ({n} occurences, handled in {v[0]}, {v[1]})"
+                        f"Name: {name} ({n} occurrences, handled in {v[0]}, {v[1]})"
                     )
                 )
             except KeyError:
-                print(style.URL_NAME(f"Name: {name} ({n} occurences, UNKNOWN VIEW)"))
+                print(style.URL_NAME(f"Name: {name} ({n} occurrences, UNKNOWN VIEW)"))
                 color = style.URL_NAME
             for item in self.names[name]:
                 print(color(f"* {item[0]}:{item[1]}"))

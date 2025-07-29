@@ -20,7 +20,7 @@ Description:
       attribute anymore.
     * Problems may only occur if there is a new model and is now a required
       ForeignKey for an existing model. But this is easy to fix by editing the
-      populate script. Half of the job is already done as all ForeingKey
+      populate script. Half of the job is already done as all ForeignKey
       lookups occur though the locate_object() function in the generated script.
 
 Improvements:
@@ -472,7 +472,7 @@ class Script(Code):
             context = {}
         self.context = context
 
-        self.context["__avaliable_models"] = set(models)
+        self.context["__available_models"] = set(models)
         self.context["__extra_imports"] = {}
 
         self.options = options
@@ -495,7 +495,7 @@ class Script(Code):
             model = models.pop(0)
 
             # If the model is ready to be processed, add it to the list
-            if check_dependencies(model, model_queue, context["__avaliable_models"]):
+            if check_dependencies(model, model_queue, context["__available_models"]):
                 model_class = ModelCode(
                     model=model,
                     context=context,
@@ -784,7 +784,7 @@ def get_attribute_value(item, field, context, force=False, skip_autofield=True):
                 raise SkipValue()
             # Return the variable name listed in the context
             return "%s" % variable_name
-        elif value.__class__ not in context["__avaliable_models"] or force:
+        elif value.__class__ not in context["__available_models"] or force:
             context["__extra_imports"][value._meta.object_name] = value.__module__
             item_locator = orm_item_locator(value)
             return item_locator
@@ -808,7 +808,7 @@ def make_clean_dict(the_dict):
 
 
 def check_dependencies(model, model_queue, avaliable_models):
-    """Check that all the depenedencies for this model are already in the queue."""
+    """Check that all the dependencies for this model are already in the queue."""
     # A list of allowed links: existing fields, itself and the special case ContentType
     allowed_links = [m.model.__name__ for m in model_queue] + [
         model.__name__,

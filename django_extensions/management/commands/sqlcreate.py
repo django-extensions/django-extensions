@@ -17,7 +17,7 @@ class Command(BaseCommand):
 The envisioned use case is something like this:
 
     ./manage.py sqlcreate [--database=<databasename>] | mysql -u <db_administrator> -p
-    ./manage.py sqlcreate [--database=<databasname>] | psql -U <db_administrator> -W
+    ./manage.py sqlcreate [--database=<databasename>] | psql -U <db_administrator> -W
     """  # noqa: E501
 
     requires_system_checks: List[str] = []

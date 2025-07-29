@@ -222,7 +222,7 @@ def dia2django(archivo):
 
     addparentstofks(herit, clases)
     # Ordering the appearance of classes
-    # First we make a list of the classes each classs is related to.
+    # First we make a list of the classes each class is related to.
     ordered = []
     for j, k in clases.items():
         k[2] += '\n    def __str__(self):\n        return u""\n'
