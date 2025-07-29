@@ -5,7 +5,6 @@ import re
 from django.conf import settings
 from django.contrib.admindocs.views import simplify_regex
 from django.core.management.base import BaseCommand, CommandError
-from django.utils import translation
 
 from django_extensions.management.color import color_style, no_style
 from django_extensions.management.utils import signalcommand

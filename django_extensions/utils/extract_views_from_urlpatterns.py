@@ -1,11 +1,8 @@
 from django.core.exceptions import ViewDoesNotExist
 from django.urls import URLPattern, URLResolver
-from django.utils import translation
 
 
-def extract_views_from_urlpatterns(
-    urlpatterns, base="", namespace=None
-):
+def extract_views_from_urlpatterns(urlpatterns, base="", namespace=None):
     """
     Return a list of views from a list of urlpatterns.
 
