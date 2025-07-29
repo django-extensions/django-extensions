@@ -106,10 +106,20 @@ def import_items(import_directives, style, quiet_load=False):
                 for body in node.body:
                     if isinstance(body, ast.Import):
                         for name in body.names:
-                            asname = name.asname or name.name
-                            imported_objects[asname] = importlib.import_module(
-                                name.name
-                            )
+                            if name.asname:
+                                # Handle "import module.submodule as alias"
+                                imported_objects[name.asname] = importlib.import_module(
+                                    name.name
+                                )
+                            else:
+                                # Handle "import module.submodule"
+                                # Python: only top-level module goes in namespace
+                                # But we must import the full path to load submodules
+                                importlib.import_module(name.name)  # Load full path
+                                top_level_name = name.name.split(".")[0]
+                                imported_objects[top_level_name] = (
+                                    importlib.import_module(top_level_name)
+                                )
                     if isinstance(body, ast.ImportFrom):
                         imported_object = importlib.__import__(
                             body.module, {}, {}, [name.name for name in body.names]

@@ -101,6 +101,7 @@ SHELL_PLUS_POST_IMPORTS = [
     "import pprint",
     "import os as test_os",
     "from django_extensions.utils import *",
+    "import http.client",
 ]
 
 SILENCED_SYSTEM_CHECKS = ["models.W027", "models.W042"]
