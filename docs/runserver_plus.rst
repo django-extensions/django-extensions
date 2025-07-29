@@ -96,7 +96,7 @@ environment parameter coming into the function.
 
     If you're using Werkzeug 3.0.3 or later, by default, the debugger will only
     be enabled if the hostname is one of ``[localhost, .localhost, 127.0.0.1]``.
-    You may allow more host names by setting the ``RUNSERVERPLUS_TRUSTED_HOSTS``.
+    You may allow more host names by setting the ``RUNSERVER_PLUS_TRUSTED_HOSTS``.
 
 .. _`Werkzeug WSGI utilities`: https://werkzeug.palletsprojects.com/
 
@@ -165,7 +165,7 @@ Proper files with this name and .crt and .key extensions will be created.
 Configuration
 ^^^^^^^^^^^^^
 
-The `RUNSERVERPLUS_SERVER_ADDRESS_PORT` setting can be configured to specify
+The `RUNSERVER_PLUS_SERVER_ADDRESS_PORT` setting can be configured to specify
 which address and port the development server should bind to.
 
 If you find yourself frequently starting the server with::
@@ -174,7 +174,7 @@ If you find yourself frequently starting the server with::
 
 You can use settings to automatically default your development to an address/port::
 
-    RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
+    RUNSERVER_PLUS_SERVER_ADDRESS_PORT = '0.0.0.0:8000'
 
 To ensure Werkzeug can log to the console, you may need to add the following
 to your settings::
@@ -208,10 +208,10 @@ Other configuration options and their defaults include:
   RUNSERVER_PLUS_PRINT_SQL_TRUNCATE = 1000
 
   # After how many seconds auto-reload should scan for updates in poller-mode
-  RUNSERVERPLUS_POLLER_RELOADER_INTERVAL = 1
+  RUNSERVER_PLUS_POLLER_RELOADER_INTERVAL = 1
 
   # Werkzeug reloader type [auto, watchdog, or stat]
-  RUNSERVERPLUS_POLLER_RELOADER_TYPE = 'auto'
+  RUNSERVER_PLUS_POLLER_RELOADER_TYPE = 'auto'
 
   # Add extra files to watch
   RUNSERVER_PLUS_EXTRA_FILES = []
@@ -220,7 +220,7 @@ Other configuration options and their defaults include:
   RUNSERVER_PLUS_EXCLUDE_PATTERNS = []
 
   # List of domains to allow requests to the debugger from
-  RUNSERVERPLUS_TRUSTED_HOSTS = [".localhost", "127.0.0.1"]
+  RUNSERVER_PLUS_TRUSTED_HOSTS = [".localhost", "127.0.0.1"]
 
 
 IO Calls and CPU Usage
@@ -245,7 +245,7 @@ will decrease the CPU load at the expense of file edits taking longer to pick up
 
 This can be set two ways, in the django settings file::
 
-    RUNSERVERPLUS_POLLER_RELOADER_INTERVAL = 5
+    RUNSERVER_PLUS_POLLER_RELOADER_INTERVAL = 5
 
 or as a commad line argument::
 
