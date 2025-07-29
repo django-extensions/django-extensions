@@ -3,20 +3,8 @@ from django.urls import URLPattern, URLResolver
 from django.utils import translation
 
 
-class RegexURLPattern:  # type: ignore
-    pass
-
-
-class RegexURLResolver:  # type: ignore
-    pass
-
-
-class LocaleRegexURLResolver:  # type: ignore
-    pass
-
-
 def extract_views_from_urlpatterns(
-    urlpatterns, languages=((None, None),), base="", namespace=None
+    urlpatterns, base="", namespace=None
 ):
     """
     Return a list of views from a list of urlpatterns.
@@ -25,7 +13,7 @@ def extract_views_from_urlpatterns(
     """
     views = []
     for p in urlpatterns:
-        if isinstance(p, (URLPattern, RegexURLPattern)):
+        if isinstance(p, URLPattern):
             try:
                 if not p.name:
                     name = p.name
@@ -37,7 +25,7 @@ def extract_views_from_urlpatterns(
                 views.append((p.callback, base + pattern, name))
             except ViewDoesNotExist:
                 continue
-        elif isinstance(p, (URLResolver, RegexURLResolver)):
+        elif isinstance(p, URLResolver):
             try:
                 patterns = p.url_patterns
             except ImportError:
@@ -47,23 +35,11 @@ def extract_views_from_urlpatterns(
             else:
                 _namespace = p.namespace or namespace
             pattern = describe_pattern(p)
-            if isinstance(p, LocaleRegexURLResolver):
-                for language in languages:
-                    with translation.override(language[0]):
-                        views.extend(
-                            extract_views_from_urlpatterns(
-                                patterns,
-                                languages,
-                                base + pattern,
-                                namespace=_namespace,
-                            )
-                        )
-            else:
-                views.extend(
-                    extract_views_from_urlpatterns(
-                        patterns, languages, base + pattern, namespace=_namespace
-                    )
+            views.extend(
+                extract_views_from_urlpatterns(
+                    patterns, base + pattern, namespace=_namespace
                 )
+            )
         elif hasattr(p, "_get_callback"):
             try:
                 views.append((p._get_callback(), base + describe_pattern(p), p.name))
@@ -76,7 +52,7 @@ def extract_views_from_urlpatterns(
                 continue
             views.extend(
                 extract_views_from_urlpatterns(
-                    patterns, languages, base + describe_pattern(p), namespace=namespace
+                    patterns, base + describe_pattern(p), namespace=namespace
                 )
             )
         else:

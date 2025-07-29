@@ -37,12 +37,6 @@ class Command(BaseCommand):
             help="Show urls unsorted but same order as found in url patterns",
         )
         parser.add_argument(
-            "--language",
-            "-l",
-            dest="language",
-            help="Only show this language code (useful for i18n_patterns)",
-        )
-        parser.add_argument(
             "--decorator",
             "-d",
             action="append",
@@ -68,17 +62,6 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         style = no_style() if options["no_color"] else color_style()
-
-        language = options["language"]
-        if language is not None:
-            translation.activate(language)
-            self.LANGUAGES = [
-                (code, name)
-                for code, name in getattr(settings, "LANGUAGES", [])
-                if code == language
-            ]
-        else:
-            self.LANGUAGES = getattr(settings, "LANGUAGES", ((None, None),))
 
         decorator = options["decorator"]
         if not decorator:
@@ -120,9 +103,7 @@ class Command(BaseCommand):
                 % (getattr(settings, urlconf), str(e))
             )
 
-        view_functions = extract_views_from_urlpatterns(
-            urlconf.urlpatterns, self.LANGUAGES
-        )
+        view_functions = extract_views_from_urlpatterns(urlconf.urlpatterns)
         for func, regex, url_name in view_functions:
             if hasattr(func, "__globals__"):
                 func_globals = func.__globals__
