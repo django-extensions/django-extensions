@@ -11,8 +11,6 @@ Django Extensions is a collection of custom extensions for the Django Framework.
 These include management commands, additional database fields, admin extensions and
 much more.
 
-`这篇文档当然还有中文版 <https://django-extensions-zh.readthedocs.io/zh_CN/latest/>`_
-
 Getting Started
 ===============
 
