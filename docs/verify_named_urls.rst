@@ -25,7 +25,7 @@ Options
 ignore-apps
 ~~~~~~~~~~~
 
-Ignore these apps (comma separaded list) when looking for templates to check.
+Ignore these apps (comma separated list) when looking for templates to check.
 Default is "admin".
 
 urlconf
