@@ -339,13 +339,20 @@ class RandomCharField(UniqueFieldMixin, CharField):
         If set to True, keeps the default initialization value (default: False)
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, prefix="", postfix="", **kwargs):
         kwargs.setdefault("blank", True)
         kwargs.setdefault("editable", False)
+
+        self.prefix = prefix
+        self.postfix = postfix
 
         self.length = kwargs.pop("length", None)
         if self.length is None:
             raise ValueError("missing 'length' argument")
+        if len(prefix) + len(postfix) >= self.length:
+            raise ValueError(
+                "length of prefix + postfix should be less than 'length'",
+            )
         kwargs["max_length"] = self.length
 
         self.lowercase = kwargs.pop("lowercase", False)
@@ -375,7 +382,11 @@ class RandomCharField(UniqueFieldMixin, CharField):
 
     def random_char_generator(self, chars):
         for i in range(self.max_unique_query_attempts):
-            yield "".join(get_random_string(self.length, chars))
+            char_length = self.length - (len(self.prefix) + len(self.postfix))
+            random_char = (
+                self.prefix + get_random_string(char_length, chars) + self.postfix
+            )
+            yield "".join(random_char)
         raise RuntimeError(
             "max random character attempts exceeded (%s)"
             % self.max_unique_query_attempts
@@ -439,6 +450,10 @@ class RandomCharField(UniqueFieldMixin, CharField):
             kwargs["include_punctuation"] = self.include_punctuation
         if self.unique is True:
             kwargs["unique"] = self.unique
+        if self.prefix:
+            kwargs["prefix"] = self.prefix
+        if self.postfix:
+            kwargs["postfix"] = self.postfix
         return name, path, args, kwargs
 
 
