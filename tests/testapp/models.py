@@ -461,6 +461,17 @@ class RandomCharTestModelUniqueTogether(models.Model):
         unique_together = ("random_char_field", "common_field")
 
 
+class RandomCharTestModelPrefixAndPostFix(models.Model):
+    random_char_field_with_prefix = RandomCharField(length=10, prefix="u-")
+    random_char_field_with_postfix = RandomCharField(length=10, postfix="-k")
+    combine_prefix_and_post_field = RandomCharField(
+        length=10, prefix="a-", postfix="-b"
+    )
+
+    class Meta:
+        app_label = "django_extensions"
+
+
 class TimestampedTestModel(TimeStampedModel):
     class Meta:
         app_label = "django_extensions"
