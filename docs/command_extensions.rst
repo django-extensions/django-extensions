@@ -21,6 +21,7 @@ Command Extensions
    merge_model_instances
    print_settings
    reset_db
+   reset_schema
    runprofileserver
    runserver_plus
    sync_s3
@@ -109,6 +110,8 @@ Command Extensions
 * *raise_test_exception* - Raises a test exception via command. Useful for debugging error reporters such as Sentry.
 
 * :doc:`reset_db` - Resets a database (currently sqlite3, mysql, postgres). Uses "DROP DATABASE" and "CREATE DATABASE".
+
+* :doc:`reset_schema` - Resets a schema in database (postgres only). Uses "DROP SCHEMA" and "CREATE SCHEMA".
 
 * *runjob* - Run a single maintenance job.  Part of the jobs system.
 
