@@ -19,7 +19,7 @@ Example Usage
 ::
 
   # Reset the public schema so that database contains no data and migrations can be run again
-  $ ./manage.py reset_schema 
+  $ ./manage.py reset_schema
 
 ::
 
@@ -75,4 +75,3 @@ Example Usage
 
   # Skip system checks
   $ ./manage.py reset_schema --skip-checks
-
