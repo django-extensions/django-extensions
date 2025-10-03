@@ -113,6 +113,27 @@ class ThirdDummyRelationModel(models.Model):
         app_label = "django_extensions"
 
 
+# Model used for testing IterativeDeleteManager
+from django_extensions.db.models import IterativeDeleteManager  # noqa: E402
+
+
+class IterDeleteModel(models.Model):
+    name = models.CharField(max_length=50)
+
+    # Expose the iterative delete manager for testing
+    objects = IterativeDeleteManager()
+
+    # class-level counter to verify instance delete() was invoked
+    deleted_by_instance_delete = 0
+
+    def delete(self, *args, **kwargs):
+        type(self).deleted_by_instance_delete += 1
+        return super().delete(*args, **kwargs)
+
+    class Meta:
+        app_label = "django_extensions"
+
+
 class PostWithUniqFieldCompat(models.Model):
     """
     django-extensions from version 3.0 officially supports only Django 2.2+ which
@@ -582,3 +603,18 @@ def dummy_handler(sender, instance, **kwargs):
 
 
 pre_save.connect(dummy_handler, sender=HasOwnerModel)
+
+
+
+class IterDeleteFailModel(models.Model):
+    name = models.CharField(max_length=50)
+
+    objects = IterativeDeleteManager()
+
+    def delete(self, *args, **kwargs):
+        if getattr(self, "name", "").startswith("bad"):
+            raise ValueError("failing delete")
+        return super().delete(*args, **kwargs)
+
+    class Meta:
+        app_label = "django_extensions"
