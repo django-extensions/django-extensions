@@ -85,10 +85,10 @@ The envisioned use case is something like this:
         elif engine in MYSQL_ENGINES:
             sys.stderr.write(
                 """-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
--- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
+-- Please read this carefully! Collation will be set to utf8mb4_bin to have case-sensitive data.
 """  # noqa: E501
             )
-            print("CREATE DATABASE %s CHARACTER SET utf8 COLLATE utf8_bin;" % dbname)
+            print("CREATE DATABASE %s CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;" % dbname)
             print(
                 "GRANT ALL PRIVILEGES ON %s.* to '%s'@'%s' identified by '%s';"
                 % (dbname, dbuser, dbclient, dbpass)
