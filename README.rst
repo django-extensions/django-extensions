@@ -17,9 +17,6 @@
 .. image:: https://github.com/django-extensions/django-extensions/actions/workflows/pytest.yml/badge.svg
     :target: https://github.com/django-extensions/django-extensions/actions
 
-.. image:: https://github.com/django-extensions/django-extensions/actions/workflows/security.yml/badge.svg
-    :target: https://github.com/django-extensions/django-extensions/actions
-
 .. image:: https://img.shields.io/pypi/v/django-extensions.svg
     :target: https://pypi.python.org/pypi/django-extensions/
     :alt: Latest PyPI version
