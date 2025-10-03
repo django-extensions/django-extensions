@@ -20,6 +20,8 @@ class TestIterativeDelete(TestCase):
 
     def test_queryset_delete_default_iterative(self):
         IterDeleteModel.deleted_by_instance_delete = 0
+        # Ensure a clean slate for this test; remove instances created in setUp
+        IterDeleteModel.objects.all().delete(non_iterative=True)
         IterDeleteModel.objects.bulk_create(
             [IterDeleteModel(name=f"obj-{i}") for i in range(5)]
         )
