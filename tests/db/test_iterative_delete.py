@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from tests.testapp.models import IterDeleteModel
+from tests.testapp.models import IterDeleteModel, IterDeleteFailModel
 from django_extensions.db.models import IterativeDeleteErrorAction
 
 
@@ -35,9 +35,6 @@ class TestIterativeDelete(TestCase):
         # Opt into bulk delete should not call per-instance delete()
         IterDeleteModel.objects.all().delete(non_iterative=True)
         assert IterDeleteModel.deleted_by_instance_delete == 0
-
-
-from tests.testapp.models import IterDeleteFailModel
 
 
 class TestIterativeDeleteErrors(TestCase):

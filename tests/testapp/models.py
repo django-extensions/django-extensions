@@ -605,7 +605,6 @@ def dummy_handler(sender, instance, **kwargs):
 pre_save.connect(dummy_handler, sender=HasOwnerModel)
 
 
-
 class IterDeleteFailModel(models.Model):
     name = models.CharField(max_length=50)
 

@@ -179,7 +179,9 @@ class IterativeDeleteQuerySet(models.QuerySet):
                 details[k] = details.get(k, 0) + int(v or 0)
         return total, details
 
-    def iterative_delete(self, *, chunk_size=2000, collect_exceptions=False, on_error=None):
+    def iterative_delete(
+        self, *, chunk_size=2000, collect_exceptions=False, on_error=None
+    ):
         """
         Iteratively delete each instance in the queryset by calling obj.delete().
 
@@ -194,7 +196,8 @@ class IterativeDeleteQuerySet(models.QuerySet):
           the opposite. chunk_size does not batch the deletes: each instance is still
           deleted one-by-one by calling obj.delete(), preserving signals and cascades.
           On backends that support it (e.g. PostgreSQL), iterator() may use server-side
-          cursors, in which case chunk_size also controls the fetch size from that cursor.
+          cursors, in which case chunk_size also controls the fetch size
+          from that cursor.
           The default (2000) is a conservative compromise; tune it based on your model
           size and database characteristics.
         - collect_exceptions: when True, continue on exceptions instead of aborting.
@@ -229,7 +232,9 @@ class IterativeDeleteQuerySet(models.QuerySet):
         for obj in self.iterator(chunk_size=chunk_size):
             try:
                 res = obj.delete()
-            except Exception as exc:  # pragma: no cover - covered by tests but keep generic
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - covered by tests but keep generic
                 action = None
                 if on_error is not None:
                     try:
@@ -237,26 +242,28 @@ class IterativeDeleteQuerySet(models.QuerySet):
                     except Exception:
                         # If handler itself blows up, follow default behavior
                         action = IterativeDeleteErrorAction.RAISE
-                # If handler explicitly requests a re-raise, or there is no handler and
-                # collect_exceptions=False, propagate the original exception. This mirrors
-                # Django's default delete() behavior (fail-fast) when not opting-in to
-                # error collection.
-                if action is IterativeDeleteErrorAction.RAISE or (on_error is None and not collect_exceptions):
+                # If handler requests re-raise, or there is no handler and
+                # collect_exceptions=False: propagate the exception (fail-fast).
+                if action is IterativeDeleteErrorAction.RAISE or (
+                    on_error is None and not collect_exceptions
+                ):
                     raise
-                # Advanced: a handler may return a synthetic (count, details_dict) tuple
+                # Advanced: handler may return a synthetic (count, details_dict) tuple
                 # to be accumulated as if delete() succeeded for this object.
                 if isinstance(action, tuple) and len(action) == 2:
                     res = action
                 else:
-                    # Otherwise we skip counting this object; optionally record the error
+                    # Otherwise skip counting this object; optionally record the error
                     # when collect_exceptions=True so callers can inspect what failed.
                     if collect_exceptions:
-                        errors.append({'pk': getattr(obj, 'pk', None), 'exception': repr(exc)})
+                        errors.append(
+                            {"pk": getattr(obj, "pk", None), "exception": repr(exc)}
+                        )
                     # Skip counting for this object
                     continue
             total, details = self._accumulate_delete_result((total, details), res)
         if collect_exceptions and errors:
-            details['__errors__'] = errors
+            details["__errors__"] = errors
         return total, details
 
     def delete(self, *args, non_iterative=False, **kwargs):  # type: ignore[override]
@@ -282,7 +289,9 @@ class IterativeDeleteQuerySet(models.QuerySet):
         kwargs.pop("on_error", None)
         return super().delete(*args, **kwargs)
 
-    async def aiterative_delete(self, *, chunk_size=2000, collect_exceptions=False, on_error=None):
+    async def aiterative_delete(
+        self, *, chunk_size=2000, collect_exceptions=False, on_error=None
+    ):
         """
         Async variant of iterative_delete(), deleting each instance by calling
         obj.adelete() when available, otherwise offloading obj.delete() to a
@@ -309,7 +318,9 @@ class IterativeDeleteQuerySet(models.QuerySet):
                         except Exception:  # pragma: no cover - asgiref is a Django dep
                             res = obj.delete()
                         else:
-                            res = await sync_to_async(obj.delete, thread_sensitive=True)()
+                            res = await sync_to_async(
+                                obj.delete, thread_sensitive=True
+                            )()
                 except Exception as exc:  # pragma: no cover - see sync variant tests
                     action = None
                     if on_error is not None:
@@ -317,19 +328,23 @@ class IterativeDeleteQuerySet(models.QuerySet):
                             action = on_error(exc, obj)
                         except Exception:
                             action = IterativeDeleteErrorAction.RAISE
-                    # If handler explicitly requests a re-raise, or there is no handler and
-                    # collect_exceptions=False, propagate the original exception (fail-fast).
-                    if action is IterativeDeleteErrorAction.RAISE or (on_error is None and not collect_exceptions):
+                    # If handler requests re-raise, or there is no handler and
+                    # collect_exceptions=False: propagate the exception (fail-fast).
+                    if action is IterativeDeleteErrorAction.RAISE or (
+                        on_error is None and not collect_exceptions
+                    ):
                         raise
-                    # Advanced: allow handler to supply a synthetic (count, details_dict)
+                    # Advanced: handler may supply a synthetic (count, details_dict)
                     # to accumulate as if delete() had succeeded for this object.
                     if isinstance(action, tuple) and len(action) == 2:
                         res = action
                     else:
-                        # Otherwise skip this object and optionally record the error when
+                        # Otherwise skip this object and optionally record error when
                         # collect_exceptions=True.
                         if collect_exceptions:
-                            errors.append({'pk': getattr(obj, 'pk', None), 'exception': repr(exc)})
+                            errors.append(
+                                {"pk": getattr(obj, "pk", None), "exception": repr(exc)}
+                            )
                         continue
                 total, details = self._accumulate_delete_result((total, details), res)
         else:
@@ -340,7 +355,7 @@ class IterativeDeleteQuerySet(models.QuerySet):
                 on_error=on_error,
             )
         if collect_exceptions and errors:
-            details['__errors__'] = errors
+            details["__errors__"] = errors
         return total, details
 
 
