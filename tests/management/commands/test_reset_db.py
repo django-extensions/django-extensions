@@ -128,7 +128,7 @@ class ResetDbMysqlTests(TestCase):
         m_database.connect.return_value = m_connection
         expected_calls = [
             mock.call("DROP DATABASE IF EXISTS `test_db`"),
-            mock.call("CREATE DATABASE `test_db` CHARACTER SET utf8"),
+            mock.call("CREATE DATABASE `test_db` CHARACTER SET utf8mb4"),
         ]
 
         with mock.patch.dict("sys.modules", MySQLdb=m_database):
