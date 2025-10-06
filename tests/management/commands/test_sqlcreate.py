@@ -60,9 +60,9 @@ class SqlCreateTests(TestCase):
     ):
         m_socket.gethostname.return_value = "tumbleweed"
         expected_error = """-- WARNING!: https://docs.djangoproject.com/en/dev/ref/databases/#collation-settings
--- Please read this carefully! Collation will be set to utf8_bin to have case-sensitive data.
+-- Please read this carefully! Collation will be set to utf8mb4_bin to have case-sensitive data.
 """
-        expected_statement = """CREATE DATABASE dbatabase CHARACTER SET utf8 COLLATE utf8_bin;
+        expected_statement = """CREATE DATABASE dbatabase CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 GRANT ALL PRIVILEGES ON dbatabase.* to 'foo'@'tumbleweed' identified by 'bar';
 """
 
