@@ -44,6 +44,10 @@ It is also possible to use shell-style wildcards::
     $ python manage.py print_settings *_DIRS STATIC*
     $ python manage.py print_settings INSTALLED_????
 
+By default, secrets are masked. To show secrets, use the --show-secrets flag::
+
+    $ python manage.py print_settings --show-secrets
+
 Yielding an error when a settings does not exist::
 
     $ ./manage.py print_settings -f INSTALLED_APPZ
@@ -78,3 +82,4 @@ For more info, take a look at the built-in help::
       --no-color            Don't colorize the command output.
       --force-color         Force colorization of the command output.
       --skip-checks         Skip system checks.
+      --show-secrets        Show secrets in the output without masking.

@@ -11,6 +11,7 @@ import json
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from django_extensions.compat import get_safe_settings
 from django_extensions.management.utils import signalcommand
 
 
@@ -39,11 +40,23 @@ class Command(BaseCommand):
             type=int,
             help="Specifies indent level for JSON and YAML",
         )
+        parser.add_argument(
+            "--show-secrets",
+            action="store_true",
+            dest="show_secrets",
+            help="Show secrets in the output without masking.",
+        )
 
     @signalcommand
     def handle(self, *args, **options):
         setting_names = options["setting"]
-        settings_dct = {k: getattr(settings, k) for k in dir(settings) if k.isupper()}
+
+        if not options["show_secrets"]:
+            settings_dct = get_safe_settings()
+        else:
+            settings_dct = {
+                k: getattr(settings, k) for k in dir(settings) if k.isupper()
+            }
 
         if setting_names:
             settings_dct = {
