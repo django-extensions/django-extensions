@@ -85,7 +85,7 @@ def orm_item_locator(orm_obj):
                     'dateutil.parser.parse("%s")' % v.isoformat()
                 )
             elif not isinstance(v, (str, int, float)):
-                clean_dict[key] = str("%s" % v)
+                clean_dict[key] = str(v)
 
     output = """ importer.locate_object(%s, "%s", %s, "%s", %s, %s ) """ % (
         original_class,
