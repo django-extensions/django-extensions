@@ -1,7 +1,7 @@
-RunServerPlus
+runserver_plus
 =============
 
-:synopsis: RunServerPlus-typical runserver with Werkzeug debugger baked in
+:synopsis: runserver_plus — typical runserver with Werkzeug debugger baked in
 
 
 Introduction
