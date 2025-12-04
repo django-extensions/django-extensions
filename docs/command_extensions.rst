@@ -6,7 +6,6 @@ Command Extensions
 .. toctree::
    :maxdepth: 3
 
-   shell_plus
    create_template_tags
    delete_squashed_migrations
    dumpscript
@@ -24,6 +23,7 @@ Command Extensions
    reset_schema
    runprofileserver
    runserver_plus
+   shell_plus
    sync_s3
    syncdata
    sqldiff
@@ -32,9 +32,6 @@ Command Extensions
    validate_templates
    admin_generator
 
-
-* :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
-  all your models making it easy to work with the ORM right away.
 
 * :doc:`admin_generator` - Generate automatic Django Admin classes by providing an app name. Outputs
   source code at STDOUT.
@@ -125,6 +122,9 @@ Command Extensions
 
 * `runserver_plus`_ - The standard runserver stuff but with
   the Werkzeug debugger baked in. Requires Werkzeug_. This one kicks ass.
+
+* :doc:`shell_plus` - An enhanced version of the Django shell.  It will autoload
+  all your models making it easy to work with the ORM right away.
 
 * *set_fake_emails* - Give all users a new email based on their account data ("%(username)s@example.com" by default). Possible parameters are: username, first_name, last_name. *DEBUG only*
 
