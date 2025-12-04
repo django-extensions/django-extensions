@@ -430,7 +430,9 @@ If using PostgreSQL the ``application_name`` is set by default to
 SQL queries
 -------------------------
 
-If the configuration option DEBUG is set to True, it is possible to print SQL queries as they're executed in shell_plus like::
+If the configuration option DEBUG is set to True, it is possible to print SQL queries as they're executed in shell_plus like:
+
+::
 
   $ ./manage.py shell_plus --print-sql
 
@@ -443,9 +445,11 @@ You can also set the configuration option SHELL_PLUS_PRINT_SQL to omit the above
 
 Printing SQL queries also comes with the possibility of specifying the maximum amount of characters to display:
 
+::
+
   $ ./manage.py shell_plus --print-sql --truncate-sql
 
-`--truncate-sql` accepts an int value starting from 0 (which disables truncation). Defaults to 1000.
+``--truncate-sql`` accepts an int value starting from 0 (which disables truncation). Defaults to 1000.
 
 You can also set the configuration option SHELL_PLUS_PRINT_SQL_TRUNCATE to omit the above command line option.
 
