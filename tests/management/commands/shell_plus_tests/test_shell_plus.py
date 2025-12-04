@@ -62,7 +62,7 @@ def test_shell_plus_print_sql_truncate(capsys):
             "--plain",
             "--print-sql",
             "--truncate-sql=0",
-            "--command=User.objects.all().exists()",
+            "--command=list(Membership.objects.select_related('person__neighborhood', 'person__current_bank', 'club').all()[:1])",
         )
     finally:
         utils.CursorDebugWrapper = CursorDebugWrapper
@@ -70,7 +70,7 @@ def test_shell_plus_print_sql_truncate(capsys):
 
     out, err = capsys.readouterr()
 
-    assert re.search(r"SELECT\s+.+\s+FROM\s+.auth_user.\s+LIMIT\s+1", out)
+    assert re.search(r"SELECT\s+.+\s+FROM\s+.testapp_membership.\s+.+LIMIT\s+1", out)
 
     try:
         from django.db import connection
