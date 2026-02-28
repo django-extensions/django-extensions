@@ -14,7 +14,6 @@ repos:
     -   id: check-xml
     -   id: check-yaml
     -   id: detect-private-key
-    -   id: end-of-file-fixer
     -   id: mixed-line-ending
         args: [ '--fix=lf' ]
         description: Forces to replace line ending by the UNIX 'lf' character.
