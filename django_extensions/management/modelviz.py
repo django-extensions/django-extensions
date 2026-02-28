@@ -221,7 +221,7 @@ class ModelGraph:
                 for abstract_model in appmodel.__bases__
                 if hasattr(abstract_model, "_meta") and abstract_model._meta.abstract
             ]
-        abstract_models = list(set(abstract_models))  # remove duplicates
+        abstract_models = sorted(list(set(abstract_models)))  # remove duplicates
         return abstract_models
 
     def get_app_context(self, app):
