@@ -110,24 +110,30 @@ class SQLDiff:
         "notnull-differ": "field '%(1)s' null constraint should be '%(2)s' in the database",  # noqa: E501
     }
 
-    SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("ADD COLUMN"),
-        style.SQL_FIELD(qn(args[1])),
-        " ".join(
-            style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a)
-            for i, a in enumerate(args[2:])
-        ),
+    SQL_FIELD_MISSING_IN_DB = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("ADD COLUMN"),
+            style.SQL_FIELD(qn(args[1])),
+            " ".join(
+                style.SQL_COLTYPE(a) if i == 0 else style.SQL_KEYWORD(a)
+                for i, a in enumerate(args[2:])
+            ),
+        )
     )
-    SQL_FIELD_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("DROP COLUMN"),
-        style.SQL_FIELD(qn(args[1])),
+    SQL_FIELD_MISSING_IN_MODEL = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("DROP COLUMN"),
+            style.SQL_FIELD(qn(args[1])),
+        )
     )
-    SQL_FKEY_MISSING_IN_DB = (
-        lambda self, style, qn, args: "%s %s\n\t%s %s %s %s %s (%s)%s;"
+    SQL_FKEY_MISSING_IN_DB = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s %s %s (%s)%s;"
         % (
             style.SQL_KEYWORD("ALTER TABLE"),
             style.SQL_TABLE(qn(args[0])),
@@ -143,21 +149,27 @@ class SQLDiff:
             connection.ops.deferrable_sql(),
         )
     )
-    SQL_INDEX_MISSING_IN_DB = lambda self, style, qn, args: "%s %s\n\t%s %s (%s%s);" % (
-        style.SQL_KEYWORD("CREATE INDEX"),
-        style.SQL_TABLE(qn(args[2])),
-        # style.SQL_TABLE(qn("%s" % '_'.join('_'.join(a) if isinstance(a, (list, tuple)) else a for a in args[0:3] if a))),  # noqa: E501
-        style.SQL_KEYWORD("ON"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_FIELD(", ".join(qn(e) for e in args[1])),
-        style.SQL_KEYWORD(args[3]),
+    SQL_INDEX_MISSING_IN_DB = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s (%s%s);"
+        % (
+            style.SQL_KEYWORD("CREATE INDEX"),
+            style.SQL_TABLE(qn(args[2])),
+            # style.SQL_TABLE(qn("%s" % '_'.join('_'.join(a) if isinstance(a, (list, tuple)) else a for a in args[0:3] if a))),  # noqa: E501
+            style.SQL_KEYWORD("ON"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_FIELD(", ".join(qn(e) for e in args[1])),
+            style.SQL_KEYWORD(args[3]),
+        )
     )
-    SQL_INDEX_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s;" % (
-        style.SQL_KEYWORD("DROP INDEX"),
-        style.SQL_TABLE(qn(args[1])),
+    SQL_INDEX_MISSING_IN_MODEL = lambda self, style, qn, args: (
+        "%s %s;"
+        % (
+            style.SQL_KEYWORD("DROP INDEX"),
+            style.SQL_TABLE(qn(args[1])),
+        )
     )
-    SQL_UNIQUE_MISSING_IN_DB = (
-        lambda self, style, qn, args: "%s %s\n\t%s %s %s (%s);"
+    SQL_UNIQUE_MISSING_IN_DB = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s (%s);"
         % (
             style.SQL_KEYWORD("ALTER TABLE"),
             style.SQL_TABLE(qn(args[0])),
@@ -167,34 +179,46 @@ class SQLDiff:
             style.SQL_FIELD(", ".join(qn(e) for e in args[1])),
         )
     )
-    SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("DROP"),
-        style.SQL_KEYWORD("CONSTRAINT"),
-        style.SQL_TABLE(qn(args[1])),
+    SQL_UNIQUE_MISSING_IN_MODEL = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("DROP"),
+            style.SQL_KEYWORD("CONSTRAINT"),
+            style.SQL_TABLE(qn(args[1])),
+        )
     )
-    SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("MODIFY"),
-        style.SQL_FIELD(qn(args[1])),
-        style.SQL_COLTYPE(args[2]),
+    SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("MODIFY"),
+            style.SQL_FIELD(qn(args[1])),
+            style.SQL_COLTYPE(args[2]),
+        )
     )
-    SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("MODIFY"),
-        style.SQL_FIELD(qn(args[1])),
-        style.SQL_COLTYPE(args[2]),
+    SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("MODIFY"),
+            style.SQL_FIELD(qn(args[1])),
+            style.SQL_COLTYPE(args[2]),
+        )
     )
-    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("MODIFY"),
-        style.SQL_FIELD(qn(args[1])),
-        style.SQL_KEYWORD(args[2]),
-        style.SQL_KEYWORD("NOT NULL"),
+    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("MODIFY"),
+            style.SQL_FIELD(qn(args[1])),
+            style.SQL_KEYWORD(args[2]),
+            style.SQL_KEYWORD("NOT NULL"),
+        )
     )
     SQL_ERROR = lambda self, style, qn, args: style.NOTICE(
         "-- Error: %s" % style.ERROR(args[0])
@@ -1331,16 +1355,8 @@ class PostgresqlSQLDiff(SQLDiff):
         INNER JOIN pg_namespace ON pg_namespace.oid=pg_class.relnamespace;
     """
 
-    SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("ALTER"),
-        style.SQL_FIELD(qn(args[1])),
-        style.SQL_KEYWORD("TYPE"),
-        style.SQL_COLTYPE(args[2]),
-    )
-    SQL_FIELD_PARAMETER_DIFFER = (
-        lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;"
+    SQL_FIELD_TYPE_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s %s;"
         % (
             style.SQL_KEYWORD("ALTER TABLE"),
             style.SQL_TABLE(qn(args[0])),
@@ -1350,13 +1366,27 @@ class PostgresqlSQLDiff(SQLDiff):
             style.SQL_COLTYPE(args[2]),
         )
     )
-    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: "%s %s\n\t%s %s %s %s;" % (
-        style.SQL_KEYWORD("ALTER TABLE"),
-        style.SQL_TABLE(qn(args[0])),
-        style.SQL_KEYWORD("ALTER COLUMN"),
-        style.SQL_FIELD(qn(args[1])),
-        style.SQL_KEYWORD(args[2]),
-        style.SQL_KEYWORD("NOT NULL"),
+    SQL_FIELD_PARAMETER_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("ALTER"),
+            style.SQL_FIELD(qn(args[1])),
+            style.SQL_KEYWORD("TYPE"),
+            style.SQL_COLTYPE(args[2]),
+        )
+    )
+    SQL_NOTNULL_DIFFER = lambda self, style, qn, args: (
+        "%s %s\n\t%s %s %s %s;"
+        % (
+            style.SQL_KEYWORD("ALTER TABLE"),
+            style.SQL_TABLE(qn(args[0])),
+            style.SQL_KEYWORD("ALTER COLUMN"),
+            style.SQL_FIELD(qn(args[1])),
+            style.SQL_KEYWORD(args[2]),
+            style.SQL_KEYWORD("NOT NULL"),
+        )
     )
 
     def load(self):
