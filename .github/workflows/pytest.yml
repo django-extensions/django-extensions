@@ -17,6 +17,7 @@ jobs:
           - 3.9
           - "3.12"
           - "3.13"
+          - "3.14"
           # 2023-06-05: disabled pypy3.9 due to asgiref typing error
           # - "pypy3.9"
         tox-django-version:
@@ -32,6 +33,10 @@ jobs:
             tox-django-version: "52"
           - python-version: "3.13"
             tox-django-version: "42"
+          - python-version: "3.14"
+            tox-django-version: "42"
+          - python-version: "3.14"
+            tox-django-version: "51"
           - python-version: "pypy3.9"
             tox-django-version: "42"
     steps:
