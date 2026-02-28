@@ -27,6 +27,16 @@ $ source venv/bin/activate
 (venv) $ python manage.py runserver
 ```
 
+### Docs
+
+To build the docs do the following:
+
+```bash
+(venv) $ pip install -r docs/requirements.txt
+(venv) $ cd docs
+(venv) $ make html
+```
+
 ## Testing
 
 To run tests against a particular `python` and `django` version installed inside your virtual environment, you may use:
