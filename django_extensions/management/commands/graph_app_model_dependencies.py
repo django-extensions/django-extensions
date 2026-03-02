@@ -82,8 +82,7 @@ class Command(BaseCommand):
             default=False,
             dest="dot",
             help=(
-                "Output graph data as raw DOT (graph description language) "
-                "text data."
+                "Output graph data as raw DOT (graph description language) text data."
             ),
         )
         parser.add_argument(
@@ -147,8 +146,7 @@ class Command(BaseCommand):
             raise CommandError(msg)
 
         if options["all_applications"]:
-            selected_apps: set[str] = {
-                cfg.label for cfg in apps.get_app_configs()}
+            selected_apps: set[str] = {cfg.label for cfg in apps.get_app_configs()}
         else:
             selected_apps = set(app_labels)
 
@@ -157,8 +155,7 @@ class Command(BaseCommand):
         _, outputfile_ext = os.path.splitext(outputfile)
         outputfile_ext = outputfile_ext.lower()
         output_opts_names = ["pydot", "pygraphviz", "json", "dot"]
-        output_opts = {k: v for k,
-                       v in options.items() if k in output_opts_names}
+        output_opts = {k: v for k, v in options.items() if k in output_opts_names}
         output_opts_count = sum(output_opts.values())
         if output_opts_count > 1:
             msg = "Only one of %s can be set." % ", ".join(
@@ -181,22 +178,24 @@ class Command(BaseCommand):
         else:
             msg = "Neither pygraphviz nor pydotplus could "
             "be found to generate the image. "
-            "To generate text output, use the --json or --dot options.",
+            ("To generate text output, use the --json or --dot options.",)
             raise CommandError(msg)
 
-        if options.get("rankdir") != "TB" and output not in ["pydot",
-                                                             "pygraphviz", "dot"]:
+        if options.get("rankdir") != "TB" and output not in [
+            "pydot",
+            "pygraphviz",
+            "dot",
+        ]:
             msg = "--rankdir is not supported for the chosen output format"
             raise CommandError(msg)
 
-        if options.get("ordering") and output not in ["pydot",
-                                                      "pygraphviz", "dot"]:
+        if options.get("ordering") and output not in ["pydot", "pygraphviz", "dot"]:
             msg = "--ordering is not supported for the chosen output format"
             raise CommandError(msg)
 
         if output in ["pydot", "pygraphviz"] and not outputfile:
             msg = "An output file (--output) must be specified when --pydot or "
-            "--pygraphviz are set.",
+            ("--pygraphviz are set.",)
             raise CommandError(msg)
 
         edges, app_nodes = self._collect_app_edges(selected_apps)
@@ -236,8 +235,7 @@ class Command(BaseCommand):
             app_labels: {app_label, ...}
         """
         if not selected_apps:
-            app_labels: set[str] = {
-                cfg.label for cfg in apps.get_app_configs()}
+            app_labels: set[str] = {cfg.label for cfg in apps.get_app_configs()}
         else:
             app_labels = selected_apps
 
@@ -250,9 +248,9 @@ class Command(BaseCommand):
 
             for field in model._meta.get_fields():
                 # Skip non-relations and auto-created reverse relations
-                if not getattr(field, "is_relation", False) or getattr(field,
-                                                                       "auto_created",
-                                                                       False):
+                if not getattr(field, "is_relation", False) or getattr(
+                    field, "auto_created", False
+                ):
                     continue
 
                 remote = getattr(field, "remote_field", None)
@@ -288,10 +286,7 @@ class Command(BaseCommand):
         """
         return {
             "apps": sorted(app_labels),
-            "edges": [
-                {"from": src, "to": tgt}
-                for src, tgt in sorted(edges)
-            ],
+            "edges": [{"from": src, "to": tgt} for src, tgt in sorted(edges)],
         }
 
     def _build_dot(
@@ -418,6 +413,6 @@ class Command(BaseCommand):
             "webp",
             "xdot",
         ]
-        ext = output_file[output_file.rfind(".") + 1:]
+        ext = output_file[output_file.rfind(".") + 1 :]
         format_ = ext if ext in formats else "raw"
         graph.write(output_file, format=format_)
