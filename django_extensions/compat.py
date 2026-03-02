@@ -37,6 +37,19 @@ def get_template_setting(template_key, default=None):
     return default
 
 
+def get_safe_settings():
+    try:
+        from django.views.debug import SafeExceptionReporterFilter
+
+        return SafeExceptionReporterFilter().get_safe_settings()
+    except (
+        AttributeError
+    ):  # Django < 3.1 from django.views.debug import get_safe_settings
+        from django.views.debug import get_safe_settings as django_get_safe_settings
+
+        return django_get_safe_settings()
+
+
 class UnicodeWriter:
     """
     CSV writer which will write rows to CSV file "f",

@@ -70,3 +70,21 @@ def test_format_json_without_indent(capsys):
     expected = '{\n"DEBUG": false\n}\n'
     out, err = capsys.readouterr()
     assert expected == out
+
+
+def test_secrets_masked_by_default(capsys):
+    call_command("print_settings", "SECRET_KEY", "--format=pprint")
+
+    out, err = capsys.readouterr()
+
+    assert "SECRET_KEY" in out
+    assert "********************" in out
+
+
+def test_secrets_shown_with_show_secrets_flag(capsys):
+    call_command("print_settings", "SECRET_KEY", "--format=pprint", "--show-secrets")
+
+    out, err = capsys.readouterr()
+
+    assert "SECRET_KEY" in out
+    assert "********************" not in out
