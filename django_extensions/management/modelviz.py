@@ -157,7 +157,10 @@ class ModelGraph:
             t += " ({0})".format(field.remote_field.field_name)
         if self.display_field_choices and field.choices is not None:
             choices = {c for c, _ in field.choices}
+            choices = list(choices)
+            choices.sort(key=lambda s: (0, int(s)) if type(s) == type(1) or s.lstrip("-").lstrip("+").isdigit() else (1, s))
             t = str(choices)
+            t = t.replace("[", "{").replace("]", "}")
         # TODO: ManyToManyField, GenericRelation
 
         return {
