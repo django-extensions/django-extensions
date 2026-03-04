@@ -125,7 +125,7 @@ class ForeignKeyAutocompleteAdminMixin:
             elif object_pk:
                 try:
                     obj = queryset.get(pk=object_pk)
-                except Exception:  # FIXME: use stricter exception checking
+                except (model.DoesNotExist, model.MultipleObjectsReturned):
                     pass
                 else:
                     data = to_string_function(obj)
