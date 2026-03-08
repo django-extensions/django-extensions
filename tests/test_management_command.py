@@ -3,6 +3,7 @@ from unittest import mock
 import logging
 import importlib
 
+import django
 from django.core.management import (
     call_command,
     find_commands,
@@ -421,7 +422,10 @@ class ListModelInfoTests(TestCase):
             stdout=out,
         )
         self.output = out.getvalue()
-        self.assertIn("id - AutoField", self.output)
+        if django.VERSION >= (6, 0):
+            self.assertIn("id - BigAutoField", self.output)
+        else:
+            self.assertIn("id - AutoField", self.output)
         self.assertIn("char_field - CharField", self.output)
         self.assertIn("integer_field - IntegerField", self.output)
         self.assertIn("foreign_key_field - ForeignKey", self.output)

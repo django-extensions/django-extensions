@@ -52,7 +52,9 @@ class Command(BaseCommand):
         for signal in signals:
             signal_name = SIGNAL_NAMES.get(signal, "unknown")
             for receiver in signal.receivers:
-                if django.VERSION >= (5, 0):
+                if django.VERSION >= (6, 0):
+                    lookup, receiver, is_async, _ = receiver
+                elif django.VERSION >= (5, 0):
                     lookup, receiver, is_async = receiver
                 else:
                     lookup, receiver = receiver
