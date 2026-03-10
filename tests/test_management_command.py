@@ -421,7 +421,7 @@ class ListModelInfoTests(TestCase):
             stdout=out,
         )
         self.output = out.getvalue()
-        self.assertIn("id - AutoField", self.output)
+        self.assertRegex(self.output, r"id - (AutoField|BigAutoField)")
         self.assertIn("char_field - CharField", self.output)
         self.assertIn("integer_field - IntegerField", self.output)
         self.assertIn("foreign_key_field - ForeignKey", self.output)

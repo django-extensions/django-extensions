@@ -86,7 +86,11 @@ class UniqueFieldMixin:
 
         new = next(iterator)
         kwargs[self.attname] = new
-        while not new or queryset.filter(query, **kwargs):
+        while True:
+            matching = queryset.filter(query, **kwargs)
+            has_match = matching.exists() if hasattr(matching, "exists") else bool(matching)
+            if new and not has_match:
+                break
             new = next(iterator)
             kwargs[self.attname] = new
         setattr(model_instance, self.attname, new)
@@ -388,10 +392,14 @@ class RandomCharField(UniqueFieldMixin, CharField):
         return False
 
     def pre_save(self, model_instance, add):
-        if (not add or self.keep_default) and getattr(
-            model_instance, self.attname
-        ) != "":
-            return getattr(model_instance, self.attname)
+        current_value = getattr(model_instance, self.attname)
+        # Django 6 may call pre_save multiple times for inserts; if we've already
+        # populated the field value, reuse it instead of regenerating.
+        if current_value not in ("", None):
+            return current_value
+
+        if (not add or self.keep_default) and current_value != "":
+            return current_value
 
         population = ""
         if self.include_alpha:
