@@ -745,7 +745,7 @@ def set_werkzeug_log_color():
             )
             http_code = str(args[1])
         except Exception:
-            return _orig_log(type, message, *args)
+            return _orig_log(self, type, message, *args)
 
         # Utilize terminal colors, if available
         if http_code[0] == "2":
