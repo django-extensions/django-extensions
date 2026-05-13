@@ -67,7 +67,7 @@ class Command(BaseCommand):
         indent = options["indent"]
 
         if output_format == "json":
-            print(json.dumps(settings_dct, indent=indent))
+            print(json.dumps(settings_dct, indent=indent, default=str))
         elif output_format == "yaml":
             import yaml  # requires PyYAML
 

@@ -1,5 +1,9 @@
+import json
+from pathlib import Path
+
 import pytest
 from django.core.management import CommandError, call_command
+from django.test.utils import override_settings
 
 
 def test_without_args(capsys):
@@ -70,3 +74,16 @@ def test_format_json_without_indent(capsys):
     expected = '{\n"DEBUG": false\n}\n'
     out, err = capsys.readouterr()
     assert expected == out
+
+
+@override_settings(BASE_DIR=Path("/tmp/example"))
+def test_format_json_serializes_path(capsys):
+    call_command(
+        "print_settings",
+        "BASE_DIR",
+        "--format=json",
+    )
+
+    out, _ = capsys.readouterr()
+    data = json.loads(out)
+    assert data == {"BASE_DIR": str(Path("/tmp/example"))}
