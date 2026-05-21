@@ -393,7 +393,9 @@ class Command(BaseCommand):
         addrport = options["addrport"]
         startup_messages = options["startup_messages"]
         if startup_messages == "reload":
-            self.show_startup_messages = os.environ.get("RUNSERVER_PLUS_SHOW_MESSAGES")
+            self.show_startup_messages = (
+                not options["use_reloader"]
+            ) or os.environ.get("RUNSERVER_PLUS_SHOW_MESSAGES")
         elif startup_messages == "once":
             self.show_startup_messages = not os.environ.get(
                 "RUNSERVER_PLUS_SHOW_MESSAGES"
@@ -531,6 +533,34 @@ class Command(BaseCommand):
 
         return application
 
+    @staticmethod
+    def is_werkzeug_reloader_process():
+        return os.environ.get("WERKZEUG_RUN_MAIN") == "true"
+
+    @staticmethod
+    def log_debugger_startup(debugger):
+        _log("warning", " * Debugger is active!")
+        if debugger.pin is None:
+            _log("warning", " * Debugger PIN disabled. DEBUGGER UNSECURED!")
+        else:
+            _log("info", " * Debugger PIN: %s", debugger.pin)
+
+    def wrap_handler_with_debugger(self, handler):
+        debugger = DebuggedApplication(handler, True)
+        trusted_hosts = getattr(
+            settings,
+            "RUNSERVER_PLUS_TRUSTED_HOSTS",
+            getattr(settings, "RUNSERVERPLUS_TRUSTED_HOSTS", None),
+        )
+        if trusted_hosts is not None:
+            if isinstance(trusted_hosts, str):
+                debugger.trusted_hosts = [trusted_hosts]
+            else:
+                debugger.trusted_hosts = list(trusted_hosts)
+        if self.addr not in debugger.trusted_hosts:
+            debugger.trusted_hosts.append(self.addr)
+        return debugger
+
     def inner_run(self, options):
         if not HAS_WERKZEUG:
             raise CommandError(
@@ -650,24 +680,21 @@ class Command(BaseCommand):
             getattr(settings, "RUNSERVER_PLUS_EXCLUDE_PATTERNS", [])
         )
 
-        # Werkzeug needs to be clued in its the main instance if running
-        # without reloader or else it won't show key.
-        # https://git.io/vVIgo
+        # Werkzeug treats WERKZEUG_RUN_MAIN as the reloader child marker.
+        # Forcing it in --noreload mode makes run_simple() expect
+        # WERKZEUG_SERVER_FD and crash before the server starts.
         if not use_reloader:
-            os.environ["WERKZEUG_RUN_MAIN"] = "true"
+            os.environ.pop("WERKZEUG_RUN_MAIN", None)
 
-        # Don't run a second instance of the debugger / reloader
-        # See also: https://github.com/django-extensions/django-extensions/issues/832
-        if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-            if self.nopin:
-                os.environ["WERKZEUG_DEBUG_PIN"] = "off"
-            handler = DebuggedApplication(handler, True)
-            # Set trusted_hosts (for Werkzeug 3.0.3+)
-            handler.trusted_hosts = getattr(
-                settings,
-                "RUNSERVERPLUS_SERVER_ADDRESS_PORT",
-                getattr(settings, "RUNSERVERPLUS_TRUSTED_HOSTS", None),
-            )
+        if self.nopin:
+            os.environ["WERKZEUG_DEBUG_PIN"] = "off"
+
+        # Only the single-process server or the reloader child should wrap the
+        # app with the debugger. The reloader parent never serves requests.
+        if not use_reloader or self.is_werkzeug_reloader_process():
+            handler = self.wrap_handler_with_debugger(handler)
+            if not self.is_werkzeug_reloader_process():
+                self.log_debugger_startup(handler)
 
         runserver_plus_started.send(sender=self)
         run_simple(
@@ -675,7 +702,7 @@ class Command(BaseCommand):
             int(self.port),
             handler,
             use_reloader=use_reloader,
-            use_debugger=True,
+            use_debugger=False,  # Debugger already wrapped.
             extra_files=self.extra_files,
             exclude_patterns=exclude_patterns,
             reloader_interval=reloader_interval,
