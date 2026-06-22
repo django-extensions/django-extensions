@@ -34,3 +34,9 @@ def wdb(obj):  # pragma: no cover
     """Web debugger filter."""
     __import__("wdb").set_trace()
     return obj
+
+
+@register.filter
+def breakpoint(obj):  # pragma: no cover
+    breakpoint()
+    return obj
