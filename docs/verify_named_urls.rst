@@ -45,7 +45,7 @@ Example output, where the first named URL is defined, the second is missing:
 
 ::
 
-    Name: entry-detail (1 occurences, handled in EntryDetailView, blog/<slug:slug>)
+    Name: entry-detail (1 occurrences, handled in EntryDetailView, blog/<slug:slug>)
     * /home/myuser/django/blog/templates/blog/entry-list.html:9
-    Name: this-view-is-removed-by-now (1 occurences, UNKNOWN VIEW)
+    Name: this-view-is-removed-by-now (1 occurrences, UNKNOWN VIEW)
     * /home/myuser/django/blog/templates/blog/reference.html:6

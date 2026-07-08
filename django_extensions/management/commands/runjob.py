@@ -43,7 +43,7 @@ class Command(BaseCommand):
         try:
             job().execute()
         except Exception:
-            logger.exception("ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name)
+            logger.exception("ERROR OCCURRED IN JOB: %s (APP: %s)", job_name, app_name)
 
     @signalcommand
     def handle(self, *args, **options):

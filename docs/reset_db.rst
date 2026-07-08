@@ -61,7 +61,7 @@ Optional settings
 -----------------
 
 It is possible to use a Django DB engine not in the lists above -- to do that add
-the approriate setting as shown below to your Django settings file::
+the appropriate setting as shown below to your Django settings file::
 
   # settings.py
   DJANGO_EXTENSIONS_RESET_DB_SQLITE_ENGINES = ['your_custom_sqlite_engine']

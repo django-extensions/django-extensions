@@ -12,7 +12,7 @@ This uses Python's secret module `Recipes and best practices`_ to generate a pas
 There are two options.
 
 You can specify the length of password with the option ``--length``. If you don't specify ``--length``, a default value of 16 is applied.
-Using ``--complex`` will add punctuation to the aphabet of characters which the password will be generated from.
+Using ``--complex`` will add punctuation to the alphabet of characters which the password will be generated from.
 
 
 Usage
