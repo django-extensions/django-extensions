@@ -41,3 +41,15 @@ class ActivatorModelTestCase(TestCase):
         specific_post = Post.objects.filter(title="Foo").inactive()
         self.assertIn(post, specific_post)
         post.delete()
+
+    def test_save_with_update_fields_persists_activate_date(self):
+        """
+        When save(update_fields=[...]) is used on an existing instance whose
+        activate_date has been cleared, the auto-set activate_date should be
+        persisted to the database.
+        """
+        post = Post.objects.create(status=ActivatorModel.ACTIVE_STATUS, title="Bar")
+        post.activate_date = None
+        post.save(update_fields=["status"])
+        post.refresh_from_db()
+        self.assertIsNotNone(post.activate_date)
