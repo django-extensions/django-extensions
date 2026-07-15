@@ -19,6 +19,7 @@ by looking up your Django database engine in the following lists.
   DEFAULT_SQLITE_ENGINES = (
       'django.db.backends.sqlite3',
       'django.db.backends.spatialite',
+      'django.contrib.gis.db.backends.spatialite',
   )
   DEFAULT_MYSQL_ENGINES = (
       'django.db.backends.mysql',

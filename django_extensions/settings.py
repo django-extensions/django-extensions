@@ -8,6 +8,7 @@ REPLACEMENTS = getattr(settings, "EXTENSIONS_REPLACEMENTS", {})
 DEFAULT_SQLITE_ENGINES = (
     "django.db.backends.sqlite3",
     "django.db.backends.spatialite",
+    "django.contrib.gis.db.backends.spatialite",
     "django_prometheus.db.backends.sqlite3",
 )
 DEFAULT_MYSQL_ENGINES = (
