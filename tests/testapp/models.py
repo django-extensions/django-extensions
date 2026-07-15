@@ -180,9 +180,17 @@ class PostWithUniqField(models.Model):
             ),
             models.CheckConstraint(
                 **(
-                    {"condition": ~models.Q(common_field=models.F("another_common_field"))}
+                    {
+                        "condition": ~models.Q(
+                            common_field=models.F("another_common_field")
+                        )
+                    }
                     if django.VERSION >= (5, 2)
-                    else {"check": ~models.Q(common_field=models.F("another_common_field"))}
+                    else {
+                        "check": ~models.Q(
+                            common_field=models.F("another_common_field")
+                        )
+                    }
                 ),
                 name="common_and_another_common_differ",
             ),
