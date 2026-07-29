@@ -225,7 +225,7 @@ Type 'yes' to continue, or 'no' to cancel: """
                 except Database.ProgrammingError as e:
                     logging.exception("Error: %s", str(e))
 
-            drop_query = 'DROP DATABASE "%s";' % database_name
+            drop_query = 'DROP DATABASE IF EXISTS "%s";' % database_name
             logging.info('Executing... "%s"', drop_query)
             try:
                 cursor.execute(drop_query)

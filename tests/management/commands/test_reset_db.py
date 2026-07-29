@@ -209,7 +209,7 @@ class ResetDbPostgresqlTests(TestCase):
         m_cursor = mock.Mock()
         m_database.connect.return_value.cursor.return_value = m_cursor
         expected_calls = [
-            mock.call('DROP DATABASE "test_db";'),
+            mock.call('DROP DATABASE IF EXISTS "test_db";'),
             mock.call(
                 'CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\';'
             ),
@@ -246,7 +246,7 @@ class ResetDbPostgresqlTests(TestCase):
             mock.call(
                 "\n                    SELECT pg_terminate_backend(pg_stat_activity.pid)\n                    FROM pg_stat_activity\n                    WHERE pg_stat_activity.datname = 'test_db';\n                "
             ),
-            mock.call('DROP DATABASE "test_db";'),
+            mock.call('DROP DATABASE IF EXISTS "test_db";'),
             mock.call(
                 'CREATE DATABASE "test_db" WITH OWNER = "foo"  ENCODING = \'UTF8\' TABLESPACE = TEST_TABLESPACE;'
             ),
