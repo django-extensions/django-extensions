@@ -1,4 +1,5 @@
 import os
+import re
 
 import pytest
 from django.contrib.auth.models import User
@@ -8,7 +9,6 @@ from django.test.utils import override_settings
 from io import StringIO
 
 from unittest.mock import patch
-
 
 TEST_FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -50,8 +50,10 @@ class SyncDataExceptionsTests(TestCase):
     def test_should_return_SyncDataError_when_multiple_fixtures(self):
         with pytest.raises(
             CommandError,
-            match="Multiple fixtures named 'users' in '{}'. Aborting.".format(
-                TEST_FIXTURE_DIR
+            match=re.escape(
+                "Multiple fixtures named 'users' in '{}'. Aborting.".format(
+                    TEST_FIXTURE_DIR
+                )
             ),
         ):
             call_command("syncdata", "users", verbosity=2)

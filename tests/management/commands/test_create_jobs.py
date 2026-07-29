@@ -8,7 +8,6 @@ from tests import testapp_with_no_models_file
 
 from unittest.mock import patch
 
-
 JOBS_DIR = os.path.join(testapp_with_no_models_file.__path__[0], "jobs")
 TIME_PERIODS = ["hourly", "daily", "weekly", "monthly", "yearly"]
 
@@ -52,7 +51,9 @@ class CreateJobsTests(CreateJobsTestsMixin, TestCase):
         self.assertTrue(os.path.exists(JOBS_DIR))
         for time_period in TIME_PERIODS:
             self.assertIn(
-                "testapp_with_no_models_file/jobs/{}/__init__.py".format(time_period),
+                os.path.join(
+                    "testapp_with_no_models_file", "jobs", time_period, "__init__.py"
+                ),
                 m_stdout.getvalue(),
             )
 
@@ -72,8 +73,11 @@ class CreateJobsTests(CreateJobsTestsMixin, TestCase):
         self.assertIn(TEST_COMMENT, open(sample_file_path).read())
         for time_period in TIME_PERIODS:
             self.assertIn(
-                "testapp_with_no_models_file/jobs/{}/__init__.py already exists".format(
-                    time_period
+                os.path.join(
+                    "testapp_with_no_models_file",
+                    "jobs",
+                    time_period,
+                    "__init__.py already exists",
                 ),
                 m_stdout.getvalue(),
             )

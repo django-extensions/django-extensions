@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # don't add django internal code
         apps = [
-            app.replace(".", "/")
+            app.replace(".", os.path.sep)
             for app in filter(
                 lambda app: not app.startswith("django.contrib"),
                 settings.INSTALLED_APPS,
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                     if os.path.splitext(fn)[1] in (".py", ".html"):
                         fpath = os.path.join(top, fn)
                         annotation_lines = []
-                        with open(fpath, "r") as fd:
+                        with open(fpath, "r", encoding="utf-8") as fd:
                             i = 0
                             for line in fd.readlines():
                                 i += 1
