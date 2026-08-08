@@ -339,19 +339,22 @@ class Command(BaseCommand):
         try:
             from notebook.notebookapp import NotebookApp
         except ImportError:
-            if release.version_info[0] >= 7:
-                return traceback.format_exc()
             try:
-                from IPython.html.notebookapp import NotebookApp
+                from notebook.app import JupyterNotebookApp as NotebookApp
             except ImportError:
-                if release.version_info[0] >= 3:
+                if release.version_info[0] >= 7:
                     return traceback.format_exc()
                 try:
-                    from IPython.frontend.html.notebook import notebookapp
-
-                    NotebookApp = notebookapp.NotebookApp
+                    from IPython.html.notebookapp import NotebookApp
                 except ImportError:
-                    return traceback.format_exc()
+                    if release.version_info[0] >= 3:
+                        return traceback.format_exc()
+                    try:
+                        from IPython.frontend.html.notebook import notebookapp
+
+                        NotebookApp = notebookapp.NotebookApp
+                    except ImportError:
+                        return traceback.format_exc()
 
         use_kernel_specs = release.version_info[0] >= 3
 
