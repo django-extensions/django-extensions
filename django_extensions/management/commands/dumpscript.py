@@ -664,7 +664,7 @@ class BasicImportHelper:
         # Change this if you want to locate the object in the database
         try:
             the_obj.save()
-        except:
+        except Exception:
             print("---------------")
             print("Error saving the following object:")
             print(the_obj.__class__)
