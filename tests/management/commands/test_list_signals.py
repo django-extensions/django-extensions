@@ -27,3 +27,18 @@ tests.testapp.models.HasOwnerModel (has owner model)
         # Strip line numbers to make the test less brittle
         out = re.sub(r"(?<=#)\d+", "", self.out.getvalue(), flags=re.M)
         self.assertIn(expected_result, out)
+
+    def test_should_handle_non_model_sender(self):
+        from django.db.models.signals import pre_save
+
+        def dummy_custom_signal_handler(sender, **kwargs):
+            pass
+
+        pre_save.connect(dummy_custom_signal_handler, sender=None)
+        try:
+            call_command("list_signals", stdout=self.out)
+            out = self.out.getvalue()
+            self.assertIn("_unknown_", out)
+            self.assertIn("dummy_custom_signal_handler", out)
+        finally:
+            pre_save.disconnect(dummy_custom_signal_handler, sender=None)
