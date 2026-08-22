@@ -52,6 +52,36 @@ class RunScriptTests(TestCase):
                 sys.stdout.getvalue(),
             )
 
+    def test_runs_with_py_extension(self):
+        call_command("runscript", "sample_script.py", verbosity=2)
+        self.assertIn(
+            "Found script 'tests.testapp.scripts.sample_script'", sys.stdout.getvalue()
+        )
+        self.assertIn(
+            "Running script 'tests.testapp.scripts.sample_script'",
+            sys.stdout.getvalue(),
+        )
+
+    def test_runs_with_relative_filepath(self):
+        call_command("runscript", "scripts/sample_script.py", verbosity=2)
+        self.assertIn(
+            "Found script 'tests.testapp.scripts.sample_script'", sys.stdout.getvalue()
+        )
+        self.assertIn(
+            "Running script 'tests.testapp.scripts.sample_script'",
+            sys.stdout.getvalue(),
+        )
+
+    def test_runs_with_leading_dot_slash_filepath(self):
+        call_command("runscript", "./scripts/sample_script.py", verbosity=2)
+        self.assertIn(
+            "Found script 'tests.testapp.scripts.sample_script'", sys.stdout.getvalue()
+        )
+        self.assertIn(
+            "Running script 'tests.testapp.scripts.sample_script'",
+            sys.stdout.getvalue(),
+        )
+
 
 class NonExistentScriptsTests(RunScriptTests):
     def test_prints_error_on_nonexistent_script(self):
