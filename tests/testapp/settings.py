@@ -16,6 +16,8 @@ INSTALLED_APPS = [
     "tests.testapp",
     "tests.testapp_with_no_models_file",
     "tests.testapp_with_appconfig.apps.TestappWithAppConfigConfig",
+    "tests.graphdeps_cycle_a",
+    "tests.graphdeps_cycle_b",
     "django_extensions",
 ]
 

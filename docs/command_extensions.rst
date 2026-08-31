@@ -12,6 +12,7 @@ Command Extensions
    runscript
    export_emails
    generate_password
+   graph_app_import_dependencies
    graph_models
    list_model_info
    list_signals
@@ -72,6 +73,11 @@ Command Extensions
 
 * *generate_secret_key* - Creates a new secret key that you can put in your
   settings.py module.
+
+* :doc:`graph_app_import_dependencies` - Creates a GraphViz_ dot file (or
+  JSON) graphing which apps import which other apps, based on parsing each
+  app's source with ``ast``. Can detect and highlight import cycles between
+  apps.
 
 * `graph_models`_ - Creates a GraphViz_ dot file.  You need
   to send this output to a file yourself.  Great for graphing your models. Pass
