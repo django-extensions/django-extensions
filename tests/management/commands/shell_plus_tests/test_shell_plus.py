@@ -100,10 +100,14 @@ def test_shell_plus_print_sql_truncate(capsys):
 @override_settings(SHELL_PLUS_SQLPARSE_ENABLED=True, SHELL_PLUS_PYGMENTS_ENABLED=False)
 def test_print_sql_when_last_executed_query_is_none():
     from django.db import connection
-    from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
+    from django_extensions.management.debug_cursor import (
+        monkey_patch_cursordebugwrapper,
+    )
 
     logged = []
-    with monkey_patch_cursordebugwrapper(print_sql=True, truncate=None, logger=logged.append):
+    with monkey_patch_cursordebugwrapper(
+        print_sql=True, truncate=None, logger=logged.append
+    ):
         with mock.patch.object(
             connection.ops, "last_executed_query", return_value=None
         ):
