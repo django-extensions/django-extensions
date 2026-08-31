@@ -45,7 +45,7 @@ class LegacyCR(BaseCR):
 
 
 class AppsOrderCR(LegacyCR, metaclass=ABCMeta):
-    APP_PRIORITIES = None  # type: List[str]
+    APP_PRIORITIES = None  # type: Optional[List[str]]
 
     def resolve_collisions(self, namespace):
         assert self.APP_PRIORITIES is not None, (
@@ -59,11 +59,13 @@ class AppsOrderCR(LegacyCR, metaclass=ABCMeta):
         return result
 
     def _sort_models_depending_on_priorities(self, models):  # type: (List[str]) -> List[Tuple[int, str]]
+        app_priorities = self.APP_PRIORITIES
+        assert app_priorities is not None
         models_with_priorities = []
         for model in models:
             try:
                 app_name, _ = self.get_app_name_and_model(model)
-                position = self.APP_PRIORITIES.index(app_name)
+                position = app_priorities.index(app_name)
             except (ImportError, ValueError):
                 position = sys.maxsize
             models_with_priorities.append((position, model))

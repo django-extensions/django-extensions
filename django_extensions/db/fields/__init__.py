@@ -88,7 +88,9 @@ class UniqueFieldMixin:
         kwargs[self.attname] = new
         while True:
             matching = queryset.filter(query, **kwargs)
-            has_match = matching.exists() if hasattr(matching, "exists") else bool(matching)
+            has_match = (
+                matching.exists() if hasattr(matching, "exists") else bool(matching)
+            )
             if new and not has_match:
                 break
             new = next(iterator)

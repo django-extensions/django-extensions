@@ -75,6 +75,22 @@ class ResetDbSqlite3Tests(TestCase):
         self.assertEqual("Reset successful.\n", m_stdout.getvalue())
         m_unlink.assert_called_once_with("test_db.sqlite3")
 
+    @override_settings(
+        DATABASES={
+            "default": {
+                "ENGINE": "django.contrib.gis.db.backends.spatialite",
+                "NAME": "test_db.sqlite3",
+            }
+        }
+    )
+    @mock.patch("sys.stdout", new_callable=StringIO)
+    @mock.patch.object(os, "unlink")
+    def test_should_unlink_spatialite_database(self, m_unlink, m_stdout):
+        call_command("reset_db", "--noinput", verbosity=2)
+
+        self.assertEqual("Reset successful.\n", m_stdout.getvalue())
+        m_unlink.assert_called_once_with("test_db.sqlite3")
+
     @mock.patch("sys.stdout", new_callable=StringIO)
     @mock.patch.object(
         os,
