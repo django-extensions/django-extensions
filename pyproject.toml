@@ -53,7 +53,7 @@ urls.Tracker = "https://github.com/django-extensions/django-extensions/issues"
 version = { attr = "django_extensions.__version__" }
 
 [tool.ruff]
-line-length = 88
+line-length = 128
 indent-width = 4
 
 lint.select = [
