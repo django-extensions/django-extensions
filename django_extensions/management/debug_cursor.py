@@ -69,6 +69,8 @@ def monkey_patch_cursordebugwrapper(
                 finally:
                     execution_time = time.time() - starttime
                     raw_sql = self.db.ops.last_executed_query(self.cursor, sql, params)
+                    if raw_sql is None:
+                        raw_sql = sql or ""
                     if truncate:
                         raw_sql = raw_sql[:truncate]
 
