@@ -1,5 +1,6 @@
 import os
 import re
+from unittest import mock
 import pytest
 import inspect
 
@@ -93,6 +94,24 @@ def test_shell_plus_print_sql_truncate(capsys):
 
     assert re.search(r"SELE", out)
     assert not re.search(r"SELEC", out)
+
+
+@pytest.mark.django_db()
+@override_settings(SHELL_PLUS_SQLPARSE_ENABLED=True, SHELL_PLUS_PYGMENTS_ENABLED=False)
+def test_print_sql_when_last_executed_query_is_none():
+    from django.db import connection
+    from django_extensions.management.debug_cursor import monkey_patch_cursordebugwrapper
+
+    logged = []
+    with monkey_patch_cursordebugwrapper(print_sql=True, truncate=None, logger=logged.append):
+        with mock.patch.object(
+            connection.ops, "last_executed_query", return_value=None
+        ):
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+
+    assert logged
+    assert "1" in logged[0]
 
 
 def test_shell_plus_plain_startup():
