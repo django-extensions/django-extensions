@@ -12,6 +12,7 @@ from django_extensions.management.commands.sqldiff import (
     Command,
     MySQLDiff,
     PostgresqlSQLDiff,
+    SQLDiff,
 )
 from tests.testapp.models import (
     PostWithUniqField,
@@ -185,3 +186,30 @@ class SqlDiffTests(TestCase):
             """select 1 as "foo", 1 + 1 as "BAR";""", []
         )
         self.assertEqual(postgresql_dict, [{"BAR": 2, "foo": 1}])
+
+    def test_postgresql_varchar_length_from_format_type(self):
+        instance = PostgresqlSQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+        field = mock.Mock()
+        field.db_column = None
+        field.attname = "title"
+        field.primary_key = False
+        field.db_tablespace = ""
+        instance.check_constraints = {}
+        instance.sql_to_dict = mock.Mock(
+            return_value=[{"type": "character varying(100)"}]
+        )
+
+        with mock.patch.object(SQLDiff, "get_field_db_type", return_value="varchar"):
+            db_type = instance.get_field_db_type(
+                ("title", 1043, None, None, None, None, True),
+                field=field,
+                table_name="snippets_snippet",
+            )
+
+        self.assertEqual(db_type, "varchar(100)")
+        instance.sql_to_dict.assert_called_once()

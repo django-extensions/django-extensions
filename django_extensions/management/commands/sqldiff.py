@@ -1575,6 +1575,28 @@ class PostgresqlSQLDiff(SQLDiff):
     #             kwargs['max_length'] = max_length[1]
     #     return kwargs
 
+    def _pg_column_type(self, table_name, attname):
+        """Return PostgreSQL's format_type() for a column, mapped to Django's names."""
+        rows = self.sql_to_dict(
+            """SELECT attname, format_type(atttypid, atttypmod) AS type
+                FROM   pg_attribute
+                WHERE  attrelid = %s::regclass
+                AND    attname = %s
+                AND    attnum > 0
+                AND    NOT attisdropped
+                ORDER  BY attnum;
+            """,
+            (table_name, attname),
+        )
+        if not rows:
+            return None
+        introspect_db_type = rows[0]["type"]
+        if introspect_db_type.startswith("character varying"):
+            introspect_db_type = introspect_db_type.replace(
+                "character varying", "varchar", 1
+            )
+        return introspect_db_type
+
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
@@ -1590,23 +1612,19 @@ class PostgresqlSQLDiff(SQLDiff):
                 #       to compare to whatever django spits out as the desired database
                 #       type ?
                 attname = field.db_column or field.attname
-                introspect_db_type = self.sql_to_dict(
-                    """SELECT attname, format_type(atttypid, atttypmod) AS type
-                        FROM   pg_attribute
-                        WHERE  attrelid = %s::regclass
-                        AND    attname = %s
-                        AND    attnum > 0
-                        AND    NOT attisdropped
-                        ORDER  BY attnum;
-                    """,
-                    (table_name, attname),
-                )[0]["type"]
-                if introspect_db_type.startswith("character varying"):
-                    introspect_db_type = introspect_db_type.replace(
-                        "character varying", "varchar"
-                    )
+                introspect_db_type = self._pg_column_type(table_name, attname)
+                if introspect_db_type:
+                    return introspect_db_type
 
-                return introspect_db_type
+            # cursor.description's internal_size is often None/useless on
+            # psycopg3, so CharField comes back as bare 'varchar' and sqldiff
+            # reports a false length mismatch against varchar(N) (#1980).
+            if db_type == "varchar" and table_name:
+                formatted = self._pg_column_type(
+                    table_name, field.db_column or field.attname
+                )
+                if formatted:
+                    db_type = formatted
 
             if field.primary_key and isinstance(field, AutoField):
                 # TODO: Django>4.1 uses int/bigint with identity columns
