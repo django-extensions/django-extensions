@@ -8,7 +8,6 @@ from io import StringIO
 
 from unittest.mock import patch
 
-
 TEST_APP = "testapp_with_appconfig"
 
 
@@ -17,16 +16,16 @@ class CreateCommandTests(TestCase):
 
     def setUp(self):  # noqa
         self.management_command_path = os.path.join(
-            settings.BASE_DIR, "tests/{}/management".format(TEST_APP)
+            settings.BASE_DIR, "tests", TEST_APP, "management"
         )
         self.command_template_path = os.path.join(
-            settings.BASE_DIR, "django_extensions/conf/command_template"
+            settings.BASE_DIR, "django_extensions", "conf", "command_template"
         )
 
         self.files = [
             "__init__.py",
-            "commands/__init__.py",
-            "commands/sample.py",
+            os.path.join("commands", "__init__.py"),
+            os.path.join("commands", "sample.py"),
         ]
 
     def tearDown(self):  # noqa
