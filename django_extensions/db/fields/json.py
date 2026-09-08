@@ -11,6 +11,7 @@ more information.
 """
 
 import json
+import warnings
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -49,9 +50,19 @@ class JSONField(models.TextField):
     """
     JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.  Main thingy must be a dict object.
+
+    .. deprecated::
+        JSONField is deprecated and will be removed in a future version.
+        Use Django's native JSONField instead: from django.db import models; models.JSONField()
     """
 
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "JSONField is deprecated and will be removed in a future version. "
+            "Use Django's native JSONField instead: from django.db import models; models.JSONField()",
+            DeprecationWarning,
+            stacklevel=2
+        )
         kwargs["default"] = kwargs.get("default", dict)
         models.TextField.__init__(self, *args, **kwargs)
 

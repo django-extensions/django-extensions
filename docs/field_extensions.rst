@@ -146,8 +146,36 @@ It result in shorter 22 characters values useful e.g. for concise, unambiguous
 URLS. It's possible to get shorter values with length parameter: they are
 not Universal Unique any more but probability of collision is still low.
 
-JSONField
----------
+JSONField (Deprecated)
+----------------------
+
+.. deprecated::
+   JSONField is deprecated and will be removed in a future version.
+   Use Django's native JSONField instead.
+
+**Migration Guide:**
+
+Replace ``django_extensions.db.fields.JSONField`` with Django's native ``JSONField``:
+
+.. code-block:: python
+
+    # Old (deprecated)
+    from django_extensions.db.fields import JSONField
+
+    class MyModel(models.Model):
+        data = JSONField()
+
+    # New (recommended)
+    from django.db import models
+
+    class MyModel(models.Model):
+        data = models.JSONField()
+
+Django's native JSONField is available since Django 3.1 and provides better performance
+and database-specific optimizations. Since this package now requires Django 4.2+,
+the native JSONField is always available.
+
+**Legacy Documentation:**
 
 A generic ``TextField`` that neatly serializes/unserializes JSON
 objects seamlessly. Django 1.9 introduces a native JSONField for
