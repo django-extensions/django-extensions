@@ -506,7 +506,7 @@ class Command(BaseCommand):
         print_sql = (
             getattr(settings, "RUNSERVER_PLUS_PRINT_SQL", False) or options["print_sql"]
         )
-        truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
+        truncate = options["truncate_sql"]
 
         with monkey_patch_cursordebugwrapper(
             print_sql=print_sql,

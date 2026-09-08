@@ -614,7 +614,7 @@ for k, m in shells.import_objects({}, no_style()).items():
         print_sql = getattr(settings, "SHELL_PLUS_PRINT_SQL", False)
         runner = None
         runner_name = None
-        truncate = None if options["truncate_sql"] == 0 else options["truncate_sql"]
+        truncate = options["truncate_sql"]
 
         with monkey_patch_cursordebugwrapper(
             print_sql=options["print_sql"] or print_sql,
