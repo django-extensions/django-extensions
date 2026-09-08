@@ -17,6 +17,7 @@ from .testapp.models import (
     RandomCharTestModelPunctuation,
     RandomCharTestModelLowercaseAlphaDigits,
     RandomCharTestModelUppercaseAlphaDigits,
+    RandomCharTestModelPrefixAndPostFix,
 )
 from .testapp.models import RandomCharTestModelUniqueTogether
 
@@ -108,3 +109,35 @@ class RandomCharFieldTest(TestCase):
             m.common_field = "bbb"
             with pytest.raises(RuntimeError):
                 m.save()
+
+    def testRandomCharFieldPrefix(self):
+        m = RandomCharTestModelPrefixAndPostFix()
+        m.save()
+        assert len(m.random_char_field_with_prefix) == 10
+        assert m.random_char_field_with_prefix.startswith("u-")
+
+    def testRandomCharFieldPostfix(self):
+        m = RandomCharTestModelPrefixAndPostFix()
+        m.save()
+        assert len(m.random_char_field_with_postfix) == 10
+        assert m.random_char_field_with_postfix.endswith("-k")
+
+    def testRandomCharFieldPostfixAndPrefixTogether(self):
+        m = RandomCharTestModelPrefixAndPostFix()
+        m.save()
+        assert len(m.random_char_field_with_postfix) == 10
+        assert m.combine_prefix_and_post_field.startswith("a-")
+        assert m.combine_prefix_and_post_field.endswith("-b")
+
+    def testPrefixPostfixExceedsLength(self):
+        with self.assertRaises(ValueError) as cm:
+            from django.db import models
+
+            class InvalidModel(models.Model):
+                from django_extensions.db.fields import RandomCharField
+
+                field = RandomCharField(length=5, prefix="abc", postfix="def")
+
+        self.assertIn(
+            "length of prefix + postfix should be less than 'length'", str(cm.exception)
+        )

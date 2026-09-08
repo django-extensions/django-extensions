@@ -80,7 +80,12 @@ AutoRandomCharField will automatically create a
 unique random character field with the specified length. By default
 upper/lower case and digits are included as possible characters. Given
 a length of 8 that yields 3.4 million possible combinations. A 12
-character field would yield about 2 billion. Below are some examples::
+character field would yield about 2 billion.
+
+Optional `prefix` and `postfix` arguments allow you to prepend or append
+fixed strings to the generated value. The total length of prefix + postfix
+must be **less than** the field's `length`.
+Below are some examples::
 
     >>> RandomCharField(length=8, unique=True)
     BVm9GEaE
@@ -93,6 +98,15 @@ character field would yield about 2 billion. Below are some examples::
 
     >>> RandomCharField(length=12, lowercase=True, include_digits=False)
     pzolbemetmok
+
+    >>> RandomCharField(length=10, prefix='u-')
+    u-P6gOMeRg
+
+    >>> RandomCharField(length=10, postfix='-x')
+    QpP0lkct-x
+
+    >>> RandomCharField(length=10, prefix='t-', postfix='-y')
+    t-QpP0lkct-y
 
 CreationDateTimeField
 ---------------------
