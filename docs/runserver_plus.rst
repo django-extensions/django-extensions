@@ -232,7 +232,7 @@ I/O when idle.
 This is due to the way Werkzeug_ has implemented the auto reload capability.
 It supports two ways of doing auto reloading either via `stat polling` or `file system events`.
 
-The `stat polling` approach is pretty brute force and continously issues `stat` system calls which
+The `stat polling` approach is pretty brute force and continuously issues `stat` system calls which
 causes the CPU and IO load.
 
 If possible try to install the Watchdog_ package, this should automatically cause Werkzeug_ to use
@@ -247,7 +247,7 @@ This can be set two ways, in the django settings file::
 
     RUNSERVER_PLUS_POLLER_RELOADER_INTERVAL = 5
 
-or as a commad line argument::
+or as a command line argument::
 
   $ python manage.py runserver_plus --reloader-interval 5
 

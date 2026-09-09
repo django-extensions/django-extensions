@@ -39,7 +39,7 @@ def indentby(parser, token):
 
     Arguments:
       indent_level - Number of spaces to indent text with.
-      statement - Only apply indent_level if the boolean statement evalutates to True.
+      statement - Only apply indent_level if the boolean statement evaluates to True.
     """
     args = token.split_contents()
     largs = len(args)

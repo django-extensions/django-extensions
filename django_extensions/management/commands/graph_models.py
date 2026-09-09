@@ -132,7 +132,7 @@ class Command(BaseCommand):
                 "action": "store",
                 "dest": "outputfile",
                 "help": (
-                    "Render output file. Type of output dependend on file extensions. "
+                    "Render output file. Type of output dependent on file extensions. "
                     "Use png or jpg to render graph to image."
                 ),
             },

@@ -100,7 +100,7 @@ Command Extensions
   It seems this works only if setting ``SESSION_ENGINE`` is
   ``'django.contrib.sessions.backends.db'`` (default value).
 
-* *drop_test_database* - Drops the test database. Usefull when running Django
+* *drop_test_database* - Drops the test database. Useful when running Django
   test via some automated system (BuildBot, Jenkins, etc) and making sure that
   the test database is always dropped at the end.
 

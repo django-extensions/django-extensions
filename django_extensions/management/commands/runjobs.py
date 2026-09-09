@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 job().execute()
             except Exception:
                 logger.exception(
-                    "ERROR OCCURED IN JOB: %s (APP: %s)", job_name, app_name
+                    "ERROR OCCURRED IN JOB: %s (APP: %s)", job_name, app_name
                 )
 
     def runjobs_by_signals(self, when, options):

@@ -78,7 +78,7 @@ class CodeNode(Node):
 def highlight(parser, token):
     """
     Tag to put a highlighted source code <pre> block in your code.
-    This takes two arguments, the language and a little explaination message
+    This takes two arguments, the language and a little explanation message
     that will be generated before the code.  The second argument is optional.
 
     Your code will be fed through pygments so you can use any language it
