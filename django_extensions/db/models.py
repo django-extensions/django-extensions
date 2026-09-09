@@ -24,6 +24,12 @@ class TimeStampedModel(models.Model):
         self.update_modified = kwargs.pop(
             "update_modified", getattr(self, "update_modified", True)
         )
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and self.update_modified:
+            # Django >= 4.2 only persists fields listed in update_fields,
+            # so "modified" must be included for the timestamp to reach the DB.
+            if "modified" not in update_fields:
+                kwargs["update_fields"] = set(update_fields) | {"modified"}
         super().save(**kwargs)
 
     class Meta:
@@ -144,6 +150,9 @@ class ActivatorModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
         if not self.activate_date:
             self.activate_date = now()
+            if update_fields is not None and "activate_date" not in update_fields:
+                kwargs["update_fields"] = set(update_fields) | {"activate_date"}
         super().save(*args, **kwargs)
