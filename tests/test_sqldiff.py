@@ -44,10 +44,7 @@ class SqlDiffTests(TestCase):
         )
         instance.load()
         instance.find_differences()
-        checked_models = {
-            "%s.%s" % (app_label, model_name)
-            for app_label, model_name, _ in instance.differences
-        }
+        checked_models = {"%s.%s" % (app_label, model_name) for app_label, model_name, _ in instance.differences}
         self.assertEqual(
             should_include_proxy_models,
             "testapp.PostWithTitleOrdering" in checked_models,
@@ -87,12 +84,8 @@ class SqlDiffTests(TestCase):
             stdout=self.tmp_out,
             stderr=self.tmp_err,
         )
-        self.assertEqual(
-            instance.get_index_together(SqlDiff._meta), [("number", "creator")]
-        )
-        self.assertEqual(
-            instance.get_index_together(SqlDiffIndexes._meta), [("first", "second")]
-        )
+        self.assertEqual(instance.get_index_together(SqlDiff._meta), [("number", "creator")])
+        self.assertEqual(instance.get_index_together(SqlDiffIndexes._meta), [("first", "second")])
 
     def test_get_unique_together(self):
         instance = MySQLDiff(
@@ -109,9 +102,7 @@ class SqlDiffTests(TestCase):
             instance.get_unique_together(RandomCharTestModelUniqueTogether._meta),
             [("random_char_field", "common_field")],
         )
-        self.assertEqual(
-            instance.get_unique_together(SqlDiffUniqueTogether._meta), [("aaa", "bbb")]
-        )
+        self.assertEqual(instance.get_unique_together(SqlDiffUniqueTogether._meta), [("aaa", "bbb")])
         self.assertEqual(
             instance.get_unique_together(PostWithUniqField._meta),
             [("common_field", "uniq_field")],
@@ -128,18 +119,14 @@ class SqlDiffTests(TestCase):
             stdout=self.tmp_out,
             stderr=self.tmp_err,
         )
-        mysql_dict = mysql_instance.sql_to_dict(
-            """select 1 as "foo", 1 + 1 as "BAR";""", []
-        )
+        mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEqual(mysql_dict, [{"bar": 2, "foo": 1}])
 
     @pytest.mark.skipif(
         settings.DATABASES["default"]["ENGINE"] != "django.db.backends.mysql",
         reason="Test can only run on mysql",
     )
-    @mock.patch(
-        "django_extensions.management.commands.sqldiff.MySQLDiff.format_field_names"
-    )
+    @mock.patch("django_extensions.management.commands.sqldiff.MySQLDiff.format_field_names")
     def test_invalid_mysql_to_dict(self, format_field_names):
         format_field_names.side_effect = lambda x: x
         mysql_instance = MySQLDiff(
@@ -148,9 +135,7 @@ class SqlDiffTests(TestCase):
             stdout=self.tmp_out,
             stderr=self.tmp_err,
         )
-        mysql_dict = mysql_instance.sql_to_dict(
-            """select 1 as "foo", 1 + 1 as "BAR";""", []
-        )
+        mysql_dict = mysql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertNotEquals(mysql_dict, [{"bar": 2, "foo": 1}])
 
     @pytest.mark.skipif(
@@ -165,9 +150,7 @@ class SqlDiffTests(TestCase):
             stderr=self.tmp_err,
         )
 
-        sqlite_dict = sqlite_instance.sql_to_dict(
-            """select 1 as "foo", 1 + 1 as "BAR";""", []
-        )
+        sqlite_dict = sqlite_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEqual(sqlite_dict, [{"BAR": 2, "foo": 1}])
 
     @pytest.mark.skipif(
@@ -182,9 +165,7 @@ class SqlDiffTests(TestCase):
             stderr=self.tmp_err,
         )
 
-        postgresql_dict = postgresql_instance.sql_to_dict(
-            """select 1 as "foo", 1 + 1 as "BAR";""", []
-        )
+        postgresql_dict = postgresql_instance.sql_to_dict("""select 1 as "foo", 1 + 1 as "BAR";""", [])
         self.assertEqual(postgresql_dict, [{"BAR": 2, "foo": 1}])
 
     def test_postgresql_varchar_length_from_format_type(self):
@@ -200,9 +181,7 @@ class SqlDiffTests(TestCase):
         field.primary_key = False
         field.db_tablespace = ""
         instance.check_constraints = {}
-        instance.sql_to_dict = mock.Mock(
-            return_value=[{"type": "character varying(100)"}]
-        )
+        instance.sql_to_dict = mock.Mock(return_value=[{"type": "character varying(100)"}])
 
         with mock.patch.object(SQLDiff, "get_field_db_type", return_value="varchar"):
             db_type = instance.get_field_db_type(
