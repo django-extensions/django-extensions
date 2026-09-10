@@ -191,7 +191,12 @@ class Command(BaseCommand):
                     self.style.ERROR("--kernel requires at least IPython version 2.0")
                 )
                 return
-            from IPython import start_kernel
+            try:
+                from IPython import start_kernel
+            except ImportError:
+                from ipykernel.kernelapp import (
+                    launch_new_instance as start_kernel,
+                )
         except ImportError:
             return traceback.format_exc()
 

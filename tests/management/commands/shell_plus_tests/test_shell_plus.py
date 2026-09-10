@@ -209,3 +209,43 @@ def test_shell_plus_skipping_models_import_cli():
 @override_settings(SHELL_PLUS_DONT_LOAD=["*"])
 def test_shell_plus_skipping_models_import_settings():
     assert_should_models_be_imported(False)
+
+
+def test_shell_plus_get_kernel():
+    command = shell_plus.Command()
+    with mock.patch("ipykernel.kernelapp.launch_new_instance") as mock_launch:
+        run_kernel = command.get_kernel({"connection_file": None})
+        assert callable(run_kernel)
+        run_kernel()
+        mock_launch.assert_called_once()
+        kwargs = mock_launch.call_args[1]
+        assert kwargs["argv"] == []
+        assert "User" in kwargs["user_ns"]
+
+
+def test_shell_plus_get_kernel_legacy_ipython():
+    command = shell_plus.Command()
+    mock_start_kernel = mock.MagicMock()
+    with mock.patch.dict("sys.modules", {"IPython.start_kernel": mock_start_kernel}):
+        with mock.patch("IPython.start_kernel", mock_start_kernel, create=True):
+            run_kernel = command.get_kernel({"connection_file": None})
+            assert callable(run_kernel)
+            run_kernel()
+            mock_start_kernel.assert_called_once()
+            kwargs = mock_start_kernel.call_args[1]
+            assert kwargs["argv"] == []
+            assert "User" in kwargs["user_ns"]
+
+
+def test_shell_plus_get_kernel_with_connection_file():
+    command = shell_plus.Command()
+    with mock.patch("ipykernel.kernelapp.launch_new_instance") as mock_launch:
+        run_kernel = command.get_kernel({"connection_file": "test_connection.json"})
+        assert callable(run_kernel)
+        run_kernel()
+        mock_launch.assert_called_once()
+        kwargs = mock_launch.call_args[1]
+        assert kwargs["argv"] == []
+        assert kwargs["connection_file"] == "test_connection.json"
+
+
