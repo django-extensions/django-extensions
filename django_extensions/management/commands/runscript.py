@@ -227,20 +227,22 @@ class Command(EmailNotificationCommand):
                 raise
 
         def my_import(parent_package, module_name):
+            if not parent_package or not module_name:
+                return False
+            if parent_package.startswith("."):
+                return False
             full_module_path = "%s.%s" % (parent_package, module_name)
             if verbosity > 1:
                 print(NOTICE("Check for %s" % full_module_path))
             # Try importing the parent package first
             try:
                 importlib.import_module(parent_package)
-            except ImportError as e:
-                if str(e).startswith("No module named"):
-                    # No need to proceed if the parent package doesn't exist
-                    return False
+            except (ImportError, TypeError, ValueError) as e:
+                return False
 
             try:
                 t = importlib.import_module(full_module_path)
-            except ImportError as e:
+            except (ImportError, TypeError, ValueError) as e:
                 # The parent package exists, but the module doesn't
                 try:
                     if importlib.util.find_spec(full_module_path) is None:
@@ -277,27 +279,57 @@ class Command(EmailNotificationCommand):
                         )
                     )
 
+        def normalize_script_arg(script_arg):
+            """Normalize script file paths like scripts/foo.py or ./scripts/foo.py to script identifiers"""
+            cleaned = script_arg
+            while cleaned.startswith("./") or cleaned.startswith(".\\"):
+                cleaned = cleaned[2:]
+            if cleaned.endswith(".py"):
+                cleaned = cleaned[:-3]
+            cleaned_dot = cleaned.replace("/", ".").replace("\\", ".").strip(".")
+            return cleaned_dot
+
         def find_modules_for_script(script):
             """Find script module which contains 'run' attribute"""
             modules = []
-            # first look in apps
-            for app in apps.get_app_configs():
-                for subdir in subdirs:
-                    mod = my_import("%s.%s" % (app.name, subdir), script)
-                    if mod:
-                        modules.append(mod)
-            # try direct import
-            if script.find(".") != -1:
-                parent, mod_name = script.rsplit(".", 1)
-                mod = my_import(parent, mod_name)
-                if mod:
-                    modules.append(mod)
-            else:
-                # try app.DIR.script import
-                for subdir in subdirs:
-                    mod = my_import(subdir, script)
-                    if mod:
-                        modules.append(mod)
+            seen_modules = set()
+
+            norm_dot = normalize_script_arg(script)
+            base = os.path.splitext(os.path.basename(script))[0]
+
+            candidates = []
+            if norm_dot:
+                candidates.append(norm_dot)
+            if base and base not in candidates:
+                candidates.append(base)
+            if script not in candidates and not script.startswith("."):
+                candidates.append(script)
+
+            for cand in candidates:
+                # first look in apps
+                for app in apps.get_app_configs():
+                    for subdir in subdirs:
+                        mod = my_import("%s.%s" % (app.name, subdir), cand)
+                        if mod and mod not in seen_modules:
+                            modules.append(mod)
+                            seen_modules.add(mod)
+                # try direct import
+                if cand.find(".") != -1:
+                    parent, mod_name = cand.rsplit(".", 1)
+                    if parent and mod_name:
+                        mod = my_import(parent, mod_name)
+                        if mod and mod not in seen_modules:
+                            modules.append(mod)
+                            seen_modules.add(mod)
+                else:
+                    # try app.DIR.script import
+                    for subdir in subdirs:
+                        mod = my_import(subdir, cand)
+                        if mod and mod not in seen_modules:
+                            modules.append(mod)
+                            seen_modules.add(mod)
+                if modules:
+                    break
 
             return modules
 

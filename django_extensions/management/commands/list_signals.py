@@ -79,10 +79,15 @@ class Command(BaseCommand):
 
         output = []
         for key in sorted(models.keys(), key=str):
-            verbose_name = force_str(key._meta.verbose_name)
-            output.append(
-                "{}.{} ({})".format(key.__module__, key.__name__, verbose_name)
-            )
+            if hasattr(key, "_meta"):
+                verbose_name = force_str(key._meta.verbose_name)
+                output.append(
+                    "{}.{} ({})".format(key.__module__, key.__name__, verbose_name)
+                )
+            elif hasattr(key, "__module__") and hasattr(key, "__name__"):
+                output.append("{}.{}".format(key.__module__, key.__name__))
+            else:
+                output.append("{}".format(key))
             for signal_name in sorted(models[key].keys()):
                 lines = models[key][signal_name]
                 output.append("    {}".format(signal_name))
