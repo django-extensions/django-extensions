@@ -1,3 +1,5 @@
+import warnings
+
 from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase
@@ -78,3 +80,49 @@ Traceback:
         self.assertListEqual(
             mail.outbox[0].to, ["recipient0@example.com", "foo@bar.com"]
         )
+
+    @override_settings(ADMINS=["foo@bar.com"])
+    def test_should_not_pass_deprecated_fail_silently_to_send_mail(self):
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error", message=".*fail_silently.*")
+            with self.assertRaises(Exception) as cm:
+                call_command(
+                    "test_email_notification_command", "--email-exception", verbosity=2
+                )
+
+        self.assertIs(type(cm.exception), Exception)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(ADMINS=["foo@bar.com"])
+    @patch(
+        "django_extensions.management.email_notifications.send_mail",
+        side_effect=OSError("mail server down"),
+    )
+    def test_should_ignore_mail_errors_by_default(self, m_send_mail):
+        with self.assertRaises(Exception) as cm:
+            call_command(
+                "test_email_notification_command", "--email-exception", verbosity=2
+            )
+
+        self.assertIs(type(cm.exception), Exception)
+        m_send_mail.assert_called_once()
+
+    @patch(
+        "django_extensions.management.email_notifications.send_mail",
+        side_effect=OSError("mail server down"),
+    )
+    def test_should_raise_mail_errors_if_fail_silently_is_false(self, m_send_mail):
+        with override_settings(
+            ADMINS=["foo@bar.com"],
+            EMAIL_NOTIFICATIONS={
+                "tests.testapp.scripts.sample_script": {
+                    "notification_level": 1,
+                    "fail_silently": False,
+                }
+            },
+        ):
+            with self.assertRaisesMessage(OSError, "mail server down"):
+                call_command(
+                    "runscript", "sample_script", "--email-notifications", verbosity=2
+                )
