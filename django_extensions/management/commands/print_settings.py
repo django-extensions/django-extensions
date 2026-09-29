@@ -7,6 +7,7 @@ Django command similar to 'diffsettings' but shows all active Django settings.
 
 import fnmatch
 import json
+import warnings
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -43,7 +44,13 @@ class Command(BaseCommand):
     @signalcommand
     def handle(self, *args, **options):
         setting_names = options["setting"]
-        settings_dct = {k: getattr(settings, k) for k in dir(settings) if k.isupper()}
+        # Django warns on every access to a deprecated setting (the EMAIL_*
+        # settings since 6.1), so listing the defaults would print one warning
+        # each. Displaying a setting is not using it; diffsettings stays silent too.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            warnings.simplefilter("ignore", PendingDeprecationWarning)
+            settings_dct = {k: getattr(settings, k) for k in dir(settings) if k.isupper()}
 
         if setting_names:
             settings_dct = {

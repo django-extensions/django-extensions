@@ -1,4 +1,5 @@
 import json
+import warnings
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,16 @@ def test_without_args(capsys):
     out, err = capsys.readouterr()
     assert "DEBUG" in out
     assert "INSTALLED_APPS" in out
+
+
+def test_without_args_does_not_warn_about_deprecated_settings(capsys):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        warnings.simplefilter("error", PendingDeprecationWarning)
+        call_command("print_settings")
+
+    out, err = capsys.readouterr()
+    assert "EMAIL_HOST" in out
 
 
 def test_with_setting_args(capsys):
