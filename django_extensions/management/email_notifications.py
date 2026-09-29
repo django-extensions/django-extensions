@@ -43,7 +43,7 @@ class EmailNotificationCommand(BaseCommand):
         no_admins:          When True do not include ADMINS to recipients.
         no_traceback:       When True do not include traceback to email body.
         notification_level: 0: send email on fail, 1: send email always.
-        fail_silently:      Parameter passed to django's send_mail().
+        fail_silently:      Ignore errors while sending the email (default True).
     """
 
     def add_arguments(self, parser):
@@ -139,11 +139,11 @@ class EmailNotificationCommand(BaseCommand):
                 print(self.style.ERROR("No email recipients available."))
             return
 
-        # Send email...
-        send_mail(
-            subject,
-            body,
-            from_email,
-            recipients,
-            fail_silently=email_settings.get("fail_silently", True),
-        )
+        # Send email... Django 6.1 deprecates send_mail(fail_silently=...) and
+        # recommends catching the errors instead; a failed notification must
+        # not replace the error it reports.
+        try:
+            send_mail(subject, body, from_email, recipients)
+        except Exception:
+            if not email_settings.get("fail_silently", True):
+                raise
