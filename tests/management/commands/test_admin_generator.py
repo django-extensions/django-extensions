@@ -44,3 +44,10 @@ Available apps:
         call_command("admin_generator", "testapp", "TestAdminModel", stdout=self.out)
 
         self.assertIn("date_hierarchy = 'created_at'", self.out.getvalue())
+
+    def test_should_not_emit_empty_models_import_when_app_has_no_models(self):
+        call_command("admin_generator", "testapp_with_appconfig", stdout=self.out)
+        output = self.out.getvalue()
+
+        self.assertNotIn("from .models import", output)
+        compile(output, "<admin_generator>", "exec")

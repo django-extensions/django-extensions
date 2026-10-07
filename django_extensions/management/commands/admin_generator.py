@@ -123,7 +123,10 @@ class AdminApp(UnicodeMixin):
 
     def _unicode_generator(self):
         models_list = [admin_model.name for admin_model in self]
-        yield PRINT_IMPORTS % dict(models=", ".join(models_list))
+        imports = PRINT_IMPORTS % dict(models=", ".join(models_list))
+        if not models_list:
+            imports = "".join(line for line in imports.splitlines(keepends=True) if line.strip() != "from .models import")
+        yield imports
 
         admin_model_names = []
         for admin_model in self:
