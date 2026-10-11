@@ -366,6 +366,13 @@ class ShortUUIDTestModel_pk(models.Model):
         app_label = "django_extensions"
 
 
+class ShortUUIDTestModel_max_length(models.Model):
+    uuid_field = ShortUUIDField(max_length=10)
+
+    class Meta:
+        app_label = "django_extensions"
+
+
 class ShortUUIDTestAgregateModel(ShortUUIDTestModel_pk):
     a = models.IntegerField()
 
