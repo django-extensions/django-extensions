@@ -3,6 +3,7 @@ from django.test import TestCase
 from .testapp.models import (
     ShortUUIDTestAgregateModel,
     ShortUUIDTestManyToManyModel,
+    ShortUUIDTestModel_max_length,
     ShortUUIDTestModel_field,
     ShortUUIDTestModel_pk,
 )
@@ -32,3 +33,11 @@ class ShortUUIDFieldTest(TestCase):
         )
         self.assertEqual(j.uuid_field, "vytxeTZskVKR7C7WgdSP3e")
         self.assertEqual(j.pk, "vytxeTZskVKR7C7WgdSP3e")
+
+    def test_UUID_field_default_length(self):
+        j = ShortUUIDTestModel_pk.objects.create()
+        self.assertEqual(len(j.pk), 22)
+
+    def test_UUID_field_respects_max_length(self):
+        j = ShortUUIDTestModel_max_length.objects.create()
+        self.assertEqual(len(j.uuid_field), 10)

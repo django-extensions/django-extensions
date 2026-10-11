@@ -632,14 +632,18 @@ class ShortUUIDField(UUIDFieldMixin, CharField):
 
     def create_uuid(self):
         if not self.version or self.version == 4:
-            return shortuuid.uuid()
+            value = shortuuid.uuid()
         elif self.version == 1:
-            return shortuuid.uuid()
+            value = shortuuid.uuid()
         elif self.version == 2:
             raise UUIDVersionError("UUID version 2 is not supported.")
         elif self.version == 3:
             raise UUIDVersionError("UUID version 3 is not supported.")
         elif self.version == 5:
-            return shortuuid.uuid(name=self.namespace)
+            value = shortuuid.uuid(name=self.namespace)
         else:
             raise UUIDVersionError("UUID version %s is not valid." % self.version)
+        if self.max_length and len(value) > self.max_length:
+            # Keep the least significant digits, which are the most uniformly random.
+            value = value[-self.max_length :]
+        return value
