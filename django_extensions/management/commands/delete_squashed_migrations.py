@@ -7,7 +7,13 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.loader import AmbiguityError, MigrationLoader
 
-REPLACES_REGEX = re.compile(r"^\s+replaces\s*=\s*\[[^\]]+\]\s*?$", flags=re.MULTILINE)
+# Matches the "replaces = [...]" statement (single or multi-line) together
+# with its trailing newline and, when present, the blank line before it, so
+# removing the match does not leave an extra empty line behind.
+REPLACES_REGEX = re.compile(
+    r"^(?:[ \t]*\n)?[ \t]+replaces\s*=\s*\[[^\]]+\][ \t]*(?:\n|\Z)",
+    flags=re.MULTILINE,
+)
 PYC = ".pyc"
 
 
@@ -65,6 +71,9 @@ class Command(BaseCommand):
         app_label = options["app_label"]
         squashed_migration_name = options["squashed_migration_name"]
         database = options["database"]
+
+        if database not in connections:
+            raise CommandError("Unknown database %s" % database)
 
         # Load the current graph state
         # check the app and migration they asked for exists
