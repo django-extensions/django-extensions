@@ -137,6 +137,9 @@ Other configuration options include:
 
   IPYTHON_KERNEL_DISPLAY_NAME = "Django Shell-Plus"
 
+  # Kernel identifier used by Jupyter
+  IPYTHON_KERNEL_NAME = "django_extensions"
+
   # Additional Notebook arguments to use
   NOTEBOOK_ARGUMENTS = []
   NOTEBOOK_KERNEL_SPEC_NAMES = ["python3", "python"]
@@ -343,6 +346,35 @@ Sometimes it can lead to some errors(for example when we have an old unused modu
 
 Excluding these modules can help avoid shell_plus crashes in some situations.
 It is recommended to exclude all ``setup.py`` files.
+
+Installing a Jupyter kernel without starting a server
+-----------------------------------------------------
+
+Deployment scripts can install the Shell-Plus kernel without starting Notebook
+or JupyterLab::
+
+    $ python manage.py shell_plus --install-kernel
+
+This requires ``jupyter-client`` and an installed Python kernel, such as
+``ipykernel``. The command uses the same base kernel selection and installation
+locations as ``--notebook`` and ``--lab``. It first tries to write alongside the
+base kernel, then falls back to Jupyter's user kernel directory. Running it again
+updates the generated specification.
+
+Use ``IPYTHON_KERNEL_NAME`` to give each project's kernel a distinct identifier,
+and ``IPYTHON_KERNEL_DISPLAY_NAME`` to set its label in Jupyter. Identifiers may
+contain ASCII letters, digits, dots, hyphens and underscores, but cannot be
+``.`` or ``..`` or match the base kernel name. The defaults are ``django_extensions`` and ``Django Shell-Plus``.
+
+``IPYTHON_ARGUMENTS`` supplies kernel arguments. Arguments after ``--`` override
+that setting, for example::
+
+    $ python manage.py shell_plus --install-kernel -- --debug
+
+When starting Jupyter separately, set ``DJANGO_SETTINGS_MODULE`` to your project's
+settings module so the kernel can load Django and import your models::
+
+    $ DJANGO_SETTINGS_MODULE=myproject.settings jupyter lab
 
 IPython Notebook
 ----------------

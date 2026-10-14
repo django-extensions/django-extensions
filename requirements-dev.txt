@@ -17,3 +17,4 @@ types-boto>=2.49.18.20241019
 types-requests>=2.32.4.20250611
 
 setuptools>=78.1.1
+jupyter-client>=7
