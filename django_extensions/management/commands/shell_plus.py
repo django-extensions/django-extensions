@@ -1,8 +1,10 @@
 import inspect
 import os
+import re
 import sys
 import traceback
 import warnings
+from types import SimpleNamespace
 
 from django.db import connections
 from django.conf import settings
@@ -71,6 +73,12 @@ class Command(BaseCommand):
                 const=runner,
                 help=help,
             )
+
+        group.add_argument(
+            "--install-kernel",
+            action="store_true",
+            help="Install the Django Jupyter kernel spec without starting a shell or server.",
+        )
 
         parser.add_argument(
             "--connection-file",
@@ -254,7 +262,50 @@ class Command(BaseCommand):
 
             ks.env["PYTHONPATH"] = os.pathsep.join(filter(None, pythonpath))
 
-        return {"django_extensions": ks}
+        name = getattr(settings, "IPYTHON_KERNEL_NAME", "django_extensions")
+        if not isinstance(name, str) or not re.fullmatch(r"[a-zA-Z0-9._-]+", name) or name in {".", ".."}:
+            raise CommandError("IPYTHON_KERNEL_NAME must be a valid Jupyter kernel name")
+        if name.lower() == os.path.basename(ks.resource_dir).lower():
+            raise CommandError("IPYTHON_KERNEL_NAME must differ from the base kernel name")
+        return {name: ks}
+
+    def install_kernel_specs(self, app, ipython_arguments):
+        """Install generated kernel specs and return their directories."""
+        installed = {}
+        ksm = app.kernel_spec_manager
+        for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
+            roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
+
+            for root in roots:
+                kernel_dir = os.path.join(root, kid)
+                try:
+                    if not os.path.exists(kernel_dir):
+                        os.makedirs(kernel_dir)
+                    with open(os.path.join(kernel_dir, "kernel.json"), "w") as f:
+                        f.write(ks.to_json())
+                    break
+                except OSError:
+                    continue
+            else:
+                raise CommandError("Could not write kernel %r in directories %r" % (kid, roots))
+            installed[kid] = kernel_dir
+        return installed
+
+    def install_kernel(self, options):
+        try:
+            from jupyter_client.kernelspec import KernelSpecManager
+        except ImportError as exc:
+            raise CommandError("--install-kernel requires jupyter-client") from exc
+
+        arguments = list(self.extra_args or self.get_ipython_arguments(options))
+        extension = "django_extensions.management.notebook_extension"
+        if extension not in arguments:
+            arguments.extend(["--ext", extension])
+        # Keep the app-shaped interface used by generate_kernel_specs overrides,
+        # without initializing a Notebook or Lab application.
+        app = SimpleNamespace(kernel_spec_manager=KernelSpecManager())
+        for name, directory in self.install_kernel_specs(app, arguments).items():
+            self.stdout.write("Installed kernel %r in %s" % (name, directory))
 
     def run_notebookapp(self, app_init, options, use_kernel_specs=True, history=True):
         no_browser = options["no_browser"]
@@ -309,24 +360,7 @@ class Command(BaseCommand):
 
         # IPython >= 3 uses kernelspecs to specify kernel CLI args
         if use_kernel_specs:
-            ksm = app.kernel_spec_manager
-            for kid, ks in self.generate_kernel_specs(app, ipython_arguments).items():
-                roots = [os.path.dirname(ks.resource_dir), ksm.user_kernel_dir]
-
-                for root in roots:
-                    kernel_dir = os.path.join(root, kid)
-                    try:
-                        if not os.path.exists(kernel_dir):
-                            os.makedirs(kernel_dir)
-                        with open(os.path.join(kernel_dir, "kernel.json"), "w") as f:
-                            f.write(ks.to_json())
-                        break
-                    except OSError:
-                        continue
-                else:
-                    raise CommandError(
-                        "Could not write kernel %r in directories %r" % (kid, roots)
-                    )
+            self.install_kernel_specs(app, ipython_arguments)
 
         app.start()
 
@@ -609,6 +643,10 @@ for k, m in shells.import_objects({}, no_style()).items():
 
     @signalcommand
     def handle(self, *args, **options):
+        if options["install_kernel"]:
+            self.install_kernel(options)
+            return
+
         verbosity = options["verbosity"]
         get_runner = options["runner"]
         print_sql = getattr(settings, "SHELL_PLUS_PRINT_SQL", False)
