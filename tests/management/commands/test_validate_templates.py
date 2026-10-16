@@ -29,10 +29,7 @@ class ValidateTemplatesTests(TestCase):
         shutil.rmtree(self.tempdir)
 
     def test_should_print_that_there_is_error(self):
-        with override_settings(
-            INSTALLED_APPS=settings.INSTALLED_APPS
-            + ["tests.testapp_with_template_errors"]
-        ):
+        with override_settings(INSTALLED_APPS=settings.INSTALLED_APPS + ["tests.testapp_with_template_errors"]):
             with self.assertRaisesRegex(CommandError, "1 errors found"):
                 call_command("validate_templates", verbosity=3)
 
@@ -42,8 +39,7 @@ class ValidateTemplatesTests(TestCase):
         out = StringIO()
 
         with override_settings(
-            INSTALLED_APPS=settings.INSTALLED_APPS
-            + ["tests.testapp_with_template_errors"],
+            INSTALLED_APPS=settings.INSTALLED_APPS + ["tests.testapp_with_template_errors"],
             VALIDATE_TEMPLATES_IGNORES=["template_with_error.html"],
         ):
             call_command("validate_templates", verbosity=3, stdout=out, stderr=out)
@@ -56,8 +52,7 @@ class ValidateTemplatesTests(TestCase):
         out = StringIO()
 
         with override_settings(
-            INSTALLED_APPS=settings.INSTALLED_APPS
-            + ["tests.testapp_with_template_errors"],
+            INSTALLED_APPS=settings.INSTALLED_APPS + ["tests.testapp_with_template_errors"],
             VALIDATE_TEMPLATES_IGNORE_APPS=["tests.testapp_with_template_errors"],
         ):
             call_command("validate_templates", verbosity=3, stdout=out, stderr=out)
@@ -65,6 +60,24 @@ class ValidateTemplatesTests(TestCase):
         output = out.getvalue()
 
         self.assertIn("0 errors found\n", output)
+
+    def test_should_validate_templates_in_included_directory(self):
+        fn = os.path.join(self.tempdir, "valid_template.html")
+        with open(fn, "w") as f:
+            f.write("{{ value }}")
+
+        out = StringIO()
+        call_command(
+            "validate_templates",
+            "--no-apps",
+            "-i",
+            self.tempdir,
+            verbosity=3,
+            stdout=out,
+            stderr=out,
+        )
+
+        self.assertIn("0 errors found\n", out.getvalue())
 
     def test_should_break_when_first_error_occur(self):
         fn = os.path.join(self.tempdir, "template_with_error.html")

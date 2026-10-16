@@ -5,7 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import color_style
-from django.template.loader import get_template
+from django.template import Engine
 
 from django_extensions.compat import get_template_setting
 from django_extensions.management.utils import signalcommand
@@ -75,9 +75,7 @@ class Command(BaseCommand):
         style = color_style()
         template_dirs = set(get_template_setting("DIRS", []))
         template_dirs |= set(options["includes"])
-        template_dirs |= set(
-            getattr(settings, "VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS", [])
-        )
+        template_dirs |= set(getattr(settings, "VALIDATE_TEMPLATES_EXTRA_TEMPLATE_DIRS", []))
 
         if not options["no_apps"]:
             ignore_apps = options["ignore_apps"]
@@ -90,8 +88,7 @@ class Command(BaseCommand):
                 if os.path.isdir(app_template_dir):
                     template_dirs.add(app_template_dir)
 
-        settings.TEMPLATES[0]["DIRS"] = list(template_dirs)
-        settings.TEMPLATE_DEBUG = True
+        engine = Engine.get_default()
         verbosity = options["verbosity"]
         errors = 0
 
@@ -105,7 +102,8 @@ class Command(BaseCommand):
                     if verbosity > 1:
                         self.stdout.write(filepath)
                     try:
-                        get_template(filepath)
+                        with open(filepath, encoding="utf-8") as template_file:
+                            engine.from_string(template_file.read())
                     except Exception as e:
                         errors += 1
                         self.stdout.write(
