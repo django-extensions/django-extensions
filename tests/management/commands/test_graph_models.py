@@ -4,10 +4,15 @@ import re
 import tempfile
 from contextlib import contextmanager
 from io import StringIO
+from unittest.mock import Mock, patch
+
+import pytest
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
+
+from django_extensions.management.commands import graph_models
 
 
 def assert_looks_like_dotfile(output):
@@ -215,3 +220,18 @@ def test_hide_edge_labels():
     )
     output = out.getvalue()
     assert not re.search(r'\[label=\"[a-zA-Z]+"\]', output)
+
+
+@pytest.mark.parametrize("layout", [None, "neato"])
+@pytest.mark.parametrize("as_list", [False, True])
+def test_pydot_layout(layout, as_list):
+    graph = Mock()
+    with (
+        patch.object(graph_models, "HAS_PYDOT", True),
+        patch.object(graph_models, "pydot", create=True) as pydot,
+    ):
+        pydot.graph_from_dot_data.return_value = [graph] if as_list else graph
+        options = {"layout": layout} if layout else {}
+        call_command("graph_models", all_applications=True, pydot=True, output="output.svg", **options)
+
+    graph.write.assert_called_once_with("output.svg", format="svg", prog=layout or "dot")

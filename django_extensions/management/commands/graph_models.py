@@ -493,4 +493,4 @@ class Command(BaseCommand):
         ]
         ext = output_file[output_file.rfind(".") + 1 :]
         format_ = ext if ext in formats else "raw"
-        graph.write(output_file, format=format_)
+        graph.write(output_file, format=format_, prog=kwargs["layout"])
