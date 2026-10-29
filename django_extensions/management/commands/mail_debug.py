@@ -93,8 +93,11 @@ class Command(BaseCommand):
             handler = CustomHandler()
             controller = Controller(handler, hostname=addr, port=port)
             controller.start()
-            loop = asyncio.get_event_loop()
-            loop.run_forever()
+            loop = asyncio.new_event_loop()
+            try:
+                loop.run_forever()
+            finally:
+                loop.close()
 
         try:
             inner_run()
