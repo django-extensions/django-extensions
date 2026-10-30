@@ -56,7 +56,7 @@ class Command(BaseCommand):
                                         if tag not in map(
                                             str.upper, map(str, options["tag"])
                                         ):
-                                            break
+                                            continue
 
                                     if ANNOTATION_END_RE.search(msg.strip()):
                                         msg = ANNOTATION_END_RE.findall(msg.strip())[0][
