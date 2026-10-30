@@ -4,6 +4,7 @@ from io import StringIO
 
 from django.conf import settings
 from django.apps import apps
+from django.db import models
 from django.test import TestCase
 
 # from django.core.management import call_command
@@ -92,6 +93,23 @@ class SqlDiffTests(TestCase):
         self.assertEqual(
             instance.get_index_together(SqlDiffIndexes._meta), [("first", "second")]
         )
+
+    def test_get_index_together_with_descending_fields(self):
+        instance = MySQLDiff(
+            apps.get_models(include_auto_created=True),
+            vars(self.options),
+            stdout=self.tmp_out,
+            stderr=self.tmp_err,
+        )
+        for fields in (["-first", "second"], ["first", "-second"], ["-first", "-second"]):
+            with self.subTest(fields=fields):
+                with mock.patch.object(
+                    SqlDiffIndexes._meta, "indexes", [models.Index(fields=fields)]
+                ):
+                    self.assertEqual(
+                        instance.get_index_together(SqlDiffIndexes._meta),
+                        [("first", "second")],
+                    )
 
     def test_get_unique_together(self):
         instance = MySQLDiff(
