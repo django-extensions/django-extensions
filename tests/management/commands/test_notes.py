@@ -1,6 +1,26 @@
 import os
 
 from django.core.management import call_command
+from django_extensions.management.commands.notes import Command
+
+
+def test_tag_filter_continues_after_other_tags(capsys, settings, tmp_path):
+    settings.INSTALLED_APPS = []
+    settings.TEMPLATES = [{**settings.TEMPLATES[0], "DIRS": [str(tmp_path)]}]
+    template_path = tmp_path / "mixed.html"
+    template_path.write_text(
+        "{# TODO Ignore the first annotation. #}\n"
+        "{# FIXME Keep the second annotation. #}\n"
+        "{# NOTE Ignore another annotation. #}\n"
+        "{# FIXME Keep the fourth annotation. #}\n"
+    )
+
+    call_command(Command(), "--tag=fixme")
+    out, err = capsys.readouterr()
+
+    assert "[  2] FIXME Keep the second annotation." in out
+    assert "[  4] FIXME Keep the fourth annotation." in out
+    assert "Ignore" not in out
 
 
 def test_without_args(capsys, settings):
