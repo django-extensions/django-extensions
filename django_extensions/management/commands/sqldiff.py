@@ -474,7 +474,7 @@ class SQLDiff:
             indexes_normalized += list(normalize_together(meta.index_together))
 
         for idx in meta.indexes:
-            indexes_normalized.append(idx.fields)
+            indexes_normalized.append([field for field, _ in idx.fields_orders])
 
         return self.expand_together(indexes_normalized, meta)
 
