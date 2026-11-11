@@ -1575,6 +1575,20 @@ class PostgresqlSQLDiff(SQLDiff):
     #             kwargs['max_length'] = max_length[1]
     #     return kwargs
 
+    def get_field_db_type_kwargs(
+        self,
+        current_kwargs,
+        description,
+        field=None,
+        table_name=None,
+        reverse_type=None,
+    ):
+        if reverse_type == "CharField":
+            # psycopg reports the declared character length in display_size.
+            size = description.display_size
+            return {"max_length": size if size and size > 0 else None}
+        return {}
+
     def get_field_db_type(self, description, field=None, table_name=None):
         db_type = super().get_field_db_type(description, field, table_name)
         if not db_type:
