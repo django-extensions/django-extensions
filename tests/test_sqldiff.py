@@ -4,6 +4,7 @@ from io import StringIO
 
 from django.conf import settings
 from django.apps import apps
+from django.db import connection
 from django.test import TestCase
 
 # from django.core.management import call_command
@@ -185,3 +186,37 @@ class SqlDiffTests(TestCase):
             """select 1 as "foo", 1 + 1 as "BAR";""", []
         )
         self.assertEqual(postgresql_dict, [{"BAR": 2, "foo": 1}])
+
+    @pytest.mark.skipif(
+        settings.DATABASES["default"]["ENGINE"] != "django.db.backends.postgresql",
+        reason="Test can only run on postgresql",
+    )
+    def test_postgresql_compares_varchar_lengths(self):
+        table_name = SqlDiff._meta.db_table
+        quoted_table = connection.ops.quote_name(table_name)
+
+        for column_type in ("varchar(30)", "varchar"):
+            with self.subTest(column_type=column_type):
+                with connection.cursor() as cursor:
+                    cursor.execute(f"ALTER TABLE {quoted_table} ALTER COLUMN number TYPE {column_type}")
+
+                instance = PostgresqlSQLDiff(
+                    [SqlDiff],
+                    vars(self.options),
+                    stdout=self.tmp_out,
+                    stderr=self.tmp_err,
+                )
+                instance.load()
+                self.addCleanup(instance.cursor.close)
+                instance.find_differences()
+
+                field_differences = [
+                    args
+                    for _, _, differences in instance.differences
+                    for kind, args in differences
+                    if kind == "field-parameter-differ"
+                ]
+                self.assertEqual(
+                    field_differences,
+                    [(table_name, "number", "varchar(40)", column_type)],
+                )
