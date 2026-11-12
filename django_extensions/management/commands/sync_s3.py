@@ -392,8 +392,8 @@ class Command(BaseCommand):
                         )[0:6]
                     )
                     local_datetime = datetime.datetime.fromtimestamp(
-            os.stat(filename).st_mtime, datetime.timezone.utc
-        ).replace(tzinfo=None)
+                        os.stat(filename).st_mtime, datetime.timezone.utc
+                    ).replace(tzinfo=None)
                     if local_datetime < s3_datetime:
                         self.skip_count += 1
                         if self.verbosity > 1:
