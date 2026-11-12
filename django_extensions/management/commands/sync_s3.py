@@ -391,9 +391,9 @@ class Command(BaseCommand):
                             s3_key.last_modified, "%a, %d %b %Y %H:%M:%S %Z"
                         )[0:6]
                     )
-                    local_datetime = datetime.datetime.utcfromtimestamp(
-                        os.stat(filename).st_mtime
-                    )
+                    local_datetime = datetime.datetime.fromtimestamp(
+            os.stat(filename).st_mtime, datetime.timezone.utc
+        ).replace(tzinfo=None)
                     if local_datetime < s3_datetime:
                         self.skip_count += 1
                         if self.verbosity > 1:
