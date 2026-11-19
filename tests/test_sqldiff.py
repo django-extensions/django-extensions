@@ -23,6 +23,64 @@ from tests.testapp.models import (
 )
 
 
+@pytest.mark.parametrize("diff_class", [PostgresqlSQLDiff, MySQLDiff])
+@pytest.mark.parametrize("columns", [[], [None]])
+@pytest.mark.parametrize("unique", [False, True])
+def test_index_without_named_columns(diff_class, columns, unique):
+    options = Command().create_parser("test", "sqldiff").parse_args(["-a"])
+    instance = diff_class([SqlDiffIndexes], vars(options), stdout=StringIO(), stderr=StringIO())
+    meta = SqlDiffIndexes._meta
+    instance.add_app_model_marker(meta.app_label, SqlDiffIndexes.__name__)
+    constraints = {
+        "first_upper_idx": {
+            "columns": columns,
+            "orders": ["ASC"],
+            "primary_key": False,
+            "unique": unique,
+            "foreign_key": None,
+            "check": False,
+            "index": True,
+            "type": "idx",
+            "definition": 'CREATE INDEX first_upper_idx ON testapp_sqldiffindexes (upper("first"))',
+            "options": None,
+        },
+        meta.indexes[0].name: {
+            "columns": ["first", "second"],
+            "unique": False,
+            "index": True,
+        },
+        "primary_key": {
+            "columns": ["id"],
+            "unique": True,
+            "index": False,
+            "primary_key": True,
+        },
+    }
+
+    instance.find_index_missing_in_model(meta, {}, constraints, meta.db_table)
+
+    assert instance.differences == [
+        (
+            meta.app_label,
+            SqlDiffIndexes.__name__,
+            [("index-missing-in-model", (meta.db_table, "first_upper_idx"))],
+        )
+    ]
+
+
+@pytest.mark.parametrize("diff_class", [PostgresqlSQLDiff, MySQLDiff])
+@pytest.mark.parametrize("columns", [[], [None]])
+def test_declared_index_without_named_columns(diff_class, columns):
+    options = Command().create_parser("test", "sqldiff").parse_args(["-a"])
+    instance = diff_class([SqlDiffIndexes], vars(options), stdout=StringIO(), stderr=StringIO())
+    meta = SqlDiffIndexes._meta
+    instance.add_app_model_marker(meta.app_label, SqlDiffIndexes.__name__)
+
+    instance.find_index_missing_in_model(meta, {}, {meta.indexes[0].name: {"columns": columns}}, meta.db_table)
+
+    assert instance.differences == [(meta.app_label, SqlDiffIndexes.__name__, [])]
+
+
 class SqlDiffTests(TestCase):
     def setUp(self):
         self.parser = Command().create_parser("test", "sqldiff")
