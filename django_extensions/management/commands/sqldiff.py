@@ -652,7 +652,7 @@ class SQLDiff:
                 continue
 
             columns = constraint["columns"]
-            field = fields.get(columns[0])
+            field = fields.get(columns[0]) if columns else None
             if (constraint["unique"] and constraint["index"]) or field is None:
                 # unique indexes do not exist in django ? only unique constraints
                 pass
@@ -1135,7 +1135,7 @@ class MySQLDiff(SQLDiff):
                 continue
 
             columns = constraint["columns"]
-            field = fields.get(columns[0])
+            field = fields.get(columns[0]) if columns else None
 
             # extra check removed from superclass here, otherwise function is the same
             if len(columns) == 1:
